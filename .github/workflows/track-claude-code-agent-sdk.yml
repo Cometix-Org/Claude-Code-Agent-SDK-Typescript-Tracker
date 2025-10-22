@@ -1,0 +1,109 @@
+name: Sync NPM package files
+
+on:
+  schedule:
+    # 每 6 小时跑一次（UTC）；可按需调整
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+env:
+  # 👇 要跟踪的 NPM 包名（改成你的）
+  PACKAGE_NAME: "@anthropic-ai/claude-agent-sdk"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Fetch latest tarball via npm pack
+        id: pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/npm-pack
+          pushd .cache/npm-pack >/dev/null
+
+          # 查询最新版本（仅用于提交信息）
+          LATEST="$(npm view "${PACKAGE_NAME}" version)"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+
+          # 拉取 tarball（返回值是文件名，比如 package-1.2.3.tgz）
+          TARBALL="$(npm pack "${PACKAGE_NAME}" --silent)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+
+          popd >/dev/null
+
+      - name: Unpack and copy target files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TARBALL=".cache/npm-pack/${{ steps.pack.outputs.tarball }}"
+          tar -xzf "$TARBALL" -C .cache/npm-pack
+
+          SRC=".cache/npm-pack/package"
+          declare -a files=("cli.js" "package.json" "sdk-tools.d.ts" "sdk.d.ts" "sdk.mjs")
+
+          for f in "${files[@]}"; do
+            if [ -f "$SRC/$f" ]; then
+              cp -f "$SRC/$f" "./$f"
+              echo "Copied $f"
+            else
+              echo "Skip $f (not found in package)"
+            fi
+          done
+
+      - name: Format with Prettier
+        shell: bash
+        run: |
+          set -euo pipefail
+          declare -a files=("cli.js" "package.json" "sdk-tools.d.ts" "sdk.d.ts" "sdk.mjs")
+          EXISTING=()
+          for f in "${files[@]}"; do
+            [ -f "$f" ] && EXISTING+=("$f")
+          done
+          if [ ${#EXISTING[@]} -gt 0 ]; then
+            npx --yes prettier -w "${EXISTING[@]}"
+          else
+            echo "No target files exist after copy; skipping Prettier."
+          fi
+
+      - name: Commit and push if changed
+        env:
+          LATEST: ${{ steps.pack.outputs.latest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          declare -a files=("cli.js" "package.json" "sdk-tools.d.ts" "sdk.d.ts" "sdk.mjs")
+          EXISTING=()
+          for f in "${files[@]}"; do
+            [ -f "$f" ] && EXISTING+=("$f")
+          done
+
+          if [ ${#EXISTING[@]} -eq 0 ]; then
+            echo "No files to add; nothing to commit."
+            exit 0
+          fi
+
+          git add "${EXISTING[@]}"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: sync ${PACKAGE_NAME}@${LATEST}"
+          git push
