@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.25
+// Version: 0.1.26
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9245,6 +9245,7 @@ class ProcessTransport {
         model,
         fallbackModel,
         permissionMode,
+        allowDangerouslySkipPermissions,
         permissionPromptToolName,
         continueConversation,
         resume,
@@ -9305,6 +9306,9 @@ class ProcessTransport {
       }
       if (permissionMode) {
         args.push("--permission-mode", permissionMode);
+      }
+      if (allowDangerouslySkipPermissions) {
+        args.push("--allow-dangerously-skip-permissions");
       }
       if (fallbackModel) {
         if (model && fallbackModel === model) {
@@ -18914,7 +18918,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.25";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.26";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -18937,6 +18941,7 @@ function query({ prompt, options }) {
     mcpServers,
     model,
     permissionMode = "default",
+    allowDangerouslySkipPermissions = false,
     permissionPromptToolName,
     resume,
     resumeSessionAt,
@@ -18988,6 +18993,7 @@ function query({ prompt, options }) {
     model,
     fallbackModel,
     permissionMode,
+    allowDangerouslySkipPermissions,
     permissionPromptToolName,
     continueConversation,
     resume,

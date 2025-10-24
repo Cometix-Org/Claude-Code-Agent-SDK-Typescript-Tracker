@@ -509,6 +509,7 @@ export type Options = {
   model?: string;
   pathToClaudeCodeExecutable?: string;
   permissionMode?: PermissionMode;
+  allowDangerouslySkipPermissions?: boolean;
   permissionPromptToolName?: string;
   resume?: string;
   /**
