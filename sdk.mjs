@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.26
+// Version: 0.1.27
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9256,6 +9256,7 @@ class ProcessTransport {
         strictMcpConfig,
         canUseTool,
         includePartialMessages,
+        plugins,
       } = this.options;
       const args = [
         "--output-format",
@@ -9323,6 +9324,15 @@ class ProcessTransport {
       }
       for (const dir of additionalDirectories) {
         args.push("--add-dir", dir);
+      }
+      if (plugins && plugins.length > 0) {
+        for (const plugin of plugins) {
+          if (plugin.type === "local") {
+            args.push("--plugin-dir", plugin.path);
+          } else {
+            throw new Error(`Unsupported plugin type: ${plugin.type}`);
+          }
+        }
       }
       if (this.options.forkSession) {
         args.push("--fork-session");
@@ -18918,7 +18928,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.26";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.27";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -18943,6 +18953,7 @@ function query({ prompt, options }) {
     permissionMode = "default",
     allowDangerouslySkipPermissions = false,
     permissionPromptToolName,
+    plugins,
     resume,
     resumeSessionAt,
     stderr,
@@ -19006,6 +19017,7 @@ function query({ prompt, options }) {
     canUseTool: !!canUseTool,
     hooks: !!hooks,
     includePartialMessages,
+    plugins,
   });
   const queryInstance = new Query(
     transport,

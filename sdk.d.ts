@@ -386,6 +386,10 @@ export type SDKSystemMessage = SDKMessageBase & {
   slash_commands: string[];
   output_style: string;
   skills: string[];
+  plugins: {
+    name: string;
+    path: string;
+  }[];
 };
 export type SDKPartialAssistantMessage = SDKMessageBase & {
   type: "stream_event";
@@ -480,6 +484,10 @@ export type AgentDefinition = {
   model?: "sonnet" | "opus" | "haiku" | "inherit";
 };
 export type SettingSource = "user" | "project" | "local";
+export type SdkPluginConfig = {
+  type: "local";
+  path: string;
+};
 export type Options = {
   abortController?: AbortController;
   additionalDirectories?: string[];
@@ -511,6 +519,21 @@ export type Options = {
   permissionMode?: PermissionMode;
   allowDangerouslySkipPermissions?: boolean;
   permissionPromptToolName?: string;
+  /**
+   * Load plugins for this session. Plugins provide custom commands, agents,
+   * skills, and hooks that extend Claude Code's capabilities.
+   *
+   * Currently only local plugins are supported via the 'local' type.
+   *
+   * @example
+   * ```typescript
+   * plugins: [
+   *   { type: 'local', path: './my-plugin' },
+   *   { type: 'local', path: '/absolute/path/to/plugin' }
+   * ]
+   * ```
+   */
+  plugins?: SdkPluginConfig[];
   resume?: string;
   /**
    * When resuming, only resume messages up to and including the assistant
