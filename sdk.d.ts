@@ -156,6 +156,11 @@ export type CanUseTool = (
      * `updatedPermissions` in the PermissionResult.
      */
     suggestions?: PermissionUpdate[];
+    /**
+     * Unique identifier for this specific tool call within the assistant message.
+     * Multiple tool calls in the same assistant message will have different toolUseIDs.
+     */
+    toolUseID: string;
   },
 ) => Promise<PermissionResult>;
 export declare const HOOK_EVENTS: readonly [
@@ -472,6 +477,8 @@ type CreateSdkMcpServerOptions = {
 /**
  * Creates an MCP server instance that can be used with the SDK transport.
  * This allows SDK users to define custom tools that run in the same process.
+ *
+ * If your SDK MCP calls will run longer than 60s, override CLAUDE_CODE_STREAM_CLOSE_TIMEOUT
  */
 export declare function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,
