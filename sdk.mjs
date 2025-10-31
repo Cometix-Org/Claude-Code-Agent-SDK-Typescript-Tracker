@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.29
+// Version: 0.1.30
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9242,6 +9242,7 @@ class ProcessTransport {
         appendSystemPrompt,
         maxThinkingTokens,
         maxTurns,
+        maxBudgetUsd,
         model,
         fallbackModel,
         permissionMode,
@@ -9273,6 +9274,9 @@ class ProcessTransport {
         args.push("--max-thinking-tokens", maxThinkingTokens.toString());
       }
       if (maxTurns) args.push("--max-turns", maxTurns.toString());
+      if (maxBudgetUsd !== undefined) {
+        args.push("--max-budget-usd", maxBudgetUsd.toString());
+      }
       if (model) args.push("--model", model);
       if (env.DEBUG) args.push("--debug-to-stderr");
       if (canUseTool) {
@@ -10257,22 +10261,24 @@ var maxOutputTokensValidator = {
   name: "CLAUDE_CODE_MAX_OUTPUT_TOKENS",
   default: 32000,
   validate: (value) => {
+    const MAX_OUTPUT_TOKENS = 64000;
+    const DEFAULT_MAX_OUTPUT_TOKENS = 32000;
     if (!value) {
-      return { effective: 32000, status: "valid" };
+      return { effective: DEFAULT_MAX_OUTPUT_TOKENS, status: "valid" };
     }
     const parsed = parseInt(value, 10);
     if (isNaN(parsed) || parsed <= 0) {
       return {
-        effective: 32000,
+        effective: DEFAULT_MAX_OUTPUT_TOKENS,
         status: "invalid",
-        message: `Invalid value "${value}" (using default: 32000)`,
+        message: `Invalid value "${value}" (using default: ${DEFAULT_MAX_OUTPUT_TOKENS})`,
       };
     }
-    if (parsed > 32000) {
+    if (parsed > MAX_OUTPUT_TOKENS) {
       return {
-        effective: 32000,
+        effective: MAX_OUTPUT_TOKENS,
         status: "capped",
-        message: `Capped from ${parsed} to 32000`,
+        message: `Capped from ${parsed} to ${MAX_OUTPUT_TOKENS}`,
       };
     }
     return { effective: parsed, status: "valid" };
@@ -10784,7 +10790,11 @@ class Query {
       logForDebugging(
         `[Query.streamInput] About to check MCP servers. this.sdkMcpTransports.size = ${this.sdkMcpTransports.size}`,
       );
-      if (this.sdkMcpTransports.size > 0 && this.firstResultReceivedPromise) {
+      const hasHooks = this.hooks && Object.keys(this.hooks).length > 0;
+      if (
+        (this.sdkMcpTransports.size > 0 || hasHooks) &&
+        this.firstResultReceivedPromise
+      ) {
         logForDebugging(
           `[Query.streamInput] Entering Promise.race to wait for result`,
         );
@@ -18935,7 +18945,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.29";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.30";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -18955,6 +18965,7 @@ function query({ prompt, options }) {
     includePartialMessages,
     maxThinkingTokens,
     maxTurns,
+    maxBudgetUsd,
     mcpServers,
     model,
     permissionMode = "default",
@@ -19008,6 +19019,7 @@ function query({ prompt, options }) {
     appendSystemPrompt,
     maxThinkingTokens,
     maxTurns,
+    maxBudgetUsd,
     model,
     fallbackModel,
     permissionMode,

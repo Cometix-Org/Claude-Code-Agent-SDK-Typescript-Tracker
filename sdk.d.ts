@@ -308,10 +308,6 @@ export type McpServerStatus = {
     version: string;
   };
 };
-export type SDKMessageBase = {
-  uuid: UUID;
-  session_id: string;
-};
 type SDKUserMessageContent = {
   type: "user";
   message: APIUserMessage;
@@ -326,18 +322,21 @@ export type SDKUserMessage = SDKUserMessageContent & {
   uuid?: UUID;
   session_id: string;
 };
-export type SDKUserMessageReplay = SDKMessageBase &
-  SDKUserMessageContent & {
-    /**
-     * True if this is a replay/acknowledgment of a user message that was already
-     * added to the messages array. Used internally to prevent duplicate messages.
-     */
-    isReplay: true;
-  };
-export type SDKAssistantMessage = SDKMessageBase & {
+export type SDKUserMessageReplay = SDKUserMessageContent & {
+  uuid: UUID;
+  session_id: string;
+  /**
+   * True if this is a replay/acknowledgment of a user message that was already
+   * added to the messages array. Used internally to prevent duplicate messages.
+   */
+  isReplay: true;
+};
+export type SDKAssistantMessage = {
   type: "assistant";
   message: APIAssistantMessage;
   parent_tool_use_id: string | null;
+  uuid: UUID;
+  session_id: string;
 };
 export type SDKPermissionDenial = {
   tool_name: string;
@@ -345,7 +344,7 @@ export type SDKPermissionDenial = {
   tool_input: Record<string, unknown>;
 };
 export type SDKResultMessage =
-  | (SDKMessageBase & {
+  | {
       type: "result";
       subtype: "success";
       duration_ms: number;
@@ -359,10 +358,15 @@ export type SDKResultMessage =
         [modelName: string]: ModelUsage;
       };
       permission_denials: SDKPermissionDenial[];
-    })
-  | (SDKMessageBase & {
+      uuid: UUID;
+      session_id: string;
+    }
+  | {
       type: "result";
-      subtype: "error_max_turns" | "error_during_execution";
+      subtype:
+        | "error_during_execution"
+        | "error_max_turns"
+        | "error_max_budget_usd";
       duration_ms: number;
       duration_api_ms: number;
       is_error: boolean;
@@ -373,8 +377,11 @@ export type SDKResultMessage =
         [modelName: string]: ModelUsage;
       };
       permission_denials: SDKPermissionDenial[];
-    });
-export type SDKSystemMessage = SDKMessageBase & {
+      errors: string[];
+      uuid: UUID;
+      session_id: string;
+    };
+export type SDKSystemMessage = {
   type: "system";
   subtype: "init";
   agents?: string[];
@@ -395,21 +402,27 @@ export type SDKSystemMessage = SDKMessageBase & {
     name: string;
     path: string;
   }[];
+  uuid: UUID;
+  session_id: string;
 };
-export type SDKPartialAssistantMessage = SDKMessageBase & {
+export type SDKPartialAssistantMessage = {
   type: "stream_event";
   event: RawMessageStreamEvent;
   parent_tool_use_id: string | null;
+  uuid: UUID;
+  session_id: string;
 };
-export type SDKCompactBoundaryMessage = SDKMessageBase & {
+export type SDKCompactBoundaryMessage = {
   type: "system";
   subtype: "compact_boundary";
   compact_metadata: {
     trigger: "manual" | "auto";
     pre_tokens: number;
   };
+  uuid: UUID;
+  session_id: string;
 };
-export type SDKHookResponseMessage = SDKMessageBase & {
+export type SDKHookResponseMessage = {
   type: "system";
   subtype: "hook_response";
   hook_name: string;
@@ -417,6 +430,25 @@ export type SDKHookResponseMessage = SDKMessageBase & {
   stdout: string;
   stderr: string;
   exit_code?: number;
+  uuid: UUID;
+  session_id: string;
+};
+export type SDKToolProgressMessage = {
+  type: "tool_progress";
+  tool_use_id: string;
+  tool_name: string;
+  parent_tool_use_id: string | null;
+  elapsed_time_seconds: number;
+  uuid: UUID;
+  session_id: string;
+};
+export type SDKAuthStatusMessage = {
+  type: "auth_status";
+  isAuthenticating: boolean;
+  output: string[];
+  error?: string;
+  uuid: UUID;
+  session_id: string;
 };
 export type SDKMessage =
   | SDKAssistantMessage
@@ -426,7 +458,9 @@ export type SDKMessage =
   | SDKSystemMessage
   | SDKPartialAssistantMessage
   | SDKCompactBoundaryMessage
-  | SDKHookResponseMessage;
+  | SDKHookResponseMessage
+  | SDKToolProgressMessage
+  | SDKAuthStatusMessage;
 export interface Query extends AsyncGenerator<SDKMessage, void> {
   /**
    * Control Requests
@@ -487,6 +521,7 @@ export declare class AbortError extends Error {}
 export type AgentDefinition = {
   description: string;
   tools?: string[];
+  disallowedTools?: string[];
   prompt: string;
   model?: "sonnet" | "opus" | "haiku" | "inherit";
 };
@@ -520,6 +555,7 @@ export type Options = {
   includePartialMessages?: boolean;
   maxThinkingTokens?: number;
   maxTurns?: number;
+  maxBudgetUsd?: number;
   mcpServers?: Record<string, McpServerConfig>;
   model?: string;
   pathToClaudeCodeExecutable?: string;
