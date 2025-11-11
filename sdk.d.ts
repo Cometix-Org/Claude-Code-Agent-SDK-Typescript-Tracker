@@ -207,6 +207,7 @@ export type NotificationHookInput = BaseHookInput & {
   hook_event_name: "Notification";
   message: string;
   title?: string;
+  notification_type: string;
 };
 export type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
@@ -274,6 +275,7 @@ export type SyncHookJSONOutput = {
     | {
         hookEventName: "PostToolUse";
         additionalContext?: string;
+        updatedMCPToolOutput?: unknown;
       };
 };
 export type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
@@ -422,6 +424,14 @@ export type SDKCompactBoundaryMessage = {
   uuid: UUID;
   session_id: string;
 };
+export type SDKStatus = "compacting" | null;
+export type SDKStatusMessage = {
+  type: "system";
+  subtype: "status";
+  status: SDKStatus;
+  uuid: UUID;
+  session_id: string;
+};
 export type SDKHookResponseMessage = {
   type: "system";
   subtype: "hook_response";
@@ -458,6 +468,7 @@ export type SDKMessage =
   | SDKSystemMessage
   | SDKPartialAssistantMessage
   | SDKCompactBoundaryMessage
+  | SDKStatusMessage
   | SDKHookResponseMessage
   | SDKToolProgressMessage
   | SDKAuthStatusMessage;
