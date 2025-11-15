@@ -185,6 +185,8 @@ export type HookCallback = (
 export interface HookCallbackMatcher {
   matcher?: string;
   hooks: HookCallback[];
+  /** Timeout in seconds for all hooks in this matcher */
+  timeout?: number;
 }
 export type BaseHookInput = {
   session_id: string;
@@ -224,6 +226,8 @@ export type StopHookInput = BaseHookInput & {
 export type SubagentStopHookInput = BaseHookInput & {
   hook_event_name: "SubagentStop";
   stop_hook_active: boolean;
+  agent_id: string;
+  agent_transcript_path: string;
 };
 export type PreCompactHookInput = BaseHookInput & {
   hook_event_name: "PreCompact";

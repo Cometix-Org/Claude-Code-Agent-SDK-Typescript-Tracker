@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.37
+// Version: 0.1.42
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9107,11 +9107,14 @@ var NodeFsOperations = {
     }
   },
   writeFileSync(fsPath, data, options) {
+    const fileExists = fs.existsSync(fsPath);
     if (!options.flush) {
       const writeOptions = {
         encoding: options.encoding,
       };
-      if (options.mode !== undefined) {
+      if (!fileExists) {
+        writeOptions.mode = options.mode ?? 384;
+      } else if (options.mode !== undefined) {
         writeOptions.mode = options.mode;
       }
       fs.writeFileSync(fsPath, data, writeOptions);
@@ -9119,7 +9122,7 @@ var NodeFsOperations = {
     }
     let fd;
     try {
-      const mode = options.mode !== undefined ? options.mode : undefined;
+      const mode = !fileExists ? (options.mode ?? 384) : options.mode;
       fd = fs.openSync(fsPath, "w", mode);
       fs.writeFileSync(fd, data, { encoding: options.encoding });
       fs.fsyncSync(fd);
@@ -9129,8 +9132,18 @@ var NodeFsOperations = {
       }
     }
   },
-  appendFileSync(path, data) {
-    fs.appendFileSync(path, data);
+  appendFileSync(path, data, options) {
+    if (!fs.existsSync(path)) {
+      const mode = options?.mode ?? 384;
+      const fd = fs.openSync(path, "a", mode);
+      try {
+        fs.appendFileSync(fd, data);
+      } finally {
+        fs.closeSync(fd);
+      }
+    } else {
+      fs.appendFileSync(path, data);
+    }
   },
   copyFileSync(src, dest) {
     fs.copyFileSync(src, dest);
@@ -9852,12 +9865,6 @@ function getNative(object, key) {
 }
 var _getNative_default = getNative;
 
-// ../node_modules/lodash-es/eq.js
-function eq(value, other) {
-  return value === other || (value !== value && other !== other);
-}
-var eq_default = eq;
-
 // ../node_modules/lodash-es/_nativeCreate.js
 var nativeCreate = _getNative_default(Object, "create");
 var _nativeCreate_default = nativeCreate;
@@ -9936,6 +9943,12 @@ function listCacheClear() {
   this.size = 0;
 }
 var _listCacheClear_default = listCacheClear;
+
+// ../node_modules/lodash-es/eq.js
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+var eq_default = eq;
 
 // ../node_modules/lodash-es/_assocIndexOf.js
 function assocIndexOf(array, key) {
@@ -10122,6 +10135,7 @@ function memoize(func, resolver) {
 }
 memoize.Cache = _MapCache_default;
 var memoize_default = memoize;
+
 // ../src/utils/process.ts
 var CHUNK_SIZE = 2000;
 function writeToStderr(data) {
@@ -10305,10 +10319,8 @@ function getInitialState() {
     cwd: resolvedCwd,
     modelUsage: {},
     mainLoopModelOverride: undefined,
-    maxRateLimitFallbackActive: false,
     initialMainLoopModel: null,
     modelStrings: null,
-    isNonInteractiveSession: true,
     isInteractive: false,
     clientType: "cli",
     sessionIngressToken: undefined,
@@ -10403,7 +10415,8 @@ function logForDebugging(
   ) {
     message = JSON.stringify(message);
   }
-  const output = `[${level.toUpperCase()}] ${message.trim()}
+  const timestamp = new Date().toISOString();
+  const output = `${timestamp} [${level.toUpperCase()}] ${message.trim()}
 `;
   if (isDebugToStdErr()) {
     writeToStderr(output);
@@ -10439,6 +10452,8 @@ var updateLatestDebugLogSymlink = memoize_default(() => {
 });
 
 // ../src/core/Query.ts
+import { randomUUID as randomUUID2 } from "crypto";
+
 class Query {
   transport;
   isSingleUserTurn;
@@ -10681,6 +10696,7 @@ class Query {
             return {
               matcher: matcher.matcher,
               hookCallbackIds: callbackIds,
+              timeout: matcher.timeout,
             };
           });
         }
@@ -10860,7 +10876,20 @@ class Query {
         return;
       }
     }
-    throw new Error("No pending request found");
+    const controlRequest = {
+      type: "control_request",
+      request_id: randomUUID2(),
+      request: {
+        subtype: "mcp_message",
+        server_name: serverName,
+        message,
+      },
+    };
+    this.transport.write(
+      JSON.stringify(controlRequest) +
+        `
+`,
+    );
   }
   handleMcpControlRequest(serverName, mcpRequest, transport) {
     const messageId = "id" in mcpRequest.message ? mcpRequest.message.id : null;
@@ -18955,7 +18984,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.37";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.42";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
