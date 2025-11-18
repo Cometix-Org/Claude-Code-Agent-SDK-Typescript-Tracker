@@ -20,6 +20,15 @@ export type ModelUsage = {
   costUSD: number;
   contextWindow: number;
 };
+export type OutputFormatType = "json_schema";
+export type BaseOutputFormat = {
+  type: OutputFormatType;
+};
+export type JsonSchemaOutputFormat = BaseOutputFormat & {
+  type: "json_schema";
+  schema: Record<string, unknown>;
+};
+export type OutputFormat = JsonSchemaOutputFormat;
 export type ApiKeySource = "user" | "project" | "org" | "temporary";
 export type ConfigScope = "local" | "user" | "project";
 export type McpStdioServerConfig = {
@@ -176,6 +185,8 @@ export type CanUseTool = (
      * Multiple tool calls in the same assistant message will have different toolUseIDs.
      */
     toolUseID: string;
+    /** If running within the context of a sub-agent, the sub-agent's ID. */
+    agentID?: string;
   },
 ) => Promise<PermissionResult>;
 export declare const HOOK_EVENTS: readonly [
@@ -189,6 +200,7 @@ export declare const HOOK_EVENTS: readonly [
   "SubagentStart",
   "SubagentStop",
   "PreCompact",
+  "PermissionRequest",
 ];
 export type HookEvent = (typeof HOOK_EVENTS)[number];
 export type HookCallback = (
@@ -215,6 +227,11 @@ export type PreToolUseHookInput = BaseHookInput & {
   tool_name: string;
   tool_input: unknown;
   tool_use_id: string;
+};
+export type PermissionRequestHookInput = BaseHookInput & {
+  hook_event_name: "PermissionRequest";
+  tool_name: string;
+  tool_input: unknown;
 };
 export type PostToolUseHookInput = BaseHookInput & {
   hook_event_name: "PostToolUse";
@@ -273,7 +290,8 @@ export type HookInput =
   | StopHookInput
   | SubagentStartHookInput
   | SubagentStopHookInput
-  | PreCompactHookInput;
+  | PreCompactHookInput
+  | PermissionRequestHookInput;
 export type AsyncHookJSONOutput = {
   async: true;
   asyncTimeout?: number;
@@ -308,6 +326,19 @@ export type SyncHookJSONOutput = {
         hookEventName: "PostToolUse";
         additionalContext?: string;
         updatedMCPToolOutput?: unknown;
+      }
+    | {
+        hookEventName: "PermissionRequest";
+        decision:
+          | {
+              behavior: "allow";
+              updatedInput?: Record<string, unknown>;
+            }
+          | {
+              behavior: "deny";
+              message?: string;
+              interrupt?: boolean;
+            };
       };
 };
 export type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
@@ -603,7 +634,7 @@ export type Options = {
   maxBudgetUsd?: number;
   mcpServers?: Record<string, McpServerConfig>;
   model?: string;
-  outputSchema?: Record<string, unknown>;
+  outputFormat?: OutputFormat;
   pathToClaudeCodeExecutable?: string;
   permissionMode?: PermissionMode;
   allowDangerouslySkipPermissions?: boolean;

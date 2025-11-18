@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.44
+// Version: 0.1.45
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9208,6 +9208,7 @@ var HOOK_EVENTS = [
   "SubagentStart",
   "SubagentStop",
   "PreCompact",
+  "PermissionRequest",
 ];
 var EXIT_REASONS = [
   "clear",
@@ -9259,7 +9260,7 @@ class ProcessTransport {
         maxBudgetUsd,
         model,
         fallbackModel,
-        outputSchema,
+        jsonSchema,
         permissionMode,
         allowDangerouslySkipPermissions,
         permissionPromptToolName,
@@ -9293,8 +9294,8 @@ class ProcessTransport {
         args.push("--max-budget-usd", maxBudgetUsd.toString());
       }
       if (model) args.push("--model", model);
-      if (outputSchema) {
-        args.push("--output-schema", JSON.stringify(outputSchema));
+      if (jsonSchema) {
+        args.push("--json-schema", JSON.stringify(jsonSchema));
       }
       if (env.DEBUG) args.push("--debug-to-stderr");
       if (canUseTool) {
@@ -10649,6 +10650,7 @@ class Query {
           blockedPath: request.request.blocked_path,
           decisionReason: request.request.decision_reason,
           toolUseID: request.request.tool_use_id,
+          agentID: request.request.agent_id,
         },
       );
       return {
@@ -19006,7 +19008,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.44";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.45";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19029,7 +19031,7 @@ function query({ prompt, options }) {
     maxBudgetUsd,
     mcpServers,
     model,
-    outputSchema,
+    outputFormat,
     permissionMode = "default",
     allowDangerouslySkipPermissions = false,
     permissionPromptToolName,
@@ -19039,6 +19041,8 @@ function query({ prompt, options }) {
     stderr,
     strictMcpConfig,
   } = rest;
+  const jsonSchema =
+    outputFormat?.type === "json_schema" ? outputFormat.schema : undefined;
   let processEnv = env;
   if (!processEnv) {
     processEnv = { ...process.env };
@@ -19084,7 +19088,7 @@ function query({ prompt, options }) {
     maxBudgetUsd,
     model,
     fallbackModel,
-    outputSchema,
+    jsonSchema,
     permissionMode,
     allowDangerouslySkipPermissions,
     permissionPromptToolName,
