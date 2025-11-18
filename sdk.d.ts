@@ -120,6 +120,10 @@ export type PermissionResult =
        * commands.
        */
       updatedPermissions?: PermissionUpdate[];
+      /**
+       * The tool use ID. Supplied and used internally.
+       */
+      toolUseID?: string;
     }
   | {
       behavior: "deny";
@@ -136,6 +140,10 @@ export type PermissionResult =
        * which the model should incorporate and continue.
        */
       interrupt?: boolean;
+      /**
+       * The tool use ID. Supplied and used internally.
+       */
+      toolUseID?: string;
     };
 export type PermissionRuleValue = {
   toolName: string;
@@ -157,6 +165,13 @@ export type CanUseTool = (
      */
     suggestions?: PermissionUpdate[];
     /**
+     * The file path that triggered the permission request, if applicable.
+     * For example, when a Bash command tries to access a path outside allowed directories.
+     */
+    blockedPath?: string;
+    /** Explains why this permission request was triggered. */
+    decisionReason?: string;
+    /**
      * Unique identifier for this specific tool call within the assistant message.
      * Multiple tool calls in the same assistant message will have different toolUseIDs.
      */
@@ -171,6 +186,7 @@ export declare const HOOK_EVENTS: readonly [
   "SessionStart",
   "SessionEnd",
   "Stop",
+  "SubagentStart",
   "SubagentStop",
   "PreCompact",
 ];
@@ -198,12 +214,14 @@ export type PreToolUseHookInput = BaseHookInput & {
   hook_event_name: "PreToolUse";
   tool_name: string;
   tool_input: unknown;
+  tool_use_id: string;
 };
 export type PostToolUseHookInput = BaseHookInput & {
   hook_event_name: "PostToolUse";
   tool_name: string;
   tool_input: unknown;
   tool_response: unknown;
+  tool_use_id: string;
 };
 export type NotificationHookInput = BaseHookInput & {
   hook_event_name: "Notification";
@@ -222,6 +240,11 @@ export type SessionStartHookInput = BaseHookInput & {
 export type StopHookInput = BaseHookInput & {
   hook_event_name: "Stop";
   stop_hook_active: boolean;
+};
+export type SubagentStartHookInput = BaseHookInput & {
+  hook_event_name: "SubagentStart";
+  agent_id: string;
+  agent_type: string;
 };
 export type SubagentStopHookInput = BaseHookInput & {
   hook_event_name: "SubagentStop";
@@ -248,6 +271,7 @@ export type HookInput =
   | SessionStartHookInput
   | SessionEndHookInput
   | StopHookInput
+  | SubagentStartHookInput
   | SubagentStopHookInput
   | PreCompactHookInput;
 export type AsyncHookJSONOutput = {
@@ -274,6 +298,10 @@ export type SyncHookJSONOutput = {
       }
     | {
         hookEventName: "SessionStart";
+        additionalContext?: string;
+      }
+    | {
+        hookEventName: "SubagentStart";
         additionalContext?: string;
       }
     | {
@@ -364,6 +392,7 @@ export type SDKResultMessage =
         [modelName: string]: ModelUsage;
       };
       permission_denials: SDKPermissionDenial[];
+      structured_output?: unknown;
       uuid: UUID;
       session_id: string;
     }
@@ -372,7 +401,8 @@ export type SDKResultMessage =
       subtype:
         | "error_during_execution"
         | "error_max_turns"
-        | "error_max_budget_usd";
+        | "error_max_budget_usd"
+        | "error_max_structured_output_retries";
       duration_ms: number;
       duration_api_ms: number;
       is_error: boolean;
@@ -573,6 +603,7 @@ export type Options = {
   maxBudgetUsd?: number;
   mcpServers?: Record<string, McpServerConfig>;
   model?: string;
+  outputSchema?: Record<string, unknown>;
   pathToClaudeCodeExecutable?: string;
   permissionMode?: PermissionMode;
   allowDangerouslySkipPermissions?: boolean;
@@ -594,10 +625,9 @@ export type Options = {
   plugins?: SdkPluginConfig[];
   resume?: string;
   /**
-   * When resuming, only resume messages up to and including the assistant
-   * message with this message.id. Use with --resume.
-   * This allows you to resume from a specific point in the conversation.
-   * The message ID is expected to be from SDKAssistantMessage.message.id.
+   * When resuming, only resume messages up to and including the message with this message.uuid.
+   * Use with --resume. This allows you to resume from a specific point in the conversation.
+   * The message ID is expected to be from SDKAssistantMessage.uuid.
    */
   resumeSessionAt?: string;
   settingSources?: SettingSource[];

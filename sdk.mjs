@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.42
+// Version: 0.1.43
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9205,6 +9205,7 @@ var HOOK_EVENTS = [
   "SessionStart",
   "SessionEnd",
   "Stop",
+  "SubagentStart",
   "SubagentStop",
   "PreCompact",
 ];
@@ -9258,6 +9259,7 @@ class ProcessTransport {
         maxBudgetUsd,
         model,
         fallbackModel,
+        outputSchema,
         permissionMode,
         allowDangerouslySkipPermissions,
         permissionPromptToolName,
@@ -9291,6 +9293,9 @@ class ProcessTransport {
         args.push("--max-budget-usd", maxBudgetUsd.toString());
       }
       if (model) args.push("--model", model);
+      if (outputSchema) {
+        args.push("--output-schema", JSON.stringify(outputSchema));
+      }
       if (env.DEBUG) args.push("--debug-to-stderr");
       if (canUseTool) {
         if (permissionPromptToolName) {
@@ -10354,6 +10359,7 @@ function getInitialState() {
     lastAPIRequest: null,
     inMemoryErrorLog: [],
     inlinePlugins: [],
+    sessionBypassPermissionsMode: false,
   };
 }
 var STATE = getInitialState();
@@ -10634,11 +10640,21 @@ class Query {
       if (!this.canUseTool) {
         throw new Error("canUseTool callback is not provided.");
       }
-      return this.canUseTool(request.request.tool_name, request.request.input, {
-        signal,
-        suggestions: request.request.permission_suggestions,
+      const result = await this.canUseTool(
+        request.request.tool_name,
+        request.request.input,
+        {
+          signal,
+          suggestions: request.request.permission_suggestions,
+          blockedPath: request.request.blocked_path,
+          decisionReason: request.request.decision_reason,
+          toolUseID: request.request.tool_use_id,
+        },
+      );
+      return {
+        ...result,
         toolUseID: request.request.tool_use_id,
-      });
+      };
     } else if (request.request.subtype === "hook_callback") {
       const result = await this.handleHookCallbacks(
         request.request.callback_id,
@@ -10735,6 +10751,12 @@ class Query {
     await this.request({
       subtype: "set_max_thinking_tokens",
       max_thinking_tokens: maxThinkingTokens,
+    });
+  }
+  async rewindCode(userMessageId) {
+    await this.request({
+      subtype: "rewind_code",
+      user_message_id: userMessageId,
     });
   }
   async processPendingPermissionRequests(pendingPermissionRequests) {
@@ -18984,7 +19006,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.42";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.43";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19007,6 +19029,7 @@ function query({ prompt, options }) {
     maxBudgetUsd,
     mcpServers,
     model,
+    outputSchema,
     permissionMode = "default",
     allowDangerouslySkipPermissions = false,
     permissionPromptToolName,
@@ -19061,6 +19084,7 @@ function query({ prompt, options }) {
     maxBudgetUsd,
     model,
     fallbackModel,
+    outputSchema,
     permissionMode,
     allowDangerouslySkipPermissions,
     permissionPromptToolName,
