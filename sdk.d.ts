@@ -396,10 +396,12 @@ export type SDKUserMessageReplay = SDKUserMessageContent & {
    */
   isReplay: true;
 };
+export type SDKAssistantMessageError = "authentication_failed";
 export type SDKAssistantMessage = {
   type: "assistant";
   message: APIAssistantMessage;
   parent_tool_use_id: string | null;
+  error?: SDKAssistantMessageError;
   uuid: UUID;
   session_id: string;
 };
