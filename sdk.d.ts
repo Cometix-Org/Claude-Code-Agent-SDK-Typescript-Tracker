@@ -396,7 +396,13 @@ export type SDKUserMessageReplay = SDKUserMessageContent & {
    */
   isReplay: true;
 };
-export type SDKAssistantMessageError = "authentication_failed";
+export type SDKAssistantMessageError =
+  | "authentication_failed"
+  | "billing_error"
+  | "rate_limit"
+  | "invalid_request"
+  | "server_error"
+  | "unknown";
 export type SDKAssistantMessage = {
   type: "assistant";
   message: APIAssistantMessage;
