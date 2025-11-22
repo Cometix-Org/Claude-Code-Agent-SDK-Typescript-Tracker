@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.49
+// Version: 0.1.50
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -10362,6 +10362,9 @@ function getInitialState() {
     inlinePlugins: [],
     sessionBypassPermissionsMode: false,
     hasExitedPlanMode: false,
+    initJsonSchema: null,
+    registeredHooks: null,
+    planSlugCache: new Map(),
   };
 }
 var STATE = getInitialState();
@@ -10468,6 +10471,7 @@ class Query {
   canUseTool;
   hooks;
   abortController;
+  jsonSchema;
   pendingControlResponses = new Map();
   cleanupPerformed = false;
   sdkMessages;
@@ -10488,12 +10492,14 @@ class Query {
     hooks,
     abortController,
     sdkMcpServers = new Map(),
+    jsonSchema,
   ) {
     this.transport = transport;
     this.isSingleUserTurn = isSingleUserTurn;
     this.canUseTool = canUseTool;
     this.hooks = hooks;
     this.abortController = abortController;
+    this.jsonSchema = jsonSchema;
     this.streamCloseTimeout = 60000;
     if (
       typeof process !== "undefined" &&
@@ -10729,6 +10735,7 @@ class Query {
       subtype: "initialize",
       hooks,
       sdkMcpServers,
+      jsonSchema: this.jsonSchema,
     };
     const response = await this.request(initRequest);
     return response.response;
@@ -19009,7 +19016,7 @@ function query({ prompt, options }) {
     const dirname2 = join3(filename, "..");
     pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.49";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.50";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19113,6 +19120,7 @@ function query({ prompt, options }) {
     hooks,
     abortController,
     sdkMcpServers,
+    jsonSchema,
   );
   if (typeof prompt === "string") {
     transport.write(
