@@ -576,6 +576,39 @@ export interface Query extends AsyncGenerator<SDKMessage, void> {
   supportedModels(): Promise<ModelInfo[]>;
   mcpServerStatus(): Promise<McpServerStatus[]>;
   accountInfo(): Promise<AccountInfo>;
+  /**
+   * Stream input messages to the query
+   * Used internally for multi-turn conversations
+   */
+  streamInput(stream: AsyncIterable<SDKUserMessage>): Promise<void>;
+}
+/**
+ * V2 API - UNSTABLE
+ * Options for creating a session
+ */
+export type SDKSessionOptions = {
+  /** Model to use */
+  model: string;
+  /** Path to Claude Code executable */
+  pathToClaudeCodeExecutable?: string;
+  /** Executable to use (node, bun, deno) */
+  executable?: "node" | "bun" | "deno";
+  /** Arguments to pass to executable */
+  executableArgs?: string[];
+};
+/**
+ * V2 API - UNSTABLE
+ * Session interface for multi-turn conversations
+ */
+export interface SDKSession {
+  /** Send a message to the agent */
+  send(message: string | SDKUserMessage): Promise<void>;
+  /** Receive messages from the agent */
+  receive(): AsyncGenerator<SDKMessage, void>;
+  /** Close the session */
+  close(): void;
+  /** Async disposal support (calls close if not already closed) */
+  [Symbol.asyncDispose](): Promise<void>;
 }
 type SdkMcpToolDefinition<Schema extends ZodRawShape = ZodRawShape> = {
   name: string;

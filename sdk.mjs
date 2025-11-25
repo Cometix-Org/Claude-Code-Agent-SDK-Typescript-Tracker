@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.50
+// Version: 0.1.52
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -36,6 +36,54 @@ var __export = (target, all) => {
       configurable: true,
       set: (newValue) => (all[name] = () => newValue),
     });
+};
+var __dispose = Symbol.dispose || /* @__PURE__ */ Symbol.for("Symbol.dispose");
+var __asyncDispose =
+  Symbol.asyncDispose || /* @__PURE__ */ Symbol.for("Symbol.asyncDispose");
+var __using = (stack, value, async) => {
+  if (value != null) {
+    if (typeof value !== "object" && typeof value !== "function")
+      throw TypeError('Object expected to be assigned to "using" declaration');
+    var dispose;
+    if (async) dispose = value[__asyncDispose];
+    if (dispose === undefined) dispose = value[__dispose];
+    if (typeof dispose !== "function") throw TypeError("Object not disposable");
+    stack.push([async, dispose, value]);
+  } else if (async) {
+    stack.push([async]);
+  }
+  return value;
+};
+var __callDispose = (stack, error, hasError) => {
+  var E =
+      typeof SuppressedError === "function"
+        ? SuppressedError
+        : function (e, s, m, _) {
+            return (
+              (_ = Error(m)),
+              (_.name = "SuppressedError"),
+              (_.error = e),
+              (_.suppressed = s),
+              _
+            );
+          },
+    fail = (e) =>
+      (error = hasError
+        ? new E(e, error, "An error was suppressed during disposal")
+        : ((hasError = true), e)),
+    next = (it) => {
+      while ((it = stack.pop())) {
+        try {
+          var result = it[1] && it[1].call(it[2]);
+          if (it[0])
+            return Promise.resolve(result).then(next, (e) => (fail(e), next()));
+        } catch (e) {
+          fail(e);
+        }
+      }
+      if (hasError) throw error;
+    };
+  return next();
 };
 
 // ../node_modules/uri-js/dist/es5/uri.all.js
@@ -9057,8 +9105,8 @@ var require_ajv = __commonJS((exports, module) => {
 });
 
 // ../src/entrypoints/agentSdk.ts
-import { join as join3 } from "path";
-import { fileURLToPath } from "url";
+import { join as join5 } from "path";
+import { fileURLToPath as fileURLToPath2 } from "url";
 
 // ../src/utils/abortController.ts
 import { setMaxListeners } from "events";
@@ -9224,6 +9272,59 @@ function isRunningWithBun() {
   return process.versions.bun !== undefined;
 }
 
+// ../src/utils/sdkDebug.ts
+import { randomUUID } from "crypto";
+import {
+  appendFileSync as appendFileSync2,
+  existsSync as existsSync2,
+  mkdirSync as mkdirSync2,
+} from "fs";
+import { join as join2 } from "path";
+
+// ../src/utils/envUtils.ts
+import { join } from "path";
+import { homedir } from "os";
+function getClaudeConfigHomeDir() {
+  return process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
+}
+function isEnvTruthy(envVar) {
+  if (!envVar) return false;
+  if (typeof envVar === "boolean") return envVar;
+  const normalizedValue = envVar.toLowerCase().trim();
+  return ["1", "true", "yes", "on"].includes(normalizedValue);
+}
+
+// ../src/utils/sdkDebug.ts
+var debugFilePath = null;
+var initialized = false;
+function getOrCreateDebugFile() {
+  if (initialized) {
+    return debugFilePath;
+  }
+  initialized = true;
+  if (!process.env.DEBUG_CLAUDE_AGENT_SDK) {
+    return null;
+  }
+  const debugDir = join2(getClaudeConfigHomeDir(), "debug");
+  debugFilePath = join2(debugDir, `sdk-${randomUUID()}.txt`);
+  if (!existsSync2(debugDir)) {
+    mkdirSync2(debugDir, { recursive: true });
+  }
+  process.stderr.write(`SDK debug logs: ${debugFilePath}
+`);
+  return debugFilePath;
+}
+function logForSdkDebugging(message) {
+  const path = getOrCreateDebugFile();
+  if (!path) {
+    return;
+  }
+  const timestamp = new Date().toISOString();
+  const output = `${timestamp} ${message}
+`;
+  appendFileSync2(path, output);
+}
+
 // ../src/transport/ProcessTransport.ts
 class ProcessTransport {
   options;
@@ -9297,7 +9398,9 @@ class ProcessTransport {
       if (jsonSchema) {
         args.push("--json-schema", JSON.stringify(jsonSchema));
       }
-      if (env.DEBUG) args.push("--debug-to-stderr");
+      if (env.DEBUG_CLAUDE_AGENT_SDK) {
+        args.push("--debug-to-stderr");
+      }
       if (canUseTool) {
         if (permissionPromptToolName) {
           throw new Error(
@@ -9373,6 +9476,12 @@ class ProcessTransport {
       if (!env.CLAUDE_CODE_ENTRYPOINT) {
         env.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
       }
+      delete env.NODE_OPTIONS;
+      if (env.DEBUG_CLAUDE_AGENT_SDK) {
+        env.DEBUG = "1";
+      } else {
+        delete env.DEBUG;
+      }
       const fs2 = getFsImplementation();
       if (!fs2.existsSync(pathToClaudeCodeExecutable)) {
         const errorMessage = isNativeBinary(pathToClaudeCodeExecutable)
@@ -9385,12 +9494,15 @@ class ProcessTransport {
       const spawnArgs = isNative
         ? [...executableArgs, ...args]
         : [...executableArgs, pathToClaudeCodeExecutable, ...args];
-      this.logForDebugging(
-        isNative
-          ? `Spawning Claude Code native binary: ${spawnCommand} ${spawnArgs.join(" ")}`
-          : `Spawning Claude Code process: ${spawnCommand} ${spawnArgs.join(" ")}`,
-      );
-      const stderrMode = env.DEBUG || stderr ? "pipe" : "ignore";
+      const spawnMessage = isNative
+        ? `Spawning Claude Code native binary: ${spawnCommand} ${spawnArgs.join(" ")}`
+        : `Spawning Claude Code process: ${spawnCommand} ${spawnArgs.join(" ")}`;
+      logForSdkDebugging(spawnMessage);
+      if (stderr) {
+        stderr(spawnMessage);
+      }
+      const stderrMode =
+        env.DEBUG_CLAUDE_AGENT_SDK || stderr ? "pipe" : "ignore";
       this.child = spawn(spawnCommand, spawnArgs, {
         cwd,
         stdio: ["pipe", "pipe", stderrMode],
@@ -9399,9 +9511,13 @@ class ProcessTransport {
       });
       this.childStdin = this.child.stdin;
       this.childStdout = this.child.stdout;
-      if (env.DEBUG || stderr) {
+      if (env.DEBUG_CLAUDE_AGENT_SDK || stderr) {
         this.child.stderr.on("data", (data) => {
-          this.logForDebugging(data.toString());
+          const message = data.toString();
+          logForSdkDebugging(message);
+          if (stderr) {
+            stderr(message);
+          }
         });
       }
       const cleanup = () => {
@@ -9423,7 +9539,7 @@ class ProcessTransport {
           this.exitError = new Error(
             `Failed to spawn Claude Code process: ${error.message}`,
           );
-          this.logForDebugging(this.exitError.message);
+          logForSdkDebugging(this.exitError.message);
         }
       });
       this.child.on("close", (code, signal) => {
@@ -9436,7 +9552,7 @@ class ProcessTransport {
           const error = this.getProcessExitError(code, signal);
           if (error) {
             this.exitError = error;
-            this.logForDebugging(error.message);
+            logForSdkDebugging(error.message);
           }
         }
       });
@@ -9454,15 +9570,6 @@ class ProcessTransport {
     }
     return;
   }
-  logForDebugging(message) {
-    if (process.env.DEBUG) {
-      process.stderr.write(`${message}
-`);
-    }
-    if (this.options.stderr) {
-      this.options.stderr(message);
-    }
-  }
   write(data) {
     if (this.abortController.signal.aborted) {
       throw new AbortError("Operation aborted");
@@ -9478,15 +9585,13 @@ class ProcessTransport {
         `Cannot write to process that exited with error: ${this.exitError.message}`,
       );
     }
-    if (process.env.DEBUG_SDK) {
-      process.stderr
-        .write(`[ProcessTransport] Writing to stdin: ${data.substring(0, 100)}
-`);
-    }
+    logForSdkDebugging(
+      `[ProcessTransport] Writing to stdin: ${data.substring(0, 100)}`,
+    );
     try {
       const written = this.childStdin.write(data);
-      if (!written && process.env.DEBUG_SDK) {
-        console.warn("[ProcessTransport] Write buffer full, data queued");
+      if (!written) {
+        logForSdkDebugging("[ProcessTransport] Write buffer full, data queued");
       }
     } catch (error) {
       this.ready = false;
@@ -10225,26 +10330,13 @@ function shouldShowDebugMessage(message, filter) {
   return shouldShowDebugCategories(categories, filter);
 }
 
-// ../src/utils/envUtils.ts
-import { join } from "path";
-import { homedir } from "os";
-function getClaudeConfigHomeDir() {
-  return process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
-}
-function isEnvTruthy(envVar) {
-  if (!envVar) return false;
-  if (typeof envVar === "boolean") return envVar;
-  const normalizedValue = envVar.toLowerCase().trim();
-  return ["1", "true", "yes", "on"].includes(normalizedValue);
-}
-
 // ../src/utils/debug.ts
-import { dirname, join as join2 } from "path";
+import { dirname, join as join3 } from "path";
 
 // ../src/bootstrap/state.ts
 import { cwd } from "process";
 import { realpathSync as realpathSync2 } from "fs";
-import { randomUUID } from "crypto";
+import { randomUUID as randomUUID2 } from "crypto";
 
 // ../src/bootstrap/envValidators.ts
 var bashMaxOutputLengthValidator = {
@@ -10349,7 +10441,7 @@ function getInitialState() {
     tokenCounter: null,
     codeEditToolDecisionCounter: null,
     activeTimeCounter: null,
-    sessionId: randomUUID(),
+    sessionId: randomUUID2(),
     loggerProvider: null,
     eventLogger: null,
     meterProvider: null,
@@ -10370,6 +10462,58 @@ function getInitialState() {
 var STATE = getInitialState();
 function getSessionId() {
   return STATE.sessionId;
+}
+
+// ../src/utils/bufferedWriter.ts
+function createBufferedWriter({
+  writeFn,
+  flushIntervalMs = 1000,
+  maxBufferSize = 100,
+  immediateMode = false,
+}) {
+  let buffer = [];
+  let flushTimer = null;
+  function clearTimer() {
+    if (flushTimer) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+  }
+  function flush() {
+    if (buffer.length === 0) return;
+    writeFn(buffer.join(""));
+    buffer = [];
+    clearTimer();
+  }
+  function scheduleFlush() {
+    if (!flushTimer) {
+      flushTimer = setTimeout(flush, flushIntervalMs);
+    }
+  }
+  return {
+    write(content) {
+      if (immediateMode) {
+        writeFn(content);
+        return;
+      }
+      buffer.push(content);
+      scheduleFlush();
+      if (buffer.length >= maxBufferSize) {
+        flush();
+      }
+    },
+    flush,
+    dispose() {
+      flush();
+    },
+  };
+}
+
+// ../src/utils/cleanupRegistry.ts
+var cleanupFunctions = new Set();
+function registerCleanup(cleanupFn) {
+  cleanupFunctions.add(cleanupFn);
+  return () => cleanupFunctions.delete(cleanupFn);
 }
 
 // ../src/utils/debug.ts
@@ -10410,6 +10554,26 @@ function shouldLogDebugMessage(message) {
   return shouldShowDebugMessage(message, filter);
 }
 var hasFormattedOutput = false;
+var debugWriter = null;
+function getDebugWriter() {
+  if (!debugWriter) {
+    debugWriter = createBufferedWriter({
+      writeFn: (content) => {
+        const path = getDebugLogPath();
+        if (!getFsImplementation().existsSync(dirname(path))) {
+          getFsImplementation().mkdirSync(dirname(path));
+        }
+        getFsImplementation().appendFileSync(path, content);
+        updateLatestDebugLogSymlink();
+      },
+      flushIntervalMs: 1000,
+      maxBufferSize: 100,
+      immediateMode: isDebugMode(),
+    });
+    registerCleanup(async () => debugWriter?.dispose());
+  }
+  return debugWriter;
+}
 function logForDebugging(
   message,
   { level } = {
@@ -10433,23 +10597,19 @@ function logForDebugging(
     writeToStderr(output);
     return;
   }
-  if (!getFsImplementation().existsSync(dirname(getDebugLogPath()))) {
-    getFsImplementation().mkdirSync(dirname(getDebugLogPath()));
-  }
-  getFsImplementation().appendFileSync(getDebugLogPath(), output);
-  updateLatestDebugLogSymlink();
+  getDebugWriter().write(output);
 }
 function getDebugLogPath() {
   return (
     process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    join2(getClaudeConfigHomeDir(), "debug", `${getSessionId()}.txt`)
+    join3(getClaudeConfigHomeDir(), "debug", `${getSessionId()}.txt`)
   );
 }
 var updateLatestDebugLogSymlink = memoize_default(() => {
   try {
     const debugLogPath = getDebugLogPath();
     const debugLogsDir = dirname(debugLogPath);
-    const latestSymlinkPath = join2(debugLogsDir, "latest");
+    const latestSymlinkPath = join3(debugLogsDir, "latest");
     if (!getFsImplementation().existsSync(debugLogsDir)) {
       getFsImplementation().mkdirSync(debugLogsDir);
     }
@@ -10463,7 +10623,7 @@ var updateLatestDebugLogSymlink = memoize_default(() => {
 });
 
 // ../src/core/Query.ts
-import { randomUUID as randomUUID2 } from "crypto";
+import { randomUUID as randomUUID3 } from "crypto";
 
 class Query {
   transport;
@@ -10910,7 +11070,7 @@ class Query {
     }
     const controlRequest = {
       type: "control_request",
-      request_id: randomUUID2(),
+      request_id: randomUUID3(),
       request: {
         subtype: "mcp_message",
         server_name: serverName,
@@ -10951,6 +11111,118 @@ class Query {
       }
     });
   }
+}
+
+// ../src/core/Session.ts
+import { join as join4 } from "path";
+import { fileURLToPath } from "url";
+class SessionImpl {
+  closed = false;
+  inputStream;
+  query;
+  queryIterator = null;
+  abortController;
+  constructor(options) {
+    this.inputStream = new Stream();
+    let pathToClaudeCodeExecutable = options.pathToClaudeCodeExecutable;
+    if (!pathToClaudeCodeExecutable) {
+      const filename = fileURLToPath(import.meta.url);
+      const dirname2 = join4(filename, "..");
+      pathToClaudeCodeExecutable = join4(dirname2, "cli.js");
+    }
+    const processEnv = { ...process.env };
+    if (!processEnv.CLAUDE_CODE_ENTRYPOINT) {
+      processEnv.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
+    }
+    this.abortController = createAbortController();
+    const transport = new ProcessTransport({
+      abortController: this.abortController,
+      pathToClaudeCodeExecutable,
+      env: processEnv,
+      executable: options.executable ?? (isRunningWithBun() ? "bun" : "node"),
+      executableArgs: options.executableArgs ?? [],
+      extraArgs: {},
+      customSystemPrompt: "",
+      maxThinkingTokens: undefined,
+      maxTurns: undefined,
+      maxBudgetUsd: undefined,
+      model: options.model,
+      fallbackModel: undefined,
+      permissionMode: "default",
+      allowDangerouslySkipPermissions: false,
+      continueConversation: false,
+      resume: options.resume,
+      settingSources: [],
+      allowedTools: [],
+      disallowedTools: [],
+      mcpServers: {},
+      strictMcpConfig: false,
+      canUseTool: false,
+      hooks: false,
+      includePartialMessages: false,
+      forkSession: false,
+      resumeSessionAt: undefined,
+    });
+    this.query = new Query(
+      transport,
+      false,
+      undefined,
+      undefined,
+      this.abortController,
+      new Map(),
+    );
+    this.query.streamInput(this.inputStream);
+  }
+  async send(message) {
+    if (this.closed) {
+      throw new Error("Cannot send to closed session");
+    }
+    const userMessage =
+      typeof message === "string"
+        ? {
+            type: "user",
+            session_id: "",
+            message: {
+              role: "user",
+              content: [{ type: "text", text: message }],
+            },
+            parent_tool_use_id: null,
+          }
+        : message;
+    this.inputStream.enqueue(userMessage);
+  }
+  async *receive() {
+    if (!this.queryIterator) {
+      this.queryIterator = this.query[Symbol.asyncIterator]();
+    }
+    while (true) {
+      const { value, done } = await this.queryIterator.next();
+      if (done) {
+        return;
+      }
+      yield value;
+      if (value.type === "result") {
+        return;
+      }
+    }
+  }
+  close() {
+    if (this.closed) {
+      return;
+    }
+    this.closed = true;
+    this.inputStream.done();
+    this.abortController.abort();
+  }
+  async [Symbol.asyncDispose]() {
+    this.close();
+  }
+}
+function createSession(options) {
+  return new SessionImpl(options);
+}
+function resumeSession(sessionId, options) {
+  return new SessionImpl({ ...options, resume: sessionId });
 }
 
 // ../node_modules/zod/v3/external.js
@@ -18997,7 +19269,6 @@ function createSdkMcpServer(options) {
     instance: server,
   };
 }
-
 // ../src/entrypoints/agentSdk.ts
 function query({ prompt, options }) {
   const { systemPrompt, settingSources, ...rest } = options ?? {};
@@ -19012,11 +19283,11 @@ function query({ prompt, options }) {
   }
   let pathToClaudeCodeExecutable = rest.pathToClaudeCodeExecutable;
   if (!pathToClaudeCodeExecutable) {
-    const filename = fileURLToPath(import.meta.url);
-    const dirname2 = join3(filename, "..");
-    pathToClaudeCodeExecutable = join3(dirname2, "cli.js");
+    const filename = fileURLToPath2(import.meta.url);
+    const dirname2 = join5(filename, "..");
+    pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.50";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.52";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19141,7 +19412,35 @@ function query({ prompt, options }) {
   }
   return queryInstance;
 }
+function unstable_v2_createSession(options) {
+  return createSession(options);
+}
+function unstable_v2_resumeSession(sessionId, options) {
+  return resumeSession(sessionId, options);
+}
+async function unstable_v2_prompt(message, options) {
+  let __stack = [];
+  try {
+    const session = __using(__stack, createSession(options), 1);
+    await session.send(message);
+    for await (const msg of session.receive()) {
+      if (msg.type === "result") {
+        return msg;
+      }
+    }
+    throw new Error("Session ended without result message");
+  } catch (_catch) {
+    var _err = _catch,
+      _hasErr = 1;
+  } finally {
+    var _promise = __callDispose(__stack, _err, _hasErr);
+    _promise && (await _promise);
+  }
+}
 export {
+  unstable_v2_resumeSession,
+  unstable_v2_prompt,
+  unstable_v2_createSession,
   tool,
   query,
   createSdkMcpServer,
