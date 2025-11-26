@@ -68,7 +68,8 @@ type PermissionUpdateDestination =
   | "userSettings"
   | "projectSettings"
   | "localSettings"
-  | "session";
+  | "session"
+  | "cliArg";
 export type PermissionBehavior = "allow" | "deny" | "ask";
 export type PermissionUpdate =
   | {
@@ -232,6 +233,7 @@ export type PermissionRequestHookInput = BaseHookInput & {
   hook_event_name: "PermissionRequest";
   tool_name: string;
   tool_input: unknown;
+  permission_suggestions?: PermissionUpdate[];
 };
 export type PostToolUseHookInput = BaseHookInput & {
   hook_event_name: "PostToolUse";
@@ -333,6 +335,7 @@ export type SyncHookJSONOutput = {
           | {
               behavior: "allow";
               updatedInput?: Record<string, unknown>;
+              updatedPermissions?: PermissionUpdate[];
             }
           | {
               behavior: "deny";
@@ -346,7 +349,8 @@ export type PermissionMode =
   | "default"
   | "acceptEdits"
   | "bypassPermissions"
-  | "plan";
+  | "plan"
+  | "dontAsk";
 export type SlashCommand = {
   name: string;
   description: string;
@@ -725,4 +729,34 @@ export declare function query(_params: {
   prompt: string | AsyncIterable<SDKUserMessage>;
   options?: Options;
 }): Query;
+/**
+ * V2 API - UNSTABLE
+ * Create a persistent session for multi-turn conversations
+ */
+export declare function unstable_v2_createSession(
+  _options: SDKSessionOptions,
+): SDKSession;
+/**
+ * V2 API - UNSTABLE
+ * Resume an existing session by ID
+ */
+export declare function unstable_v2_resumeSession(
+  _sessionId: string,
+  _options: SDKSessionOptions,
+): SDKSession;
+/**
+ * V2 API - UNSTABLE
+ * One-shot convenience function for single prompts
+ *
+ * @example
+ * ```typescript
+ * const result = await unstable_v2_prompt("What files are here?", {
+ *   model: 'claude-sonnet-4-5-20250929'
+ * })
+ * ```
+ */
+export declare function unstable_v2_prompt(
+  _message: string,
+  _options: SDKSessionOptions,
+): Promise<SDKResultMessage>;
 export {};
