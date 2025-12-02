@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.55
+// Version: 0.1.56
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9248,6 +9248,7 @@ function getFsImplementation() {
 var HOOK_EVENTS = [
   "PreToolUse",
   "PostToolUse",
+  "PostToolUseFailure",
   "Notification",
   "UserPromptSubmit",
   "SessionStart",
@@ -9346,7 +9347,6 @@ class ProcessTransport {
     try {
       const {
         additionalDirectories = [],
-        agents,
         cwd,
         executable = isRunningWithBun() ? "bun" : "node",
         executableArgs = [],
@@ -9354,8 +9354,6 @@ class ProcessTransport {
         pathToClaudeCodeExecutable,
         env = { ...process.env },
         stderr,
-        customSystemPrompt,
-        appendSystemPrompt,
         maxThinkingTokens,
         maxTurns,
         maxBudgetUsd,
@@ -9383,10 +9381,6 @@ class ProcessTransport {
         "--input-format",
         "stream-json",
       ];
-      if (typeof customSystemPrompt === "string")
-        args.push("--system-prompt", customSystemPrompt);
-      if (appendSystemPrompt)
-        args.push("--append-system-prompt", appendSystemPrompt);
       if (maxThinkingTokens !== undefined) {
         args.push("--max-thinking-tokens", maxThinkingTokens.toString());
       }
@@ -9421,9 +9415,6 @@ class ProcessTransport {
       }
       if (mcpServers && Object.keys(mcpServers).length > 0) {
         args.push("--mcp-config", JSON.stringify({ mcpServers }));
-      }
-      if (agents && Object.keys(agents).length > 0) {
-        args.push("--agents", JSON.stringify(agents));
       }
       if (settingSources) {
         args.push("--setting-sources", settingSources.join(","));
@@ -10632,6 +10623,7 @@ class Query {
   hooks;
   abortController;
   jsonSchema;
+  initConfig;
   pendingControlResponses = new Map();
   cleanupPerformed = false;
   sdkMessages;
@@ -10653,6 +10645,7 @@ class Query {
     abortController,
     sdkMcpServers = new Map(),
     jsonSchema,
+    initConfig,
   ) {
     this.transport = transport;
     this.isSingleUserTurn = isSingleUserTurn;
@@ -10660,6 +10653,7 @@ class Query {
     this.hooks = hooks;
     this.abortController = abortController;
     this.jsonSchema = jsonSchema;
+    this.initConfig = initConfig;
     this.streamCloseTimeout = 60000;
     if (
       typeof process !== "undefined" &&
@@ -10896,6 +10890,9 @@ class Query {
       hooks,
       sdkMcpServers,
       jsonSchema: this.jsonSchema,
+      systemPrompt: this.initConfig?.systemPrompt,
+      appendSystemPrompt: this.initConfig?.appendSystemPrompt,
+      agents: this.initConfig?.agents,
     };
     const response = await this.request(initRequest);
     return response.response;
@@ -11142,7 +11139,6 @@ class SessionImpl {
       executable: options.executable ?? (isRunningWithBun() ? "bun" : "node"),
       executableArgs: options.executableArgs ?? [],
       extraArgs: {},
-      customSystemPrompt: "",
       maxThinkingTokens: undefined,
       maxTurns: undefined,
       maxBudgetUsd: undefined,
@@ -19287,7 +19283,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.55";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.56";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19351,7 +19347,6 @@ function query({ prompt, options }) {
   const transport = new ProcessTransport({
     abortController,
     additionalDirectories,
-    agents,
     cwd: cwd2,
     executable,
     executableArgs,
@@ -19360,8 +19355,6 @@ function query({ prompt, options }) {
     env: processEnv,
     forkSession,
     stderr,
-    customSystemPrompt,
-    appendSystemPrompt,
     maxThinkingTokens,
     maxTurns,
     maxBudgetUsd,
@@ -19384,6 +19377,11 @@ function query({ prompt, options }) {
     includePartialMessages,
     plugins,
   });
+  const initConfig = {
+    systemPrompt: customSystemPrompt,
+    appendSystemPrompt,
+    agents,
+  };
   const queryInstance = new Query(
     transport,
     isSingleUserTurn,
@@ -19392,6 +19390,7 @@ function query({ prompt, options }) {
     abortController,
     sdkMcpServers,
     jsonSchema,
+    initConfig,
   );
   if (typeof prompt === "string") {
     transport.write(

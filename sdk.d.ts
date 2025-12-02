@@ -193,6 +193,7 @@ export type CanUseTool = (
 export declare const HOOK_EVENTS: readonly [
   "PreToolUse",
   "PostToolUse",
+  "PostToolUseFailure",
   "Notification",
   "UserPromptSubmit",
   "SessionStart",
@@ -242,6 +243,14 @@ export type PostToolUseHookInput = BaseHookInput & {
   tool_response: unknown;
   tool_use_id: string;
 };
+export type PostToolUseFailureHookInput = BaseHookInput & {
+  hook_event_name: "PostToolUseFailure";
+  tool_name: string;
+  tool_input: unknown;
+  tool_use_id: string;
+  error: string;
+  is_interrupt?: boolean;
+};
 export type NotificationHookInput = BaseHookInput & {
   hook_event_name: "Notification";
   message: string;
@@ -285,6 +294,7 @@ export type SessionEndHookInput = BaseHookInput & {
 export type HookInput =
   | PreToolUseHookInput
   | PostToolUseHookInput
+  | PostToolUseFailureHookInput
   | NotificationHookInput
   | UserPromptSubmitHookInput
   | SessionStartHookInput
@@ -328,6 +338,10 @@ export type SyncHookJSONOutput = {
         hookEventName: "PostToolUse";
         additionalContext?: string;
         updatedMCPToolOutput?: unknown;
+      }
+    | {
+        hookEventName: "PostToolUseFailure";
+        additionalContext?: string;
       }
     | {
         hookEventName: "PermissionRequest";
