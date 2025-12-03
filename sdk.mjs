@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
 
-// Version: 0.1.56
+// Version: 0.1.57
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9326,6 +9326,22 @@ function logForSdkDebugging(message) {
   appendFileSync2(path, output);
 }
 
+// ../src/transport/sandboxUtils.ts
+function mergeSandboxIntoExtraArgs(extraArgs, sandbox) {
+  const effectiveExtraArgs = { ...extraArgs };
+  if (sandbox) {
+    let settingsObj = { sandbox };
+    if (effectiveExtraArgs.settings) {
+      try {
+        const existingSettings = JSON.parse(effectiveExtraArgs.settings);
+        settingsObj = { ...existingSettings, sandbox };
+      } catch {}
+    }
+    effectiveExtraArgs.settings = JSON.stringify(settingsObj);
+  }
+  return effectiveExtraArgs;
+}
+
 // ../src/transport/ProcessTransport.ts
 class ProcessTransport {
   options;
@@ -9373,6 +9389,7 @@ class ProcessTransport {
         canUseTool,
         includePartialMessages,
         plugins,
+        sandbox,
       } = this.options;
       const args = [
         "--output-format",
@@ -9412,6 +9429,18 @@ class ProcessTransport {
       }
       if (disallowedTools.length > 0) {
         args.push("--disallowedTools", disallowedTools.join(","));
+      }
+      const { tools } = this.options;
+      if (tools !== undefined) {
+        if (Array.isArray(tools)) {
+          if (tools.length === 0) {
+            args.push("--tools", "");
+          } else {
+            args.push("--tools", tools.join(","));
+          }
+        } else {
+          args.push("--tools", "default");
+        }
       }
       if (mcpServers && Object.keys(mcpServers).length > 0) {
         args.push("--mcp-config", JSON.stringify({ mcpServers }));
@@ -9457,7 +9486,11 @@ class ProcessTransport {
       if (this.options.resumeSessionAt) {
         args.push("--resume-session-at", this.options.resumeSessionAt);
       }
-      for (const [flag, value] of Object.entries(extraArgs)) {
+      const effectiveExtraArgs = mergeSandboxIntoExtraArgs(
+        extraArgs ?? {},
+        sandbox,
+      );
+      for (const [flag, value] of Object.entries(effectiveExtraArgs)) {
         if (value === null) {
           args.push(`--${flag}`);
         } else {
@@ -19267,7 +19300,7 @@ function createSdkMcpServer(options) {
 }
 // ../src/entrypoints/agentSdk.ts
 function query({ prompt, options }) {
-  const { systemPrompt, settingSources, ...rest } = options ?? {};
+  const { systemPrompt, settingSources, sandbox, ...rest } = options ?? {};
   let customSystemPrompt;
   let appendSystemPrompt;
   if (systemPrompt === undefined) {
@@ -19283,7 +19316,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.56";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.57";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19293,6 +19326,7 @@ function query({ prompt, options }) {
     continue: continueConversation,
     cwd: cwd2,
     disallowedTools = [],
+    tools,
     env,
     executable = isRunningWithBun() ? "bun" : "node",
     executableArgs = [],
@@ -19370,12 +19404,14 @@ function query({ prompt, options }) {
     settingSources: settingSources ?? [],
     allowedTools,
     disallowedTools,
+    tools,
     mcpServers: allMcpServers,
     strictMcpConfig,
     canUseTool: !!canUseTool,
     hooks: !!hooks,
     includePartialMessages,
     plugins,
+    sandbox,
   });
   const initConfig = {
     systemPrompt: customSystemPrompt,

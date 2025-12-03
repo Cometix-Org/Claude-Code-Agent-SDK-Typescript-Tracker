@@ -8,6 +8,12 @@ import type { UUID } from "crypto";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type z, type ZodRawShape, type ZodObject } from "zod";
+import type {
+  SandboxSettings,
+  SandboxNetworkConfig,
+  SandboxIgnoreViolations,
+} from "./sandboxTypes.js";
+export type { SandboxSettings, SandboxNetworkConfig, SandboxIgnoreViolations };
 export type NonNullableUsage = {
   [K in keyof Usage]: NonNullable<Usage[K]>;
 };
@@ -682,6 +688,18 @@ export type Options = {
   continue?: boolean;
   cwd?: string;
   disallowedTools?: string[];
+  /**
+   * Specify the base set of available built-in tools.
+   * - `string[]` - Array of specific tool names (e.g., `['Bash', 'Read', 'Edit']`)
+   * - `[]` (empty array) - Disable all built-in tools
+   * - `{ type: 'preset'; preset: 'claude_code' }` - Use all default Claude Code tools
+   */
+  tools?:
+    | string[]
+    | {
+        type: "preset";
+        preset: "claude_code";
+      };
   env?: {
     [envVar: string]: string | undefined;
   };
@@ -728,6 +746,42 @@ export type Options = {
    * The message ID is expected to be from SDKAssistantMessage.uuid.
    */
   resumeSessionAt?: string;
+  /**
+   * Sandbox settings for command execution isolation.
+   *
+   * When enabled, commands are executed in a sandboxed environment that restricts
+   * filesystem and network access. This provides an additional security layer.
+   *
+   * **Important:** Filesystem and network restrictions are configured via permission
+   * rules, not via these sandbox settings:
+   * - Filesystem access: Use `Read` and `Edit` permission rules
+   * - Network access: Use `WebFetch` permission rules
+   *
+   * These sandbox settings control sandbox behavior (enabled, auto-allow, etc.),
+   * while the actual access restrictions come from your permission configuration.
+   *
+   * @example Enable sandboxing with auto-allow
+   * ```typescript
+   * sandbox: {
+   *   enabled: true,
+   *   autoAllowBashIfSandboxed: true
+   * }
+   * ```
+   *
+   * @example Configure network options (not restrictions)
+   * ```typescript
+   * sandbox: {
+   *   enabled: true,
+   *   network: {
+   *     allowLocalBinding: true,
+   *     allowUnixSockets: ['/var/run/docker.sock']
+   *   }
+   * }
+   * ```
+   *
+   * @see https://docs.anthropic.com/en/docs/claude-code/settings#sandbox-settings
+   */
+  sandbox?: SandboxSettings;
   settingSources?: SettingSource[];
   stderr?: (data: string) => void;
   strictMcpConfig?: boolean;
@@ -773,4 +827,3 @@ export declare function unstable_v2_prompt(
   _message: string,
   _options: SDKSessionOptions,
 ): Promise<SDKResultMessage>;
-export {};
