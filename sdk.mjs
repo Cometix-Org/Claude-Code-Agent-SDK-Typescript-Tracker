@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://docs.claude.com/en/docs/claude-code/legal-and-compliance.
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.57
+// Version: 0.1.58
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9363,6 +9363,7 @@ class ProcessTransport {
     try {
       const {
         additionalDirectories = [],
+        betas,
         cwd,
         executable = isRunningWithBun() ? "bun" : "node",
         executableArgs = [],
@@ -9406,6 +9407,9 @@ class ProcessTransport {
         args.push("--max-budget-usd", maxBudgetUsd.toString());
       }
       if (model) args.push("--model", model);
+      if (betas && betas.length > 0) {
+        args.push("--betas", betas.join(","));
+      }
       if (jsonSchema) {
         args.push("--json-schema", JSON.stringify(jsonSchema));
       }
@@ -19316,12 +19320,13 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.57";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.58";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
     agents,
     allowedTools = [],
+    betas,
     canUseTool,
     continue: continueConversation,
     cwd: cwd2,
@@ -19381,6 +19386,7 @@ function query({ prompt, options }) {
   const transport = new ProcessTransport({
     abortController,
     additionalDirectories,
+    betas,
     cwd: cwd2,
     executable,
     executableArgs,

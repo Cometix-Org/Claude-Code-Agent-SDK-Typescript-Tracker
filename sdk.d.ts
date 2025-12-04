@@ -37,6 +37,10 @@ export type JsonSchemaOutputFormat = BaseOutputFormat & {
 export type OutputFormat = JsonSchemaOutputFormat;
 export type ApiKeySource = "user" | "project" | "org" | "temporary";
 export type ConfigScope = "local" | "user" | "project";
+/**
+ * Allowed beta headers that can be passed via SDK options.
+ */
+export type SdkBeta = "context-1m-2025-08-07";
 export type McpStdioServerConfig = {
   type?: "stdio";
   command: string;
@@ -493,6 +497,7 @@ export type SDKSystemMessage = {
   subtype: "init";
   agents?: string[];
   apiKeySource: ApiKeySource;
+  betas?: string[];
   claude_code_version: string;
   cwd: string;
   tools: string[];
@@ -673,6 +678,7 @@ export type AgentDefinition = {
   disallowedTools?: string[];
   prompt: string;
   model?: "sonnet" | "opus" | "haiku" | "inherit";
+  criticalSystemReminder_EXPERIMENTAL?: string;
 };
 export type SettingSource = "user" | "project" | "local";
 export type SdkPluginConfig = {
@@ -712,6 +718,7 @@ export type Options = {
    * continuing the previous session. Use with --resume.
    */
   forkSession?: boolean;
+  betas?: SdkBeta[];
   hooks?: Partial<Record<HookEvent, HookCallbackMatcher[]>>;
   includePartialMessages?: boolean;
   maxThinkingTokens?: number;
