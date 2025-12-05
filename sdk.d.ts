@@ -369,20 +369,40 @@ export type SyncHookJSONOutput = {
       };
 };
 export type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
+/**
+ * Permission mode for controlling how tool executions are handled.
+ * - `'default'` - Standard behavior, prompts for dangerous operations
+ * - `'acceptEdits'` - Auto-accept file edit operations
+ * - `'bypassPermissions'` - Bypass all permission checks (requires `allowDangerouslySkipPermissions`)
+ * - `'plan'` - Planning mode, no actual tool execution
+ * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
+ */
 export type PermissionMode =
   | "default"
   | "acceptEdits"
   | "bypassPermissions"
   | "plan"
   | "dontAsk";
+/**
+ * Information about an available slash command.
+ */
 export type SlashCommand = {
+  /** Command name (without the leading slash) */
   name: string;
+  /** Description of what the command does */
   description: string;
+  /** Hint for command arguments (e.g., "<file>") */
   argumentHint: string;
 };
+/**
+ * Information about an available model.
+ */
 export type ModelInfo = {
+  /** Model identifier to use in API calls */
   value: string;
+  /** Human-readable display name */
   displayName: string;
+  /** Description of the model's capabilities */
   description: string;
 };
 /** Information about the logged in user's account. */
@@ -393,9 +413,15 @@ export type AccountInfo = {
   tokenSource?: string;
   apiKeySource?: string;
 };
+/**
+ * Status information for an MCP server connection.
+ */
 export type McpServerStatus = {
+  /** Server name as configured */
   name: string;
+  /** Current connection status */
   status: "connected" | "failed" | "needs-auth" | "pending";
+  /** Server information (available when connected) */
   serverInfo?: {
     name: string;
     version: string;
@@ -588,8 +614,24 @@ export interface Query extends AsyncGenerator<SDKMessage, void> {
    * The following methods are control requests, and are only supported when
    * streaming input/output is used.
    */
+  /**
+   * Interrupt the current query execution. The query will stop processing
+   * and return control to the caller.
+   */
   interrupt(): Promise<void>;
+  /**
+   * Change the permission mode for the current session.
+   * Only available in streaming input mode.
+   *
+   * @param mode - The new permission mode to set
+   */
   setPermissionMode(mode: PermissionMode): Promise<void>;
+  /**
+   * Change the model used for subsequent responses.
+   * Only available in streaming input mode.
+   *
+   * @param model - The model identifier to use, or undefined to use the default
+   */
   setModel(model?: string): Promise<void>;
   /**
    * Set the maximum number of thinking tokens the model is allowed to use
@@ -599,15 +641,39 @@ export interface Query extends AsyncGenerator<SDKMessage, void> {
    *
    * Use `null` to clear any previously set limit and allow the model to
    * use the default maximum thinking tokens.
+   *
+   * @param maxThinkingTokens - Maximum tokens for thinking, or null to clear the limit
    */
   setMaxThinkingTokens(maxThinkingTokens: number | null): Promise<void>;
+  /**
+   * Get the list of available slash commands for the current session.
+   *
+   * @returns Array of available slash commands with their names and descriptions
+   */
   supportedCommands(): Promise<SlashCommand[]>;
+  /**
+   * Get the list of available models.
+   *
+   * @returns Array of model information including display names and descriptions
+   */
   supportedModels(): Promise<ModelInfo[]>;
+  /**
+   * Get the current status of all configured MCP servers.
+   *
+   * @returns Array of MCP server statuses (connected, failed, needs-auth, pending)
+   */
   mcpServerStatus(): Promise<McpServerStatus[]>;
+  /**
+   * Get information about the authenticated account.
+   *
+   * @returns Account information including email, organization, and subscription type
+   */
   accountInfo(): Promise<AccountInfo>;
   /**
-   * Stream input messages to the query
-   * Used internally for multi-turn conversations
+   * Stream input messages to the query.
+   * Used internally for multi-turn conversations.
+   *
+   * @param stream - Async iterable of user messages to send
    */
   streamInput(stream: AsyncIterable<SDKUserMessage>): Promise<void>;
 }
@@ -672,27 +738,89 @@ export declare function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,
 ): McpSdkServerConfigWithInstance;
 export declare class AbortError extends Error {}
+/**
+ * Definition for a custom subagent that can be invoked via the Task tool.
+ */
 export type AgentDefinition = {
+  /** Natural language description of when to use this agent */
   description: string;
+  /** Array of allowed tool names. If omitted, inherits all tools from parent */
   tools?: string[];
+  /** Array of tool names to explicitly disallow for this agent */
   disallowedTools?: string[];
+  /** The agent's system prompt */
   prompt: string;
+  /** Model to use for this agent. If omitted or 'inherit', uses the main model */
   model?: "sonnet" | "opus" | "haiku" | "inherit";
+  /** Experimental: Critical reminder added to system prompt */
   criticalSystemReminder_EXPERIMENTAL?: string;
 };
+/**
+ * Source for loading filesystem-based settings.
+ * - `'user'` - Global user settings (`~/.claude/settings.json`)
+ * - `'project'` - Project settings (`.claude/settings.json`)
+ * - `'local'` - Local settings (`.claude/settings.local.json`)
+ */
 export type SettingSource = "user" | "project" | "local";
+/**
+ * Configuration for loading a plugin.
+ */
 export type SdkPluginConfig = {
+  /** Plugin type. Currently only 'local' is supported */
   type: "local";
+  /** Absolute or relative path to the plugin directory */
   path: string;
 };
 export type Options = {
+  /**
+   * Controller for cancelling the query. When aborted, the query will stop
+   * and clean up resources.
+   */
   abortController?: AbortController;
+  /**
+   * Additional directories Claude can access beyond the current working directory.
+   * Paths should be absolute.
+   */
   additionalDirectories?: string[];
+  /**
+   * Programmatically define custom subagents that can be invoked via the Task tool.
+   * Keys are agent names, values are agent definitions.
+   *
+   * @example
+   * ```typescript
+   * agents: {
+   *   'code-reviewer': {
+   *     description: 'Reviews code for bugs and style issues',
+   *     prompt: 'You are a code reviewer...',
+   *     tools: ['Read', 'Grep', 'Glob']
+   *   }
+   * }
+   * ```
+   */
   agents?: Record<string, AgentDefinition>;
+  /**
+   * List of tool names that are allowed. When specified, only these tools
+   * will be available. Use with `disallowedTools` to fine-tune tool access.
+   */
   allowedTools?: string[];
+  /**
+   * Custom permission handler for controlling tool usage. Called before each
+   * tool execution to determine if it should be allowed, denied, or prompt the user.
+   */
   canUseTool?: CanUseTool;
+  /**
+   * Continue the most recent conversation instead of starting a new one.
+   * Mutually exclusive with `resume`.
+   */
   continue?: boolean;
+  /**
+   * Current working directory for the session. Defaults to `process.cwd()`.
+   */
   cwd?: string;
+  /**
+   * List of tool names that are disallowed. These tools will not be available
+   * even if they would otherwise be allowed.
+   */
   disallowedTools?: string[];
   /**
    * Specify the base set of available built-in tools.
@@ -706,30 +834,133 @@ export type Options = {
         type: "preset";
         preset: "claude_code";
       };
+  /**
+   * Environment variables to pass to the Claude Code process.
+   * Defaults to `process.env`.
+   */
   env?: {
     [envVar: string]: string | undefined;
   };
+  /**
+   * JavaScript runtime to use for executing Claude Code.
+   * Auto-detected if not specified.
+   */
   executable?: "bun" | "deno" | "node";
+  /**
+   * Additional arguments to pass to the JavaScript runtime executable.
+   */
   executableArgs?: string[];
+  /**
+   * Additional CLI arguments to pass to Claude Code.
+   * Keys are argument names (without --), values are argument values.
+   * Use `null` for boolean flags.
+   */
   extraArgs?: Record<string, string | null>;
+  /**
+   * Fallback model to use if the primary model fails or is unavailable.
+   */
   fallbackModel?: string;
   /**
-   * When true resumed sessions will fork to a new session ID rather than
-   * continuing the previous session. Use with --resume.
+   * When true, resumed sessions will fork to a new session ID rather than
+   * continuing the previous session. Use with `resume`.
    */
   forkSession?: boolean;
+  /**
+   * Enable beta features. Currently supported:
+   * - `'context-1m-2025-08-07'` - Enable 1M token context window (Sonnet 4/4.5 only)
+   *
+   * @see https://docs.anthropic.com/en/api/beta-headers
+   */
   betas?: SdkBeta[];
+  /**
+   * Hook callbacks for responding to various events during execution.
+   * Hooks can modify behavior, add context, or implement custom logic.
+   *
+   * @example
+   * ```typescript
+   * hooks: {
+   *   PreToolUse: [{
+   *     hooks: [async (input) => ({ continue: true })]
+   *   }]
+   * }
+   * ```
+   */
   hooks?: Partial<Record<HookEvent, HookCallbackMatcher[]>>;
+  /**
+   * Include partial/streaming message events in the output.
+   * When true, `SDKPartialAssistantMessage` events will be emitted during streaming.
+   */
   includePartialMessages?: boolean;
+  /**
+   * Maximum number of tokens the model can use for its thinking/reasoning process.
+   * Helps control cost and latency for complex tasks.
+   */
   maxThinkingTokens?: number;
+  /**
+   * Maximum number of conversation turns before the query stops.
+   * A turn consists of a user message and assistant response.
+   */
   maxTurns?: number;
+  /**
+   * Maximum budget in USD for the query. The query will stop if this
+   * budget is exceeded, returning an `error_max_budget_usd` result.
+   */
   maxBudgetUsd?: number;
+  /**
+   * MCP (Model Context Protocol) server configurations.
+   * Keys are server names, values are server configurations.
+   *
+   * @example
+   * ```typescript
+   * mcpServers: {
+   *   'my-server': {
+   *     command: 'node',
+   *     args: ['./my-mcp-server.js']
+   *   }
+   * }
+   * ```
+   */
   mcpServers?: Record<string, McpServerConfig>;
+  /**
+   * Claude model to use. Defaults to the CLI default model.
+   * Examples: 'claude-sonnet-4-5-20250929', 'claude-opus-4-20250514'
+   */
   model?: string;
+  /**
+   * Output format configuration for structured responses.
+   * When specified, the agent will return structured data matching the schema.
+   *
+   * @example
+   * ```typescript
+   * outputFormat: {
+   *   type: 'json_schema',
+   *   schema: { type: 'object', properties: { result: { type: 'string' } } }
+   * }
+   * ```
+   */
   outputFormat?: OutputFormat;
+  /**
+   * Path to the Claude Code executable. Uses the built-in executable if not specified.
+   */
   pathToClaudeCodeExecutable?: string;
+  /**
+   * Permission mode for the session.
+   * - `'default'` - Standard permission behavior, prompts for dangerous operations
+   * - `'acceptEdits'` - Auto-accept file edit operations
+   * - `'bypassPermissions'` - Bypass all permission checks (requires `allowDangerouslySkipPermissions`)
+   * - `'plan'` - Planning mode, no execution of tools
+   * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
+   */
   permissionMode?: PermissionMode;
+  /**
+   * Must be set to `true` when using `permissionMode: 'bypassPermissions'`.
+   * This is a safety measure to ensure intentional bypassing of permissions.
+   */
   allowDangerouslySkipPermissions?: boolean;
+  /**
+   * MCP tool name to use for permission prompts. When set, permission requests
+   * will be routed through this MCP tool instead of the default handler.
+   */
   permissionPromptToolName?: string;
   /**
    * Load plugins for this session. Plugins provide custom commands, agents,
@@ -746,11 +977,14 @@ export type Options = {
    * ```
    */
   plugins?: SdkPluginConfig[];
+  /**
+   * Session ID to resume. Loads the conversation history from the specified session.
+   */
   resume?: string;
   /**
-   * When resuming, only resume messages up to and including the message with this message.uuid.
-   * Use with --resume. This allows you to resume from a specific point in the conversation.
-   * The message ID is expected to be from SDKAssistantMessage.uuid.
+   * When resuming, only resume messages up to and including the message with this UUID.
+   * Use with `resume`. This allows you to resume from a specific point in the conversation.
+   * The message ID should be from `SDKAssistantMessage.uuid`.
    */
   resumeSessionAt?: string;
   /**
@@ -789,9 +1023,46 @@ export type Options = {
    * @see https://docs.anthropic.com/en/docs/claude-code/settings#sandbox-settings
    */
   sandbox?: SandboxSettings;
+  /**
+   * Control which filesystem settings to load.
+   * - `'user'` - Global user settings (`~/.claude/settings.json`)
+   * - `'project'` - Project settings (`.claude/settings.json`)
+   * - `'local'` - Local settings (`.claude/settings.local.json`)
+   *
+   * When omitted or empty, no filesystem settings are loaded (SDK isolation mode).
+   * Must include `'project'` to load CLAUDE.md files.
+   */
   settingSources?: SettingSource[];
+  /**
+   * Callback for stderr output from the Claude Code process.
+   * Useful for debugging and logging.
+   */
   stderr?: (data: string) => void;
+  /**
+   * Enforce strict validation of MCP server configurations.
+   * When true, invalid configurations will cause errors instead of warnings.
+   */
   strictMcpConfig?: boolean;
+  /**
+   * System prompt configuration.
+   * - `string` - Use a custom system prompt
+   * - `{ type: 'preset', preset: 'claude_code' }` - Use Claude Code's default system prompt
+   * - `{ type: 'preset', preset: 'claude_code', append: '...' }` - Use default prompt with appended instructions
+   *
+   * @example Custom prompt
+   * ```typescript
+   * systemPrompt: 'You are a helpful coding assistant.'
+   * ```
+   *
+   * @example Default with additions
+   * ```typescript
+   * systemPrompt: {
+   *   type: 'preset',
+   *   preset: 'claude_code',
+   *   append: 'Always explain your reasoning.'
+   * }
+   * ```
+   */
   systemPrompt?:
     | string
     | {
