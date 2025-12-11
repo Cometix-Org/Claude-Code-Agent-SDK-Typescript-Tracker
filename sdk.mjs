@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.62
+// Version: 0.1.65
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9124,728 +9124,6 @@ import { createInterface } from "readline";
 // ../src/utils/fsOperations.ts
 import * as fs from "fs";
 import { stat as statPromise, open } from "fs/promises";
-var NodeFsOperations = {
-  cwd() {
-    return process.cwd();
-  },
-  existsSync(fsPath) {
-    return fs.existsSync(fsPath);
-  },
-  async stat(fsPath) {
-    return statPromise(fsPath);
-  },
-  statSync(fsPath) {
-    return fs.statSync(fsPath);
-  },
-  readFileSync(fsPath, options) {
-    return fs.readFileSync(fsPath, { encoding: options.encoding });
-  },
-  readFileBytesSync(fsPath) {
-    return fs.readFileSync(fsPath);
-  },
-  readSync(fsPath, options) {
-    let fd = undefined;
-    try {
-      fd = fs.openSync(fsPath, "r");
-      const buffer = Buffer.alloc(options.length);
-      const bytesRead = fs.readSync(fd, buffer, 0, options.length, 0);
-      return { buffer, bytesRead };
-    } finally {
-      if (fd) fs.closeSync(fd);
-    }
-  },
-  writeFileSync(fsPath, data, options) {
-    const fileExists = fs.existsSync(fsPath);
-    if (!options.flush) {
-      const writeOptions = {
-        encoding: options.encoding,
-      };
-      if (!fileExists) {
-        writeOptions.mode = options.mode ?? 384;
-      } else if (options.mode !== undefined) {
-        writeOptions.mode = options.mode;
-      }
-      fs.writeFileSync(fsPath, data, writeOptions);
-      return;
-    }
-    let fd;
-    try {
-      const mode = !fileExists ? (options.mode ?? 384) : options.mode;
-      fd = fs.openSync(fsPath, "w", mode);
-      fs.writeFileSync(fd, data, { encoding: options.encoding });
-      fs.fsyncSync(fd);
-    } finally {
-      if (fd) {
-        fs.closeSync(fd);
-      }
-    }
-  },
-  appendFileSync(path, data, options) {
-    if (!fs.existsSync(path)) {
-      const mode = options?.mode ?? 384;
-      const fd = fs.openSync(path, "a", mode);
-      try {
-        fs.appendFileSync(fd, data);
-      } finally {
-        fs.closeSync(fd);
-      }
-    } else {
-      fs.appendFileSync(path, data);
-    }
-  },
-  copyFileSync(src, dest) {
-    fs.copyFileSync(src, dest);
-  },
-  unlinkSync(path) {
-    fs.unlinkSync(path);
-  },
-  renameSync(oldPath, newPath) {
-    fs.renameSync(oldPath, newPath);
-  },
-  linkSync(target, path) {
-    fs.linkSync(target, path);
-  },
-  symlinkSync(target, path) {
-    fs.symlinkSync(target, path);
-  },
-  readlinkSync(path) {
-    return fs.readlinkSync(path);
-  },
-  realpathSync(path) {
-    return fs.realpathSync(path);
-  },
-  mkdirSync(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true, mode: 448 });
-    }
-  },
-  readdirSync(dirPath) {
-    return fs.readdirSync(dirPath, { withFileTypes: true });
-  },
-  readdirStringSync(dirPath) {
-    return fs.readdirSync(dirPath);
-  },
-  isDirEmptySync(dirPath) {
-    const files = this.readdirSync(dirPath);
-    return files.length === 0;
-  },
-  rmdirSync(dirPath) {
-    fs.rmdirSync(dirPath);
-  },
-  rmSync(path, options) {
-    fs.rmSync(path, options);
-  },
-  createWriteStream(path) {
-    return fs.createWriteStream(path);
-  },
-};
-var activeFs = NodeFsOperations;
-function getFsImplementation() {
-  return activeFs;
-}
-
-// ../src/entrypoints/agentSdkTypes.ts
-var HOOK_EVENTS = [
-  "PreToolUse",
-  "PostToolUse",
-  "PostToolUseFailure",
-  "Notification",
-  "UserPromptSubmit",
-  "SessionStart",
-  "SessionEnd",
-  "Stop",
-  "SubagentStart",
-  "SubagentStop",
-  "PreCompact",
-  "PermissionRequest",
-];
-var EXIT_REASONS = [
-  "clear",
-  "logout",
-  "prompt_input_exit",
-  "other",
-  "bypass_permissions_disabled",
-];
-class AbortError extends Error {}
-
-// ../src/utils/bundledMode.ts
-function isRunningWithBun() {
-  return process.versions.bun !== undefined;
-}
-
-// ../src/utils/sdkDebug.ts
-import { randomUUID } from "crypto";
-import {
-  appendFileSync as appendFileSync2,
-  existsSync as existsSync2,
-  mkdirSync as mkdirSync2,
-} from "fs";
-import { join as join2 } from "path";
-
-// ../src/utils/envUtils.ts
-import { join } from "path";
-import { homedir } from "os";
-function getClaudeConfigHomeDir() {
-  return process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
-}
-function isEnvTruthy(envVar) {
-  if (!envVar) return false;
-  if (typeof envVar === "boolean") return envVar;
-  const normalizedValue = envVar.toLowerCase().trim();
-  return ["1", "true", "yes", "on"].includes(normalizedValue);
-}
-
-// ../src/utils/sdkDebug.ts
-var debugFilePath = null;
-var initialized = false;
-function getOrCreateDebugFile() {
-  if (initialized) {
-    return debugFilePath;
-  }
-  initialized = true;
-  if (!process.env.DEBUG_CLAUDE_AGENT_SDK) {
-    return null;
-  }
-  const debugDir = join2(getClaudeConfigHomeDir(), "debug");
-  debugFilePath = join2(debugDir, `sdk-${randomUUID()}.txt`);
-  if (!existsSync2(debugDir)) {
-    mkdirSync2(debugDir, { recursive: true });
-  }
-  process.stderr.write(`SDK debug logs: ${debugFilePath}
-`);
-  return debugFilePath;
-}
-function logForSdkDebugging(message) {
-  const path = getOrCreateDebugFile();
-  if (!path) {
-    return;
-  }
-  const timestamp = new Date().toISOString();
-  const output = `${timestamp} ${message}
-`;
-  appendFileSync2(path, output);
-}
-
-// ../src/transport/sandboxUtils.ts
-function mergeSandboxIntoExtraArgs(extraArgs, sandbox) {
-  const effectiveExtraArgs = { ...extraArgs };
-  if (sandbox) {
-    let settingsObj = { sandbox };
-    if (effectiveExtraArgs.settings) {
-      try {
-        const existingSettings = JSON.parse(effectiveExtraArgs.settings);
-        settingsObj = { ...existingSettings, sandbox };
-      } catch {}
-    }
-    effectiveExtraArgs.settings = JSON.stringify(settingsObj);
-  }
-  return effectiveExtraArgs;
-}
-
-// ../src/transport/ProcessTransport.ts
-class ProcessTransport {
-  options;
-  child;
-  childStdin;
-  childStdout;
-  ready = false;
-  abortController;
-  exitError;
-  exitListeners = [];
-  processExitHandler;
-  abortHandler;
-  constructor(options) {
-    this.options = options;
-    this.abortController = options.abortController || createAbortController();
-    this.initialize();
-  }
-  initialize() {
-    try {
-      const {
-        additionalDirectories = [],
-        betas,
-        cwd,
-        executable = isRunningWithBun() ? "bun" : "node",
-        executableArgs = [],
-        extraArgs = {},
-        pathToClaudeCodeExecutable,
-        env = { ...process.env },
-        stderr,
-        maxThinkingTokens,
-        maxTurns,
-        maxBudgetUsd,
-        model,
-        fallbackModel,
-        jsonSchema,
-        permissionMode,
-        allowDangerouslySkipPermissions,
-        permissionPromptToolName,
-        continueConversation,
-        resume,
-        settingSources,
-        allowedTools = [],
-        disallowedTools = [],
-        mcpServers,
-        strictMcpConfig,
-        canUseTool,
-        includePartialMessages,
-        plugins,
-        sandbox,
-      } = this.options;
-      const args = [
-        "--output-format",
-        "stream-json",
-        "--verbose",
-        "--input-format",
-        "stream-json",
-      ];
-      if (maxThinkingTokens !== undefined) {
-        args.push("--max-thinking-tokens", maxThinkingTokens.toString());
-      }
-      if (maxTurns) args.push("--max-turns", maxTurns.toString());
-      if (maxBudgetUsd !== undefined) {
-        args.push("--max-budget-usd", maxBudgetUsd.toString());
-      }
-      if (model) args.push("--model", model);
-      if (betas && betas.length > 0) {
-        args.push("--betas", betas.join(","));
-      }
-      if (jsonSchema) {
-        args.push("--json-schema", JSON.stringify(jsonSchema));
-      }
-      if (env.DEBUG_CLAUDE_AGENT_SDK) {
-        args.push("--debug-to-stderr");
-      }
-      if (canUseTool) {
-        if (permissionPromptToolName) {
-          throw new Error(
-            "canUseTool callback cannot be used with permissionPromptToolName. Please use one or the other.",
-          );
-        }
-        args.push("--permission-prompt-tool", "stdio");
-      } else if (permissionPromptToolName) {
-        args.push("--permission-prompt-tool", permissionPromptToolName);
-      }
-      if (continueConversation) args.push("--continue");
-      if (resume) args.push("--resume", resume);
-      if (allowedTools.length > 0) {
-        args.push("--allowedTools", allowedTools.join(","));
-      }
-      if (disallowedTools.length > 0) {
-        args.push("--disallowedTools", disallowedTools.join(","));
-      }
-      const { tools } = this.options;
-      if (tools !== undefined) {
-        if (Array.isArray(tools)) {
-          if (tools.length === 0) {
-            args.push("--tools", "");
-          } else {
-            args.push("--tools", tools.join(","));
-          }
-        } else {
-          args.push("--tools", "default");
-        }
-      }
-      if (mcpServers && Object.keys(mcpServers).length > 0) {
-        args.push("--mcp-config", JSON.stringify({ mcpServers }));
-      }
-      if (settingSources) {
-        args.push("--setting-sources", settingSources.join(","));
-      }
-      if (strictMcpConfig) {
-        args.push("--strict-mcp-config");
-      }
-      if (permissionMode) {
-        args.push("--permission-mode", permissionMode);
-      }
-      if (allowDangerouslySkipPermissions) {
-        args.push("--allow-dangerously-skip-permissions");
-      }
-      if (fallbackModel) {
-        if (model && fallbackModel === model) {
-          throw new Error(
-            "Fallback model cannot be the same as the main model. Please specify a different model for fallbackModel option.",
-          );
-        }
-        args.push("--fallback-model", fallbackModel);
-      }
-      if (includePartialMessages) {
-        args.push("--include-partial-messages");
-      }
-      for (const dir of additionalDirectories) {
-        args.push("--add-dir", dir);
-      }
-      if (plugins && plugins.length > 0) {
-        for (const plugin of plugins) {
-          if (plugin.type === "local") {
-            args.push("--plugin-dir", plugin.path);
-          } else {
-            throw new Error(`Unsupported plugin type: ${plugin.type}`);
-          }
-        }
-      }
-      if (this.options.forkSession) {
-        args.push("--fork-session");
-      }
-      if (this.options.resumeSessionAt) {
-        args.push("--resume-session-at", this.options.resumeSessionAt);
-      }
-      const effectiveExtraArgs = mergeSandboxIntoExtraArgs(
-        extraArgs ?? {},
-        sandbox,
-      );
-      for (const [flag, value] of Object.entries(effectiveExtraArgs)) {
-        if (value === null) {
-          args.push(`--${flag}`);
-        } else {
-          args.push(`--${flag}`, value);
-        }
-      }
-      if (!env.CLAUDE_CODE_ENTRYPOINT) {
-        env.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-      }
-      delete env.NODE_OPTIONS;
-      if (env.DEBUG_CLAUDE_AGENT_SDK) {
-        env.DEBUG = "1";
-      } else {
-        delete env.DEBUG;
-      }
-      const fs2 = getFsImplementation();
-      if (!fs2.existsSync(pathToClaudeCodeExecutable)) {
-        const errorMessage = isNativeBinary(pathToClaudeCodeExecutable)
-          ? `Claude Code native binary not found at ${pathToClaudeCodeExecutable}. Please ensure Claude Code is installed via native installer or specify a valid path with options.pathToClaudeCodeExecutable.`
-          : `Claude Code executable not found at ${pathToClaudeCodeExecutable}. Is options.pathToClaudeCodeExecutable set?`;
-        throw new ReferenceError(errorMessage);
-      }
-      const isNative = isNativeBinary(pathToClaudeCodeExecutable);
-      const spawnCommand = isNative ? pathToClaudeCodeExecutable : executable;
-      const spawnArgs = isNative
-        ? [...executableArgs, ...args]
-        : [...executableArgs, pathToClaudeCodeExecutable, ...args];
-      const spawnMessage = isNative
-        ? `Spawning Claude Code native binary: ${spawnCommand} ${spawnArgs.join(" ")}`
-        : `Spawning Claude Code process: ${spawnCommand} ${spawnArgs.join(" ")}`;
-      logForSdkDebugging(spawnMessage);
-      if (stderr) {
-        stderr(spawnMessage);
-      }
-      const stderrMode =
-        env.DEBUG_CLAUDE_AGENT_SDK || stderr ? "pipe" : "ignore";
-      this.child = spawn(spawnCommand, spawnArgs, {
-        cwd,
-        stdio: ["pipe", "pipe", stderrMode],
-        signal: this.abortController.signal,
-        env,
-      });
-      this.childStdin = this.child.stdin;
-      this.childStdout = this.child.stdout;
-      if (env.DEBUG_CLAUDE_AGENT_SDK || stderr) {
-        this.child.stderr.on("data", (data) => {
-          const message = data.toString();
-          logForSdkDebugging(message);
-          if (stderr) {
-            stderr(message);
-          }
-        });
-      }
-      const cleanup = () => {
-        if (this.child && !this.child.killed) {
-          this.child.kill("SIGTERM");
-        }
-      };
-      this.processExitHandler = cleanup;
-      this.abortHandler = cleanup;
-      process.on("exit", this.processExitHandler);
-      this.abortController.signal.addEventListener("abort", this.abortHandler);
-      this.child.on("error", (error) => {
-        this.ready = false;
-        if (this.abortController.signal.aborted) {
-          this.exitError = new AbortError(
-            "Claude Code process aborted by user",
-          );
-        } else {
-          this.exitError = new Error(
-            `Failed to spawn Claude Code process: ${error.message}`,
-          );
-          logForSdkDebugging(this.exitError.message);
-        }
-      });
-      this.child.on("close", (code, signal) => {
-        this.ready = false;
-        if (this.abortController.signal.aborted) {
-          this.exitError = new AbortError(
-            "Claude Code process aborted by user",
-          );
-        } else {
-          const error = this.getProcessExitError(code, signal);
-          if (error) {
-            this.exitError = error;
-            logForSdkDebugging(error.message);
-          }
-        }
-      });
-      this.ready = true;
-    } catch (error) {
-      this.ready = false;
-      throw error;
-    }
-  }
-  getProcessExitError(code, signal) {
-    if (code !== 0 && code !== null) {
-      return new Error(`Claude Code process exited with code ${code}`);
-    } else if (signal) {
-      return new Error(`Claude Code process terminated by signal ${signal}`);
-    }
-    return;
-  }
-  write(data) {
-    if (this.abortController.signal.aborted) {
-      throw new AbortError("Operation aborted");
-    }
-    if (!this.ready || !this.childStdin) {
-      throw new Error("ProcessTransport is not ready for writing");
-    }
-    if (this.child?.killed || this.child?.exitCode !== null) {
-      throw new Error("Cannot write to terminated process");
-    }
-    if (this.exitError) {
-      throw new Error(
-        `Cannot write to process that exited with error: ${this.exitError.message}`,
-      );
-    }
-    logForSdkDebugging(
-      `[ProcessTransport] Writing to stdin: ${data.substring(0, 100)}`,
-    );
-    try {
-      const written = this.childStdin.write(data);
-      if (!written) {
-        logForSdkDebugging("[ProcessTransport] Write buffer full, data queued");
-      }
-    } catch (error) {
-      this.ready = false;
-      throw new Error(`Failed to write to process stdin: ${error.message}`);
-    }
-  }
-  close() {
-    if (this.childStdin) {
-      this.childStdin.end();
-      this.childStdin = undefined;
-    }
-    if (this.processExitHandler) {
-      process.off("exit", this.processExitHandler);
-      this.processExitHandler = undefined;
-    }
-    if (this.abortHandler) {
-      this.abortController.signal.removeEventListener(
-        "abort",
-        this.abortHandler,
-      );
-      this.abortHandler = undefined;
-    }
-    for (const { handler } of this.exitListeners) {
-      this.child?.off("exit", handler);
-    }
-    this.exitListeners = [];
-    if (this.child && !this.child.killed) {
-      this.child.kill("SIGTERM");
-      setTimeout(() => {
-        if (this.child && !this.child.killed) {
-          this.child.kill("SIGKILL");
-        }
-      }, 5000);
-    }
-    this.ready = false;
-  }
-  isReady() {
-    return this.ready;
-  }
-  async *readMessages() {
-    if (!this.childStdout) {
-      throw new Error("ProcessTransport output stream not available");
-    }
-    const rl = createInterface({ input: this.childStdout });
-    try {
-      for await (const line of rl) {
-        if (line.trim()) {
-          const message = JSON.parse(line);
-          yield message;
-        }
-      }
-      await this.waitForExit();
-    } catch (error) {
-      throw error;
-    } finally {
-      rl.close();
-    }
-  }
-  endInput() {
-    if (this.childStdin) {
-      this.childStdin.end();
-    }
-  }
-  getInputStream() {
-    return this.childStdin;
-  }
-  onExit(callback) {
-    if (!this.child) return () => {};
-    const handler = (code, signal) => {
-      const error = this.getProcessExitError(code, signal);
-      callback(error);
-    };
-    this.child.on("exit", handler);
-    this.exitListeners.push({ callback, handler });
-    return () => {
-      if (this.child) {
-        this.child.off("exit", handler);
-      }
-      const index = this.exitListeners.findIndex((l) => l.handler === handler);
-      if (index !== -1) {
-        this.exitListeners.splice(index, 1);
-      }
-    };
-  }
-  async waitForExit() {
-    if (!this.child) {
-      if (this.exitError) {
-        throw this.exitError;
-      }
-      return;
-    }
-    if (this.child.exitCode !== null || this.child.killed) {
-      if (this.exitError) {
-        throw this.exitError;
-      }
-      return;
-    }
-    return new Promise((resolve, reject) => {
-      const exitHandler = (code, signal) => {
-        if (this.abortController.signal.aborted) {
-          reject(new AbortError("Operation aborted"));
-          return;
-        }
-        const error = this.getProcessExitError(code, signal);
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      };
-      this.child.once("exit", exitHandler);
-      const errorHandler = (error) => {
-        this.child.off("exit", exitHandler);
-        reject(error);
-      };
-      this.child.once("error", errorHandler);
-      this.child.once("exit", () => {
-        this.child.off("error", errorHandler);
-      });
-    });
-  }
-}
-function isNativeBinary(executablePath) {
-  const jsExtensions = [".js", ".mjs", ".tsx", ".ts", ".jsx"];
-  return !jsExtensions.some((ext) => executablePath.endsWith(ext));
-}
-
-// ../src/utils/stream.ts
-class Stream {
-  returned;
-  queue = [];
-  readResolve;
-  readReject;
-  isDone = false;
-  hasError;
-  started = false;
-  constructor(returned) {
-    this.returned = returned;
-  }
-  [Symbol.asyncIterator]() {
-    if (this.started) {
-      throw new Error("Stream can only be iterated once");
-    }
-    this.started = true;
-    return this;
-  }
-  next() {
-    if (this.queue.length > 0) {
-      return Promise.resolve({
-        done: false,
-        value: this.queue.shift(),
-      });
-    }
-    if (this.isDone) {
-      return Promise.resolve({ done: true, value: undefined });
-    }
-    if (this.hasError) {
-      return Promise.reject(this.hasError);
-    }
-    return new Promise((resolve, reject) => {
-      this.readResolve = resolve;
-      this.readReject = reject;
-    });
-  }
-  enqueue(value) {
-    if (this.readResolve) {
-      const resolve = this.readResolve;
-      this.readResolve = undefined;
-      this.readReject = undefined;
-      resolve({ done: false, value });
-    } else {
-      this.queue.push(value);
-    }
-  }
-  done() {
-    this.isDone = true;
-    if (this.readResolve) {
-      const resolve = this.readResolve;
-      this.readResolve = undefined;
-      this.readReject = undefined;
-      resolve({ done: true, value: undefined });
-    }
-  }
-  error(error) {
-    this.hasError = error;
-    if (this.readReject) {
-      const reject = this.readReject;
-      this.readResolve = undefined;
-      this.readReject = undefined;
-      reject(error);
-    }
-  }
-  return() {
-    this.isDone = true;
-    if (this.returned) {
-      this.returned();
-    }
-    return Promise.resolve({ done: true, value: undefined });
-  }
-}
-
-// ../src/services/mcp/SdkControlTransport.ts
-class SdkControlServerTransport {
-  sendMcpMessage;
-  isClosed = false;
-  constructor(sendMcpMessage) {
-    this.sendMcpMessage = sendMcpMessage;
-  }
-  onclose;
-  onerror;
-  onmessage;
-  async start() {}
-  async send(message) {
-    if (this.isClosed) {
-      throw new Error("Transport is closed");
-    }
-    this.sendMcpMessage(message);
-  }
-  async close() {
-    if (this.isClosed) {
-      return;
-    }
-    this.isClosed = true;
-    this.onclose?.();
-  }
-}
 
 // ../node_modules/lodash-es/_freeGlobal.js
 var freeGlobal =
@@ -10358,13 +9636,26 @@ function shouldShowDebugMessage(message, filter) {
   return shouldShowDebugCategories(categories, filter);
 }
 
+// ../src/utils/envUtils.ts
+import { join } from "path";
+import { homedir } from "os";
+function getClaudeConfigHomeDir() {
+  return process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
+}
+function isEnvTruthy(envVar) {
+  if (!envVar) return false;
+  if (typeof envVar === "boolean") return envVar;
+  const normalizedValue = envVar.toLowerCase().trim();
+  return ["1", "true", "yes", "on"].includes(normalizedValue);
+}
+
 // ../src/utils/debug.ts
-import { dirname, join as join3 } from "path";
+import { dirname, join as join2 } from "path";
 
 // ../src/bootstrap/state.ts
 import { cwd } from "process";
-import { realpathSync as realpathSync2 } from "fs";
-import { randomUUID as randomUUID2 } from "crypto";
+import { realpathSync } from "fs";
+import { randomUUID } from "crypto";
 
 // ../src/bootstrap/envValidators.ts
 var bashMaxOutputLengthValidator = {
@@ -10429,7 +9720,7 @@ var maxOutputTokensValidator = {
 function getInitialState() {
   let resolvedCwd = "";
   if (typeof process !== "undefined" && typeof process.cwd === "function") {
-    resolvedCwd = realpathSync2(cwd());
+    resolvedCwd = realpathSync(cwd());
   }
   return {
     originalCwd: resolvedCwd,
@@ -10469,7 +9760,7 @@ function getInitialState() {
     tokenCounter: null,
     codeEditToolDecisionCounter: null,
     activeTimeCounter: null,
-    sessionId: randomUUID2(),
+    sessionId: randomUUID(),
     loggerProvider: null,
     eventLogger: null,
     meterProvider: null,
@@ -10481,6 +9772,7 @@ function getInitialState() {
     inMemoryErrorLog: [],
     inlinePlugins: [],
     sessionBypassPermissionsMode: false,
+    sessionPersistenceDisabled: false,
     hasExitedPlanMode: false,
     needsPlanModeExitAttachment: false,
     initJsonSchema: null,
@@ -10631,14 +9923,17 @@ function logForDebugging(
 function getDebugLogPath() {
   return (
     process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    join3(getClaudeConfigHomeDir(), "debug", `${getSessionId()}.txt`)
+    join2(getClaudeConfigHomeDir(), "debug", `${getSessionId()}.txt`)
   );
 }
 var updateLatestDebugLogSymlink = memoize_default(() => {
+  if (process.argv[2] === "--ripgrep") {
+    return;
+  }
   try {
     const debugLogPath = getDebugLogPath();
     const debugLogsDir = dirname(debugLogPath);
-    const latestSymlinkPath = join3(debugLogsDir, "latest");
+    const latestSymlinkPath = join2(debugLogsDir, "latest");
     if (!getFsImplementation().existsSync(debugLogsDir)) {
       getFsImplementation().mkdirSync(debugLogsDir);
     }
@@ -10651,12 +9946,788 @@ var updateLatestDebugLogSymlink = memoize_default(() => {
   } catch {}
 });
 
+// ../src/utils/fsOperations.ts
+var SLOW_SYNC_THRESHOLD_MS = 5;
+function withSlowLogging(operation, fn) {
+  const startTime = performance.now();
+  try {
+    return fn();
+  } finally {
+    const duration = performance.now() - startTime;
+    if (duration > SLOW_SYNC_THRESHOLD_MS) {
+      logForDebugging(
+        `[SLOW OPERATION DETECTED] fs.${operation} (${duration.toFixed(1)}ms)`,
+      );
+    }
+  }
+}
+var NodeFsOperations = {
+  cwd() {
+    return process.cwd();
+  },
+  existsSync(fsPath) {
+    return withSlowLogging("existsSync", () => fs.existsSync(fsPath));
+  },
+  async stat(fsPath) {
+    return statPromise(fsPath);
+  },
+  statSync(fsPath) {
+    return withSlowLogging("statSync", () => fs.statSync(fsPath));
+  },
+  lstatSync(fsPath) {
+    return withSlowLogging("lstatSync", () => fs.lstatSync(fsPath));
+  },
+  readFileSync(fsPath, options) {
+    return withSlowLogging("readFileSync", () =>
+      fs.readFileSync(fsPath, { encoding: options.encoding }),
+    );
+  },
+  readFileBytesSync(fsPath) {
+    return withSlowLogging("readFileBytesSync", () => fs.readFileSync(fsPath));
+  },
+  readSync(fsPath, options) {
+    return withSlowLogging("readSync", () => {
+      let fd = undefined;
+      try {
+        fd = fs.openSync(fsPath, "r");
+        const buffer = Buffer.alloc(options.length);
+        const bytesRead = fs.readSync(fd, buffer, 0, options.length, 0);
+        return { buffer, bytesRead };
+      } finally {
+        if (fd) fs.closeSync(fd);
+      }
+    });
+  },
+  writeFileSync(fsPath, data, options) {
+    return withSlowLogging("writeFileSync", () => {
+      const fileExists = fs.existsSync(fsPath);
+      if (!options.flush) {
+        const writeOptions = {
+          encoding: options.encoding,
+        };
+        if (!fileExists) {
+          writeOptions.mode = options.mode ?? 384;
+        } else if (options.mode !== undefined) {
+          writeOptions.mode = options.mode;
+        }
+        fs.writeFileSync(fsPath, data, writeOptions);
+        return;
+      }
+      let fd;
+      try {
+        const mode = !fileExists ? (options.mode ?? 384) : options.mode;
+        fd = fs.openSync(fsPath, "w", mode);
+        fs.writeFileSync(fd, data, { encoding: options.encoding });
+        fs.fsyncSync(fd);
+      } finally {
+        if (fd) {
+          fs.closeSync(fd);
+        }
+      }
+    });
+  },
+  appendFileSync(path, data, options) {
+    return withSlowLogging("appendFileSync", () => {
+      if (!fs.existsSync(path)) {
+        const mode = options?.mode ?? 384;
+        const fd = fs.openSync(path, "a", mode);
+        try {
+          fs.appendFileSync(fd, data);
+        } finally {
+          fs.closeSync(fd);
+        }
+      } else {
+        fs.appendFileSync(path, data);
+      }
+    });
+  },
+  copyFileSync(src, dest) {
+    return withSlowLogging("copyFileSync", () => fs.copyFileSync(src, dest));
+  },
+  unlinkSync(path) {
+    return withSlowLogging("unlinkSync", () => fs.unlinkSync(path));
+  },
+  renameSync(oldPath, newPath) {
+    return withSlowLogging("renameSync", () => fs.renameSync(oldPath, newPath));
+  },
+  linkSync(target, path) {
+    return withSlowLogging("linkSync", () => fs.linkSync(target, path));
+  },
+  symlinkSync(target, path) {
+    return withSlowLogging("symlinkSync", () => fs.symlinkSync(target, path));
+  },
+  readlinkSync(path) {
+    return withSlowLogging("readlinkSync", () => fs.readlinkSync(path));
+  },
+  realpathSync(path) {
+    return withSlowLogging("realpathSync", () => fs.realpathSync(path));
+  },
+  mkdirSync(dirPath) {
+    return withSlowLogging("mkdirSync", () => {
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true, mode: 448 });
+      }
+    });
+  },
+  readdirSync(dirPath) {
+    return withSlowLogging("readdirSync", () =>
+      fs.readdirSync(dirPath, { withFileTypes: true }),
+    );
+  },
+  readdirStringSync(dirPath) {
+    return withSlowLogging("readdirStringSync", () => fs.readdirSync(dirPath));
+  },
+  isDirEmptySync(dirPath) {
+    return withSlowLogging("isDirEmptySync", () => {
+      const files = this.readdirSync(dirPath);
+      return files.length === 0;
+    });
+  },
+  rmdirSync(dirPath) {
+    return withSlowLogging("rmdirSync", () => fs.rmdirSync(dirPath));
+  },
+  rmSync(path, options) {
+    return withSlowLogging("rmSync", () => fs.rmSync(path, options));
+  },
+  createWriteStream(path) {
+    return fs.createWriteStream(path);
+  },
+};
+var activeFs = NodeFsOperations;
+function getFsImplementation() {
+  return activeFs;
+}
+
+// ../src/entrypoints/agentSdkTypes.ts
+var HOOK_EVENTS = [
+  "PreToolUse",
+  "PostToolUse",
+  "PostToolUseFailure",
+  "Notification",
+  "UserPromptSubmit",
+  "SessionStart",
+  "SessionEnd",
+  "Stop",
+  "SubagentStart",
+  "SubagentStop",
+  "PreCompact",
+  "PermissionRequest",
+];
+var EXIT_REASONS = [
+  "clear",
+  "logout",
+  "prompt_input_exit",
+  "other",
+  "bypass_permissions_disabled",
+];
+class AbortError extends Error {}
+
+// ../src/utils/bundledMode.ts
+function isRunningWithBun() {
+  return process.versions.bun !== undefined;
+}
+
+// ../src/utils/sdkDebug.ts
+import { randomUUID as randomUUID2 } from "crypto";
+import {
+  appendFileSync as appendFileSync2,
+  existsSync as existsSync2,
+  mkdirSync as mkdirSync2,
+} from "fs";
+import { join as join3 } from "path";
+var debugFilePath = null;
+var initialized = false;
+function getOrCreateDebugFile() {
+  if (initialized) {
+    return debugFilePath;
+  }
+  initialized = true;
+  if (!process.env.DEBUG_CLAUDE_AGENT_SDK) {
+    return null;
+  }
+  const debugDir = join3(getClaudeConfigHomeDir(), "debug");
+  debugFilePath = join3(debugDir, `sdk-${randomUUID2()}.txt`);
+  if (!existsSync2(debugDir)) {
+    mkdirSync2(debugDir, { recursive: true });
+  }
+  process.stderr.write(`SDK debug logs: ${debugFilePath}
+`);
+  return debugFilePath;
+}
+function logForSdkDebugging(message) {
+  const path = getOrCreateDebugFile();
+  if (!path) {
+    return;
+  }
+  const timestamp = new Date().toISOString();
+  const output = `${timestamp} ${message}
+`;
+  appendFileSync2(path, output);
+}
+
+// ../src/transport/sandboxUtils.ts
+function mergeSandboxIntoExtraArgs(extraArgs, sandbox) {
+  const effectiveExtraArgs = { ...extraArgs };
+  if (sandbox) {
+    let settingsObj = { sandbox };
+    if (effectiveExtraArgs.settings) {
+      try {
+        const existingSettings = JSON.parse(effectiveExtraArgs.settings);
+        settingsObj = { ...existingSettings, sandbox };
+      } catch {}
+    }
+    effectiveExtraArgs.settings = JSON.stringify(settingsObj);
+  }
+  return effectiveExtraArgs;
+}
+
+// ../src/transport/ProcessTransport.ts
+class ProcessTransport {
+  options;
+  process;
+  processStdin;
+  processStdout;
+  ready = false;
+  abortController;
+  exitError;
+  exitListeners = [];
+  processExitHandler;
+  abortHandler;
+  constructor(options) {
+    this.options = options;
+    this.abortController = options.abortController || createAbortController();
+    this.initialize();
+  }
+  getDefaultExecutable() {
+    return isRunningWithBun() ? "bun" : "node";
+  }
+  spawnLocalProcess(spawnOptions) {
+    const { command, args, cwd: cwd2, env, signal } = spawnOptions;
+    const stderrMode =
+      env.DEBUG_CLAUDE_AGENT_SDK || this.options.stderr ? "pipe" : "ignore";
+    const childProcess = spawn(command, args, {
+      cwd: cwd2,
+      stdio: ["pipe", "pipe", stderrMode],
+      signal,
+      env,
+    });
+    if (env.DEBUG_CLAUDE_AGENT_SDK || this.options.stderr) {
+      childProcess.stderr.on("data", (data) => {
+        const message = data.toString();
+        logForSdkDebugging(message);
+        if (this.options.stderr) {
+          this.options.stderr(message);
+        }
+      });
+    }
+    const mappedProcess = {
+      stdin: childProcess.stdin,
+      stdout: childProcess.stdout,
+      get killed() {
+        return childProcess.killed;
+      },
+      get exitCode() {
+        return childProcess.exitCode;
+      },
+      kill: childProcess.kill.bind(childProcess),
+      on: childProcess.on.bind(childProcess),
+      once: childProcess.once.bind(childProcess),
+      off: childProcess.off.bind(childProcess),
+    };
+    return mappedProcess;
+  }
+  initialize() {
+    try {
+      const {
+        additionalDirectories = [],
+        betas,
+        cwd: cwd2,
+        executable = this.getDefaultExecutable(),
+        executableArgs = [],
+        extraArgs = {},
+        pathToClaudeCodeExecutable,
+        env = { ...process.env },
+        stderr,
+        maxThinkingTokens,
+        maxTurns,
+        maxBudgetUsd,
+        model,
+        fallbackModel,
+        jsonSchema,
+        permissionMode,
+        allowDangerouslySkipPermissions,
+        permissionPromptToolName,
+        continueConversation,
+        resume,
+        settingSources,
+        allowedTools = [],
+        disallowedTools = [],
+        tools,
+        mcpServers,
+        strictMcpConfig,
+        canUseTool,
+        includePartialMessages,
+        plugins,
+        sandbox,
+      } = this.options;
+      const args = [
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--input-format",
+        "stream-json",
+      ];
+      if (maxThinkingTokens !== undefined) {
+        args.push("--max-thinking-tokens", maxThinkingTokens.toString());
+      }
+      if (maxTurns) args.push("--max-turns", maxTurns.toString());
+      if (maxBudgetUsd !== undefined) {
+        args.push("--max-budget-usd", maxBudgetUsd.toString());
+      }
+      if (model) args.push("--model", model);
+      if (betas && betas.length > 0) {
+        args.push("--betas", betas.join(","));
+      }
+      if (jsonSchema) {
+        args.push("--json-schema", JSON.stringify(jsonSchema));
+      }
+      if (env.DEBUG_CLAUDE_AGENT_SDK) {
+        args.push("--debug-to-stderr");
+      }
+      if (canUseTool) {
+        if (permissionPromptToolName) {
+          throw new Error(
+            "canUseTool callback cannot be used with permissionPromptToolName. Please use one or the other.",
+          );
+        }
+        args.push("--permission-prompt-tool", "stdio");
+      } else if (permissionPromptToolName) {
+        args.push("--permission-prompt-tool", permissionPromptToolName);
+      }
+      if (continueConversation) args.push("--continue");
+      if (resume) args.push("--resume", resume);
+      if (allowedTools.length > 0) {
+        args.push("--allowedTools", allowedTools.join(","));
+      }
+      if (disallowedTools.length > 0) {
+        args.push("--disallowedTools", disallowedTools.join(","));
+      }
+      if (tools !== undefined) {
+        if (Array.isArray(tools)) {
+          if (tools.length === 0) {
+            args.push("--tools", "");
+          } else {
+            args.push("--tools", tools.join(","));
+          }
+        } else {
+          args.push("--tools", "default");
+        }
+      }
+      if (mcpServers && Object.keys(mcpServers).length > 0) {
+        args.push("--mcp-config", JSON.stringify({ mcpServers }));
+      }
+      if (settingSources) {
+        args.push("--setting-sources", settingSources.join(","));
+      }
+      if (strictMcpConfig) {
+        args.push("--strict-mcp-config");
+      }
+      if (permissionMode) {
+        args.push("--permission-mode", permissionMode);
+      }
+      if (allowDangerouslySkipPermissions) {
+        args.push("--allow-dangerously-skip-permissions");
+      }
+      if (fallbackModel) {
+        if (model && fallbackModel === model) {
+          throw new Error(
+            "Fallback model cannot be the same as the main model. Please specify a different model for fallbackModel option.",
+          );
+        }
+        args.push("--fallback-model", fallbackModel);
+      }
+      if (includePartialMessages) {
+        args.push("--include-partial-messages");
+      }
+      for (const dir of additionalDirectories) {
+        args.push("--add-dir", dir);
+      }
+      if (plugins && plugins.length > 0) {
+        for (const plugin of plugins) {
+          if (plugin.type === "local") {
+            args.push("--plugin-dir", plugin.path);
+          } else {
+            throw new Error(`Unsupported plugin type: ${plugin.type}`);
+          }
+        }
+      }
+      if (this.options.forkSession) {
+        args.push("--fork-session");
+      }
+      if (this.options.resumeSessionAt) {
+        args.push("--resume-session-at", this.options.resumeSessionAt);
+      }
+      if (this.options.persistSession === false) {
+        args.push("--no-session-persistence");
+      }
+      const effectiveExtraArgs = mergeSandboxIntoExtraArgs(
+        extraArgs ?? {},
+        sandbox,
+      );
+      for (const [flag, value] of Object.entries(effectiveExtraArgs)) {
+        if (value === null) {
+          args.push(`--${flag}`);
+        } else {
+          args.push(`--${flag}`, value);
+        }
+      }
+      if (!env.CLAUDE_CODE_ENTRYPOINT) {
+        env.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
+      }
+      delete env.NODE_OPTIONS;
+      if (env.DEBUG_CLAUDE_AGENT_SDK) {
+        env.DEBUG = "1";
+      } else {
+        delete env.DEBUG;
+      }
+      const isNative = isNativeBinary(pathToClaudeCodeExecutable);
+      const spawnCommand = isNative ? pathToClaudeCodeExecutable : executable;
+      const spawnArgs = isNative
+        ? [...executableArgs, ...args]
+        : [...executableArgs, pathToClaudeCodeExecutable, ...args];
+      const spawnOptions = {
+        command: spawnCommand,
+        args: spawnArgs,
+        cwd: cwd2,
+        env,
+        signal: this.abortController.signal,
+      };
+      if (this.options.spawnClaudeCodeProcess) {
+        logForSdkDebugging(
+          `Spawning Claude Code (custom): ${spawnCommand} ${spawnArgs.join(" ")}`,
+        );
+        this.process = this.options.spawnClaudeCodeProcess(spawnOptions);
+      } else {
+        const fs2 = getFsImplementation();
+        if (!fs2.existsSync(pathToClaudeCodeExecutable)) {
+          const errorMessage = isNative
+            ? `Claude Code native binary not found at ${pathToClaudeCodeExecutable}. Please ensure Claude Code is installed via native installer or specify a valid path with options.pathToClaudeCodeExecutable.`
+            : `Claude Code executable not found at ${pathToClaudeCodeExecutable}. Is options.pathToClaudeCodeExecutable set?`;
+          throw new ReferenceError(errorMessage);
+        }
+        const spawnMessage = `Spawning Claude Code: ${spawnCommand} ${spawnArgs.join(" ")}`;
+        logForSdkDebugging(spawnMessage);
+        if (stderr) {
+          stderr(spawnMessage);
+        }
+        this.process = this.spawnLocalProcess(spawnOptions);
+      }
+      this.processStdin = this.process.stdin;
+      this.processStdout = this.process.stdout;
+      const cleanup = () => {
+        if (this.process && !this.process.killed) {
+          this.process.kill("SIGTERM");
+        }
+      };
+      this.processExitHandler = cleanup;
+      this.abortHandler = cleanup;
+      process.on("exit", this.processExitHandler);
+      this.abortController.signal.addEventListener("abort", this.abortHandler);
+      this.process.on("error", (error) => {
+        this.ready = false;
+        if (this.abortController.signal.aborted) {
+          this.exitError = new AbortError(
+            "Claude Code process aborted by user",
+          );
+        } else {
+          this.exitError = new Error(
+            `Failed to spawn Claude Code process: ${error.message}`,
+          );
+          logForSdkDebugging(this.exitError.message);
+        }
+      });
+      this.process.on("exit", (code, signal) => {
+        this.ready = false;
+        if (this.abortController.signal.aborted) {
+          this.exitError = new AbortError(
+            "Claude Code process aborted by user",
+          );
+        } else {
+          const error = this.getProcessExitError(code, signal);
+          if (error) {
+            this.exitError = error;
+            logForSdkDebugging(error.message);
+          }
+        }
+      });
+      this.ready = true;
+    } catch (error) {
+      this.ready = false;
+      throw error;
+    }
+  }
+  getProcessExitError(code, signal) {
+    if (code !== 0 && code !== null) {
+      return new Error(`Claude Code process exited with code ${code}`);
+    } else if (signal) {
+      return new Error(`Claude Code process terminated by signal ${signal}`);
+    }
+    return;
+  }
+  write(data) {
+    if (this.abortController.signal.aborted) {
+      throw new AbortError("Operation aborted");
+    }
+    if (!this.ready || !this.processStdin) {
+      throw new Error("ProcessTransport is not ready for writing");
+    }
+    if (this.process?.killed || this.process?.exitCode !== null) {
+      throw new Error("Cannot write to terminated process");
+    }
+    if (this.exitError) {
+      throw new Error(
+        `Cannot write to process that exited with error: ${this.exitError.message}`,
+      );
+    }
+    logForSdkDebugging(
+      `[ProcessTransport] Writing to stdin: ${data.substring(0, 100)}`,
+    );
+    try {
+      const written = this.processStdin.write(data);
+      if (!written) {
+        logForSdkDebugging("[ProcessTransport] Write buffer full, data queued");
+      }
+    } catch (error) {
+      this.ready = false;
+      throw new Error(`Failed to write to process stdin: ${error.message}`);
+    }
+  }
+  close() {
+    if (this.processStdin) {
+      this.processStdin.end();
+      this.processStdin = undefined;
+    }
+    if (this.abortHandler) {
+      this.abortController.signal.removeEventListener(
+        "abort",
+        this.abortHandler,
+      );
+      this.abortHandler = undefined;
+    }
+    for (const { handler } of this.exitListeners) {
+      this.process?.off("exit", handler);
+    }
+    this.exitListeners = [];
+    if (this.process && !this.process.killed) {
+      this.process.kill("SIGTERM");
+      setTimeout(() => {
+        if (this.process && !this.process.killed) {
+          this.process.kill("SIGKILL");
+        }
+      }, 5000);
+    }
+    this.ready = false;
+    if (this.processExitHandler) {
+      process.off("exit", this.processExitHandler);
+      this.processExitHandler = undefined;
+    }
+  }
+  isReady() {
+    return this.ready;
+  }
+  async *readMessages() {
+    if (!this.processStdout) {
+      throw new Error("ProcessTransport output stream not available");
+    }
+    const rl = createInterface({ input: this.processStdout });
+    try {
+      for await (const line of rl) {
+        if (line.trim()) {
+          const message = JSON.parse(line);
+          yield message;
+        }
+      }
+      await this.waitForExit();
+    } catch (error) {
+      throw error;
+    } finally {
+      rl.close();
+    }
+  }
+  endInput() {
+    if (this.processStdin) {
+      this.processStdin.end();
+    }
+  }
+  getInputStream() {
+    return this.processStdin;
+  }
+  onExit(callback) {
+    if (!this.process) return () => {};
+    const handler = (code, signal) => {
+      const error = this.getProcessExitError(code, signal);
+      callback(error);
+    };
+    this.process.on("exit", handler);
+    this.exitListeners.push({ callback, handler });
+    return () => {
+      if (this.process) {
+        this.process.off("exit", handler);
+      }
+      const index = this.exitListeners.findIndex((l) => l.handler === handler);
+      if (index !== -1) {
+        this.exitListeners.splice(index, 1);
+      }
+    };
+  }
+  async waitForExit() {
+    if (!this.process) {
+      if (this.exitError) {
+        throw this.exitError;
+      }
+      return;
+    }
+    if (this.process.exitCode !== null || this.process.killed) {
+      if (this.exitError) {
+        throw this.exitError;
+      }
+      return;
+    }
+    return new Promise((resolve, reject) => {
+      const exitHandler = (code, signal) => {
+        if (this.abortController.signal.aborted) {
+          reject(new AbortError("Operation aborted"));
+          return;
+        }
+        const error = this.getProcessExitError(code, signal);
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      };
+      this.process.once("exit", exitHandler);
+      const errorHandler = (error) => {
+        this.process.off("exit", exitHandler);
+        reject(error);
+      };
+      this.process.once("error", errorHandler);
+      this.process.once("exit", () => {
+        this.process.off("error", errorHandler);
+      });
+    });
+  }
+}
+function isNativeBinary(executablePath) {
+  const jsExtensions = [".js", ".mjs", ".tsx", ".ts", ".jsx"];
+  return !jsExtensions.some((ext) => executablePath.endsWith(ext));
+}
+
+// ../src/utils/stream.ts
+class Stream {
+  returned;
+  queue = [];
+  readResolve;
+  readReject;
+  isDone = false;
+  hasError;
+  started = false;
+  constructor(returned) {
+    this.returned = returned;
+  }
+  [Symbol.asyncIterator]() {
+    if (this.started) {
+      throw new Error("Stream can only be iterated once");
+    }
+    this.started = true;
+    return this;
+  }
+  next() {
+    if (this.queue.length > 0) {
+      return Promise.resolve({
+        done: false,
+        value: this.queue.shift(),
+      });
+    }
+    if (this.isDone) {
+      return Promise.resolve({ done: true, value: undefined });
+    }
+    if (this.hasError) {
+      return Promise.reject(this.hasError);
+    }
+    return new Promise((resolve, reject) => {
+      this.readResolve = resolve;
+      this.readReject = reject;
+    });
+  }
+  enqueue(value) {
+    if (this.readResolve) {
+      const resolve = this.readResolve;
+      this.readResolve = undefined;
+      this.readReject = undefined;
+      resolve({ done: false, value });
+    } else {
+      this.queue.push(value);
+    }
+  }
+  done() {
+    this.isDone = true;
+    if (this.readResolve) {
+      const resolve = this.readResolve;
+      this.readResolve = undefined;
+      this.readReject = undefined;
+      resolve({ done: true, value: undefined });
+    }
+  }
+  error(error) {
+    this.hasError = error;
+    if (this.readReject) {
+      const reject = this.readReject;
+      this.readResolve = undefined;
+      this.readReject = undefined;
+      reject(error);
+    }
+  }
+  return() {
+    this.isDone = true;
+    if (this.returned) {
+      this.returned();
+    }
+    return Promise.resolve({ done: true, value: undefined });
+  }
+}
+
+// ../src/services/mcp/SdkControlTransport.ts
+class SdkControlServerTransport {
+  sendMcpMessage;
+  isClosed = false;
+  constructor(sendMcpMessage) {
+    this.sendMcpMessage = sendMcpMessage;
+  }
+  onclose;
+  onerror;
+  onmessage;
+  async start() {}
+  async send(message) {
+    if (this.isClosed) {
+      throw new Error("Transport is closed");
+    }
+    this.sendMcpMessage(message);
+  }
+  async close() {
+    if (this.isClosed) {
+      return;
+    }
+    this.isClosed = true;
+    this.onclose?.();
+  }
+}
+
 // ../src/core/Query.ts
 import { randomUUID as randomUUID3 } from "crypto";
 
 class Query {
   transport;
-  isSingleUserTurn;
   canUseTool;
   hooks;
   abortController;
@@ -10672,12 +10743,22 @@ class Query {
   nextCallbackId = 0;
   sdkMcpTransports = new Map();
   pendingMcpResponses = new Map();
-  firstResultReceivedPromise;
-  firstResultReceivedResolve;
+  lastActivityTime = Date.now();
+  userInputEndedResolve;
   streamCloseTimeout;
+  resetLastActivityTime() {
+    this.lastActivityTime = Date.now();
+  }
+  hasBidirectionalNeeds() {
+    return (
+      this.sdkMcpTransports.size > 0 ||
+      (this.hooks !== undefined && Object.keys(this.hooks).length > 0) ||
+      this.canUseTool !== undefined
+    );
+  }
   constructor(
     transport,
-    isSingleUserTurn,
+    _isSingleUserTurn,
     canUseTool,
     hooks,
     abortController,
@@ -10686,13 +10767,12 @@ class Query {
     initConfig,
   ) {
     this.transport = transport;
-    this.isSingleUserTurn = isSingleUserTurn;
     this.canUseTool = canUseTool;
     this.hooks = hooks;
     this.abortController = abortController;
     this.jsonSchema = jsonSchema;
     this.initConfig = initConfig;
-    this.streamCloseTimeout = 60000;
+    this.streamCloseTimeout = 5000;
     if (
       typeof process !== "undefined" &&
       process.env?.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT
@@ -10709,9 +10789,6 @@ class Query {
       server.connect(sdkTransport);
     }
     this.sdkMessages = this.readSdkMessages();
-    this.firstResultReceivedPromise = new Promise((resolve) => {
-      this.firstResultReceivedResolve = resolve;
-    });
     this.readMessages();
     this.initialization = this.initialize();
     this.initialization.catch(() => {});
@@ -10759,6 +10836,7 @@ class Query {
   async readMessages() {
     try {
       for await (const message of this.transport.readMessages()) {
+        this.resetLastActivityTime();
         if (message.type === "control_response") {
           const handler = this.pendingControlResponses.get(
             message.response.request_id,
@@ -10776,19 +10854,17 @@ class Query {
         } else if (message.type === "keep_alive") {
           continue;
         }
-        if (message.type === "result") {
-          if (this.firstResultReceivedResolve) {
-            this.firstResultReceivedResolve();
-          }
-          if (this.isSingleUserTurn) {
-            this.transport.endInput();
-          }
-        }
         this.inputStream.enqueue(message);
+      }
+      if (this.userInputEndedResolve) {
+        this.userInputEndedResolve();
       }
       this.inputStream.done();
       this.cleanup();
     } catch (error) {
+      if (this.userInputEndedResolve) {
+        this.userInputEndedResolve();
+      }
       this.inputStream.error(error);
       this.cleanup(error);
     }
@@ -10966,9 +11042,9 @@ class Query {
       max_thinking_tokens: maxThinkingTokens,
     });
   }
-  async rewindCode(userMessageId) {
+  async rewindFiles(userMessageId) {
     await this.request({
-      subtype: "rewind_code",
+      subtype: "rewind_files",
       user_message_id: userMessageId,
     });
   }
@@ -11026,9 +11102,6 @@ class Query {
   }
   async streamInput(stream) {
     logForDebugging(`[Query.streamInput] Starting to process input stream`);
-    logForDebugging(
-      `[Query.streamInput] this.sdkMcpTransports.size = ${this.sdkMcpTransports.size}`,
-    );
     try {
       let messageCount = 0;
       for await (const message of stream) {
@@ -11048,39 +11121,11 @@ class Query {
       logForDebugging(
         `[Query.streamInput] Finished processing ${messageCount} messages from input stream`,
       );
-      logForDebugging(
-        `[Query.streamInput] About to check MCP servers. this.sdkMcpTransports.size = ${this.sdkMcpTransports.size}`,
-      );
-      const hasHooks = this.hooks && Object.keys(this.hooks).length > 0;
-      if (
-        (this.sdkMcpTransports.size > 0 || hasHooks) &&
-        this.firstResultReceivedPromise
-      ) {
+      if (this.hasBidirectionalNeeds()) {
         logForDebugging(
-          `[Query.streamInput] Entering Promise.race to wait for result`,
+          `[Query.streamInput] Has bidirectional needs, waiting for inactivity`,
         );
-        let timeoutId;
-        await Promise.race([
-          this.firstResultReceivedPromise.then(() => {
-            logForDebugging(
-              `[Query.streamInput] Received first result, closing input stream`,
-            );
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-          }),
-          new Promise((resolve) => {
-            timeoutId = setTimeout(() => {
-              logForDebugging(
-                `[Query.streamInput] Timed out waiting for first result, closing input stream`,
-              );
-              resolve();
-            }, this.streamCloseTimeout);
-          }),
-        ]);
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
+        await this.waitForInactivity();
       }
       logForDebugging(
         `[Query] Calling transport.endInput() to close stdin to CLI process`,
@@ -11091,6 +11136,55 @@ class Query {
         throw error;
       }
     }
+  }
+  async handleSingleTurnInputComplete() {
+    if (this.hasBidirectionalNeeds()) {
+      logForDebugging(
+        `[Query.handleSingleTurnInputComplete] Has bidirectional needs, waiting for inactivity`,
+      );
+      await this.waitForInactivity();
+    }
+    logForDebugging(
+      `[Query.handleSingleTurnInputComplete] Calling transport.endInput()`,
+    );
+    this.transport.endInput();
+  }
+  async waitForInactivity() {
+    logForDebugging(
+      `[Query.waitForInactivity] Waiting for inactivity (timeout: ${this.streamCloseTimeout}ms)`,
+    );
+    return new Promise((resolve) => {
+      this.userInputEndedResolve = resolve;
+      if (this.abortController?.signal.aborted) {
+        resolve();
+        return;
+      }
+      this.abortController?.signal.addEventListener("abort", () => resolve(), {
+        once: true,
+      });
+      const checkInactivity = () => {
+        if (this.abortController?.signal.aborted) {
+          resolve();
+          return;
+        }
+        const elapsed = Date.now() - this.lastActivityTime;
+        if (elapsed >= this.streamCloseTimeout) {
+          logForDebugging(
+            `[Query.waitForInactivity] Inactivity timeout reached (${elapsed}ms elapsed). ` +
+              `Closing stdin. If your tools or hooks need more time, set CLAUDE_CODE_STREAM_CLOSE_TIMEOUT ` +
+              `to a higher value (current: ${this.streamCloseTimeout}ms).`,
+          );
+          resolve();
+        } else {
+          const remaining = this.streamCloseTimeout - elapsed;
+          logForDebugging(
+            `[Query.waitForInactivity] Still active, checking again in ${remaining}ms`,
+          );
+          setTimeout(checkInactivity, remaining);
+        }
+      };
+      checkInactivity();
+    });
   }
   handleHookCallbacks(callbackId, input, toolUseID, abortSignal) {
     const callback = this.hookCallbacks.get(callbackId);
@@ -11165,7 +11259,19 @@ class SessionImpl {
   query;
   queryIterator = null;
   abortController;
+  _sessionId = null;
+  get sessionId() {
+    if (this._sessionId === null) {
+      throw new Error(
+        "Session ID not available until after receiving messages",
+      );
+    }
+    return this._sessionId;
+  }
   constructor(options) {
+    if (options.resume) {
+      this._sessionId = options.resume;
+    }
     this.inputStream = new Stream();
     let pathToClaudeCodeExecutable = options.pathToClaudeCodeExecutable;
     if (!pathToClaudeCodeExecutable) {
@@ -11173,7 +11279,7 @@ class SessionImpl {
       const dirname2 = join4(filename, "..");
       pathToClaudeCodeExecutable = join4(dirname2, "cli.js");
     }
-    const processEnv = { ...process.env };
+    const processEnv = { ...(options.env ?? process.env) };
     if (!processEnv.CLAUDE_CODE_ENTRYPOINT) {
       processEnv.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
     }
@@ -11241,6 +11347,9 @@ class SessionImpl {
       const { value, done } = await this.queryIterator.next();
       if (done) {
         return;
+      }
+      if (value.type === "system" && value.subtype === "init") {
+        this._sessionId = value.session_id;
       }
       yield value;
       if (value.type === "result") {
@@ -19329,7 +19438,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.62";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.65";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -19346,9 +19455,11 @@ function query({ prompt, options }) {
     executableArgs = [],
     extraArgs = {},
     fallbackModel,
+    enableFileCheckpointing,
     forkSession,
     hooks,
     includePartialMessages,
+    persistSession,
     maxThinkingTokens,
     maxTurns,
     maxBudgetUsd,
@@ -19372,6 +19483,9 @@ function query({ prompt, options }) {
   }
   if (!processEnv.CLAUDE_CODE_ENTRYPOINT) {
     processEnv.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
+  }
+  if (enableFileCheckpointing) {
+    processEnv.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   }
   if (!pathToClaudeCodeExecutable) {
     throw new Error("pathToClaudeCodeExecutable is required");
@@ -19425,8 +19539,10 @@ function query({ prompt, options }) {
     canUseTool: !!canUseTool,
     hooks: !!hooks,
     includePartialMessages,
+    persistSession,
     plugins,
     sandbox,
+    spawnClaudeCodeProcess: rest.spawnClaudeCodeProcess,
   });
   const initConfig = {
     systemPrompt: customSystemPrompt,
@@ -19457,6 +19573,7 @@ function query({ prompt, options }) {
         `
 `,
     );
+    queryInstance.handleSingleTurnInputComplete();
   } else {
     queryInstance.streamInput(prompt);
   }
