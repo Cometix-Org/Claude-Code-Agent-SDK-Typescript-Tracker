@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.69
+// Version: 0.1.70
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -9775,6 +9775,8 @@ function getInitialState() {
     sessionPersistenceDisabled: false,
     hasExitedPlanMode: false,
     needsPlanModeExitAttachment: false,
+    hasExitedDelegateMode: false,
+    needsDelegateModeExitAttachment: false,
     initJsonSchema: null,
     registeredHooks: null,
     planSlugCache: new Map(),
@@ -11096,6 +11098,13 @@ class Query {
     });
     const mcpStatusResponse = response.response;
     return mcpStatusResponse.mcpServers;
+  }
+  async setMcpServers(servers) {
+    const response = await this.request({
+      subtype: "mcp_set_servers",
+      servers,
+    });
+    return response.response;
   }
   async accountInfo() {
     return (await this.initialization).account;
@@ -19438,7 +19447,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.69";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.70";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
