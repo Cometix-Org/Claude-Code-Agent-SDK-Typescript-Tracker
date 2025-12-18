@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.71
+// Version: 0.1.72
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -15332,6 +15332,7 @@ function getInitialState() {
     registeredHooks: null,
     planSlugCache: new Map(),
     teleportedSessionInfo: null,
+    invokedSkills: new Map(),
   };
 }
 var STATE = getInitialState();
@@ -16280,6 +16281,7 @@ import { randomUUID as randomUUID3 } from "crypto";
 
 class Query {
   transport;
+  isSingleUserTurn;
   canUseTool;
   hooks;
   abortController;
@@ -16298,6 +16300,7 @@ class Query {
   lastActivityTime = Date.now();
   userInputEndedResolve;
   streamCloseTimeout;
+  firstResultReceivedResolve;
   resetLastActivityTime() {
     this.lastActivityTime = Date.now();
   }
@@ -16310,7 +16313,7 @@ class Query {
   }
   constructor(
     transport,
-    _isSingleUserTurn,
+    isSingleUserTurn,
     canUseTool,
     hooks,
     abortController,
@@ -16319,6 +16322,7 @@ class Query {
     initConfig,
   ) {
     this.transport = transport;
+    this.isSingleUserTurn = isSingleUserTurn;
     this.canUseTool = canUseTool;
     this.hooks = hooks;
     this.abortController = abortController;
@@ -16405,6 +16409,17 @@ class Query {
           continue;
         } else if (message.type === "keep_alive") {
           continue;
+        }
+        if (message.type === "result") {
+          if (this.firstResultReceivedResolve) {
+            this.firstResultReceivedResolve();
+          }
+          if (this.isSingleUserTurn) {
+            logForDebugging(
+              `[Query.readMessages] First result received for single-turn query, closing stdin`,
+            );
+            this.transport.endInput();
+          }
         }
         this.inputStream.enqueue(message);
       }
@@ -16696,18 +16711,6 @@ class Query {
       }
     }
   }
-  async handleSingleTurnInputComplete() {
-    if (this.hasBidirectionalNeeds()) {
-      logForDebugging(
-        `[Query.handleSingleTurnInputComplete] Has bidirectional needs, waiting for inactivity`,
-      );
-      await this.waitForInactivity();
-    }
-    logForDebugging(
-      `[Query.handleSingleTurnInputComplete] Calling transport.endInput()`,
-    );
-    this.transport.endInput();
-  }
   async waitForInactivity() {
     logForDebugging(
       `[Query.waitForInactivity] Waiting for inactivity (timeout: ${this.streamCloseTimeout}ms)`,
@@ -16898,7 +16901,7 @@ class SessionImpl {
         : message;
     this.inputStream.enqueue(userMessage);
   }
-  async *receive() {
+  async *stream() {
     if (!this.queryIterator) {
       this.queryIterator = this.query[Symbol.asyncIterator]();
     }
@@ -31534,7 +31537,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.71";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.72";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
@@ -31669,7 +31672,6 @@ function query({ prompt, options }) {
         `
 `,
     );
-    queryInstance.handleSingleTurnInputComplete();
   } else {
     queryInstance.streamInput(prompt);
   }
@@ -31686,7 +31688,7 @@ async function unstable_v2_prompt(message, options) {
   try {
     const session = __using(__stack, createSession(options), 1);
     await session.send(message);
-    for await (const msg of session.receive()) {
+    for await (const msg of session.stream()) {
       if (msg.type === "result") {
         return msg;
       }
