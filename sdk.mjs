@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.72
+// Version: 0.1.73
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -16297,13 +16297,8 @@ class Query {
   nextCallbackId = 0;
   sdkMcpTransports = new Map();
   pendingMcpResponses = new Map();
-  lastActivityTime = Date.now();
-  userInputEndedResolve;
-  streamCloseTimeout;
   firstResultReceivedResolve;
-  resetLastActivityTime() {
-    this.lastActivityTime = Date.now();
-  }
+  firstResultReceived = false;
   hasBidirectionalNeeds() {
     return (
       this.sdkMcpTransports.size > 0 ||
@@ -16328,15 +16323,6 @@ class Query {
     this.abortController = abortController;
     this.jsonSchema = jsonSchema;
     this.initConfig = initConfig;
-    this.streamCloseTimeout = 5000;
-    if (
-      typeof process !== "undefined" &&
-      process.env?.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT
-    ) {
-      this.streamCloseTimeout = parseInt(
-        process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT,
-      );
-    }
     for (const [name, server] of sdkMcpServers) {
       const sdkTransport = new SdkControlServerTransport((message) =>
         this.sendMcpServerMessageToCli(name, message),
@@ -16392,7 +16378,6 @@ class Query {
   async readMessages() {
     try {
       for await (const message of this.transport.readMessages()) {
-        this.resetLastActivityTime();
         if (message.type === "control_response") {
           const handler = this.pendingControlResponses.get(
             message.response.request_id,
@@ -16411,6 +16396,7 @@ class Query {
           continue;
         }
         if (message.type === "result") {
+          this.firstResultReceived = true;
           if (this.firstResultReceivedResolve) {
             this.firstResultReceivedResolve();
           }
@@ -16423,14 +16409,14 @@ class Query {
         }
         this.inputStream.enqueue(message);
       }
-      if (this.userInputEndedResolve) {
-        this.userInputEndedResolve();
+      if (this.firstResultReceivedResolve) {
+        this.firstResultReceivedResolve();
       }
       this.inputStream.done();
       this.cleanup();
     } catch (error) {
-      if (this.userInputEndedResolve) {
-        this.userInputEndedResolve();
+      if (this.firstResultReceivedResolve) {
+        this.firstResultReceivedResolve();
       }
       this.inputStream.error(error);
       this.cleanup(error);
@@ -16697,9 +16683,9 @@ class Query {
       );
       if (this.hasBidirectionalNeeds()) {
         logForDebugging(
-          `[Query.streamInput] Has bidirectional needs, waiting for inactivity`,
+          `[Query.streamInput] Has bidirectional needs, waiting for first result`,
         );
-        await this.waitForInactivity();
+        await this.waitForFirstResult();
       }
       logForDebugging(
         `[Query] Calling transport.endInput() to close stdin to CLI process`,
@@ -16711,12 +16697,14 @@ class Query {
       }
     }
   }
-  async waitForInactivity() {
-    logForDebugging(
-      `[Query.waitForInactivity] Waiting for inactivity (timeout: ${this.streamCloseTimeout}ms)`,
-    );
+  waitForFirstResult() {
+    if (this.firstResultReceived) {
+      logForDebugging(
+        `[Query.waitForFirstResult] Result already received, returning immediately`,
+      );
+      return Promise.resolve();
+    }
     return new Promise((resolve) => {
-      this.userInputEndedResolve = resolve;
       if (this.abortController?.signal.aborted) {
         resolve();
         return;
@@ -16724,28 +16712,7 @@ class Query {
       this.abortController?.signal.addEventListener("abort", () => resolve(), {
         once: true,
       });
-      const checkInactivity = () => {
-        if (this.abortController?.signal.aborted) {
-          resolve();
-          return;
-        }
-        const elapsed = Date.now() - this.lastActivityTime;
-        if (elapsed >= this.streamCloseTimeout) {
-          logForDebugging(
-            `[Query.waitForInactivity] Inactivity timeout reached (${elapsed}ms elapsed). ` +
-              `Closing stdin. If your tools or hooks need more time, set CLAUDE_CODE_STREAM_CLOSE_TIMEOUT ` +
-              `to a higher value (current: ${this.streamCloseTimeout}ms).`,
-          );
-          resolve();
-        } else {
-          const remaining = this.streamCloseTimeout - elapsed;
-          logForDebugging(
-            `[Query.waitForInactivity] Still active, checking again in ${remaining}ms`,
-          );
-          setTimeout(checkInactivity, remaining);
-        }
-      };
-      checkInactivity();
+      this.firstResultReceivedResolve = resolve;
     });
   }
   handleHookCallbacks(callbackId, input, toolUseID, abortSignal) {
@@ -31537,7 +31504,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.72";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.73";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
