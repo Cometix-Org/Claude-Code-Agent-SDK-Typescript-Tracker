@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.1.73
+// Version: 0.1.74
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -15328,6 +15328,7 @@ function getInitialState() {
     needsPlanModeExitAttachment: false,
     hasExitedDelegateMode: false,
     needsDelegateModeExitAttachment: false,
+    lspRecommendationShownThisSession: false,
     initJsonSchema: null,
     registeredHooks: null,
     planSlugCache: new Map(),
@@ -16296,6 +16297,7 @@ class Query {
   hookCallbacks = new Map();
   nextCallbackId = 0;
   sdkMcpTransports = new Map();
+  sdkMcpServerInstances = new Map();
   pendingMcpResponses = new Map();
   firstResultReceivedResolve;
   firstResultReceived = false;
@@ -16324,11 +16326,7 @@ class Query {
     this.jsonSchema = jsonSchema;
     this.initConfig = initConfig;
     for (const [name, server] of sdkMcpServers) {
-      const sdkTransport = new SdkControlServerTransport((message) =>
-        this.sendMcpServerMessageToCli(name, message),
-      );
-      this.sdkMcpTransports.set(name, sdkTransport);
-      server.connect(sdkTransport);
+      this.connectSdkMcpServer(name, server);
     }
     this.sdkMessages = this.readSdkMessages();
     this.readMessages();
@@ -16651,9 +16649,34 @@ class Query {
     return mcpStatusResponse.mcpServers;
   }
   async setMcpServers(servers) {
+    const sdkServers = {};
+    const processServers = {};
+    for (const [name, config] of Object.entries(servers)) {
+      if (config.type === "sdk" && "instance" in config) {
+        sdkServers[name] = config.instance;
+      } else {
+        processServers[name] = config;
+      }
+    }
+    const currentSdkNames = new Set(this.sdkMcpServerInstances.keys());
+    const newSdkNames = new Set(Object.keys(sdkServers));
+    for (const name of currentSdkNames) {
+      if (!newSdkNames.has(name)) {
+        await this.disconnectSdkMcpServer(name);
+      }
+    }
+    for (const [name, server] of Object.entries(sdkServers)) {
+      if (!currentSdkNames.has(name)) {
+        this.connectSdkMcpServer(name, server);
+      }
+    }
+    const sdkServerConfigs = {};
+    for (const name of Object.keys(sdkServers)) {
+      sdkServerConfigs[name] = { type: "sdk", name };
+    }
     const response = await this.request({
       subtype: "mcp_set_servers",
-      servers,
+      servers: { ...processServers, ...sdkServerConfigs },
     });
     return response.response;
   }
@@ -16723,6 +16746,22 @@ class Query {
     return callback(input, toolUseID, {
       signal: abortSignal,
     });
+  }
+  connectSdkMcpServer(name, server) {
+    const sdkTransport = new SdkControlServerTransport((message) =>
+      this.sendMcpServerMessageToCli(name, message),
+    );
+    this.sdkMcpTransports.set(name, sdkTransport);
+    this.sdkMcpServerInstances.set(name, server);
+    server.connect(sdkTransport);
+  }
+  async disconnectSdkMcpServer(name) {
+    const transport = this.sdkMcpTransports.get(name);
+    if (transport) {
+      await transport.close();
+      this.sdkMcpTransports.delete(name);
+    }
+    this.sdkMcpServerInstances.delete(name);
   }
   sendMcpServerMessageToCli(serverName, message) {
     if ("id" in message && message.id !== null && message.id !== undefined) {
@@ -31504,7 +31543,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.73";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.1.74";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
