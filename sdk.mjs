@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.1
+// Version: 0.2.2
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -8632,6 +8632,7 @@ function getInitialState() {
     invokedSkills: new Map(),
     slowOperations: [],
     sdkBetas: undefined,
+    mainThreadAgentType: undefined,
   };
 }
 var STATE = getInitialState();
@@ -10221,17 +10222,17 @@ class SessionImpl {
       maxBudgetUsd: undefined,
       model: options.model,
       fallbackModel: undefined,
-      permissionMode: "default",
+      permissionMode: options.permissionMode ?? "default",
       allowDangerouslySkipPermissions: false,
       continueConversation: false,
       resume: options.resume,
       settingSources: [],
-      allowedTools: [],
-      disallowedTools: [],
+      allowedTools: options.allowedTools ?? [],
+      disallowedTools: options.disallowedTools ?? [],
       mcpServers: {},
       strictMcpConfig: false,
-      canUseTool: false,
-      hooks: false,
+      canUseTool: !!options.canUseTool,
+      hooks: !!options.hooks,
       includePartialMessages: false,
       forkSession: false,
       resumeSessionAt: undefined,
@@ -10239,8 +10240,8 @@ class SessionImpl {
     this.query = new Query(
       transport,
       false,
-      undefined,
-      undefined,
+      options.canUseTool,
+      options.hooks,
       this.abortController,
       new Map(),
     );
@@ -24900,7 +24901,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.1";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.2";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
