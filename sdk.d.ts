@@ -443,6 +443,7 @@ export declare type ModelUsage = {
   webSearchRequests: number;
   costUSD: number;
   contextWindow: number;
+  maxOutputTokens: number;
 };
 
 export declare type NonNullableUsage = {
@@ -1404,6 +1405,7 @@ export declare type SDKResultSuccess = {
  * V2 API - UNSTABLE
  * Session interface for multi-turn conversations.
  * Has methods, so not serializable.
+ * @alpha
  */
 export declare interface SDKSession {
   /**
@@ -1425,6 +1427,7 @@ export declare interface SDKSession {
 /**
  * V2 API - UNSTABLE
  * Options for creating a session.
+ * @alpha
  */
 export declare type SDKSessionOptions = {
   /** Model to use */
@@ -1740,6 +1743,7 @@ export declare interface Transport {
 /**
  * V2 API - UNSTABLE
  * Create a persistent session for multi-turn conversations.
+ * @alpha
  */
 export declare function unstable_v2_createSession(
   _options: SDKSessionOptions,
@@ -1748,6 +1752,7 @@ export declare function unstable_v2_createSession(
 /**
  * V2 API - UNSTABLE
  * One-shot convenience function for single prompts.
+ * @alpha
  *
  * @example
  * ```typescript
@@ -1764,6 +1769,7 @@ export declare function unstable_v2_prompt(
 /**
  * V2 API - UNSTABLE
  * Resume an existing session by ID.
+ * @alpha
  */
 export declare function unstable_v2_resumeSession(
   _sessionId: string,

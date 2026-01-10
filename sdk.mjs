@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.2
+// Version: 0.2.3
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -8619,6 +8619,7 @@ function getInitialState() {
     inMemoryErrorLog: [],
     inlinePlugins: [],
     sessionBypassPermissionsMode: false,
+    sessionTrustAccepted: false,
     sessionPersistenceDisabled: false,
     hasExitedPlanMode: false,
     needsPlanModeExitAttachment: false,
@@ -8638,19 +8639,6 @@ function getInitialState() {
 var STATE = getInitialState();
 function getSessionId() {
   return STATE.sessionId;
-}
-var MAX_SLOW_OPERATIONS = 10;
-var SLOW_OPERATION_TTL_MS = 1e4;
-function addSlowOperation(operation, durationMs) {
-  if (true) return;
-  const now = Date.now();
-  STATE.slowOperations = STATE.slowOperations.filter(
-    (op) => now - op.timestamp < SLOW_OPERATION_TTL_MS,
-  );
-  STATE.slowOperations.push({ operation, durationMs, timestamp: now });
-  if (STATE.slowOperations.length > MAX_SLOW_OPERATIONS) {
-    STATE.slowOperations = STATE.slowOperations.slice(-MAX_SLOW_OPERATIONS);
-  }
 }
 
 // ../src/utils/bufferedWriter.ts
@@ -8724,11 +8712,7 @@ function withSlowLogging(operation, fn) {
     return fn();
   } finally {
     const duration = performance.now() - startTime;
-    if (duration > SLOW_OPERATION_THRESHOLD_MS) {
-      logForDebugging(
-        `[SLOW OPERATION DETECTED] ${operation} (${duration.toFixed(1)}ms)`,
-      );
-      addSlowOperation(operation, duration);
+    if (duration > SLOW_OPERATION_THRESHOLD_MS && false) {
     }
   }
 }
@@ -8803,7 +8787,7 @@ function getDebugWriter() {
   }
   return debugWriter;
 }
-function logForDebugging(
+function logForDebugging2(
   message,
   { level } = {
     level: "debug",
@@ -8855,17 +8839,18 @@ var updateLatestDebugLogSymlink = memoize_default(() => {
 });
 
 // ../src/utils/fsOperations.ts
+var isLoggingSlowOperation = false;
 function withSlowLogging2(operation, fn) {
   const startTime = performance.now();
   try {
     return fn();
   } finally {
     const duration = performance.now() - startTime;
-    if (duration > SLOW_OPERATION_THRESHOLD_MS) {
-      logForDebugging(
-        `[SLOW OPERATION DETECTED] fs.${operation} (${duration.toFixed(1)}ms)`,
-      );
-      addSlowOperation(`fs.${operation}`, duration);
+    if (
+      duration > SLOW_OPERATION_THRESHOLD_MS &&
+      !isLoggingSlowOperation &&
+      false
+    ) {
     }
   }
 }
@@ -9755,7 +9740,7 @@ class Query {
             this.firstResultReceivedResolve();
           }
           if (this.isSingleUserTurn) {
-            logForDebugging(
+            logForDebugging2(
               `[Query.readMessages] First result received for single-turn query, closing stdin`,
             );
             this.transport.endInput();
@@ -10042,12 +10027,12 @@ class Query {
     return (await this.initialization).account;
   }
   async streamInput(stream) {
-    logForDebugging(`[Query.streamInput] Starting to process input stream`);
+    logForDebugging2(`[Query.streamInput] Starting to process input stream`);
     try {
       let messageCount = 0;
       for await (const message of stream) {
         messageCount++;
-        logForDebugging(
+        logForDebugging2(
           `[Query.streamInput] Processing message ${messageCount}: ${message.type}`,
         );
         if (this.abortController?.signal.aborted) break;
@@ -10059,16 +10044,16 @@ class Query {
           ),
         );
       }
-      logForDebugging(
+      logForDebugging2(
         `[Query.streamInput] Finished processing ${messageCount} messages from input stream`,
       );
       if (messageCount > 0 && this.hasBidirectionalNeeds()) {
-        logForDebugging(
+        logForDebugging2(
           `[Query.streamInput] Has bidirectional needs, waiting for first result`,
         );
         await this.waitForFirstResult();
       }
-      logForDebugging(
+      logForDebugging2(
         `[Query] Calling transport.endInput() to close stdin to CLI process`,
       );
       this.transport.endInput();
@@ -10080,7 +10065,7 @@ class Query {
   }
   waitForFirstResult() {
     if (this.firstResultReceived) {
-      logForDebugging(
+      logForDebugging2(
         `[Query.waitForFirstResult] Result already received, returning immediately`,
       );
       return Promise.resolve();
@@ -24901,7 +24886,7 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.2";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.3";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
