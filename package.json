@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "engines": {
