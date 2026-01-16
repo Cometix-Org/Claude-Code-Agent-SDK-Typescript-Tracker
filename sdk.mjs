@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.7
+// Version: 0.2.9
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -8609,6 +8609,7 @@ function getInitialState() {
     codeEditToolDecisionCounter: null,
     activeTimeCounter: null,
     sessionId: randomUUID(),
+    parentSessionId: undefined,
     loggerProvider: null,
     eventLogger: null,
     meterProvider: null,
@@ -9139,6 +9140,7 @@ class ProcessTransport {
     try {
       const {
         additionalDirectories = [],
+        agent,
         betas,
         cwd: cwd2,
         executable = this.getDefaultExecutable(),
@@ -9183,6 +9185,7 @@ class ProcessTransport {
         args.push("--max-budget-usd", maxBudgetUsd.toString());
       }
       if (model) args.push("--model", model);
+      if (agent) args.push("--agent", agent);
       if (betas && betas.length > 0) {
         args.push("--betas", betas.join(","));
       }
@@ -9439,8 +9442,17 @@ class ProcessTransport {
     try {
       for await (const line of rl) {
         if (line.trim()) {
-          const message = jsonParse(line);
-          yield message;
+          try {
+            const message = jsonParse(line);
+            yield message;
+          } catch (_parseError) {
+            logForSdkDebugging(`Non-JSON stdout: ${line}`);
+            throw new Error(
+              `CLI output was not valid JSON. ` +
+                `This may indicate an error during startup. ` +
+                `Output: ${line.slice(0, 200)}${line.length > 200 ? "..." : ""}`,
+            );
+          }
         }
       }
       await this.waitForExit();
@@ -24887,10 +24899,11 @@ function query({ prompt, options }) {
     const dirname2 = join5(filename, "..");
     pathToClaudeCodeExecutable = join5(dirname2, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.7";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.9";
   const {
     abortController = createAbortController(),
     additionalDirectories = [],
+    agent,
     agents,
     allowedTools = [],
     betas,
@@ -24958,6 +24971,7 @@ function query({ prompt, options }) {
   const transport = new ProcessTransport({
     abortController,
     additionalDirectories,
+    agent,
     betas,
     cwd: cwd2,
     executable,

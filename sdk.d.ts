@@ -473,6 +473,25 @@ export declare type Options = {
    */
   additionalDirectories?: string[];
   /**
+   * Agent name for the main thread. When specified, the agent's system prompt,
+   * tool restrictions, and model will be applied to the main conversation.
+   * The agent must be defined either in the `agents` option or in settings.
+   *
+   * This is equivalent to the `--agent` CLI flag.
+   *
+   * @example
+   * ```typescript
+   * agent: 'code-reviewer',
+   * agents: {
+   *   'code-reviewer': {
+   *     description: 'Reviews code for best practices',
+   *     prompt: 'You are a code reviewer...'
+   *   }
+   * }
+   * ```
+   */
+  agent?: string;
+  /**
    * Programmatically define custom subagents that can be invoked via the Task tool.
    * Keys are agent names, values are agent definitions.
    *
@@ -944,6 +963,7 @@ export declare type PreToolUseHookSpecificOutput = {
   permissionDecision?: "allow" | "deny" | "ask";
   permissionDecisionReason?: string;
   updatedInput?: Record<string, unknown>;
+  additionalContext?: string;
 };
 
 /**
@@ -1553,6 +1573,7 @@ export declare type SessionStartHookInput = BaseHookInput & {
   hook_event_name: "SessionStart";
   source: "startup" | "resume" | "clear" | "compact";
   agent_type?: string;
+  model?: string;
 };
 
 export declare type SessionStartHookSpecificOutput = {
