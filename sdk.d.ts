@@ -54,6 +54,14 @@ export declare type AgentDefinition = {
    * Experimental: Critical reminder added to system prompt
    */
   criticalSystemReminder_EXPERIMENTAL?: string;
+  /**
+   * Array of skill names to preload into the agent context
+   */
+  skills?: string[];
+  /**
+   * Maximum number of agentic turns (API round-trips) before stopping
+   */
+  maxTurns?: number;
 };
 
 export declare type AgentMcpServerSpec =
@@ -197,6 +205,7 @@ declare namespace coreTypes {
     SDKStatusMessage,
     SDKStatus,
     SDKSystemMessage,
+    SDKTaskNotificationMessage,
     SDKToolProgressMessage,
     SDKUserMessageReplay,
     SDKUserMessage,
@@ -206,6 +215,8 @@ declare namespace coreTypes {
     SessionStartHookInput,
     SessionStartHookSpecificOutput,
     SettingSource,
+    SetupHookInput,
+    SetupHookSpecificOutput,
     SlashCommand,
     StopHookInput,
     SubagentStartHookInput,
@@ -261,6 +272,7 @@ export declare const HOOK_EVENTS: readonly [
   "SubagentStop",
   "PreCompact",
   "PermissionRequest",
+  "Setup",
 ];
 
 /**
@@ -296,7 +308,8 @@ export declare type HookEvent =
   | "SubagentStart"
   | "SubagentStop"
   | "PreCompact"
-  | "PermissionRequest";
+  | "PermissionRequest"
+  | "Setup";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -310,7 +323,8 @@ export declare type HookInput =
   | SubagentStartHookInput
   | SubagentStopHookInput
   | PreCompactHookInput
-  | PermissionRequestHookInput;
+  | PermissionRequestHookInput
+  | SetupHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -1352,7 +1366,8 @@ export declare type SDKMessage =
   | SDKStatusMessage
   | SDKHookResponseMessage
   | SDKToolProgressMessage
-  | SDKAuthStatusMessage;
+  | SDKAuthStatusMessage
+  | SDKTaskNotificationMessage;
 
 export declare type SDKPartialAssistantMessage = {
   type: "stream_event";
@@ -1533,6 +1548,17 @@ export declare type SDKSystemMessage = {
   session_id: string;
 };
 
+export declare type SDKTaskNotificationMessage = {
+  type: "system";
+  subtype: "task_notification";
+  task_id: string;
+  status: "completed" | "failed" | "stopped";
+  output_file: string;
+  summary: string;
+  uuid: UUID;
+  session_id: string;
+};
+
 export declare type SDKToolProgressMessage = {
   type: "tool_progress";
   tool_use_id: string;
@@ -1585,6 +1611,16 @@ export declare type SessionStartHookSpecificOutput = {
  * Source for loading filesystem-based settings. 'user' - Global user settings (~/.claude/settings.json). 'project' - Project settings (.claude/settings.json). 'local' - Local settings (.claude/settings.local.json).
  */
 export declare type SettingSource = "user" | "project" | "local";
+
+export declare type SetupHookInput = BaseHookInput & {
+  hook_event_name: "Setup";
+  trigger: "init" | "maintenance";
+};
+
+export declare type SetupHookSpecificOutput = {
+  hookEventName: "Setup";
+  additionalContext?: string;
+};
 
 /**
  * Information about an available skill (invoked via /command syntax).
@@ -1715,6 +1751,7 @@ export declare type SyncHookJSONOutput = {
     | PreToolUseHookSpecificOutput
     | UserPromptSubmitHookSpecificOutput
     | SessionStartHookSpecificOutput
+    | SetupHookSpecificOutput
     | SubagentStartHookSpecificOutput
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
