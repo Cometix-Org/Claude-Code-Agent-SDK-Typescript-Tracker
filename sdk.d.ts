@@ -173,6 +173,7 @@ declare namespace coreTypes {
     ModelInfo,
     ModelUsage,
     NotificationHookInput,
+    NotificationHookSpecificOutput,
     OutputFormat,
     OutputFormatType,
     PermissionBehavior,
@@ -196,6 +197,7 @@ declare namespace coreTypes {
     SDKAuthStatusMessage,
     SDKCompactBoundaryMessage,
     SDKHookResponseMessage,
+    SDKHookStartedMessage,
     SDKMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
@@ -469,6 +471,11 @@ export declare type NotificationHookInput = BaseHookInput & {
   message: string;
   title?: string;
   notification_type: string;
+};
+
+export declare type NotificationHookSpecificOutput = {
+  hookEventName: "Notification";
+  additionalContext?: string;
 };
 
 /**
@@ -1084,6 +1091,15 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * @param stream - Async iterable of user messages to send
    */
   streamInput(stream: AsyncIterable<SDKUserMessage>): Promise<void>;
+  /**
+   * Close the query and terminate the underlying process.
+   * This forcefully ends the query, cleaning up all resources including
+   * pending requests, MCP transports, and the CLI subprocess.
+   *
+   * Use this when you need to abort a query that is still running.
+   * After calling close(), no further messages will be received.
+   */
+  close(): void;
 }
 
 export declare function query(_params: {
@@ -1235,6 +1251,11 @@ declare type SDKControlMcpMessageRequest = {
   message: JSONRPCMessage;
 };
 
+declare type SDKControlMcpReconnectRequest = {
+  subtype: "mcp_reconnect";
+  serverName: string;
+};
+
 declare type SDKControlMcpSetServersRequest = {
   subtype: "mcp_set_servers";
   servers: Record<string, coreTypes.McpServerConfigForProcessTransport>;
@@ -1242,6 +1263,12 @@ declare type SDKControlMcpSetServersRequest = {
 
 declare type SDKControlMcpStatusRequest = {
   subtype: "mcp_status";
+};
+
+declare type SDKControlMcpToggleRequest = {
+  subtype: "mcp_toggle";
+  serverName: string;
+  enabled: boolean;
 };
 
 declare type SDKControlPermissionRequest = {
@@ -1272,7 +1299,9 @@ declare type SDKControlRequestInner =
   | SDKHookCallbackRequest
   | SDKControlMcpMessageRequest
   | SDKControlRewindFilesRequest
-  | SDKControlMcpSetServersRequest;
+  | SDKControlMcpSetServersRequest
+  | SDKControlMcpReconnectRequest
+  | SDKControlMcpToggleRequest;
 
 declare type SDKControlResponse = {
   type: "control_response";
@@ -1322,11 +1351,24 @@ declare type SDKHookCallbackRequest = {
 export declare type SDKHookResponseMessage = {
   type: "system";
   subtype: "hook_response";
+  hook_id: string;
   hook_name: string;
   hook_event: string;
+  output: string;
   stdout: string;
   stderr: string;
   exit_code?: number;
+  outcome: "success" | "error" | "cancelled";
+  uuid: UUID;
+  session_id: string;
+};
+
+export declare type SDKHookStartedMessage = {
+  type: "system";
+  subtype: "hook_started";
+  hook_id: string;
+  hook_name: string;
+  hook_event: string;
   uuid: UUID;
   session_id: string;
 };
@@ -1364,6 +1406,7 @@ export declare type SDKMessage =
   | SDKPartialAssistantMessage
   | SDKCompactBoundaryMessage
   | SDKStatusMessage
+  | SDKHookStartedMessage
   | SDKHookResponseMessage
   | SDKToolProgressMessage
   | SDKAuthStatusMessage
@@ -1755,6 +1798,7 @@ export declare type SyncHookJSONOutput = {
     | SubagentStartHookSpecificOutput
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
+    | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput;
 };
 
