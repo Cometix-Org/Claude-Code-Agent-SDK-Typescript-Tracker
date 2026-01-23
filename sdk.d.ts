@@ -196,6 +196,7 @@ declare namespace coreTypes {
     SDKAssistantMessage,
     SDKAuthStatusMessage,
     SDKCompactBoundaryMessage,
+    SDKHookProgressMessage,
     SDKHookResponseMessage,
     SDKHookStartedMessage,
     SDKMessage,
@@ -1348,6 +1349,19 @@ declare type SDKHookCallbackRequest = {
   tool_use_id?: string;
 };
 
+export declare type SDKHookProgressMessage = {
+  type: "system";
+  subtype: "hook_progress";
+  hook_id: string;
+  hook_name: string;
+  hook_event: string;
+  stdout: string;
+  stderr: string;
+  output: string;
+  uuid: UUID;
+  session_id: string;
+};
+
 export declare type SDKHookResponseMessage = {
   type: "system";
   subtype: "hook_response";
@@ -1407,6 +1421,7 @@ export declare type SDKMessage =
   | SDKCompactBoundaryMessage
   | SDKStatusMessage
   | SDKHookStartedMessage
+  | SDKHookProgressMessage
   | SDKHookResponseMessage
   | SDKToolProgressMessage
   | SDKAuthStatusMessage

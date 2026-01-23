@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.15
+// Version: 0.2.17
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -2114,7 +2114,7 @@ var F3 = P((L3) => {
   }
   L3.extendSubschemaMode = mD;
 });
-var DY = P((mv, N3) => {
+var DY = P((pv, N3) => {
   N3.exports = function X(Q, $) {
     if (Q === $) return !0;
     if (Q && $ && typeof Q == "object" && typeof $ == "object") {
@@ -2144,7 +2144,7 @@ var DY = P((mv, N3) => {
     return Q !== Q && $ !== $;
   };
 });
-var D3 = P((cv, O3) => {
+var D3 = P((dv, O3) => {
   var p1 = (O3.exports = function (X, Q, $) {
     if (typeof Q == "function") (($ = Q), (Q = {}));
     $ = Q.cb || $;
@@ -3063,7 +3063,7 @@ var _9 = P((i3) => {
     return;
   }
 });
-var r3 = P((ov, dA) => {
+var r3 = P((av, dA) => {
   dA.exports = {
     $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
     description:
@@ -3082,7 +3082,7 @@ var r3 = P((ov, dA) => {
     additionalProperties: !1,
   };
 });
-var t3 = P((tv, o3) => {
+var t3 = P((sv, o3) => {
   var iA = {
     0: 0,
     1: 1,
@@ -3109,7 +3109,7 @@ var t3 = P((tv, o3) => {
   };
   o3.exports = { HEX: iA };
 });
-var WH = P((av, YH) => {
+var WH = P((ev, YH) => {
   var { HEX: nA } = t3(),
     rA =
       /^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u;
@@ -3263,7 +3263,7 @@ var WH = P((av, YH) => {
     stringArrayToHexStripped: PY,
   };
 });
-var KH = P((sv, zH) => {
+var KH = P((XT, zH) => {
   var Qw = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu,
     $w = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
   function JH(X) {
@@ -3357,7 +3357,7 @@ var KH = P((sv, zH) => {
     SY = { http: BH, https: zw, ws: x9, wss: Kw, urn: Uw, "urn:uuid": Vw };
   zH.exports = SY;
 });
-var VH = P((ev, g9) => {
+var VH = P((QT, g9) => {
   var {
       normalizeIPv6: Lw,
       normalizeIPv4: qw,
@@ -5840,7 +5840,7 @@ var Dz = P((Oz) => {
     };
   Oz.default = gR;
 });
-var Az = P((nT, fR) => {
+var Az = P((oT, fR) => {
   fR.exports = {
     $schema: "http://json-schema.org/draft-07/schema#",
     $id: "http://json-schema.org/draft-07/schema#",
@@ -11062,7 +11062,7 @@ class R4 extends p {
 R4.create = (X) => {
   return new R4({ typeName: j.ZodNaN, ...l(X) });
 };
-var H2 = Symbol("zod_brand");
+var z2 = Symbol("zod_brand");
 class D8 extends p {
   _parse(X) {
     let { ctx: Q } = this._processInputParams(X),
@@ -11129,7 +11129,7 @@ class NX extends p {
 NX.create = (X, Q) => {
   return new NX({ innerType: X, typeName: j.ZodReadonly, ...l(Q) });
 };
-var B2 = { object: V0.lazycreate },
+var K2 = { object: V0.lazycreate },
   j;
 (function (X) {
   ((X.ZodString = "ZodString"),
@@ -11169,40 +11169,40 @@ var B2 = { object: V0.lazycreate },
     (X.ZodPipeline = "ZodPipeline"),
     (X.ZodReadonly = "ZodReadonly"));
 })(j || (j = {}));
-var z2 = A1.create,
-  K2 = I6.create,
-  U2 = R4.create,
-  V2 = b6.create,
-  L2 = O4.create,
-  q2 = GX.create,
-  F2 = D4.create,
-  N2 = HX.create,
-  O2 = BX.create,
-  D2 = A4.create,
-  A2 = t1.create,
-  w2 = w1.create,
-  M2 = w4.create,
-  j2 = J1.create,
+var U2 = A1.create,
+  V2 = I6.create,
+  L2 = R4.create,
+  q2 = b6.create,
+  F2 = O4.create,
+  N2 = GX.create,
+  O2 = D4.create,
+  D2 = HX.create,
+  A2 = BX.create,
+  w2 = A4.create,
+  M2 = t1.create,
+  j2 = w1.create,
+  R2 = w4.create,
+  E2 = J1.create,
   FW = V0.create,
-  R2 = V0.strictCreate,
-  E2 = zX.create,
-  I2 = O8.create,
-  b2 = KX.create,
-  P2 = M1.create,
-  S2 = M4.create,
-  Z2 = j4.create,
-  C2 = P6.create,
-  k2 = JX.create,
-  v2 = UX.create,
-  T2 = VX.create,
-  _2 = a1.create,
-  x2 = LX.create,
-  y2 = S6.create,
-  g2 = H1.create,
-  h2 = G1.create,
-  f2 = T1.create,
-  u2 = H1.createWithPreprocess,
-  l2 = E4.create;
+  I2 = V0.strictCreate,
+  b2 = zX.create,
+  P2 = O8.create,
+  S2 = KX.create,
+  Z2 = M1.create,
+  C2 = M4.create,
+  k2 = j4.create,
+  v2 = P6.create,
+  T2 = JX.create,
+  _2 = UX.create,
+  x2 = VX.create,
+  y2 = a1.create,
+  g2 = LX.create,
+  h2 = S6.create,
+  f2 = H1.create,
+  u2 = G1.create,
+  l2 = T1.create,
+  m2 = H1.createWithPreprocess,
+  c2 = E4.create;
 var wV = Object.freeze({ status: "aborted" });
 function O(X, Q, $) {
   function Y(H, B) {
@@ -14603,7 +14603,7 @@ var hJ = (X, Q) => {
         },
       }));
   },
-  nS = O("ZodError", hJ),
+  oS = O("ZodError", hJ),
   ZX = O("ZodError", hJ, { Parent: Error });
 var fJ = C8(ZX),
   uJ = v8(ZX),
@@ -15171,7 +15171,7 @@ var B5 = I({
     error: I({ code: Q0().int(), message: D(), data: v(N0()) }),
   }).strict(),
   z5 = (X) => B5.safeParse(X).success,
-  HZ = J0([W5, J5, H5, B5]),
+  zZ = J0([W5, J5, H5, B5]),
   t4 = b0.strict(),
   Zq = W6.extend({ requestId: o4, reason: D().optional() }),
   a4 = p0.extend({ method: T("notifications/cancelled"), params: Zq }),
@@ -15421,7 +15421,7 @@ var s4 = R0.extend({ method: T("ping") }),
     structuredContent: O0(D(), N0()).optional(),
     isError: v(M0()),
   }),
-  BZ = U9.or(b0.extend({ toolResult: N0() })),
+  KZ = U9.or(b0.extend({ toolResult: N0() })),
   qF = _0.extend({ name: D(), arguments: v(O0(D(), N0())) }),
   g6 = R0.extend({ method: T("tools/call"), params: qF }),
   FF = p0.extend({ method: T("notifications/tools/list_changed") }),
@@ -15622,12 +15622,12 @@ var rF = b0.extend({
   tF = R0.extend({ method: T("roots/list") }),
   l$ = b0.extend({ roots: r(oF) }),
   aF = p0.extend({ method: T("notifications/roots/list_changed") }),
-  zZ = J0([s4, C$, L9, h$, z9, B9, J9, G9, H9, tq, sq, g6, K9, X9, $9, Y9]),
-  KZ = J0([a4, e4, k$, aF, xX]),
-  UZ = J0([t4, f$, u$, V9, l$, Q9, W9, x6]),
-  VZ = J0([s4, bF, mF, tF, X9, $9, Y9]),
-  LZ = J0([a4, e4, DF, XF, rq, FF, KF, xX, pF]),
-  qZ = J0([t4, hq, rF, zF, YF, pq, dq, nq, U9, LF, Q9, W9, x6]);
+  UZ = J0([s4, C$, L9, h$, z9, B9, J9, G9, H9, tq, sq, g6, K9, X9, $9, Y9]),
+  VZ = J0([a4, e4, k$, aF, xX]),
+  LZ = J0([t4, f$, u$, V9, l$, Q9, W9, x6]),
+  qZ = J0([s4, bF, mF, tF, X9, $9, Y9]),
+  FZ = J0([a4, e4, DF, XF, rq, FF, KF, xX, pF]),
+  NZ = J0([t4, hq, rF, zF, YF, pq, dq, nq, U9, LF, Q9, W9, x6]);
 class k extends Error {
   constructor(X, Q, $) {
     super(`MCP error ${X}: ${Q}`);
@@ -18917,7 +18917,7 @@ function RE(X) {
     });
   return { type: "sdk", name: X.name, instance: Q };
 }
-function h_({ prompt: X, options: Q }) {
+function u_({ prompt: X, options: Q }) {
   let { systemPrompt: $, settingSources: Y, sandbox: W, ...J } = Q ?? {},
     G,
     H;
@@ -18930,7 +18930,7 @@ function h_({ prompt: X, options: Q }) {
       F6 = rz(q6, "..");
     B = rz(F6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.15";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.17";
   let {
       abortController: z = N6(),
       additionalDirectories: K = [],
@@ -19040,13 +19040,13 @@ function h_({ prompt: X, options: Q }) {
   else z7.streamInput(X);
   return z7;
 }
-function f_(X) {
+function l_(X) {
   return V8(X);
 }
-function u_(X, Q) {
+function m_(X, Q) {
   return zW(X, Q);
 }
-async function l_(X, Q) {
+async function c_(X, Q) {
   let Y = [];
   try {
     const $ = V7(Y, V8(Q), 1);
@@ -19062,11 +19062,11 @@ async function l_(X, Q) {
   }
 }
 export {
-  u_ as unstable_v2_resumeSession,
-  l_ as unstable_v2_prompt,
-  f_ as unstable_v2_createSession,
+  m_ as unstable_v2_resumeSession,
+  c_ as unstable_v2_prompt,
+  l_ as unstable_v2_createSession,
   jE as tool,
-  h_ as query,
+  u_ as query,
   RE as createSdkMcpServer,
   hU as HOOK_EVENTS,
   fU as EXIT_REASONS,
