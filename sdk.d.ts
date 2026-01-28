@@ -163,10 +163,12 @@ declare namespace coreTypes {
     HookInput,
     HookJSONOutput,
     JsonSchemaOutputFormat,
+    McpClaudeAIProxyServerConfig,
     McpHttpServerConfig,
     McpSSEServerConfig,
     McpSdkServerConfig,
     McpServerConfigForProcessTransport,
+    McpServerStatusConfig,
     McpServerStatus,
     McpSetServersResult,
     McpStdioServerConfig,
@@ -345,6 +347,12 @@ export declare type JsonSchemaOutputFormat = {
   schema: Record<string, unknown>;
 };
 
+export declare type McpClaudeAIProxyServerConfig = {
+  type: "claudeai-proxy";
+  url: string;
+  id: string;
+};
+
 export declare type McpHttpServerConfig = {
   type: "http";
   url: string;
@@ -390,7 +398,7 @@ export declare type McpServerStatus = {
   /**
    * Current connection status
    */
-  status: "connected" | "failed" | "needs-auth" | "pending";
+  status: "connected" | "failed" | "needs-auth" | "pending" | "disabled";
   /**
    * Server information (available when connected)
    */
@@ -402,7 +410,31 @@ export declare type McpServerStatus = {
    * Error message (available when status is 'failed')
    */
   error?: string;
+  /**
+   * Server configuration (includes URL for HTTP/SSE servers)
+   */
+  config?: McpServerStatusConfig;
+  /**
+   * Configuration scope (e.g., project, user, local, claudeai, managed)
+   */
+  scope?: string;
+  /**
+   * Tools provided by this server (available when connected)
+   */
+  tools?: {
+    name: string;
+    description?: string;
+    annotations?: {
+      readOnly?: boolean;
+      destructive?: boolean;
+      openWorld?: boolean;
+    };
+  }[];
 };
+
+export declare type McpServerStatusConfig =
+  | McpServerConfigForProcessTransport
+  | McpClaudeAIProxyServerConfig;
 
 /**
  * Result of a setMcpServers operation.
@@ -1068,6 +1100,21 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
       dryRun?: boolean;
     },
   ): Promise<RewindFilesResult>;
+  /**
+   * Reconnect an MCP server by name.
+   * Throws on failure.
+   *
+   * @param serverName - The name of the MCP server to reconnect
+   */
+  reconnectMcpServer(serverName: string): Promise<void>;
+  /**
+   * Enable or disable an MCP server by name.
+   * Throws on failure.
+   *
+   * @param serverName - The name of the MCP server to toggle
+   * @param enabled - Whether the server should be enabled
+   */
+  toggleMcpServer(serverName: string, enabled: boolean): Promise<void>;
   /**
    * Dynamically set the MCP servers for this session.
    * This replaces the current set of dynamically-added MCP servers with the provided set.
