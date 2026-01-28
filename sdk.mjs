@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.21
+// Version: 0.2.22
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -18971,7 +18971,7 @@ function o_({ prompt: X, options: Q }) {
       F6 = oz(q6, "..");
     B = oz(F6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.21";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.22";
   let {
       abortController: z = N6(),
       additionalDirectories: K = [],

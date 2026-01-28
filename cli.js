@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 2.1.21
+// Version: 2.1.22
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -27139,7 +27139,7 @@ var XY8 = v(($8) => {
 });
 var ih1 = v((bN) => {
   var __dirname =
-      "/home/runner/code/tmp/claude-cli-external-build-2185/node_modules/spawn-rx/lib/src",
+      "/home/runner/code/tmp/claude-cli-external-build-2167/node_modules/spawn-rx/lib/src",
     vE =
       (bN && bN.__assign) ||
       function () {
@@ -158844,13 +158844,13 @@ function gn() {
   let A = process.env.CLAUDE_AGENT_SDK_VERSION
     ? `, agent-sdk/${process.env.CLAUDE_AGENT_SDK_VERSION}`
     : "";
-  return `claude-cli/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} (external, ${process.env.CLAUDE_CODE_ENTRYPOINT}${A})`;
+  return `claude-cli/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} (external, ${process.env.CLAUDE_CODE_ENTRYPOINT}${A})`;
 }
 function Fn() {
-  return `claude-code/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}`;
+  return `claude-code/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}`;
 }
 function BH() {
-  return `claude-code/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}`;
+  return `claude-code/${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}`;
 }
 function mH() {
   if (O4()) {
@@ -160463,7 +160463,7 @@ function jo3() {
 }
 function Nq1(A) {
   if (!jo3()) return "";
-  let K = `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}.${A}`,
+  let K = `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}.${A}`,
     q = process.env.CLAUDE_CODE_ENTRYPOINT ?? "unknown",
     Y = `x-anthropic-billing-header: cc_version=${K}; cc_entrypoint=${q};`;
   return (h(`attribution header ${Y}`), Y);
@@ -160507,9 +160507,9 @@ function zH4(A) {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION,
   );
 }
@@ -193287,9 +193287,9 @@ var aO = C(() => {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION.match(/^\d+\.\d+\.\d+(?:-[a-z]+)?/);
     return A ? A[0] : void 0;
   })),
@@ -193333,9 +193333,9 @@ var aO = C(() => {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         versionBase: k_9(),
         buildTime: {
@@ -193343,9 +193343,9 @@ var aO = C(() => {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.BUILD_TIME,
         deploymentEnvironment: Q6.detectDeploymentEnvironment(),
         ...(j1(process.env.GITHUB_ACTIONS) && {
@@ -194475,9 +194475,9 @@ function rR4() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     };
   if (w === "wsl") {
@@ -194503,9 +194503,9 @@ function rR4() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     )),
     IK(async () => {
@@ -265266,7 +265266,7 @@ REMEMBER: You can ONLY explore and plan. You CANNOT and MUST NOT write, edit, or
 });
 function q2Y() {
   if (Vu())
-    return `- When you cannot find an answer or the feature doesn't exist, direct the user to ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.ISSUES_EXPLAINER}`;
+    return `- When you cannot find an answer or the feature doesn't exist, direct the user to ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.ISSUES_EXPLAINER}`;
   return "- When you cannot find an answer or the feature doesn't exist, direct the user to use /feedback to report a feature request or bug";
 }
 var eYY = "https://code.claude.com/docs/en/claude_code_docs_map.md",
@@ -306036,7 +306036,7 @@ async function MCY(A, K) {
   if ("scope" in K && jCY(K) && !B7()) {
     if (!Mw(!0)) {
       let Y = Error(
-        `Security: headersHelper for MCP server '${A}' executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.FEEDBACK_CHANNEL}.`,
+        `Security: headersHelper for MCP server '${A}' executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.FEEDBACK_CHANNEL}.`,
       );
       return (
         ME("MCP headersHelper invoked before trust check", Y),
@@ -306712,10 +306712,10 @@ async function jW7(A, K) {
                     "report the issue at https://github.com/anthropics/claude-code/issues",
                   PACKAGE_URL: "@anthropic-ai/claude-code",
                   README_URL: "https://code.claude.com/docs/en/overview",
-                  VERSION: "2.1.21",
+                  VERSION: "2.1.22",
                   FEEDBACK_CHANNEL:
                     "https://github.com/anthropics/claude-code/issues",
-                  BUILD_TIME: "2026-01-28T01:36:57Z",
+                  BUILD_TIME: "2026-01-28T06:33:34Z",
                 }.VERSION ?? "unknown",
             },
             { capabilities: {} },
@@ -307024,10 +307024,10 @@ var Df = C(() => {
                 "report the issue at https://github.com/anthropics/claude-code/issues",
               PACKAGE_URL: "@anthropic-ai/claude-code",
               README_URL: "https://code.claude.com/docs/en/overview",
-              VERSION: "2.1.21",
+              VERSION: "2.1.22",
               FEEDBACK_CHANNEL:
                 "https://github.com/anthropics/claude-code/issues",
-              BUILD_TIME: "2026-01-28T01:36:57Z",
+              BUILD_TIME: "2026-01-28T06:33:34Z",
             }.VERSION ?? "unknown",
         },
         { capabilities: { roots: {}, ...{} } },
@@ -308749,9 +308749,9 @@ function CW7() {
       "report the issue at https://github.com/anthropics/claude-code/issues",
     PACKAGE_URL: "@anthropic-ai/claude-code",
     README_URL: "https://code.claude.com/docs/en/overview",
-    VERSION: "2.1.21",
+    VERSION: "2.1.22",
     FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-    BUILD_TIME: "2026-01-28T01:36:57Z",
+    BUILD_TIME: "2026-01-28T06:33:34Z",
   }.VERSION;
 }
 async function rCY(A) {
@@ -314697,9 +314697,9 @@ function zWA() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION;
   let Y = x5();
   if (Y) {
@@ -372917,7 +372917,7 @@ var Zk6 = v((Gd7) => {
 });
 var Yt = v((Rd7) => {
   var __dirname =
-    "/home/runner/code/tmp/claude-cli-external-build-2185/node_modules/@grpc/grpc-js/build/src";
+    "/home/runner/code/tmp/claude-cli-external-build-2167/node_modules/@grpc/grpc-js/build/src";
   Object.defineProperty(Rd7, "__esModule", { value: !0 });
   Rd7.registerChannelzSocket =
     Rd7.registerChannelzServer =
@@ -378567,7 +378567,7 @@ var tgA = v((Vl7) => {
 });
 var tD1 = v((Il7) => {
   var __dirname =
-    "/home/runner/code/tmp/claude-cli-external-build-2185/node_modules/@grpc/grpc-js/build/src";
+    "/home/runner/code/tmp/claude-cli-external-build-2167/node_modules/@grpc/grpc-js/build/src";
   Object.defineProperty(Il7, "__esModule", { value: !0 });
   Il7.OrcaOobMetricsSubchannelWrapper =
     Il7.GRPC_METRICS_HEADER =
@@ -386214,9 +386214,9 @@ function a02(A) {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION,
   );
   (FL1(X),
@@ -386243,9 +386243,9 @@ function Ra7() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     };
   if (K === "wsl") {
@@ -386296,9 +386296,9 @@ function Ra7() {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
       )
     );
@@ -386326,9 +386326,9 @@ function Ra7() {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
       );
       (FL1(W),
@@ -386398,9 +386398,9 @@ Current timeout: ${Z}ms
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     )
   );
@@ -412489,9 +412489,9 @@ function M4K() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.BUILD_TIME
   )
     return;
@@ -412501,9 +412501,9 @@ function M4K() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.BUILD_TIME,
   ).getTime();
   if (isNaN(A)) return;
@@ -420132,7 +420132,7 @@ async function sjA(A, K) {
         "npm",
         [
           "install",
-          `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}@${q}`,
+          `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}@${q}`,
         ],
         { cwd: ht, maxBuffer: 1e6 },
       );
@@ -420269,15 +420269,15 @@ async function m7K() {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         A.minVersion,
       )
     )
       (console.error(`
-It looks like your version of Claude Code (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}) needs an update.
+It looks like your version of Claude Code (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}) needs an update.
 A newer version (${A.minVersion} or higher) is required to continue.
 
 To update, please run:
@@ -420366,7 +420366,7 @@ async function fd(A) {
       "npm",
       [
         "view",
-        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}@${q}`,
+        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}@${q}`,
         "version",
         "--prefer-online",
       ],
@@ -420393,9 +420393,9 @@ async function g7K() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.PACKAGE_URL,
       "dist-tags",
       "--json",
@@ -420445,9 +420445,9 @@ async function AMA(A) {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
       }),
       "in_progress"
@@ -420462,10 +420462,10 @@ async function AMA(A) {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
         }),
         console.error(`
@@ -420484,16 +420484,16 @@ To fix this issue:
     let { hasPermissions: K } = await OI6();
     if (!K) return "no_permissions";
     let q = A
-        ? `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}@${A}`
+        ? `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}@${A}`
         : {
             ISSUES_EXPLAINER:
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.PACKAGE_URL,
       Y = Q6.isRunningWithBun() ? "bun" : "npm",
       z = await T7(Y, ["install", "-g", q], { cwd: kQA() });
@@ -420699,18 +420699,18 @@ async function pj2() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.PACKAGE_URL &&
     {
       ISSUES_EXPLAINER:
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.PACKAGE_URL !== "@anthropic-ai/claude-code"
   )
     Y.push(
@@ -420719,9 +420719,9 @@ async function pj2() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.PACKAGE_URL,
     );
   let z = await L6("npm", ["-g", "config", "get", "prefix"]);
@@ -420841,18 +420841,18 @@ async function ut() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION
       ? {
           ISSUES_EXPLAINER:
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION
       : "unknown",
     q = await Uj2(),
@@ -420876,23 +420876,23 @@ async function ut() {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.PACKAGE_URL &&
           {
             ISSUES_EXPLAINER:
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.PACKAGE_URL !== "@anthropic-ai/claude-code"
         )
-          j += ` && npm -g uninstall ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}`;
+          j += ` && npm -g uninstall ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}`;
         w.push({
           issue: `Leftover npm global installation at ${D.path}`,
           fix: `Run: ${j}`,
@@ -447613,9 +447613,9 @@ async function mMA(A) {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     ),
     W = Nq1(G),
@@ -469694,9 +469694,9 @@ var UK = C(() => {
       "report the issue at https://github.com/anthropics/claude-code/issues",
     PACKAGE_URL: "@anthropic-ai/claude-code",
     README_URL: "https://code.claude.com/docs/en/overview",
-    VERSION: "2.1.21",
+    VERSION: "2.1.22",
     FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-    BUILD_TIME: "2026-01-28T01:36:57Z",
+    BUILD_TIME: "2026-01-28T06:33:34Z",
   }.VERSION),
     (Ke = b1()));
   bu6 = a1(
@@ -473939,10 +473939,10 @@ function hXK({
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           transcript: K0(K),
           errors: R,
@@ -474075,10 +474075,10 @@ function hXK({
                       "report the issue at https://github.com/anthropics/claude-code/issues",
                     PACKAGE_URL: "@anthropic-ai/claude-code",
                     README_URL: "https://code.claude.com/docs/en/overview",
-                    VERSION: "2.1.21",
+                    VERSION: "2.1.22",
                     FEEDBACK_CHANNEL:
                       "https://github.com/anthropics/claude-code/issues",
-                    BUILD_TIME: "2026-01-28T01:36:57Z",
+                    BUILD_TIME: "2026-01-28T06:33:34Z",
                   }.VERSION,
                 ),
               ),
@@ -474200,7 +474200,7 @@ ${W9A(q)}
 **Environment Info**
 - Platform: ${Q6.platform}
 - Terminal: ${Q6.terminal}
-- Version: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION || "unknown"}
+- Version: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION || "unknown"}
 - Feedback ID: ${A}
 
 **Errors**
@@ -476218,9 +476218,9 @@ async function fb2(A, K = !1) {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION &&
       (await T$K(Y)) &&
       (await we(z)))
@@ -476815,18 +476815,18 @@ async function LpA() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.PACKAGE_URL &&
     {
       ISSUES_EXPLAINER:
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.PACKAGE_URL !== "@anthropic-ai/claude-code"
   ) {
     let w = await P$K(
@@ -476835,9 +476835,9 @@ async function LpA() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.PACKAGE_URL,
     );
     if (w.success) {
@@ -477150,9 +477150,9 @@ function Cb2() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     },
     { label: "Session name", value: q },
@@ -479296,10 +479296,10 @@ function c$K({
                           "report the issue at https://github.com/anthropics/claude-code/issues",
                         PACKAGE_URL: "@anthropic-ai/claude-code",
                         README_URL: "https://code.claude.com/docs/en/overview",
-                        VERSION: "2.1.21",
+                        VERSION: "2.1.22",
                         FEEDBACK_CHANNEL:
                           "https://github.com/anthropics/claude-code/issues",
-                        BUILD_TIME: "2026-01-28T01:36:57Z",
+                        BUILD_TIME: "2026-01-28T06:33:34Z",
                       }.VERSION,
                       onChoice: (VA) => {
                         if ((_A(null), q(!1), VA === "cancel")) return;
@@ -479311,10 +479311,10 @@ function c$K({
                             PACKAGE_URL: "@anthropic-ai/claude-code",
                             README_URL:
                               "https://code.claude.com/docs/en/overview",
-                            VERSION: "2.1.21",
+                            VERSION: "2.1.22",
                             FEEDBACK_CHANNEL:
                               "https://github.com/anthropics/claude-code/issues",
-                            BUILD_TIME: "2026-01-28T01:36:57Z",
+                            BUILD_TIME: "2026-01-28T06:33:34Z",
                           }.VERSION;
                         (C4("userSettings", EA),
                           W((CA) => ({ ...CA, ...EA })),
@@ -484005,7 +484005,7 @@ function e_K(A) {
     ((P = P9.createElement(
       TL,
       {
-        title: `Claude Code v${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}`,
+        title: `Claude Code v${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}`,
         color: "professionalBlue",
         defaultTab: "general",
       },
@@ -501403,9 +501403,9 @@ function XdA(
       "report the issue at https://github.com/anthropics/claude-code/issues",
     PACKAGE_URL: "@anthropic-ai/claude-code",
     README_URL: "https://code.claude.com/docs/en/overview",
-    VERSION: "2.1.21",
+    VERSION: "2.1.22",
     FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-    BUILD_TIME: "2026-01-28T01:36:57Z",
+    BUILD_TIME: "2026-01-28T06:33:34Z",
   }.VERSION,
 ) {
   if (A !== K || !g9A())
@@ -502679,9 +502679,9 @@ function Xv1() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     K = process.env.DEMO_VERSION ? "/code/claude" : M5(b1()),
     q = Z3(),
@@ -503460,9 +503460,9 @@ function wMK({ isBeforeFirstMessage: A }) {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION
     )
       return;
@@ -503475,10 +503475,10 @@ function wMK({ isBeforeFirstMessage: A }) {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION
         )
           return jA;
@@ -503489,10 +503489,10 @@ function wMK({ isBeforeFirstMessage: A }) {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
         };
       }),
@@ -527211,7 +527211,7 @@ IMPORTANT: You must NEVER generate or guess URLs for the user unless you are con
 
 If the user asks for help or wants to give feedback inform them of the following:
 - /help: Get help with using Claude Code
-- To give feedback, users should ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.ISSUES_EXPLAINER}`;
+- To give feedback, users should ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.ISSUES_EXPLAINER}`;
 }
 function in2(A) {
   if (A !== null) return null;
@@ -528094,6 +528094,7 @@ async function* LTK(A, K, q, Y, z, w) {
       (HA = void 0),
       (OA.length = 0),
       (WA = Nv),
+      (_A = null),
       P5("query_api_request_sent"),
       !w.agentId)
     )
@@ -528294,7 +528295,7 @@ async function* LTK(A, K, q, Y, z, w) {
         }
         yield { type: "stream_event", event: LA };
       }
-      if (!HA || e.length === 0)
+      if (!HA || (e.length === 0 && !_A))
         throw (
           h(
             !HA
@@ -530953,7 +530954,7 @@ async function Yo2() {
   if (HvK()) {
     if (!Mw(!0) && !B7()) {
       let q = Error(
-        `Security: awsAuthRefresh executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.FEEDBACK_CHANNEL}.`,
+        `Security: awsAuthRefresh executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.FEEDBACK_CHANNEL}.`,
       );
       return (
         ME("awsAuthRefresh invoked before trust check", q),
@@ -531009,7 +531010,7 @@ async function zo2() {
   if (JvK()) {
     if (!Mw(!0) && !B7()) {
       let q = Error(
-        `Security: awsCredentialExport executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.FEEDBACK_CHANNEL}.`,
+        `Security: awsCredentialExport executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.FEEDBACK_CHANNEL}.`,
       );
       return (
         ME("awsCredentialExport invoked before trust check", q),
@@ -531431,7 +531432,7 @@ var L4 = C(() => {
     if (wvK()) {
       if (!Mw(!0) && !A) {
         let Y = Error(
-          `Security: apiKeyHelper executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.FEEDBACK_CHANNEL}.`,
+          `Security: apiKeyHelper executed before workspace trust is confirmed. If you see this message, post in ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.FEEDBACK_CHANNEL}.`,
         );
         (ME("apiKeyHelper invoked before trust check", Y),
           YvK.captureException(Y),
@@ -531577,9 +531578,9 @@ var Wx = C(() => {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
       platform: Q6.platform,
       organizationUuid: H,
@@ -536609,9 +536610,9 @@ function nEK() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION,
     integrations: [
       new ne.Integrations.OnUncaughtException({
@@ -547905,9 +547906,9 @@ function FE1(
       "report the issue at https://github.com/anthropics/claude-code/issues",
     PACKAGE_URL: "@anthropic-ai/claude-code",
     README_URL: "https://code.claude.com/docs/en/overview",
-    VERSION: "2.1.21",
+    VERSION: "2.1.22",
     FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-    BUILD_TIME: "2026-01-28T01:36:57Z",
+    BUILD_TIME: "2026-01-28T06:33:34Z",
   }.VERSION,
 ) {
   let [q, Y] = wLK.useState(() => zLK(K));
@@ -547937,9 +547938,9 @@ function JLK({
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         _ = oq()?.autoUpdatesChannel ?? "latest",
         Z = await fd(_),
@@ -548067,10 +548068,10 @@ function JLK({
                   "report the issue at https://github.com/anthropics/claude-code/issues",
                 PACKAGE_URL: "@anthropic-ai/claude-code",
                 README_URL: "https://code.claude.com/docs/en/overview",
-                VERSION: "2.1.21",
+                VERSION: "2.1.22",
                 FEEDBACK_CHANNEL:
                   "https://github.com/anthropics/claude-code/issues",
-                BUILD_TIME: "2026-01-28T01:36:57Z",
+                BUILD_TIME: "2026-01-28T06:33:34Z",
               }.PACKAGE_URL,
             ),
           ),
@@ -548090,10 +548091,10 @@ function JLK({
                   "report the issue at https://github.com/anthropics/claude-code/issues",
                 PACKAGE_URL: "@anthropic-ai/claude-code",
                 README_URL: "https://code.claude.com/docs/en/overview",
-                VERSION: "2.1.21",
+                VERSION: "2.1.22",
                 FEEDBACK_CHANNEL:
                   "https://github.com/anthropics/claude-code/issues",
-                BUILD_TIME: "2026-01-28T01:36:57Z",
+                BUILD_TIME: "2026-01-28T06:33:34Z",
               }.PACKAGE_URL,
             ),
           ),
@@ -548156,10 +548157,10 @@ function $LK({
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           D = Date.now() - Z;
         if (G.lockFailed) {
@@ -548278,10 +548279,10 @@ function GLK(A) {
                 "report the issue at https://github.com/anthropics/claude-code/issues",
               PACKAGE_URL: "@anthropic-ai/claude-code",
               README_URL: "https://code.claude.com/docs/en/overview",
-              VERSION: "2.1.21",
+              VERSION: "2.1.22",
               FEEDBACK_CHANNEL:
                 "https://github.com/anthropics/claude-code/issues",
-              BUILD_TIME: "2026-01-28T01:36:57Z",
+              BUILD_TIME: "2026-01-28T06:33:34Z",
             }.VERSION,
             M,
             { loose: !0 },
@@ -548289,7 +548290,7 @@ function GLK(A) {
           !ejA(M);
       if ((z(!!P), P))
         h(
-          `PackageManagerAutoUpdater: Update available ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} -> ${M}`,
+          `PackageManagerAutoUpdater: Update available ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} -> ${M}`,
         );
     }),
       (K[0] = J));
@@ -548327,9 +548328,9 @@ function GLK(A) {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
       )),
       (K[3] = q),
@@ -552465,9 +552466,9 @@ function x1z(A, K, q, Y, z) {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION,
     output_style: { name: J },
     cost: {
@@ -568621,10 +568622,10 @@ function sk1() {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           " ",
         ),
@@ -568815,9 +568816,9 @@ function sk1() {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         " ",
       ),
@@ -569001,9 +569002,9 @@ function N7z(A) {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         " ",
       )),
@@ -569213,9 +569214,9 @@ function N7z(A) {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
       " ",
     )),
@@ -570377,9 +570378,9 @@ async function YFK(A, K, q) {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.VERSION,
     },
     { capabilities: { tools: {} } },
@@ -572699,9 +572700,9 @@ class $QK {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION,
         output_style: AA,
         agents: N.map((oA) => oA.agentType),
@@ -574564,7 +574565,7 @@ var CQK = C(() => {
 });
 async function LQK() {
   (n("tengu_update_check", {}),
-    k7(`Current version: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION}
+    k7(`Current version: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION}
 `));
   let A = oq()?.autoUpdatesChannel ?? "latest";
   (k7(`Checking for updates to ${A} version...
@@ -574656,16 +574657,16 @@ async function LQK() {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           $,
           { loose: !0 },
         )
       )
-        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} → ${$}
+        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} → ${$}
 `),
           k7(`
 `),
@@ -574691,16 +574692,16 @@ async function LQK() {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           $,
           { loose: !0 },
         )
       )
-        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} → ${$}
+        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} → ${$}
 `),
           k7(`
 `),
@@ -574726,16 +574727,16 @@ async function LQK() {
               "report the issue at https://github.com/anthropics/claude-code/issues",
             PACKAGE_URL: "@anthropic-ai/claude-code",
             README_URL: "https://code.claude.com/docs/en/overview",
-            VERSION: "2.1.21",
+            VERSION: "2.1.22",
             FEEDBACK_CHANNEL:
               "https://github.com/anthropics/claude-code/issues",
-            BUILD_TIME: "2026-01-28T01:36:57Z",
+            BUILD_TIME: "2026-01-28T06:33:34Z",
           }.VERSION,
           $,
           { loose: !0 },
         )
       )
-        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} → ${$}
+        (k7(`Update available: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} → ${$}
 `),
           k7(`
 `),
@@ -574817,14 +574818,14 @@ async function LQK() {
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.VERSION
       )
         k7(
           O1.green(
-            `Claude Code is up to date (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION})`,
+            `Claude Code is up to date (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION})`,
           ) +
             `
 `,
@@ -574832,7 +574833,7 @@ async function LQK() {
       else
         (k7(
           O1.green(
-            `Successfully updated from ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} to version ${X.latestVersion}`,
+            `Successfully updated from ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} to version ${X.latestVersion}`,
           ) +
             `
 `,
@@ -574855,10 +574856,10 @@ async function LQK() {
   if (q.installMethod !== "native") await kpA();
   (h("update: Checking npm registry for latest version"),
     h(
-      `update: Package URL: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}`,
+      `update: Package URL: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}`,
     ));
   let Y = A === "stable" ? "stable" : "latest",
-    z = `npm view ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}@${Y} version`;
+    z = `npm view ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}@${Y} version`;
   h(`update: Running: ${z}`);
   let w = await fd(A);
   if ((h(`update: Latest version from npm: ${w || "FAILED"}`), !w)) {
@@ -574886,18 +574887,18 @@ async function LQK() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.PACKAGE_URL &&
         !{
           ISSUES_EXPLAINER:
             "report the issue at https://github.com/anthropics/claude-code/issues",
           PACKAGE_URL: "@anthropic-ai/claude-code",
           README_URL: "https://code.claude.com/docs/en/overview",
-          VERSION: "2.1.21",
+          VERSION: "2.1.22",
           FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-          BUILD_TIME: "2026-01-28T01:36:57Z",
+          BUILD_TIME: "2026-01-28T06:33:34Z",
         }.PACKAGE_URL.startsWith("@anthropic"))
     )
       process.stderr.write(`  • Internal/development build not published to npm
@@ -574916,9 +574917,9 @@ async function LQK() {
           "report the issue at https://github.com/anthropics/claude-code/issues",
         PACKAGE_URL: "@anthropic-ai/claude-code",
         README_URL: "https://code.claude.com/docs/en/overview",
-        VERSION: "2.1.21",
+        VERSION: "2.1.22",
         FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-        BUILD_TIME: "2026-01-28T01:36:57Z",
+        BUILD_TIME: "2026-01-28T06:33:34Z",
       }.PACKAGE_URL || "@anthropic-ai/claude-code";
     (process.stderr.write(`  • Manually check: npm view ${X} version
 `),
@@ -574933,20 +574934,20 @@ async function LQK() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION
   )
     (k7(
       O1.green(
-        `Claude Code is up to date (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION})`,
+        `Claude Code is up to date (${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION})`,
       ) +
         `
 `,
     ),
       await Eq(0));
-  (k7(`New version available: ${w} (current: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION})
+  (k7(`New version available: ${w} (current: ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION})
 `),
     k7(`Installing update...
 `));
@@ -574993,7 +574994,7 @@ async function LQK() {
     case "success":
       (k7(
         O1.green(
-          `Successfully updated from ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} to version ${w}`,
+          `Successfully updated from ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} to version ${w}`,
         ) +
           `
 `,
@@ -575009,7 +575010,7 @@ async function LQK() {
         (process.stderr.write(`Try manually updating with:
 `),
           process.stderr
-            .write(`  cd ~/.claude/local && npm update ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}
+            .write(`  cd ~/.claude/local && npm update ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}
 `));
       else
         (process.stderr.write(`Try running with sudo or fix npm permissions
@@ -575028,7 +575029,7 @@ async function LQK() {
         (process.stderr.write(`Try manually updating with:
 `),
           process.stderr
-            .write(`  cd ~/.claude/local && npm update ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.PACKAGE_URL}
+            .write(`  cd ~/.claude/local && npm update ${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.PACKAGE_URL}
 `));
       else
         process.stderr
@@ -576757,9 +576758,9 @@ function wUK() {
         "report the issue at https://github.com/anthropics/claude-code/issues",
       PACKAGE_URL: "@anthropic-ai/claude-code",
       README_URL: "https://code.claude.com/docs/en/overview",
-      VERSION: "2.1.21",
+      VERSION: "2.1.22",
       FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues",
-      BUILD_TIME: "2026-01-28T01:36:57Z",
+      BUILD_TIME: "2026-01-28T06:33:34Z",
     }.VERSION,
   }));
 }
@@ -578670,7 +578671,7 @@ Use /session for QR code and link to open on claude.ai`,
         }
       })
       .version(
-        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} (Claude Code)`,
+        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} (Claude Code)`,
         "-v, --version",
         "Output the version number",
       ),
@@ -580152,7 +580153,7 @@ async function fqz() {
   ) {
     ($K("cli_version_fast_path"),
       console.log(
-        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.21", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T01:36:57Z" }.VERSION} (Claude Code)`,
+        `${{ ISSUES_EXPLAINER: "report the issue at https://github.com/anthropics/claude-code/issues", PACKAGE_URL: "@anthropic-ai/claude-code", README_URL: "https://code.claude.com/docs/en/overview", VERSION: "2.1.22", FEEDBACK_CHANNEL: "https://github.com/anthropics/claude-code/issues", BUILD_TIME: "2026-01-28T06:33:34Z" }.VERSION} (Claude Code)`,
       ));
     return;
   }
