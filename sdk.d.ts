@@ -198,6 +198,7 @@ declare namespace coreTypes {
     SDKAssistantMessage,
     SDKAuthStatusMessage,
     SDKCompactBoundaryMessage,
+    SDKFilesPersistedEvent,
     SDKHookProgressMessage,
     SDKHookResponseMessage,
     SDKHookStartedMessage,
@@ -1381,6 +1382,22 @@ declare type SDKControlSetPermissionModeRequest = {
   mode: coreTypes.PermissionMode;
 };
 
+export declare type SDKFilesPersistedEvent = {
+  type: "system";
+  subtype: "files_persisted";
+  files: {
+    filename: string;
+    file_id: string;
+  }[];
+  failed: {
+    filename: string;
+    error: string;
+  }[];
+  processed_at: string;
+  uuid: UUID;
+  session_id: string;
+};
+
 /**
  * Configuration for matching and routing hook callbacks.
  */
@@ -1474,6 +1491,7 @@ export declare type SDKMessage =
   | SDKToolProgressMessage
   | SDKAuthStatusMessage
   | SDKTaskNotificationMessage
+  | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage;
 
 export declare type SDKPartialAssistantMessage = {
