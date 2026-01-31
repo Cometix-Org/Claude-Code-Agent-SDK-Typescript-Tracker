@@ -6,6 +6,7 @@ import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { MessageParam } from "@anthropic-ai/sdk/resources";
 import type { Readable } from "stream";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import type { UUID } from "crypto";
 import type { Writable } from "stream";
 import { z } from "zod/v4";
@@ -1470,6 +1471,7 @@ export declare type SdkMcpToolDefinition<
   name: string;
   description: string;
   inputSchema: Schema;
+  annotations?: ToolAnnotations;
   handler: (
     args: InferShape<Schema>,
     extra: unknown,
@@ -1640,6 +1642,7 @@ export declare type SDKStatusMessage = {
   type: "system";
   subtype: "status";
   status: SDKStatus;
+  permissionMode?: PermissionMode;
   uuid: UUID;
   session_id: string;
 };
@@ -1871,6 +1874,7 @@ export declare type SubagentStopHookInput = BaseHookInput & {
   stop_hook_active: boolean;
   agent_id: string;
   agent_transcript_path: string;
+  agent_type: string;
 };
 
 export declare type SyncHookJSONOutput = {
@@ -1900,6 +1904,9 @@ export declare function tool<Schema extends AnyZodRawShape>(
     args: InferShape<Schema>,
     extra: unknown,
   ) => Promise<CallToolResult>,
+  _extras?: {
+    annotations?: ToolAnnotations;
+  },
 ): SdkMcpToolDefinition<Schema>;
 
 /**

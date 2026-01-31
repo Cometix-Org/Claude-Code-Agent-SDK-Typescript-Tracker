@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.25
+// Version: 0.2.27
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -18951,8 +18951,14 @@ function rz(X) {
   };
 }
 var H4 = { completion: { values: [], hasMore: !1 } };
-function SI(X, Q, $, Y) {
-  return { name: X, description: Q, inputSchema: $, handler: Y };
+function SI(X, Q, $, Y, W) {
+  return {
+    name: X,
+    description: Q,
+    inputSchema: $,
+    handler: Y,
+    annotations: W?.annotations,
+  };
 }
 function ZI(X) {
   let Q = new J7(
@@ -18961,7 +18967,15 @@ function ZI(X) {
   );
   if (X.tools)
     X.tools.forEach(($) => {
-      Q.tool($.name, $.description, $.inputSchema, $.handler);
+      Q.registerTool(
+        $.name,
+        {
+          description: $.description,
+          inputSchema: $.inputSchema,
+          annotations: $.annotations,
+        },
+        $.handler,
+      );
     });
   return { type: "sdk", name: X.name, instance: Q };
 }
@@ -18978,7 +18992,7 @@ function o_({ prompt: X, options: Q }) {
       F6 = tz(q6, "..");
     B = tz(F6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.25";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.27";
   let {
       abortController: z = N6(),
       additionalDirectories: K = [],
