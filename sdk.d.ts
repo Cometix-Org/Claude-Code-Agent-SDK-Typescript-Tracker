@@ -819,6 +819,19 @@ export declare type Options = {
    */
   settingSources?: SettingSource[];
   /**
+   * Enable debug mode for the Claude Code process.
+   * When true, enables verbose debug logging (equivalent to `--debug` CLI flag).
+   * Debug logs are written to a file (see `debugFile` option) or to stderr.
+   *
+   * You can also capture debug output via the `stderr` callback.
+   */
+  debug?: boolean;
+  /**
+   * Write debug logs to a specific file path.
+   * Implicitly enables debug mode. Equivalent to `--debug-file <path>` CLI flag.
+   */
+  debugFile?: string;
+  /**
    * Callback for stderr output from the Claude Code process.
    * Useful for debugging and logging.
    */
@@ -1065,6 +1078,13 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   setMaxThinkingTokens(maxThinkingTokens: number | null): Promise<void>;
   /**
+   * Get the full initialization result, including supported commands, models,
+   * account info, and output style configuration.
+   *
+   * @returns The complete initialization response
+   */
+  initializationResult(): Promise<SDKControlInitializeResponse>;
+  /**
    * Get the list of available skills for the current session.
    *
    * @returns Array of available skills with their names and descriptions
@@ -1292,6 +1312,17 @@ declare type SDKControlInitializeRequest = {
   agents?: Record<string, coreTypes.AgentDefinition>;
 };
 
+declare type SDKControlInitializeResponse = {
+  commands: coreTypes.SlashCommand[];
+  output_style: string;
+  available_output_styles: string[];
+  models: coreTypes.ModelInfo[];
+  /**
+   * Information about the logged in user's account.
+   */
+  account: coreTypes.AccountInfo;
+};
+
 declare type SDKControlInterruptRequest = {
   subtype: "interrupt";
 };
@@ -1331,6 +1362,7 @@ declare type SDKControlPermissionRequest = {
   decision_reason?: string;
   tool_use_id: string;
   agent_id?: string;
+  description?: string;
 };
 
 declare type SDKControlRequest = {
