@@ -1204,6 +1204,7 @@ declare const SandboxNetworkConfigSchema: z.ZodOptional<
   z.ZodObject<
     {
       allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+      allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
       allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
       allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
       allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
@@ -1228,6 +1229,7 @@ declare const SandboxSettingsSchema: z.ZodObject<
       z.ZodObject<
         {
           allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
           allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
           allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
           allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
