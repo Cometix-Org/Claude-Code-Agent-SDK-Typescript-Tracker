@@ -231,6 +231,8 @@ declare namespace coreTypes {
     SubagentStartHookSpecificOutput,
     SubagentStopHookInput,
     SyncHookJSONOutput,
+    TaskCompletedHookInput,
+    TeammateIdleHookInput,
     UserPromptSubmitHookInput,
     UserPromptSubmitHookSpecificOutput,
   };
@@ -281,6 +283,8 @@ export declare const HOOK_EVENTS: readonly [
   "PreCompact",
   "PermissionRequest",
   "Setup",
+  "TeammateIdle",
+  "TaskCompleted",
 ];
 
 /**
@@ -317,7 +321,9 @@ export declare type HookEvent =
   | "SubagentStop"
   | "PreCompact"
   | "PermissionRequest"
-  | "Setup";
+  | "Setup"
+  | "TeammateIdle"
+  | "TaskCompleted";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -332,7 +338,9 @@ export declare type HookInput =
   | SubagentStopHookInput
   | PreCompactHookInput
   | PermissionRequestHookInput
-  | SetupHookInput;
+  | SetupHookInput
+  | TeammateIdleHookInput
+  | TaskCompletedHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -766,6 +774,12 @@ export declare type Options = {
    * Session ID to resume. Loads the conversation history from the specified session.
    */
   resume?: string;
+  /**
+   * Use a specific session ID for the conversation instead of an auto-generated one.
+   * Must be a valid UUID. Cannot be used with `continue` or `resume` unless
+   * `forkSession` is also set (to specify a custom ID for the forked session).
+   */
+  sessionId?: string;
   /**
    * When resuming, only resume messages up to and including the message with this UUID.
    * Use with `resume`. This allows you to resume from a specific point in the conversation.
@@ -1932,6 +1946,21 @@ export declare type SyncHookJSONOutput = {
     | PostToolUseFailureHookSpecificOutput
     | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput;
+};
+
+export declare type TaskCompletedHookInput = BaseHookInput & {
+  hook_event_name: "TaskCompleted";
+  task_id: string;
+  task_subject: string;
+  task_description?: string;
+  teammate_name?: string;
+  team_name?: string;
+};
+
+export declare type TeammateIdleHookInput = BaseHookInput & {
+  hook_event_name: "TeammateIdle";
+  teammate_name: string;
+  team_name: string;
 };
 
 export declare function tool<Schema extends AnyZodRawShape>(
