@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.38
+// Version: 0.2.39
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -7665,14 +7665,17 @@ class QX {
     if (this.cleanupPerformed) return;
     this.cleanupPerformed = !0;
     try {
-      (this.transport.close(),
-        this.pendingControlResponses.clear(),
-        this.pendingMcpResponses.clear(),
+      this.transport.close();
+      let Q = Error("Query closed before response received");
+      for (let { reject: $ } of this.pendingControlResponses.values()) $(Q);
+      this.pendingControlResponses.clear();
+      for (let { reject: $ } of this.pendingMcpResponses.values()) $(Q);
+      (this.pendingMcpResponses.clear(),
         this.cancelControllers.clear(),
         this.hookCallbacks.clear());
-      for (let Q of this.sdkMcpTransports.values())
+      for (let $ of this.sdkMcpTransports.values())
         try {
-          Q.close();
+          $.close();
         } catch {}
       if ((this.sdkMcpTransports.clear(), X)) this.inputStream.error(X);
       else this.inputStream.done();
@@ -7698,7 +7701,7 @@ class QX {
       for await (let X of this.transport.readMessages()) {
         if (X.type === "control_response") {
           let Q = this.pendingControlResponses.get(X.response.request_id);
-          if (Q) Q(X.response);
+          if (Q) Q.handler(X.response);
           continue;
         } else if (X.type === "control_request") {
           this.handleControlRequest(X);
@@ -7882,10 +7885,16 @@ class QX {
     let Q = Math.random().toString(36).substring(2, 15),
       $ = { request_id: Q, type: "control_request", request: X };
     return new Promise((Y, W) => {
-      (this.pendingControlResponses.set(Q, (J) => {
-        if (J.subtype === "success") Y(J);
-        else if ((W(Error(J.error)), J.pending_permission_requests))
-          this.processPendingPermissionRequests(J.pending_permission_requests);
+      (this.pendingControlResponses.set(Q, {
+        handler: (J) => {
+          if ((this.pendingControlResponses.delete(Q), J.subtype === "success"))
+            Y(J);
+          else if ((W(Error(J.error)), J.pending_permission_requests))
+            this.processPendingPermissionRequests(
+              J.pending_permission_requests,
+            );
+        },
+        reject: W,
       }),
         Promise.resolve(
           this.transport.write(
@@ -19018,7 +19027,7 @@ function Qx({ prompt: X, options: Q }) {
       N6 = az(F6, "..");
     B = az(N6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.38";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.39";
   let {
       abortController: z = O6(),
       additionalDirectories: K = [],

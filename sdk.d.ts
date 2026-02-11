@@ -613,6 +613,14 @@ export declare type Options = {
   /**
    * Environment variables to pass to the Claude Code process.
    * Defaults to `process.env`.
+   *
+   * SDK consumers can identify their app/library to include in the User-Agent header by setting:
+   * - `CLAUDE_AGENT_SDK_CLIENT_APP` - Your app/library identifier (e.g., "my-app/1.0.0", "my-library/2.1")
+   *
+   * @example
+   * ```typescript
+   * env: { CLAUDE_AGENT_SDK_CLIENT_APP: 'my-app/1.0.0' }
+   * ```
    */
   env?: {
     [envVar: string]: string | undefined;
@@ -1740,6 +1748,9 @@ export declare type SDKSessionOptions = {
   /**
    * Environment variables to pass to the Claude Code process.
    * Defaults to `process.env`.
+   *
+   * SDK consumers can identify their app/library to include in the User-Agent header by setting:
+   * - `CLAUDE_AGENT_SDK_CLIENT_APP` - Your app/library identifier (e.g., "my-app/1.0.0", "my-library/2.1")
    */
   env?: {
     [envVar: string]: string | undefined;
