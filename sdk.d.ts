@@ -1229,6 +1229,11 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   streamInput(stream: AsyncIterable<SDKUserMessage>): Promise<void>;
   /**
+   * Stop a running task. A task_notification with status 'stopped' will be emitted.
+   * @param taskId - The task ID from task_notification events
+   */
+  stopTask(taskId: string): Promise<void>;
+  /**
    * Close the query and terminate the underlying process.
    * This forcefully ends the query, cleaning up all resources including
    * pending requests, MCP transports, and the CLI subprocess.
@@ -1480,7 +1485,8 @@ declare type SDKControlRequestInner =
   | SDKControlRewindFilesRequest
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
-  | SDKControlMcpToggleRequest;
+  | SDKControlMcpToggleRequest
+  | SDKControlStopTaskRequest;
 
 declare type SDKControlResponse = {
   type: "control_response";
@@ -1521,6 +1527,14 @@ declare type SDKControlSetPermissionModeRequest = {
    * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'delegate' - Delegate mode, restricts team leader to only Teammate and Task tools. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
    */
   mode: coreTypes.PermissionMode;
+};
+
+/**
+ * Stops a running task.
+ */
+declare type SDKControlStopTaskRequest = {
+  subtype: "stop_task";
+  task_id: string;
 };
 
 export declare type SDKFilesPersistedEvent = {
