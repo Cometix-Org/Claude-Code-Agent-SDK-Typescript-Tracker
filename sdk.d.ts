@@ -147,6 +147,7 @@ declare namespace coreTypes {
   export {
     SandboxSettings,
     SandboxNetworkConfig,
+    SandboxFilesystemConfig,
     SandboxIgnoreViolations,
     NonNullableUsage,
     HOOK_EVENTS,
@@ -213,6 +214,7 @@ declare namespace coreTypes {
     SDKStatus,
     SDKSystemMessage,
     SDKTaskNotificationMessage,
+    SDKTaskStartedMessage,
     SDKToolProgressMessage,
     SDKToolUseSummaryMessage,
     SDKUserMessageReplay,
@@ -763,7 +765,7 @@ export declare type Options = {
   mcpServers?: Record<string, McpServerConfig>;
   /**
    * Claude model to use. Defaults to the CLI default model.
-   * Examples: 'claude-sonnet-4-5-20250929', 'claude-opus-4-20250514'
+   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-6'
    */
   model?: string;
   /**
@@ -1260,6 +1262,24 @@ export declare type RewindFilesResult = {
   deletions?: number;
 };
 
+export declare type SandboxFilesystemConfig = NonNullable<
+  z.infer<typeof SandboxFilesystemConfigSchema>
+>;
+
+/**
+ * Filesystem configuration schema for sandbox.
+ */
+declare const SandboxFilesystemConfigSchema: z.ZodOptional<
+  z.ZodObject<
+    {
+      allowWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+      denyWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+      denyRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    },
+    z.core.$strip
+  >
+>;
+
 export declare type SandboxIgnoreViolations = NonNullable<
   SandboxSettings["ignoreViolations"]
 >;
@@ -1306,6 +1326,16 @@ declare const SandboxSettingsSchema: z.ZodObject<
           allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
           httpProxyPort: z.ZodOptional<z.ZodNumber>;
           socksProxyPort: z.ZodOptional<z.ZodNumber>;
+        },
+        z.core.$strip
+      >
+    >;
+    filesystem: z.ZodOptional<
+      z.ZodObject<
+        {
+          allowWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          denyWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          denyRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
         },
         z.core.$strip
       >
@@ -1650,8 +1680,10 @@ export declare type SDKMessage =
   | SDKToolProgressMessage
   | SDKAuthStatusMessage
   | SDKTaskNotificationMessage
+  | SDKTaskStartedMessage
   | SDKFilesPersistedEvent
-  | SDKToolUseSummaryMessage;
+  | SDKToolUseSummaryMessage
+  | SDKRateLimitEvent;
 
 export declare type SDKPartialAssistantMessage = {
   type: "stream_event";
@@ -1845,6 +1877,17 @@ export declare type SDKTaskNotificationMessage = {
   status: "completed" | "failed" | "stopped";
   output_file: string;
   summary: string;
+  uuid: UUID;
+  session_id: string;
+};
+
+export declare type SDKTaskStartedMessage = {
+  type: "system";
+  subtype: "task_started";
+  task_id: string;
+  tool_use_id?: string;
+  description: string;
+  task_type?: string;
   uuid: UUID;
   session_id: string;
 };
@@ -2135,7 +2178,7 @@ export declare function unstable_v2_createSession(
  * @example
  * ```typescript
  * const result = await unstable_v2_prompt("What files are here?", {
- *   model: 'claude-sonnet-4-5-20250929'
+ *   model: 'claude-sonnet-4-6'
  * })
  * ```
  */
