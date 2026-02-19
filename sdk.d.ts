@@ -71,7 +71,12 @@ export declare type AgentMcpServerSpec =
 
 export declare type AnyZodRawShape = ZodRawShape | ZodRawShape_2;
 
-export declare type ApiKeySource = "user" | "project" | "org" | "temporary";
+export declare type ApiKeySource =
+  | "user"
+  | "project"
+  | "org"
+  | "temporary"
+  | "oauth";
 
 export declare type AsyncHookJSONOutput = {
   async: true;
@@ -235,6 +240,10 @@ declare namespace coreTypes {
     SyncHookJSONOutput,
     TaskCompletedHookInput,
     TeammateIdleHookInput,
+    ThinkingAdaptive,
+    ThinkingConfig,
+    ThinkingDisabled,
+    ThinkingEnabled,
     UserPromptSubmitHookInput,
     UserPromptSubmitHookSpecificOutput,
   };
@@ -706,17 +715,7 @@ export declare type Options = {
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/adaptive-thinking
    */
-  thinking?:
-    | {
-        type: "adaptive";
-      }
-    | {
-        type: "enabled";
-        budgetTokens: number;
-      }
-    | {
-        type: "disabled";
-      };
+  thinking?: ThinkingConfig;
   /**
    * Controls how much effort Claude puts into its response.
    * Works with adaptive thinking to guide thinking depth.
@@ -957,14 +956,13 @@ export declare type OutputFormatType = "json_schema";
 export declare type PermissionBehavior = "allow" | "deny" | "ask";
 
 /**
- * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'delegate' - Delegate mode, restricts team leader to only Teammate and Task tools. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
+ * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
  */
 export declare type PermissionMode =
   | "default"
   | "acceptEdits"
   | "bypassPermissions"
   | "plan"
-  | "delegate"
   | "dontAsk";
 
 export declare type PermissionRequestHookInput = BaseHookInput & {
@@ -1554,7 +1552,7 @@ declare type SDKControlSetModelRequest = {
 declare type SDKControlSetPermissionModeRequest = {
   subtype: "set_permission_mode";
   /**
-   * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'delegate' - Delegate mode, restricts team leader to only Teammate and Task tools. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
+   * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
    */
   mode: coreTypes.PermissionMode;
 };
@@ -1856,7 +1854,7 @@ export declare type SDKSystemMessage = {
   }[];
   model: string;
   /**
-   * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'delegate' - Delegate mode, restricts team leader to only Teammate and Task tools. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
+   * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
    */
   permissionMode: PermissionMode;
   slash_commands: string[];
@@ -1874,6 +1872,7 @@ export declare type SDKTaskNotificationMessage = {
   type: "system";
   subtype: "task_notification";
   task_id: string;
+  tool_use_id?: string;
   status: "completed" | "failed" | "stopped";
   output_file: string;
   summary: string;
@@ -1898,6 +1897,7 @@ export declare type SDKToolProgressMessage = {
   tool_name: string;
   parent_tool_use_id: string | null;
   elapsed_time_seconds: number;
+  task_id?: string;
   uuid: UUID;
   session_id: string;
 };
@@ -2063,6 +2063,10 @@ declare type StdoutMessage =
 export declare type StopHookInput = BaseHookInput & {
   hook_event_name: "Stop";
   stop_hook_active: boolean;
+  /**
+   * Text content of the last assistant message before stopping. Avoids the need to read and parse the transcript file.
+   */
+  last_assistant_message?: string;
 };
 
 export declare type SubagentStartHookInput = BaseHookInput & {
@@ -2082,6 +2086,10 @@ export declare type SubagentStopHookInput = BaseHookInput & {
   agent_id: string;
   agent_transcript_path: string;
   agent_type: string;
+  /**
+   * Text content of the last assistant message before stopping. Avoids the need to read and parse the transcript file.
+   */
+  last_assistant_message?: string;
 };
 
 export declare type SyncHookJSONOutput = {
@@ -2116,6 +2124,36 @@ export declare type TeammateIdleHookInput = BaseHookInput & {
   hook_event_name: "TeammateIdle";
   teammate_name: string;
   team_name: string;
+};
+
+/**
+ * Claude decides when and how much to think (Opus 4.6+).
+ */
+export declare type ThinkingAdaptive = {
+  type: "adaptive";
+};
+
+/**
+ * Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.
+ */
+export declare type ThinkingConfig =
+  | ThinkingAdaptive
+  | ThinkingEnabled
+  | ThinkingDisabled;
+
+/**
+ * No extended thinking
+ */
+export declare type ThinkingDisabled = {
+  type: "disabled";
+};
+
+/**
+ * Fixed thinking token budget (older models)
+ */
+export declare type ThinkingEnabled = {
+  type: "enabled";
+  budgetTokens?: number;
 };
 
 export declare function tool<Schema extends AnyZodRawShape>(
