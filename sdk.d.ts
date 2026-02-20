@@ -130,6 +130,17 @@ export declare type CanUseTool = (
   },
 ) => Promise<PermissionResult>;
 
+export declare type ConfigChangeHookInput = BaseHookInput & {
+  hook_event_name: "ConfigChange";
+  source:
+    | "user_settings"
+    | "project_settings"
+    | "local_settings"
+    | "policy_settings"
+    | "skills";
+  file_path?: string;
+};
+
 /**
  * Config scope for settings.
  */
@@ -164,6 +175,7 @@ declare namespace coreTypes {
     AsyncHookJSONOutput,
     BaseHookInput,
     BaseOutputFormat,
+    ConfigChangeHookInput,
     ConfigScope,
     ExitReason,
     HookEvent,
@@ -296,6 +308,7 @@ export declare const HOOK_EVENTS: readonly [
   "Setup",
   "TeammateIdle",
   "TaskCompleted",
+  "ConfigChange",
 ];
 
 /**
@@ -334,7 +347,8 @@ export declare type HookEvent =
   | "PermissionRequest"
   | "Setup"
   | "TeammateIdle"
-  | "TaskCompleted";
+  | "TaskCompleted"
+  | "ConfigChange";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -351,7 +365,8 @@ export declare type HookInput =
   | PermissionRequestHookInput
   | SetupHookInput
   | TeammateIdleHookInput
-  | TaskCompletedHookInput;
+  | TaskCompletedHookInput
+  | ConfigChangeHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -504,6 +519,18 @@ export declare type ModelInfo = {
    * Description of the model's capabilities
    */
   description: string;
+  /**
+   * Whether this model supports effort levels
+   */
+  supportsEffort?: boolean;
+  /**
+   * Available effort levels for this model
+   */
+  supportedEffortLevels?: ("low" | "medium" | "high" | "max")[];
+  /**
+   * Whether this model supports adaptive thinking (Claude decides when and how much to think)
+   */
+  supportsAdaptiveThinking?: boolean;
 };
 
 export declare type ModelUsage = {
@@ -818,6 +845,18 @@ export declare type Options = {
    * ```
    */
   plugins?: SdkPluginConfig[];
+  /**
+   * Enable prompt suggestions. When true, the agent emits a `prompt_suggestion`
+   * message after each turn with a predicted next user prompt.
+   *
+   * Delivery semantics:
+   * - At most one `prompt_suggestion` per turn; arrives after the `result` message.
+   * - Consumers must keep iterating the stream after `result` to receive it.
+   * - Suppressed on the first turn, after API errors, in plan mode, and by the
+   *   `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false` env var.
+   * - Suggestions piggyback on the parent's prompt cache, making them nearly free.
+   */
+  promptSuggestions?: boolean;
   /**
    * Session ID to resume. Loads the conversation history from the specified session.
    */
@@ -1415,6 +1454,7 @@ declare type SDKControlInitializeRequest = {
   systemPrompt?: string;
   appendSystemPrompt?: string;
   agents?: Record<string, coreTypes.AgentDefinition>;
+  promptSuggestions?: boolean;
 };
 
 /**
@@ -1681,7 +1721,8 @@ export declare type SDKMessage =
   | SDKTaskStartedMessage
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
-  | SDKRateLimitEvent;
+  | SDKRateLimitEvent
+  | SDKPromptSuggestionMessage;
 
 export declare type SDKPartialAssistantMessage = {
   type: "stream_event";
@@ -1876,6 +1917,11 @@ export declare type SDKTaskNotificationMessage = {
   status: "completed" | "failed" | "stopped";
   output_file: string;
   summary: string;
+  usage?: {
+    total_tokens: number;
+    tool_uses: number;
+    duration_ms: number;
+  };
   uuid: UUID;
   session_id: string;
 };
