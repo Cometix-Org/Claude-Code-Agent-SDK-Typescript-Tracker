@@ -258,6 +258,8 @@ declare namespace coreTypes {
     ThinkingEnabled,
     UserPromptSubmitHookInput,
     UserPromptSubmitHookSpecificOutput,
+    WorktreeCreateHookInput,
+    WorktreeRemoveHookInput,
   };
 }
 
@@ -309,6 +311,8 @@ export declare const HOOK_EVENTS: readonly [
   "TeammateIdle",
   "TaskCompleted",
   "ConfigChange",
+  "WorktreeCreate",
+  "WorktreeRemove",
 ];
 
 /**
@@ -348,7 +352,9 @@ export declare type HookEvent =
   | "Setup"
   | "TeammateIdle"
   | "TaskCompleted"
-  | "ConfigChange";
+  | "ConfigChange"
+  | "WorktreeCreate"
+  | "WorktreeRemove";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -366,7 +372,9 @@ export declare type HookInput =
   | SetupHookInput
   | TeammateIdleHookInput
   | TaskCompletedHookInput
-  | ConfigChangeHookInput;
+  | ConfigChangeHookInput
+  | WorktreeCreateHookInput
+  | WorktreeRemoveHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -1436,6 +1444,14 @@ export declare type SDKCompactBoundaryMessage = {
 };
 
 /**
+ * Merges the provided settings into the flag settings layer, updating the active configuration.
+ */
+declare type SDKControlApplyFlagSettingsRequest = {
+  subtype: "apply_flag_settings";
+  settings: Record<string, unknown>;
+};
+
+/**
  * Cancels a currently open control request.
  */
 declare type SDKControlCancelRequest = {
@@ -1554,7 +1570,8 @@ declare type SDKControlRequestInner =
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
-  | SDKControlStopTaskRequest;
+  | SDKControlStopTaskRequest
+  | SDKControlApplyFlagSettingsRequest;
 
 declare type SDKControlResponse = {
   type: "control_response";
@@ -2289,6 +2306,16 @@ export declare type UserPromptSubmitHookInput = BaseHookInput & {
 export declare type UserPromptSubmitHookSpecificOutput = {
   hookEventName: "UserPromptSubmit";
   additionalContext?: string;
+};
+
+export declare type WorktreeCreateHookInput = BaseHookInput & {
+  hook_event_name: "WorktreeCreate";
+  name: string;
+};
+
+export declare type WorktreeRemoveHookInput = BaseHookInput & {
+  hook_event_name: "WorktreeRemove";
+  worktree_path: string;
 };
 
 export {};
