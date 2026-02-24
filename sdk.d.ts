@@ -231,6 +231,7 @@ declare namespace coreTypes {
     SDKStatus,
     SDKSystemMessage,
     SDKTaskNotificationMessage,
+    SDKTaskProgressMessage,
     SDKTaskStartedMessage,
     SDKToolProgressMessage,
     SDKToolUseSummaryMessage,
@@ -1250,6 +1251,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * @param enabled - Whether the server should be enabled
    */
   toggleMcpServer(serverName: string, enabled: boolean): Promise<void>;
+
   /**
    * Dynamically set the MCP servers for this session.
    * This replaces the current set of dynamically-added MCP servers with the provided set.
@@ -1570,6 +1572,8 @@ declare type SDKControlRequestInner =
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
+  | SDKControlMcpAuthenticateRequest
+  | SDKControlMcpClearAuthRequest
   | SDKControlStopTaskRequest
   | SDKControlApplyFlagSettingsRequest;
 
@@ -1736,6 +1740,7 @@ export declare type SDKMessage =
   | SDKAuthStatusMessage
   | SDKTaskNotificationMessage
   | SDKTaskStartedMessage
+  | SDKTaskProgressMessage
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
   | SDKRateLimitEvent
@@ -1939,6 +1944,22 @@ export declare type SDKTaskNotificationMessage = {
     tool_uses: number;
     duration_ms: number;
   };
+  uuid: UUID;
+  session_id: string;
+};
+
+export declare type SDKTaskProgressMessage = {
+  type: "system";
+  subtype: "task_progress";
+  task_id: string;
+  tool_use_id?: string;
+  description: string;
+  usage: {
+    total_tokens: number;
+    tool_uses: number;
+    duration_ms: number;
+  };
+  last_tool_name?: string;
   uuid: UUID;
   session_id: string;
 };
