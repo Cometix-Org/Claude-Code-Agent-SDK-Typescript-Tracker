@@ -2,6 +2,7 @@ import type { BetaMessage } from "@anthropic-ai/sdk/resources/beta/messages/mess
 import type { BetaRawMessageStreamEvent } from "@anthropic-ai/sdk/resources/beta/messages/messages.mjs";
 import type { BetaUsage } from "@anthropic-ai/sdk/resources/beta/messages/messages.mjs";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { ElicitResult } from "@modelcontextprotocol/sdk/types.js";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { MessageParam } from "@anthropic-ai/sdk/resources";
@@ -27,7 +28,7 @@ export declare type AccountInfo = {
 };
 
 /**
- * Definition for a custom subagent that can be invoked via the Task tool.
+ * Definition for a custom subagent that can be invoked via the Agent tool.
  */
 export declare type AgentDefinition = {
   /**
@@ -63,6 +64,24 @@ export declare type AgentDefinition = {
    * Maximum number of agentic turns (API round-trips) before stopping
    */
   maxTurns?: number;
+};
+
+/**
+ * Information about an available subagent that can be invoked via the Task tool.
+ */
+export declare type AgentInfo = {
+  /**
+   * Agent type identifier (e.g., "Explore")
+   */
+  name: string;
+  /**
+   * Description of when to use this agent
+   */
+  description: string;
+  /**
+   * Model alias this agent uses. If omitted, inherits the parent's model
+   */
+  model?: string;
 };
 
 export declare type AgentMcpServerSpec =
@@ -170,6 +189,7 @@ declare namespace coreTypes {
     EXIT_REASONS,
     AccountInfo,
     AgentDefinition,
+    AgentInfo,
     AgentMcpServerSpec,
     ApiKeySource,
     AsyncHookJSONOutput,
@@ -177,7 +197,12 @@ declare namespace coreTypes {
     BaseOutputFormat,
     ConfigChangeHookInput,
     ConfigScope,
+    ElicitationHookInput,
+    ElicitationHookSpecificOutput,
+    ElicitationResultHookInput,
+    ElicitationResultHookSpecificOutput,
     ExitReason,
+    FastModeState,
     HookEvent,
     HookInput,
     HookJSONOutput,
@@ -212,18 +237,26 @@ declare namespace coreTypes {
     PreCompactHookInput,
     PreToolUseHookInput,
     PreToolUseHookSpecificOutput,
+    PromptRequestOption,
+    PromptRequest,
+    PromptResponse,
     RewindFilesResult,
     SDKAssistantMessageError,
     SDKAssistantMessage,
     SDKAuthStatusMessage,
     SDKCompactBoundaryMessage,
+    SDKElicitationCompleteMessage,
     SDKFilesPersistedEvent,
     SDKHookProgressMessage,
     SDKHookResponseMessage,
     SDKHookStartedMessage,
+    SDKLocalCommandOutputMessage,
     SDKMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
+    SDKPromptSuggestionMessage,
+    SDKRateLimitEvent,
+    SDKRateLimitInfo,
     SDKResultError,
     SDKResultMessage,
     SDKResultSuccess,
@@ -281,6 +314,61 @@ declare type CreateSdkMcpServerOptions = {
   tools?: Array<SdkMcpToolDefinition<any>>;
 };
 
+export declare type ElicitationHookInput = BaseHookInput & {
+  hook_event_name: "Elicitation";
+  mcp_server_name: string;
+  message: string;
+  mode?: "form" | "url";
+  url?: string;
+  elicitation_id?: string;
+  requested_schema?: Record<string, unknown>;
+};
+
+export declare type ElicitationHookSpecificOutput = {
+  hookEventName: "Elicitation";
+  action?: "accept" | "decline" | "cancel";
+  content?: Record<string, unknown>;
+};
+
+/**
+ * Elicitation request from an MCP server, asking the SDK consumer for user input.
+ */
+export declare type ElicitationRequest = {
+  /** Name of the MCP server requesting elicitation */
+  serverName: string;
+  /** Message to display to the user */
+  message: string;
+  /** Elicitation mode: 'form' for structured input, 'url' for browser-based auth */
+  mode?: "form" | "url";
+  /** URL to open (only for 'url' mode) */
+  url?: string;
+  /** Elicitation ID for correlating URL elicitations with completion notifications (URL mode only) */
+  elicitationId?: string;
+  /** JSON Schema for the requested input (only for 'form' mode) */
+  requestedSchema?: Record<string, unknown>;
+};
+
+/**
+ * Elicitation response from the SDK consumer.
+ * Re-exported from the MCP SDK for convenience.
+ */
+export declare type ElicitationResult = ElicitResult;
+
+export declare type ElicitationResultHookInput = BaseHookInput & {
+  hook_event_name: "ElicitationResult";
+  mcp_server_name: string;
+  elicitation_id?: string;
+  mode?: "form" | "url";
+  action: "accept" | "decline" | "cancel";
+  content?: Record<string, unknown>;
+};
+
+export declare type ElicitationResultHookSpecificOutput = {
+  hookEventName: "ElicitationResult";
+  action?: "accept" | "decline" | "cancel";
+  content?: Record<string, unknown>;
+};
+
 export declare const EXIT_REASONS: readonly [
   "clear",
   "logout",
@@ -295,6 +383,11 @@ export declare type ExitReason =
   | "prompt_input_exit"
   | "other"
   | "bypass_permissions_disabled";
+
+/**
+ * Fast mode state: off, in cooldown after rate limit, or actively enabled.
+ */
+export declare type FastModeState = "off" | "cooldown" | "on";
 
 /**
  * Reads a session's conversation messages from its JSONL transcript file.
@@ -339,6 +432,8 @@ export declare const HOOK_EVENTS: readonly [
   "Setup",
   "TeammateIdle",
   "TaskCompleted",
+  "Elicitation",
+  "ElicitationResult",
   "ConfigChange",
   "WorktreeCreate",
   "WorktreeRemove",
@@ -381,6 +476,8 @@ export declare type HookEvent =
   | "Setup"
   | "TeammateIdle"
   | "TaskCompleted"
+  | "Elicitation"
+  | "ElicitationResult"
   | "ConfigChange"
   | "WorktreeCreate"
   | "WorktreeRemove";
@@ -401,6 +498,8 @@ export declare type HookInput =
   | SetupHookInput
   | TeammateIdleHookInput
   | TaskCompletedHookInput
+  | ElicitationHookInput
+  | ElicitationResultHookInput
   | ConfigChangeHookInput
   | WorktreeCreateHookInput
   | WorktreeRemoveHookInput;
@@ -632,6 +731,17 @@ export declare type NotificationHookSpecificOutput = {
 };
 
 /**
+ * Callback for handling MCP elicitation requests.
+ * Called when an MCP server requests user input and no hook handles it.
+ */
+export declare type OnElicitation = (
+  request: ElicitationRequest,
+  options: {
+    signal: AbortSignal;
+  },
+) => Promise<ElicitationResult>;
+
+/**
  * Options for the query function.
  * Contains callbacks and other non-serializable fields.
  */
@@ -666,7 +776,7 @@ export declare type Options = {
    */
   agent?: string;
   /**
-   * Programmatically define custom subagents that can be invoked via the Task tool.
+   * Programmatically define custom subagents that can be invoked via the Agent tool.
    * Keys are agent names, values are agent definitions.
    *
    * @example
@@ -788,6 +898,27 @@ export declare type Options = {
    * ```
    */
   hooks?: Partial<Record<HookEvent, HookCallbackMatcher[]>>;
+  /**
+   * Callback for handling MCP elicitation requests.
+   * Called when an MCP server requests user input (form fields, URL auth, etc.)
+   * and no hook handles the request first.
+   *
+   * If not provided, elicitation requests that aren't handled by hooks will
+   * be declined automatically.
+   *
+   * @example
+   * ```typescript
+   * onElicitation: async (request) => {
+   *   if (request.mode === 'url') {
+   *     // Handle URL-based auth
+   *     return { action: 'accept' }
+   *   }
+   *   // Provide form values
+   *   return { action: 'accept', content: { name: 'Test' } }
+   * }
+   * ```
+   */
+  onElicitation?: OnElicitation;
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -1207,6 +1338,47 @@ export declare type PreToolUseHookSpecificOutput = {
   additionalContext?: string;
 };
 
+export declare type PromptRequest = {
+  /**
+   * Request ID. Presence of this key marks the line as a prompt request.
+   */
+  prompt: string;
+  /**
+   * The prompt message to display to the user
+   */
+  message: string;
+  /**
+   * Available options for the user to choose from
+   */
+  options: PromptRequestOption[];
+};
+
+export declare type PromptRequestOption = {
+  /**
+   * Unique key for this option, returned in the response
+   */
+  key: string;
+  /**
+   * Display text for this option
+   */
+  label: string;
+  /**
+   * Optional description shown below the label
+   */
+  description?: string;
+};
+
+export declare type PromptResponse = {
+  /**
+   * The request ID from the corresponding prompt request
+   */
+  prompt_response: string;
+  /**
+   * The key of the selected option
+   */
+  selected: string;
+};
+
 /**
  * Query interface with methods for controlling query execution.
  * Extends AsyncGenerator and has methods, so not serializable.
@@ -1273,6 +1445,12 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   supportedModels(): Promise<ModelInfo[]>;
   /**
+   * Get the list of available subagents for the current session.
+   *
+   * @returns Array of available agents with their names, descriptions, and configuration
+   */
+  supportedAgents(): Promise<AgentInfo[]>;
+  /**
    * Get the current status of all configured MCP servers.
    *
    * @returns Array of MCP server statuses (connected, failed, needs-auth, pending)
@@ -1298,6 +1476,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
       dryRun?: boolean;
     },
   ): Promise<RewindFilesResult>;
+
   /**
    * Reconnect an MCP server by name.
    * Throws on failure.
@@ -1372,13 +1551,13 @@ export declare type RewindFilesResult = {
 };
 
 export declare type SandboxFilesystemConfig = NonNullable<
-  z.infer<typeof SandboxFilesystemConfigSchema>
+  z.infer<ReturnType<typeof SandboxFilesystemConfigSchema>>
 >;
 
 /**
  * Filesystem configuration schema for sandbox.
  */
-declare const SandboxFilesystemConfigSchema: z.ZodOptional<
+declare const SandboxFilesystemConfigSchema: () => z.ZodOptional<
   z.ZodObject<
     {
       allowWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
@@ -1394,13 +1573,13 @@ export declare type SandboxIgnoreViolations = NonNullable<
 >;
 
 export declare type SandboxNetworkConfig = NonNullable<
-  z.infer<typeof SandboxNetworkConfigSchema>
+  z.infer<ReturnType<typeof SandboxNetworkConfigSchema>>
 >;
 
 /**
  * Network configuration schema for sandbox.
  */
-declare const SandboxNetworkConfigSchema: z.ZodOptional<
+declare const SandboxNetworkConfigSchema: () => z.ZodOptional<
   z.ZodObject<
     {
       allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
@@ -1415,12 +1594,14 @@ declare const SandboxNetworkConfigSchema: z.ZodOptional<
   >
 >;
 
-export declare type SandboxSettings = z.infer<typeof SandboxSettingsSchema>;
+export declare type SandboxSettings = z.infer<
+  ReturnType<typeof SandboxSettingsSchema>
+>;
 
 /**
  * Sandbox settings schema.
  */
-declare const SandboxSettingsSchema: z.ZodObject<
+declare const SandboxSettingsSchema: () => z.ZodObject<
   {
     enabled: z.ZodOptional<z.ZodBoolean>;
     autoAllowBashIfSandboxed: z.ZodOptional<z.ZodBoolean>;
@@ -1524,6 +1705,19 @@ declare type SDKControlCancelRequest = {
 };
 
 /**
+ * Requests the SDK consumer to handle an MCP elicitation (user input request).
+ */
+declare type SDKControlElicitationRequest = {
+  subtype: "elicitation";
+  mcp_server_name: string;
+  message: string;
+  mode?: "form" | "url";
+  url?: string;
+  elicitation_id?: string;
+  requested_schema?: Record<string, unknown>;
+};
+
+/**
  * Initializes the SDK session with hooks, MCP servers, and agent configuration.
  */
 declare type SDKControlInitializeRequest = {
@@ -1542,6 +1736,7 @@ declare type SDKControlInitializeRequest = {
  */
 declare type SDKControlInitializeResponse = {
   commands: coreTypes.SlashCommand[];
+  agents: coreTypes.AgentInfo[];
   output_style: string;
   available_output_styles: string[];
   models: coreTypes.ModelInfo[];
@@ -1549,6 +1744,8 @@ declare type SDKControlInitializeResponse = {
    * Information about the logged in user's account.
    */
   account: coreTypes.AccountInfo;
+
+  fast_mode_state?: coreTypes.FastModeState;
 };
 
 /**
@@ -1636,8 +1833,11 @@ declare type SDKControlRequestInner =
   | SDKControlMcpToggleRequest
   | SDKControlMcpAuthenticateRequest
   | SDKControlMcpClearAuthRequest
+  | SDKControlMcpOAuthCallbackUrlRequest
+  | SDKControlRemoteControlRequest
   | SDKControlStopTaskRequest
-  | SDKControlApplyFlagSettingsRequest;
+  | SDKControlApplyFlagSettingsRequest
+  | SDKControlElicitationRequest;
 
 declare type SDKControlResponse = {
   type: "control_response";
@@ -1686,6 +1886,15 @@ declare type SDKControlSetPermissionModeRequest = {
 declare type SDKControlStopTaskRequest = {
   subtype: "stop_task";
   task_id: string;
+};
+
+export declare type SDKElicitationCompleteMessage = {
+  type: "system";
+  subtype: "elicitation_complete";
+  mcp_server_name: string;
+  elicitation_id: string;
+  uuid: UUID;
+  session_id: string;
 };
 
 export declare type SDKFilesPersistedEvent = {
@@ -1769,6 +1978,17 @@ declare type SDKKeepAliveMessage = {
 };
 
 /**
+ * Output from a local slash command (e.g. /voice, /cost). Displayed as assistant-style text in the transcript.
+ */
+export declare type SDKLocalCommandOutputMessage = {
+  type: "system";
+  subtype: "local_command_output";
+  content: string;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
  * MCP tool definition for SDK servers.
  * Contains a handler function, so not serializable.
  * Supports both Zod 3 and Zod 4 schemas.
@@ -1795,6 +2015,7 @@ export declare type SDKMessage =
   | SDKPartialAssistantMessage
   | SDKCompactBoundaryMessage
   | SDKStatusMessage
+  | SDKLocalCommandOutputMessage
   | SDKHookStartedMessage
   | SDKHookProgressMessage
   | SDKHookResponseMessage
@@ -1806,6 +2027,7 @@ export declare type SDKMessage =
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
   | SDKRateLimitEvent
+  | SDKElicitationCompleteMessage
   | SDKPromptSuggestionMessage;
 
 export declare type SDKPartialAssistantMessage = {
@@ -1836,6 +2058,62 @@ export declare type SdkPluginConfig = {
   path: string;
 };
 
+/**
+ * Predicted next user prompt, emitted after each turn when promptSuggestions is enabled.
+ */
+export declare type SDKPromptSuggestionMessage = {
+  type: "prompt_suggestion";
+  suggestion: string;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * Rate limit event emitted when rate limit info changes.
+ */
+export declare type SDKRateLimitEvent = {
+  type: "rate_limit_event";
+  /**
+   * Rate limit information for claude.ai subscription users.
+   */
+  rate_limit_info: SDKRateLimitInfo;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * Rate limit information for claude.ai subscription users.
+ */
+export declare type SDKRateLimitInfo = {
+  status: "allowed" | "allowed_warning" | "rejected";
+  resetsAt?: number;
+  rateLimitType?:
+    | "five_hour"
+    | "seven_day"
+    | "seven_day_opus"
+    | "seven_day_sonnet"
+    | "overage";
+  utilization?: number;
+  overageStatus?: "allowed" | "allowed_warning" | "rejected";
+  overageResetsAt?: number;
+  overageDisabledReason?:
+    | "overage_not_provisioned"
+    | "org_level_disabled"
+    | "org_level_disabled_until"
+    | "out_of_credits"
+    | "seat_tier_level_disabled"
+    | "member_level_disabled"
+    | "seat_tier_zero_credit_limit"
+    | "group_zero_credit_limit"
+    | "member_zero_credit_limit"
+    | "org_service_level_disabled"
+    | "org_service_zero_credit_limit"
+    | "no_limits_configured"
+    | "unknown";
+  isUsingOverage?: boolean;
+  surpassedThreshold?: number;
+};
+
 export declare type SDKResultError = {
   type: "result";
   subtype:
@@ -1853,6 +2131,7 @@ export declare type SDKResultError = {
   modelUsage: Record<string, ModelUsage>;
   permission_denials: SDKPermissionDenial[];
   errors: string[];
+  fast_mode_state?: FastModeState;
   uuid: UUID;
   session_id: string;
 };
@@ -1873,6 +2152,7 @@ export declare type SDKResultSuccess = {
   modelUsage: Record<string, ModelUsage>;
   permission_denials: SDKPermissionDenial[];
   structured_output?: unknown;
+  fast_mode_state?: FastModeState;
   uuid: UUID;
   session_id: string;
 };
@@ -2027,6 +2307,7 @@ export declare type SDKSystemMessage = {
     name: string;
     path: string;
   }[];
+  fast_mode_state?: FastModeState;
   uuid: UUID;
   session_id: string;
 };
@@ -2304,7 +2585,9 @@ export declare type SyncHookJSONOutput = {
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
     | NotificationHookSpecificOutput
-    | PermissionRequestHookSpecificOutput;
+    | PermissionRequestHookSpecificOutput
+    | ElicitationHookSpecificOutput
+    | ElicitationResultHookSpecificOutput;
 };
 
 export declare type TaskCompletedHookInput = BaseHookInput & {
