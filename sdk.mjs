@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.69
+// Version: 0.2.70
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -6827,7 +6827,11 @@ var uq = {
       return yq(Q, X);
     },
     async mkdir(Q, X) {
-      await gq(Q, { recursive: !0, ...X });
+      try {
+        await gq(Q, { recursive: !0, ...X });
+      } catch (Y) {
+        if (Y.code !== "EEXIST") throw Y;
+      }
     },
     async readFile(Q, X) {
       return R5(Q, { encoding: X.encoding });
@@ -7017,7 +7021,11 @@ var uq = {
         const Y = Y0(J, q0`fs.mkdirSync(${Q})`, 0);
         let $ = { recursive: !0 };
         if (X?.mode !== void 0) $.mode = X.mode;
-        u.mkdirSync(Q, $);
+        try {
+          u.mkdirSync(Q, $);
+        } catch (B) {
+          if (B.code !== "EEXIST") throw B;
+        }
       } catch (W) {
         var G = W,
           H = 1;
@@ -7131,6 +7139,8 @@ function pq() {
     totalAPIDuration: 0,
     totalAPIDurationWithoutRetries: 0,
     totalToolDuration: 0,
+    tokenSaverBytesSaved: 0,
+    tokenSaverHits: 0,
     turnHookDurationMs: 0,
     turnToolDurationMs: 0,
     turnClassifierDurationMs: 0,
@@ -7148,6 +7158,7 @@ function pq() {
     initialMainLoopModel: null,
     modelStrings: null,
     isInteractive: !1,
+    kairosActive: !1,
     clientType: "cli",
     sessionSource: void 0,
     questionPreviewFormat: void 0,
@@ -20135,7 +20146,7 @@ function Wg({ prompt: Q, options: X }) {
       _6 = fK(C6, "..");
     z = fK(_6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.69";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.70";
   let {
       abortController: K = k6(),
       additionalDirectories: q = [],
