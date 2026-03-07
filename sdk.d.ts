@@ -2427,6 +2427,7 @@ export declare type SDKTaskStartedMessage = {
   tool_use_id?: string;
   description: string;
   task_type?: string;
+  prompt?: string;
   uuid: UUID;
   session_id: string;
 };
