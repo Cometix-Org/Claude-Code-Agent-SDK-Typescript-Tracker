@@ -736,6 +736,10 @@ export declare type ModelInfo = {
    * Whether this model supports fast mode
    */
   supportsFastMode?: boolean;
+  /**
+   * Whether this model supports auto mode
+   */
+  supportsAutoMode?: boolean;
 };
 
 export declare type ModelUsage = {
@@ -1106,6 +1110,16 @@ export declare type Options = {
    * - Suggestions piggyback on the parent's prompt cache, making them nearly free.
    */
   promptSuggestions?: boolean;
+  /**
+   * Enable periodic AI-generated progress summaries for running subagents. When
+   * true, the subagent's conversation is forked every ~30s to produce a short
+   * present-tense description (e.g. "Analyzing authentication module"), emitted
+   * on `task_progress` events via the `summary` field. The fork reuses the
+   * subagent's model and prompt cache, so cost is typically minimal.
+   *
+   * Applies to both foreground and background subagents. Defaults to false.
+   */
+  agentProgressSummaries?: boolean;
   /**
    * Session ID to resume. Loads the conversation history from the specified session.
    */
@@ -1802,6 +1816,7 @@ declare type SDKControlInitializeRequest = {
   appendSystemPrompt?: string;
   agents?: Record<string, coreTypes.AgentDefinition>;
   promptSuggestions?: boolean;
+  agentProgressSummaries?: boolean;
 };
 
 /**
@@ -1904,6 +1919,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
+  | SDKControlEndSessionRequest
   | SDKControlMcpAuthenticateRequest
   | SDKControlMcpClearAuthRequest
   | SDKControlMcpOAuthCallbackUrlRequest
@@ -2416,6 +2432,7 @@ export declare type SDKTaskProgressMessage = {
     duration_ms: number;
   };
   last_tool_name?: string;
+  summary?: string;
   uuid: UUID;
   session_id: string;
 };
@@ -2528,6 +2545,10 @@ export declare interface Settings {
    * Path to a script that refreshes AWS authentication
    */
   awsAuthRefresh?: string;
+  /**
+   * Command to refresh GCP authentication (e.g., gcloud auth application-default login)
+   */
+  gcpAuthRefresh?: string;
   /**
    * Custom file suggestion configuration for \@ mentions
    */
@@ -3243,6 +3264,10 @@ export declare interface Settings {
    * When false, thinking is disabled. When absent or true, thinking is enabled automatically for supported models.
    */
   alwaysThinkingEnabled?: boolean;
+  /**
+   * Persisted effort level for supported models. "max" is session-scoped and not persisted.
+   */
+  effortLevel?: "low" | "medium" | "high";
   /**
    * When true, fast mode is enabled. When absent or false, fast mode is off.
    */

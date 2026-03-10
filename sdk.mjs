@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.71
+// Version: 0.2.72
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
 var XV = Object.create;
 var {
   getPrototypeOf: YV,
-  defineProperty: CQ,
+  defineProperty: SQ,
   getOwnPropertyNames: $V,
 } = Object;
 var JV = Object.prototype.hasOwnProperty;
@@ -27,21 +27,21 @@ var GV,
     Y = Q != null ? XV(YV(Q)) : {};
     let G =
       X || !Q || !Q.__esModule
-        ? CQ(Y, "default", { value: Q, enumerable: !0 })
+        ? SQ(Y, "default", { value: Q, enumerable: !0 })
         : Y;
     for (let H of $V(Q))
-      if (!JV.call(G, H)) CQ(G, H, { get: WV.bind(Q, H), enumerable: !0 });
+      if (!JV.call(G, H)) SQ(G, H, { get: WV.bind(Q, H), enumerable: !0 });
     if ($) J.set(Q, G);
     return G;
   };
-var E = (Q, X) => () => (X || Q((X = { exports: {} }).exports, X), X.exports);
+var P = (Q, X) => () => (X || Q((X = { exports: {} }).exports, X), X.exports);
 var BV = (Q) => Q;
 function zV(Q, X) {
   this[Q] = BV.bind(null, X);
 }
 var _Q = (Q, X) => {
   for (var Y in X)
-    CQ(Q, Y, {
+    SQ(Q, Y, {
       get: X[Y],
       enumerable: !0,
       configurable: !0,
@@ -93,7 +93,7 @@ var KV = Symbol.dispose || Symbol.for("Symbol.dispose"),
       };
     return W();
   };
-var F4 = E((oG) => {
+var F4 = P((oG) => {
   Object.defineProperty(oG, "__esModule", { value: !0 });
   oG.regexpCode =
     oG.getEsmExportName =
@@ -169,11 +169,11 @@ var F4 = E((oG) => {
     return new W1(Y);
   }
   oG._ = iG;
-  var P$ = new W1("+");
+  var E$ = new W1("+");
   function nG(Q, ...X) {
     let Y = [L4(Q[0])],
       $ = 0;
-    while ($ < X.length) (Y.push(P$), Z$(Y, X[$]), Y.push(P$, L4(Q[++$])));
+    while ($ < X.length) (Y.push(E$), Z$(Y, X[$]), Y.push(E$, L4(Q[++$])));
     return (kD(Y), new W1(Y));
   }
   oG.str = nG;
@@ -186,7 +186,7 @@ var F4 = E((oG) => {
   function kD(Q) {
     let X = 1;
     while (X < Q.length - 1) {
-      if (Q[X] === P$) {
+      if (Q[X] === E$) {
         let Y = vD(Q[X - 1], Q[X + 1]);
         if (Y !== void 0) {
           Q.splice(X - 1, 3, Y);
@@ -247,7 +247,7 @@ var F4 = E((oG) => {
   }
   oG.regexpCode = fD;
 });
-var k$ = E((sG) => {
+var k$ = P((sG) => {
   Object.defineProperty(sG, "__esModule", { value: !0 });
   sG.ValueScope =
     sG.ValueScopeName =
@@ -271,7 +271,7 @@ var k$ = E((sG) => {
     let: new g0.Name("let"),
     var: new g0.Name("var"),
   };
-  class C$ {
+  class S$ {
     constructor({ prefixes: Q, parent: X } = {}) {
       ((this._names = {}), (this._prefixes = Q), (this._parent = X));
     }
@@ -300,7 +300,7 @@ var k$ = E((sG) => {
       return (this._names[Q] = { prefix: Q, index: 0 });
     }
   }
-  sG.Scope = C$;
+  sG.Scope = S$;
   class _$ extends g0.Name {
     constructor(Q, X) {
       super(X);
@@ -312,7 +312,7 @@ var k$ = E((sG) => {
   }
   sG.ValueScopeName = _$;
   var sD = g0._`\n`;
-  class aG extends C$ {
+  class aG extends S$ {
     constructor(Q) {
       super(Q);
       ((this._values = {}),
@@ -389,7 +389,7 @@ var k$ = E((sG) => {
   }
   sG.ValueScope = aG;
 });
-var c = E((h0) => {
+var c = P((h0) => {
   Object.defineProperty(h0, "__esModule", { value: !0 });
   h0.or =
     h0.and =
@@ -411,53 +411,53 @@ var c = E((h0) => {
       void 0;
   var r = F4(),
     G1 = k$(),
-    r1 = F4();
+    t1 = F4();
   Object.defineProperty(h0, "_", {
     enumerable: !0,
     get: function () {
-      return r1._;
+      return t1._;
     },
   });
   Object.defineProperty(h0, "str", {
     enumerable: !0,
     get: function () {
-      return r1.str;
+      return t1.str;
     },
   });
   Object.defineProperty(h0, "strConcat", {
     enumerable: !0,
     get: function () {
-      return r1.strConcat;
+      return t1.strConcat;
     },
   });
   Object.defineProperty(h0, "nil", {
     enumerable: !0,
     get: function () {
-      return r1.nil;
+      return t1.nil;
     },
   });
   Object.defineProperty(h0, "getProperty", {
     enumerable: !0,
     get: function () {
-      return r1.getProperty;
+      return t1.getProperty;
     },
   });
   Object.defineProperty(h0, "stringify", {
     enumerable: !0,
     get: function () {
-      return r1.stringify;
+      return t1.stringify;
     },
   });
   Object.defineProperty(h0, "regexpCode", {
     enumerable: !0,
     get: function () {
-      return r1.regexpCode;
+      return t1.regexpCode;
     },
   });
   Object.defineProperty(h0, "Name", {
     enumerable: !0,
     get: function () {
-      return r1.Name;
+      return t1.Name;
     },
   });
   var e8 = k$();
@@ -497,7 +497,7 @@ var c = E((h0) => {
     AND: new r._Code("&&"),
     ADD: new r._Code("+"),
   };
-  class t1 {
+  class a1 {
     optimizeNodes() {
       return this;
     }
@@ -505,7 +505,7 @@ var c = E((h0) => {
       return this;
     }
   }
-  class Q3 extends t1 {
+  class Q3 extends a1 {
     constructor(Q, X, Y) {
       super();
       ((this.varKind = Q), (this.name = X), (this.rhs = Y));
@@ -524,7 +524,7 @@ var c = E((h0) => {
       return this.rhs instanceof r._CodeOrName ? this.rhs.names : {};
     }
   }
-  class x$ extends t1 {
+  class x$ extends a1 {
     constructor(Q, X, Y) {
       super();
       ((this.lhs = Q), (this.rhs = X), (this.sideEffects = Y));
@@ -551,7 +551,7 @@ var c = E((h0) => {
       return `${this.lhs} ${this.op}= ${this.rhs};` + Q;
     }
   }
-  class Y3 extends t1 {
+  class Y3 extends a1 {
     constructor(Q) {
       super();
       ((this.label = Q), (this.names = {}));
@@ -560,7 +560,7 @@ var c = E((h0) => {
       return `${this.label}:` + Q;
     }
   }
-  class $3 extends t1 {
+  class $3 extends a1 {
     constructor(Q) {
       super();
       ((this.label = Q), (this.names = {}));
@@ -569,7 +569,7 @@ var c = E((h0) => {
       return `break${this.label ? ` ${this.label}` : ""};` + Q;
     }
   }
-  class J3 extends t1 {
+  class J3 extends a1 {
     constructor(Q) {
       super();
       this.error = Q;
@@ -581,7 +581,7 @@ var c = E((h0) => {
       return this.error.names;
     }
   }
-  class W3 extends t1 {
+  class W3 extends a1 {
     constructor(Q) {
       super();
       this.code = Q;
@@ -599,7 +599,7 @@ var c = E((h0) => {
       return this.code instanceof r._CodeOrName ? this.code.names : {};
     }
   }
-  class QQ extends t1 {
+  class QQ extends a1 {
     constructor(Q = []) {
       super();
       this.nodes = Q;
@@ -624,7 +624,7 @@ var c = E((h0) => {
       while ($--) {
         let J = Y[$];
         if (J.optimizeNames(Q, X)) continue;
-        (YM(Q, J.names), Y.splice($, 1));
+        (Yw(Q, J.names), Y.splice($, 1));
       }
       return Y.length > 0 ? this : void 0;
     }
@@ -632,15 +632,15 @@ var c = E((h0) => {
       return this.nodes.reduce((Q, X) => j6(Q, X.names), {});
     }
   }
-  class a1 extends QQ {
+  class s1 extends QQ {
     render(Q) {
       return "{" + Q._n + super.render(Q) + "}" + Q._n;
     }
   }
   class G3 extends QQ {}
-  class O4 extends a1 {}
+  class O4 extends s1 {}
   O4.kind = "else";
-  class E1 extends a1 {
+  class P1 extends s1 {
     constructor(Q, X) {
       super(X);
       this.condition = Q;
@@ -660,9 +660,9 @@ var c = E((h0) => {
         X = this.else = Array.isArray(Y) ? new O4(Y) : Y;
       }
       if (X) {
-        if (Q === !1) return X instanceof E1 ? X : X.nodes;
+        if (Q === !1) return X instanceof P1 ? X : X.nodes;
         if (this.nodes.length) return this;
-        return new E1(V3(Q), X instanceof E1 ? [X] : X.nodes);
+        return new P1(V3(Q), X instanceof P1 ? [X] : X.nodes);
       }
       if (Q === !1 || !this.nodes.length) return;
       return this;
@@ -685,8 +685,8 @@ var c = E((h0) => {
       return Q;
     }
   }
-  E1.kind = "if";
-  class F9 extends a1 {}
+  P1.kind = "if";
+  class F9 extends s1 {}
   F9.kind = "for";
   class H3 extends F9 {
     constructor(Q) {
@@ -741,7 +741,7 @@ var c = E((h0) => {
       return j6(super.names, this.iterable.names);
     }
   }
-  class o8 extends a1 {
+  class o8 extends s1 {
     constructor(Q, X, Y) {
       super();
       ((this.name = Q), (this.args = X), (this.async = Y));
@@ -760,7 +760,7 @@ var c = E((h0) => {
     }
   }
   r8.kind = "return";
-  class z3 extends a1 {
+  class z3 extends s1 {
     render(Q) {
       let X = "try" + super.render(Q);
       if (this.catch) X += this.catch.render(Q);
@@ -792,7 +792,7 @@ var c = E((h0) => {
       return Q;
     }
   }
-  class t8 extends a1 {
+  class t8 extends s1 {
     constructor(Q) {
       super();
       this.error = Q;
@@ -802,7 +802,7 @@ var c = E((h0) => {
     }
   }
   t8.kind = "catch";
-  class a8 extends a1 {
+  class a8 extends s1 {
     render(Q) {
       return "finally" + super.render(Q);
     }
@@ -884,20 +884,20 @@ var c = E((h0) => {
       return (X.push("}"), new r._Code(X));
     }
     if(Q, X, Y) {
-      if ((this._blockNode(new E1(Q)), X && Y))
+      if ((this._blockNode(new P1(Q)), X && Y))
         this.code(X).else().code(Y).endIf();
       else if (X) this.code(X).endIf();
       else if (Y) throw Error('CodeGen: "else" body without "then" body');
       return this;
     }
     elseIf(Q) {
-      return this._elseNode(new E1(Q));
+      return this._elseNode(new P1(Q));
     }
     else() {
       return this._elseNode(new O4());
     }
     endIf() {
-      return this._endBlockNode(E1, O4);
+      return this._endBlockNode(P1, O4);
     }
     _for(Q, X) {
       if ((this._blockNode(Q), X)) this.code(X).endFor();
@@ -1001,7 +1001,7 @@ var c = E((h0) => {
     }
     _elseNode(Q) {
       let X = this._currNode;
-      if (!(X instanceof E1)) throw Error('CodeGen: "else" without "if"');
+      if (!(X instanceof P1)) throw Error('CodeGen: "else" without "if"');
       return ((this._currNode = X.else = Q), this);
     }
     get _root() {
@@ -1049,7 +1049,7 @@ var c = E((h0) => {
       );
     }
   }
-  function YM(Q, X) {
+  function Yw(Q, X) {
     for (let Y in X) Q[Y] = (Q[Y] || 0) - (X[Y] || 0);
   }
   function V3(Q) {
@@ -1058,16 +1058,16 @@ var c = E((h0) => {
       : r._`!${T$(Q)}`;
   }
   h0.not = V3;
-  var $M = q3(h0.operators.AND);
-  function JM(...Q) {
-    return Q.reduce($M);
+  var $w = q3(h0.operators.AND);
+  function Jw(...Q) {
+    return Q.reduce($w);
   }
-  h0.and = JM;
-  var WM = q3(h0.operators.OR);
-  function GM(...Q) {
-    return Q.reduce(WM);
+  h0.and = Jw;
+  var Ww = q3(h0.operators.OR);
+  function Gw(...Q) {
+    return Q.reduce(Ww);
   }
-  h0.or = GM;
+  h0.or = Gw;
   function q3(Q) {
     return (X, Y) =>
       X === r.nil ? Y : Y === r.nil ? X : r._`${T$(X)} ${Q} ${T$(Y)}`;
@@ -1076,7 +1076,7 @@ var c = E((h0) => {
     return Q instanceof r.Name ? Q : r._`(${Q})`;
   }
 });
-var a = E((A3) => {
+var a = P((A3) => {
   Object.defineProperty(A3, "__esModule", { value: !0 });
   A3.checkStrictMode =
     A3.getErrorPath =
@@ -1098,25 +1098,25 @@ var a = E((A3) => {
     A3.toHash =
       void 0;
   var Q0 = c(),
-    KM = F4();
-  function VM(Q) {
+    Kw = F4();
+  function Vw(Q) {
     let X = {};
     for (let Y of Q) X[Y] = !0;
     return X;
   }
-  A3.toHash = VM;
-  function qM(Q, X) {
+  A3.toHash = Vw;
+  function qw(Q, X) {
     if (typeof X == "boolean") return X;
     if (Object.keys(X).length === 0) return !0;
     return (O3(Q, X), !N3(X, Q.self.RULES.all));
   }
-  A3.alwaysValidSchema = qM;
+  A3.alwaysValidSchema = qw;
   function O3(Q, X = Q.schema) {
     let { opts: Y, self: $ } = Q;
     if (!Y.strictSchema) return;
     if (typeof X === "boolean") return;
     let J = $.RULES.keywords;
-    for (let W in X) if (!J[W]) w3(Q, `unknown keyword: "${W}"`);
+    for (let W in X) if (!J[W]) M3(Q, `unknown keyword: "${W}"`);
   }
   A3.checkUnknownRules = O3;
   function N3(Q, X) {
@@ -1125,28 +1125,28 @@ var a = E((A3) => {
     return !1;
   }
   A3.schemaHasRules = N3;
-  function UM(Q, X) {
+  function Uw(Q, X) {
     if (typeof Q == "boolean") return !Q;
     for (let Y in Q) if (Y !== "$ref" && X.all[Y]) return !0;
     return !1;
   }
-  A3.schemaHasRulesButRef = UM;
-  function LM({ topSchemaRef: Q, schemaPath: X }, Y, $, J) {
+  A3.schemaHasRulesButRef = Uw;
+  function Lw({ topSchemaRef: Q, schemaPath: X }, Y, $, J) {
     if (!J) {
       if (typeof Y == "number" || typeof Y == "boolean") return Y;
       if (typeof Y == "string") return Q0._`${Y}`;
     }
     return Q0._`${Q}${X}${(0, Q0.getProperty)($)}`;
   }
-  A3.schemaRefOrVal = LM;
-  function FM(Q) {
+  A3.schemaRefOrVal = Lw;
+  function Fw(Q) {
     return D3(decodeURIComponent(Q));
   }
-  A3.unescapeFragment = FM;
-  function OM(Q) {
+  A3.unescapeFragment = Fw;
+  function Ow(Q) {
     return encodeURIComponent(g$(Q));
   }
-  A3.escapeFragment = OM;
+  A3.escapeFragment = Ow;
   function g$(Q) {
     if (typeof Q == "number") return `${Q}`;
     return Q.replace(/~/g, "~0").replace(/\//g, "~1");
@@ -1156,11 +1156,11 @@ var a = E((A3) => {
     return Q.replace(/~1/g, "/").replace(/~0/g, "~");
   }
   A3.unescapeJsonPointer = D3;
-  function NM(Q, X) {
+  function Nw(Q, X) {
     if (Array.isArray(Q)) for (let Y of Q) X(Y);
     else X(Q);
   }
-  A3.eachItem = NM;
+  A3.eachItem = Nw;
   function L3({
     mergeNames: Q,
     mergeToName: X,
@@ -1198,7 +1198,7 @@ var a = E((A3) => {
           else (Q.assign(Y, Q0._`${Y} || {}`), h$(Q, Y, X));
         }),
       mergeValues: (Q, X) => (Q === !0 ? !0 : { ...Q, ...X }),
-      resultToName: M3,
+      resultToName: w3,
     }),
     items: L3({
       mergeNames: (Q, X, Y) =>
@@ -1213,13 +1213,13 @@ var a = E((A3) => {
       resultToName: (Q, X) => Q.var("items", X),
     }),
   };
-  function M3(Q, X) {
+  function w3(Q, X) {
     if (X === !0) return Q.var("props", !0);
     let Y = Q.var("props", Q0._`{}`);
     if (X !== void 0) h$(Q, Y, X);
     return Y;
   }
-  A3.evaluatedPropsToName = M3;
+  A3.evaluatedPropsToName = w3;
   function h$(Q, X, Y) {
     Object.keys(Y).forEach(($) =>
       Q.assign(Q0._`${X}${(0, Q0.getProperty)($)}`, !0),
@@ -1227,18 +1227,18 @@ var a = E((A3) => {
   }
   A3.setEvaluated = h$;
   var F3 = {};
-  function DM(Q, X) {
+  function Dw(Q, X) {
     return Q.scopeValue("func", {
       ref: X,
-      code: F3[X.code] || (F3[X.code] = new KM._Code(X.code)),
+      code: F3[X.code] || (F3[X.code] = new Kw._Code(X.code)),
     });
   }
-  A3.useFunc = DM;
+  A3.useFunc = Dw;
   var y$;
   (function (Q) {
     ((Q[(Q.Num = 0)] = "Num"), (Q[(Q.Str = 1)] = "Str"));
   })(y$ || (A3.Type = y$ = {}));
-  function MM(Q, X, Y) {
+  function ww(Q, X, Y) {
     if (Q instanceof Q0.Name) {
       let $ = X === y$.Num;
       return Y
@@ -1251,18 +1251,18 @@ var a = E((A3) => {
     }
     return Y ? (0, Q0.getProperty)(Q).toString() : "/" + g$(Q);
   }
-  A3.getErrorPath = MM;
-  function w3(Q, X, Y = Q.opts.strictSchema) {
+  A3.getErrorPath = ww;
+  function M3(Q, X, Y = Q.opts.strictSchema) {
     if (!Y) return;
     if (((X = `strict mode: ${X}`), Y === !0)) throw Error(X);
     Q.self.logger.warn(X);
   }
-  A3.checkStrictMode = w3;
+  A3.checkStrictMode = M3;
 });
-var P1 = E((R3) => {
+var E1 = P((R3) => {
   Object.defineProperty(R3, "__esModule", { value: !0 });
   var Z0 = c(),
-    gM = {
+    gw = {
       data: new Z0.Name("data"),
       valCxt: new Z0.Name("valCxt"),
       instancePath: new Z0.Name("instancePath"),
@@ -1280,45 +1280,45 @@ var P1 = E((R3) => {
       jsonLen: new Z0.Name("jsonLen"),
       jsonPart: new Z0.Name("jsonPart"),
     };
-  R3.default = gM;
+  R3.default = gw;
 });
-var N4 = E((P3) => {
-  Object.defineProperty(P3, "__esModule", { value: !0 });
-  P3.extendErrors =
-    P3.resetErrorsCount =
-    P3.reportExtraError =
-    P3.reportError =
-    P3.keyword$DataError =
-    P3.keywordError =
+var N4 = P((E3) => {
+  Object.defineProperty(E3, "__esModule", { value: !0 });
+  E3.extendErrors =
+    E3.resetErrorsCount =
+    E3.reportExtraError =
+    E3.reportError =
+    E3.keyword$DataError =
+    E3.keywordError =
       void 0;
   var t = c(),
     YQ = a(),
-    v0 = P1();
-  P3.keywordError = {
+    v0 = E1();
+  E3.keywordError = {
     message: ({ keyword: Q }) => t.str`must pass "${Q}" keyword validation`,
   };
-  P3.keyword$DataError = {
+  E3.keyword$DataError = {
     message: ({ keyword: Q, schemaType: X }) =>
       X
         ? t.str`"${Q}" keyword must be ${X} ($data)`
         : t.str`"${Q}" keyword is invalid ($data)`,
   };
-  function fM(Q, X = P3.keywordError, Y, $) {
+  function fw(Q, X = E3.keywordError, Y, $) {
     let { it: J } = Q,
       { gen: W, compositeRule: G, allErrors: H } = J,
-      B = E3(Q, X, Y);
+      B = P3(Q, X, Y);
     if ($ !== null && $ !== void 0 ? $ : G || H) I3(W, B);
     else b3(J, t._`[${B}]`);
   }
-  P3.reportError = fM;
-  function uM(Q, X = P3.keywordError, Y) {
+  E3.reportError = fw;
+  function uw(Q, X = E3.keywordError, Y) {
     let { it: $ } = Q,
       { gen: J, compositeRule: W, allErrors: G } = $,
-      H = E3(Q, X, Y);
+      H = P3(Q, X, Y);
     if ((I3(J, H), !(W || G))) b3($, v0.default.vErrors);
   }
-  P3.reportExtraError = uM;
-  function mM(Q, X) {
+  E3.reportExtraError = uw;
+  function mw(Q, X) {
     (Q.assign(v0.default.errors, X),
       Q.if(t._`${v0.default.vErrors} !== null`, () =>
         Q.if(
@@ -1328,8 +1328,8 @@ var N4 = E((P3) => {
         ),
       ));
   }
-  P3.resetErrorsCount = mM;
-  function lM({
+  E3.resetErrorsCount = mw;
+  function lw({
     gen: Q,
     keyword: X,
     schemaValue: Y,
@@ -1354,7 +1354,7 @@ var N4 = E((P3) => {
         (Q.assign(t._`${G}.schema`, Y), Q.assign(t._`${G}.data`, $));
     });
   }
-  P3.extendErrors = lM;
+  E3.extendErrors = lw;
   function I3(Q, X) {
     let Y = Q.const("err", X);
     (Q.if(
@@ -1378,24 +1378,24 @@ var N4 = E((P3) => {
     schema: new t.Name("schema"),
     parentSchema: new t.Name("parentSchema"),
   };
-  function E3(Q, X, Y) {
+  function P3(Q, X, Y) {
     let { createErrors: $ } = Q.it;
     if ($ === !1) return t._`{}`;
-    return cM(Q, X, Y);
+    return cw(Q, X, Y);
   }
-  function cM(Q, X, Y = {}) {
+  function cw(Q, X, Y = {}) {
     let { gen: $, it: J } = Q,
-      W = [pM(J, Y), dM(Q, Y)];
-    return (iM(Q, X, W), $.object(...W));
+      W = [pw(J, Y), dw(Q, Y)];
+    return (iw(Q, X, W), $.object(...W));
   }
-  function pM({ errorPath: Q }, { instancePath: X }) {
+  function pw({ errorPath: Q }, { instancePath: X }) {
     let Y = X ? t.str`${Q}${(0, YQ.getErrorPath)(X, YQ.Type.Str)}` : Q;
     return [
       v0.default.instancePath,
       (0, t.strConcat)(v0.default.instancePath, Y),
     ];
   }
-  function dM(
+  function dw(
     { keyword: Q, it: { errSchemaPath: X } },
     { schemaPath: Y, parentSchema: $ },
   ) {
@@ -1403,7 +1403,7 @@ var N4 = E((P3) => {
     if (Y) J = t.str`${J}${(0, YQ.getErrorPath)(Y, YQ.Type.Str)}`;
     return [R6.schemaPath, J];
   }
-  function iM(Q, { params: X, message: Y }, $) {
+  function iw(Q, { params: X, message: Y }, $) {
     let { keyword: J, data: W, schemaValue: G, it: H } = Q,
       { opts: B, propertyName: z, topSchemaRef: K, schemaPath: q } = H;
     if (
@@ -1423,27 +1423,27 @@ var N4 = E((P3) => {
     if (z) $.push([R6.propertyName, z]);
   }
 });
-var k3 = E((C3) => {
-  Object.defineProperty(C3, "__esModule", { value: !0 });
-  C3.boolOrEmptySchema = C3.topBoolOrEmptySchema = void 0;
-  var aM = N4(),
-    sM = c(),
-    eM = P1(),
-    Qw = { message: "boolean schema is false" };
-  function Xw(Q) {
+var k3 = P((S3) => {
+  Object.defineProperty(S3, "__esModule", { value: !0 });
+  S3.boolOrEmptySchema = S3.topBoolOrEmptySchema = void 0;
+  var aw = N4(),
+    sw = c(),
+    ew = E1(),
+    QM = { message: "boolean schema is false" };
+  function XM(Q) {
     let { gen: X, schema: Y, validateName: $ } = Q;
-    if (Y === !1) S3(Q, !1);
-    else if (typeof Y == "object" && Y.$async === !0) X.return(eM.default.data);
-    else (X.assign(sM._`${$}.errors`, null), X.return(!0));
+    if (Y === !1) C3(Q, !1);
+    else if (typeof Y == "object" && Y.$async === !0) X.return(ew.default.data);
+    else (X.assign(sw._`${$}.errors`, null), X.return(!0));
   }
-  C3.topBoolOrEmptySchema = Xw;
-  function Yw(Q, X) {
+  S3.topBoolOrEmptySchema = XM;
+  function YM(Q, X) {
     let { gen: Y, schema: $ } = Q;
-    if ($ === !1) (Y.var(X, !1), S3(Q));
+    if ($ === !1) (Y.var(X, !1), C3(Q));
     else Y.var(X, !0);
   }
-  C3.boolOrEmptySchema = Yw;
-  function S3(Q, X) {
+  S3.boolOrEmptySchema = YM;
+  function C3(Q, X) {
     let { gen: Y, data: $ } = Q,
       J = {
         gen: Y,
@@ -1455,13 +1455,13 @@ var k3 = E((C3) => {
         params: {},
         it: Q,
       };
-    (0, aM.reportError)(J, Qw, void 0, X);
+    (0, aw.reportError)(J, QM, void 0, X);
   }
 });
-var u$ = E((v3) => {
+var u$ = P((v3) => {
   Object.defineProperty(v3, "__esModule", { value: !0 });
   v3.getRules = v3.isJSONType = void 0;
-  var Jw = [
+  var JM = [
       "string",
       "number",
       "integer",
@@ -1470,12 +1470,12 @@ var u$ = E((v3) => {
       "object",
       "array",
     ],
-    Ww = new Set(Jw);
-  function Gw(Q) {
-    return typeof Q == "string" && Ww.has(Q);
+    WM = new Set(JM);
+  function GM(Q) {
+    return typeof Q == "string" && WM.has(Q);
   }
-  v3.isJSONType = Gw;
-  function Hw() {
+  v3.isJSONType = GM;
+  function HM() {
     let Q = {
       number: { type: "number", rules: [] },
       string: { type: "string", rules: [] },
@@ -1490,16 +1490,16 @@ var u$ = E((v3) => {
       keywords: {},
     };
   }
-  v3.getRules = Hw;
+  v3.getRules = HM;
 });
-var m$ = E((g3) => {
+var m$ = P((g3) => {
   Object.defineProperty(g3, "__esModule", { value: !0 });
   g3.shouldUseRule = g3.shouldUseGroup = g3.schemaHasRulesForType = void 0;
-  function zw({ schema: Q, self: X }, Y) {
+  function zM({ schema: Q, self: X }, Y) {
     let $ = X.RULES.types[Y];
     return $ && $ !== !0 && x3(Q, $);
   }
-  g3.schemaHasRulesForType = zw;
+  g3.schemaHasRulesForType = zM;
   function x3(Q, X) {
     return X.rules.some((Y) => y3(Q, Y));
   }
@@ -1515,7 +1515,7 @@ var m$ = E((g3) => {
   }
   g3.shouldUseRule = y3;
 });
-var D4 = E((l3) => {
+var D4 = P((l3) => {
   Object.defineProperty(l3, "__esModule", { value: !0 });
   l3.reportTypeError =
     l3.checkDataTypes =
@@ -1525,16 +1525,16 @@ var D4 = E((l3) => {
     l3.getSchemaTypes =
     l3.DataType =
       void 0;
-  var qw = u$(),
-    Uw = m$(),
-    Lw = N4(),
+  var qM = u$(),
+    UM = m$(),
+    LM = N4(),
     l = c(),
     f3 = a(),
     N9;
   (function (Q) {
     ((Q[(Q.Correct = 0)] = "Correct"), (Q[(Q.Wrong = 1)] = "Wrong"));
   })(N9 || (l3.DataType = N9 = {}));
-  function Fw(Q) {
+  function FM(Q) {
     let X = u3(Q.type);
     if (X.includes("null")) {
       if (Q.nullable === !1)
@@ -1546,40 +1546,40 @@ var D4 = E((l3) => {
     }
     return X;
   }
-  l3.getSchemaTypes = Fw;
+  l3.getSchemaTypes = FM;
   function u3(Q) {
     let X = Array.isArray(Q) ? Q : Q ? [Q] : [];
-    if (X.every(qw.isJSONType)) return X;
+    if (X.every(qM.isJSONType)) return X;
     throw Error("type must be JSONType or JSONType[]: " + X.join(","));
   }
   l3.getJSONTypes = u3;
-  function Ow(Q, X) {
+  function OM(Q, X) {
     let { gen: Y, data: $, opts: J } = Q,
-      W = Nw(X, J.coerceTypes),
+      W = NM(X, J.coerceTypes),
       G =
         X.length > 0 &&
         !(
           W.length === 0 &&
           X.length === 1 &&
-          (0, Uw.schemaHasRulesForType)(Q, X[0])
+          (0, UM.schemaHasRulesForType)(Q, X[0])
         );
     if (G) {
       let H = c$(X, $, J.strictNumbers, N9.Wrong);
       Y.if(H, () => {
-        if (W.length) Dw(Q, X, W);
+        if (W.length) DM(Q, X, W);
         else p$(Q);
       });
     }
     return G;
   }
-  l3.coerceAndCheckDataType = Ow;
+  l3.coerceAndCheckDataType = OM;
   var m3 = new Set(["string", "number", "integer", "boolean", "null"]);
-  function Nw(Q, X) {
+  function NM(Q, X) {
     return X
       ? Q.filter((Y) => m3.has(Y) || (X === "array" && Y === "array"))
       : [];
   }
-  function Dw(Q, X, Y) {
+  function DM(Q, X, Y) {
     let { gen: $, data: J, opts: W } = Q,
       G = $.let("dataType", l._`typeof ${J}`),
       H = $.let("coerced", l._`undefined`);
@@ -1598,7 +1598,7 @@ var D4 = E((l3) => {
       p$(Q),
       $.endIf(),
       $.if(l._`${H} !== undefined`, () => {
-        ($.assign(J, H), Mw(Q, H));
+        ($.assign(J, H), wM(Q, H));
       }));
     function B(z) {
       switch (z) {
@@ -1638,7 +1638,7 @@ var D4 = E((l3) => {
       }
     }
   }
-  function Mw({ gen: Q, parentData: X, parentDataProperty: Y }, $) {
+  function wM({ gen: Q, parentData: X, parentDataProperty: Y }, $) {
     Q.if(l._`${X} !== undefined`, () => Q.assign(l._`${X}[${Y}]`, $));
   }
   function l$(Q, X, Y, $ = N9.Correct) {
@@ -1688,17 +1688,17 @@ var D4 = E((l3) => {
     return J;
   }
   l3.checkDataTypes = c$;
-  var ww = {
+  var MM = {
     message: ({ schema: Q }) => `must be ${Q}`,
     params: ({ schema: Q, schemaValue: X }) =>
       typeof Q == "string" ? l._`{type: ${Q}}` : l._`{type: ${X}}`,
   };
   function p$(Q) {
-    let X = Aw(Q);
-    (0, Lw.reportError)(X, ww);
+    let X = AM(Q);
+    (0, LM.reportError)(X, MM);
   }
   l3.reportTypeError = p$;
-  function Aw(Q) {
+  function AM(Q) {
     let { gen: X, data: Y, schema: $ } = Q,
       J = (0, f3.schemaRefOrVal)(Q, $, "type");
     return {
@@ -1714,24 +1714,24 @@ var D4 = E((l3) => {
     };
   }
 });
-var n3 = E((d3) => {
+var n3 = P((d3) => {
   Object.defineProperty(d3, "__esModule", { value: !0 });
   d3.assignDefaults = void 0;
   var D9 = c(),
-    Zw = a();
-  function Sw(Q, X) {
+    ZM = a();
+  function CM(Q, X) {
     let { properties: Y, items: $ } = Q.schema;
     if (X === "object" && Y) for (let J in Y) p3(Q, J, Y[J].default);
     else if (X === "array" && Array.isArray($))
       $.forEach((J, W) => p3(Q, W, J.default));
   }
-  d3.assignDefaults = Sw;
+  d3.assignDefaults = CM;
   function p3(Q, X, Y) {
     let { gen: $, compositeRule: J, data: W, opts: G } = Q;
     if (Y === void 0) return;
     let H = D9._`${W}${(0, D9.getProperty)(X)}`;
     if (J) {
-      (0, Zw.checkStrictMode)(Q, `default is ignored for: ${H}`);
+      (0, ZM.checkStrictMode)(Q, `default is ignored for: ${H}`);
       return;
     }
     let B = D9._`${H} === undefined`;
@@ -1740,7 +1740,7 @@ var n3 = E((d3) => {
     $.if(B, D9._`${H} = ${(0, D9.stringify)(Y)}`);
   }
 });
-var t0 = E((t3) => {
+var t0 = P((t3) => {
   Object.defineProperty(t3, "__esModule", { value: !0 });
   t3.validateUnion =
     t3.validateArray =
@@ -1758,27 +1758,27 @@ var t0 = E((t3) => {
       void 0;
   var H0 = c(),
     d$ = a(),
-    s1 = P1(),
-    Cw = a();
-  function _w(Q, X) {
+    e1 = E1(),
+    SM = a();
+  function _M(Q, X) {
     let { gen: Y, data: $, it: J } = Q;
     Y.if(n$(Y, $, X, J.opts.ownProperties), () => {
       (Q.setParams({ missingProperty: H0._`${X}` }, !0), Q.error());
     });
   }
-  t3.checkReportMissingProp = _w;
-  function kw({ gen: Q, data: X, it: { opts: Y } }, $, J) {
+  t3.checkReportMissingProp = _M;
+  function kM({ gen: Q, data: X, it: { opts: Y } }, $, J) {
     return (0, H0.or)(
       ...$.map((W) =>
         (0, H0.and)(n$(Q, X, W, Y.ownProperties), H0._`${J} = ${W}`),
       ),
     );
   }
-  t3.checkMissingProp = kw;
-  function vw(Q, X) {
+  t3.checkMissingProp = kM;
+  function vM(Q, X) {
     (Q.setParams({ missingProperty: X }, !0), Q.error());
   }
-  t3.reportMissingProp = vw;
+  t3.reportMissingProp = vM;
   function o3(Q) {
     return Q.scopeValue("func", {
       ref: Object.prototype.hasOwnProperty,
@@ -1790,11 +1790,11 @@ var t0 = E((t3) => {
     return H0._`${o3(Q)}.call(${X}, ${Y})`;
   }
   t3.isOwnProperty = i$;
-  function Tw(Q, X, Y, $) {
+  function TM(Q, X, Y, $) {
     let J = H0._`${X}${(0, H0.getProperty)(Y)} !== undefined`;
     return $ ? H0._`${J} && ${i$(Q, X, Y)}` : J;
   }
-  t3.propertyInData = Tw;
+  t3.propertyInData = TM;
   function n$(Q, X, Y, $) {
     let J = H0._`${X}${(0, H0.getProperty)(Y)} === undefined`;
     return $ ? (0, H0.or)(J, (0, H0.not)(i$(Q, X, Y))) : J;
@@ -1804,11 +1804,11 @@ var t0 = E((t3) => {
     return Q ? Object.keys(Q).filter((X) => X !== "__proto__") : [];
   }
   t3.allSchemaProperties = r3;
-  function xw(Q, X) {
+  function xM(Q, X) {
     return r3(X).filter((Y) => !(0, d$.alwaysValidSchema)(Q, X[Y]));
   }
-  t3.schemaProperties = xw;
-  function yw(
+  t3.schemaProperties = xM;
+  function yM(
     {
       schemaCode: Q,
       data: X,
@@ -1822,32 +1822,32 @@ var t0 = E((t3) => {
     let K = z ? H0._`${Q}, ${X}, ${$}${J}` : X,
       q = [
         [
-          s1.default.instancePath,
-          (0, H0.strConcat)(s1.default.instancePath, W),
+          e1.default.instancePath,
+          (0, H0.strConcat)(e1.default.instancePath, W),
         ],
-        [s1.default.parentData, G.parentData],
-        [s1.default.parentDataProperty, G.parentDataProperty],
-        [s1.default.rootData, s1.default.rootData],
+        [e1.default.parentData, G.parentData],
+        [e1.default.parentDataProperty, G.parentDataProperty],
+        [e1.default.rootData, e1.default.rootData],
       ];
     if (G.opts.dynamicRef)
-      q.push([s1.default.dynamicAnchors, s1.default.dynamicAnchors]);
+      q.push([e1.default.dynamicAnchors, e1.default.dynamicAnchors]);
     let U = H0._`${K}, ${Y.object(...q)}`;
     return B !== H0.nil ? H0._`${H}.call(${B}, ${U})` : H0._`${H}(${U})`;
   }
-  t3.callValidateCode = yw;
-  var gw = H0._`new RegExp`;
-  function hw({ gen: Q, it: { opts: X } }, Y) {
+  t3.callValidateCode = yM;
+  var gM = H0._`new RegExp`;
+  function hM({ gen: Q, it: { opts: X } }, Y) {
     let $ = X.unicodeRegExp ? "u" : "",
       { regExp: J } = X.code,
       W = J(Y, $);
     return Q.scopeValue("pattern", {
       key: W.toString(),
       ref: W,
-      code: H0._`${J.code === "new RegExp" ? gw : (0, Cw.useFunc)(Q, J)}(${Y}, ${$})`,
+      code: H0._`${J.code === "new RegExp" ? gM : (0, SM.useFunc)(Q, J)}(${Y}, ${$})`,
     });
   }
-  t3.usePattern = hw;
-  function fw(Q) {
+  t3.usePattern = hM;
+  function fM(Q) {
     let { gen: X, data: Y, keyword: $, it: J } = Q,
       W = X.name("valid");
     if (J.allErrors) {
@@ -1863,8 +1863,8 @@ var t0 = E((t3) => {
       });
     }
   }
-  t3.validateArray = fw;
-  function uw(Q) {
+  t3.validateArray = fM;
+  function uM(Q) {
     let { gen: X, schema: Y, keyword: $, it: J } = Q;
     if (!Array.isArray(Y)) throw Error("ajv implementation error");
     if (Y.some((B) => (0, d$.alwaysValidSchema)(J, B)) && !J.opts.unevaluated)
@@ -1887,9 +1887,9 @@ var t0 = E((t3) => {
         () => Q.error(!0),
       ));
   }
-  t3.validateUnion = uw;
+  t3.validateUnion = uM;
 });
-var YH = E((QH) => {
+var YH = P((QH) => {
   Object.defineProperty(QH, "__esModule", { value: !0 });
   QH.validateKeywordUsage =
     QH.validSchemaType =
@@ -1897,8 +1897,8 @@ var YH = E((QH) => {
     QH.macroKeywordCode =
       void 0;
   var T0 = c(),
-    I6 = P1(),
-    ew = t0(),
+    I6 = E1(),
+    eM = t0(),
     QA = N4();
   function XA(Q, X) {
     let { gen: Y, keyword: $, schema: J, parentSchema: W, it: G } = Q,
@@ -1930,11 +1930,11 @@ var YH = E((QH) => {
     function U() {
       if (X.errors === !1) {
         if ((F(), X.modifying)) s3(Q);
-        M(() => Q.error());
+        w(() => Q.error());
       } else {
         let N = X.async ? V() : L();
         if (X.modifying) s3(Q);
-        M(() => $A(Q, N));
+        w(() => $A(Q, N));
       }
     }
     function V() {
@@ -1961,11 +1961,11 @@ var YH = E((QH) => {
         R = !(("compile" in X && !H) || X.schema === !1);
       $.assign(
         q,
-        T0._`${N}${(0, ew.callValidateCode)(Q, K, j, R)}`,
+        T0._`${N}${(0, eM.callValidateCode)(Q, K, j, R)}`,
         X.modifying,
       );
     }
-    function M(N) {
+    function w(N) {
       var j;
       $.if((0, T0.not)((j = X.valid) !== null && j !== void 0 ? j : q), N);
     }
@@ -2040,7 +2040,7 @@ var YH = E((QH) => {
   }
   QH.validateKeywordUsage = GA;
 });
-var GH = E((JH) => {
+var GH = P((JH) => {
   Object.defineProperty(JH, "__esModule", { value: !0 });
   JH.extendSubschemaMode = JH.extendSubschemaData = JH.getSubschema = void 0;
   var O1 = c(),
@@ -2130,7 +2130,7 @@ var GH = E((JH) => {
   }
   JH.extendSubschemaMode = qA;
 });
-var o$ = E((Qx, HH) => {
+var o$ = P((Qx, HH) => {
   HH.exports = function Q(X, Y) {
     if (X === Y) return !0;
     if (X && Y && typeof X == "object" && typeof Y == "object") {
@@ -2160,15 +2160,15 @@ var o$ = E((Qx, HH) => {
     return X !== X && Y !== Y;
   };
 });
-var zH = E((Xx, BH) => {
-  var e1 = (BH.exports = function (Q, X, Y) {
+var zH = P((Xx, BH) => {
+  var Q6 = (BH.exports = function (Q, X, Y) {
     if (typeof X == "function") ((Y = X), (X = {}));
     Y = X.cb || Y;
     var $ = typeof Y == "function" ? Y : Y.pre || function () {},
       J = Y.post || function () {};
     $Q(X, $, J, Q, "", Q);
   });
-  e1.keywords = {
+  Q6.keywords = {
     additionalItems: !0,
     items: !0,
     contains: !0,
@@ -2179,15 +2179,15 @@ var zH = E((Xx, BH) => {
     then: !0,
     else: !0,
   };
-  e1.arrayKeywords = { items: !0, allOf: !0, anyOf: !0, oneOf: !0 };
-  e1.propsKeywords = {
+  Q6.arrayKeywords = { items: !0, allOf: !0, anyOf: !0, oneOf: !0 };
+  Q6.propsKeywords = {
     $defs: !0,
     definitions: !0,
     properties: !0,
     patternProperties: !0,
     dependencies: !0,
   };
-  e1.skipKeywords = {
+  Q6.skipKeywords = {
     default: !0,
     enum: !0,
     const: !0,
@@ -2213,14 +2213,14 @@ var zH = E((Xx, BH) => {
       for (var K in $) {
         var q = $[K];
         if (Array.isArray(q)) {
-          if (K in e1.arrayKeywords)
+          if (K in Q6.arrayKeywords)
             for (var U = 0; U < q.length; U++)
               $Q(Q, X, Y, q[U], J + "/" + K + "/" + U, W, J, K, $, U);
-        } else if (K in e1.propsKeywords) {
+        } else if (K in Q6.propsKeywords) {
           if (q && typeof q == "object")
             for (var V in q)
               $Q(Q, X, Y, q[V], J + "/" + K + "/" + FA(V), W, J, K, $, V);
-        } else if (K in e1.keywords || (Q.allKeys && !(K in e1.skipKeywords)))
+        } else if (K in Q6.keywords || (Q.allKeys && !(K in Q6.skipKeywords)))
           $Q(Q, X, Y, q, J + "/" + K, W, J, K, $);
       }
       Y($, J, W, G, H, B, z);
@@ -2230,7 +2230,7 @@ var zH = E((Xx, BH) => {
     return Q.replace(/~/g, "~0").replace(/\//g, "~1");
   }
 });
-var M4 = E((UH) => {
+var w4 = P((UH) => {
   Object.defineProperty(UH, "__esModule", { value: !0 });
   UH.getSchemaRefs =
     UH.resolveUrl =
@@ -2242,7 +2242,7 @@ var M4 = E((UH) => {
   var OA = a(),
     NA = o$(),
     DA = zH(),
-    MA = new Set([
+    wA = new Set([
       "type",
       "format",
       "pattern",
@@ -2260,13 +2260,13 @@ var M4 = E((UH) => {
       "enum",
       "const",
     ]);
-  function wA(Q, X = !0) {
+  function MA(Q, X = !0) {
     if (typeof Q == "boolean") return !0;
     if (X === !0) return !r$(Q);
     if (!X) return !1;
     return KH(Q) <= X;
   }
-  UH.inlineRef = wA;
+  UH.inlineRef = MA;
   var AA = new Set([
     "$ref",
     "$recursiveRef",
@@ -2287,14 +2287,14 @@ var M4 = E((UH) => {
     let X = 0;
     for (let Y in Q) {
       if (Y === "$ref") return 1 / 0;
-      if ((X++, MA.has(Y))) continue;
+      if ((X++, wA.has(Y))) continue;
       if (typeof Q[Y] == "object") (0, OA.eachItem)(Q[Y], ($) => (X += KH($)));
       if (X === 1 / 0) return 1 / 0;
     }
     return X;
   }
   function VH(Q, X = "", Y) {
-    if (Y !== !1) X = M9(X);
+    if (Y !== !1) X = w9(X);
     let $ = Q.parse(X);
     return qH(Q, $);
   }
@@ -2304,19 +2304,19 @@ var M4 = E((UH) => {
   }
   UH._getFullPath = qH;
   var jA = /#\/?$/;
-  function M9(Q) {
+  function w9(Q) {
     return Q ? Q.replace(jA, "") : "";
   }
-  UH.normalizeId = M9;
+  UH.normalizeId = w9;
   function RA(Q, X, Y) {
-    return ((Y = M9(Y)), Q.resolve(X, Y));
+    return ((Y = w9(Y)), Q.resolve(X, Y));
   }
   UH.resolveUrl = RA;
   var IA = /^[a-z_][-a-z0-9._]*$/i;
   function bA(Q, X) {
     if (typeof Q == "boolean") return {};
     let { schemaId: Y, uriResolver: $ } = this.opts,
-      J = M9(Q[Y] || X),
+      J = w9(Q[Y] || X),
       W = { "": J },
       G = VH($, J, !1),
       H = {},
@@ -2325,17 +2325,17 @@ var M4 = E((UH) => {
       DA(Q, { allKeys: !0 }, (q, U, V, L) => {
         if (L === void 0) return;
         let F = G + U,
-          M = W[L];
-        if (typeof q[Y] == "string") M = N.call(this, q[Y]);
-        (j.call(this, q.$anchor), j.call(this, q.$dynamicAnchor), (W[U] = M));
+          w = W[L];
+        if (typeof q[Y] == "string") w = N.call(this, q[Y]);
+        (j.call(this, q.$anchor), j.call(this, q.$dynamicAnchor), (W[U] = w));
         function N(R) {
-          let C = this.opts.uriResolver.resolve;
-          if (((R = M9(M ? C(M, R) : R)), B.has(R))) throw K(R);
+          let S = this.opts.uriResolver.resolve;
+          if (((R = w9(w ? S(w, R) : R)), B.has(R))) throw K(R);
           B.add(R);
           let Z = this.refs[R];
           if (typeof Z == "string") Z = this.refs[Z];
           if (typeof Z == "object") z(q, Z.schema, R);
-          else if (R !== M9(F))
+          else if (R !== w9(F))
             if (R[0] === "#") (z(q, H[R], R), (H[R] = q));
             else this.refs[R] = F;
           return R;
@@ -2358,10 +2358,10 @@ var M4 = E((UH) => {
   }
   UH.getSchemaRefs = bA;
 });
-var j4 = E((SH) => {
-  Object.defineProperty(SH, "__esModule", { value: !0 });
-  SH.getData = SH.KeywordCxt = SH.validateFunctionCode = void 0;
-  var MH = k3(),
+var j4 = P((CH) => {
+  Object.defineProperty(CH, "__esModule", { value: !0 });
+  CH.getData = CH.KeywordCxt = CH.validateFunctionCode = void 0;
+  var wH = k3(),
     FH = D4(),
     a$ = m$(),
     JQ = D4(),
@@ -2369,10 +2369,10 @@ var j4 = E((SH) => {
     A4 = YH(),
     t$ = GH(),
     v = c(),
-    f = P1(),
-    kA = M4(),
+    f = E1(),
+    kA = w4(),
     Z1 = a(),
-    w4 = N4();
+    M4 = N4();
   function vA(Q) {
     if (jH(Q)) {
       if ((RH(Q), AH(Q))) {
@@ -2380,10 +2380,10 @@ var j4 = E((SH) => {
         return;
       }
     }
-    wH(Q, () => (0, MH.topBoolOrEmptySchema)(Q));
+    MH(Q, () => (0, wH.topBoolOrEmptySchema)(Q));
   }
-  SH.validateFunctionCode = vA;
-  function wH(
+  CH.validateFunctionCode = vA;
+  function MH(
     { gen: Q, validateName: X, schema: Y, schemaEnv: $, opts: J },
     W,
   ) {
@@ -2441,7 +2441,7 @@ var j4 = E((SH) => {
   }
   function yA(Q) {
     let { schema: X, opts: Y, gen: $ } = Q;
-    wH(Q, () => {
+    MH(Q, () => {
       if (Y.$comment && X.$comment) bH(Q);
       if (
         (mA(Q),
@@ -2477,7 +2477,7 @@ var j4 = E((SH) => {
         return;
       }
     }
-    (0, MH.boolOrEmptySchema)(Q, X);
+    (0, wH.boolOrEmptySchema)(Q, X);
   }
   function AH({ schema: Q, self: X }) {
     if (typeof Q == "boolean") return !Q;
@@ -2564,7 +2564,7 @@ var j4 = E((SH) => {
       W.$ref &&
       (B.ignoreKeywordsWithRef || !(0, Z1.schemaHasRulesButRef)(W, K))
     ) {
-      J.block(() => PH(Q, "$ref", K.all.$ref.definition));
+      J.block(() => EH(Q, "$ref", K.all.$ref.definition));
       return;
     }
     if (!B.jtd) iA(Q, X);
@@ -2595,7 +2595,7 @@ var j4 = E((SH) => {
     if (J) (0, _A.assignDefaults)(Q, X.type);
     Y.block(() => {
       for (let W of X.rules)
-        if ((0, a$.shouldUseRule)($, W)) PH(Q, W.keyword, W.definition, X.type);
+        if ((0, a$.shouldUseRule)($, W)) EH(Q, W.keyword, W.definition, X.type);
     });
   }
   function iA(Q, X) {
@@ -2610,7 +2610,7 @@ var j4 = E((SH) => {
       return;
     }
     (X.forEach((Y) => {
-      if (!EH(Q.dataTypes, Y))
+      if (!PH(Q.dataTypes, Y))
         s$(Q, `type "${Y}" not allowed by context "${Q.dataTypes.join(",")}"`);
     }),
       aA(Q, X));
@@ -2633,13 +2633,13 @@ var j4 = E((SH) => {
   function tA(Q, X) {
     return Q.includes(X) || (X === "number" && Q.includes("integer"));
   }
-  function EH(Q, X) {
+  function PH(Q, X) {
     return Q.includes(X) || (X === "integer" && Q.includes("number"));
   }
   function aA(Q, X) {
     let Y = [];
     for (let $ of Q.dataTypes)
-      if (EH(X, $)) Y.push($);
+      if (PH(X, $)) Y.push($);
       else if (X.includes("integer") && $ === "number") Y.push("integer");
     Q.dataTypes = Y;
   }
@@ -2718,15 +2718,15 @@ var j4 = E((SH) => {
       this._error(Q, Y);
     }
     _error(Q, X) {
-      (Q ? w4.reportExtraError : w4.reportError)(this, this.def.error, X);
+      (Q ? M4.reportExtraError : M4.reportError)(this, this.def.error, X);
     }
     $dataError() {
-      (0, w4.reportError)(this, this.def.$dataError || w4.keyword$DataError);
+      (0, M4.reportError)(this, this.def.$dataError || M4.keyword$DataError);
     }
     reset() {
       if (this.errsCount === void 0)
         throw Error('add "trackErrors" to keyword definition');
-      (0, w4.resetErrorsCount)(this.gen, this.errsCount);
+      (0, M4.resetErrorsCount)(this.gen, this.errsCount);
     }
     ok(Q) {
       if (!this.allErrors) this.gen.if(Q);
@@ -2791,8 +2791,8 @@ var j4 = E((SH) => {
         return ($.if(X, () => this.mergeEvaluated(Q, v.Name)), !0);
     }
   }
-  SH.KeywordCxt = e$;
-  function PH(Q, X, Y, $) {
+  CH.KeywordCxt = e$;
+  function EH(Q, X, Y, $) {
     let J = new e$(Q, Y, X);
     if ("code" in Y) Y.code(J, $);
     else if (J.$data && Y.validate) (0, A4.funcKeywordCode)(J, Y);
@@ -2829,9 +2829,9 @@ var j4 = E((SH) => {
       return `Cannot access ${z} ${K} levels up, current level is ${X}`;
     }
   }
-  SH.getData = ZH;
+  CH.getData = ZH;
 });
-var WQ = E((kH) => {
+var WQ = P((kH) => {
   Object.defineProperty(kH, "__esModule", { value: !0 });
   class _H extends Error {
     constructor(Q) {
@@ -2841,9 +2841,9 @@ var WQ = E((kH) => {
   }
   kH.default = _H;
 });
-var R4 = E((TH) => {
+var R4 = P((TH) => {
   Object.defineProperty(TH, "__esModule", { value: !0 });
-  var Q7 = M4();
+  var Q7 = w4();
   class vH extends Error {
     constructor(Q, X, Y, $) {
       super($ || `can't resolve reference ${Y} from id ${X}`);
@@ -2855,7 +2855,7 @@ var R4 = E((TH) => {
   }
   TH.default = vH;
 });
-var HQ = E((gH) => {
+var HQ = P((gH) => {
   Object.defineProperty(gH, "__esModule", { value: !0 });
   gH.resolveSchema =
     gH.getCompilingSchema =
@@ -2865,8 +2865,8 @@ var HQ = E((gH) => {
       void 0;
   var H1 = c(),
     Jj = WQ(),
-    b6 = P1(),
-    B1 = M4(),
+    b6 = E1(),
+    B1 = w4(),
     xH = a(),
     Wj = j4();
   class I4 {
@@ -3079,7 +3079,7 @@ var HQ = E((gH) => {
     return;
   }
 });
-var fH = E((Hx, Fj) => {
+var fH = P((Hx, Fj) => {
   Fj.exports = {
     $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
     description:
@@ -3098,7 +3098,7 @@ var fH = E((Hx, Fj) => {
     additionalProperties: !1,
   };
 });
-var mH = E((Bx, uH) => {
+var mH = P((Bx, uH) => {
   var Oj = {
     0: 0,
     1: 1,
@@ -3125,7 +3125,7 @@ var mH = E((Bx, uH) => {
   };
   uH.exports = { HEX: Oj };
 });
-var rH = E((zx, oH) => {
+var rH = P((zx, oH) => {
   var { HEX: Nj } = mH(),
     Dj =
       /^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u;
@@ -3133,7 +3133,7 @@ var rH = E((zx, oH) => {
     if (nH(Q, ".") < 3) return { host: Q, isIPV4: !1 };
     let X = Q.match(Dj) || [],
       [Y] = X;
-    if (Y) return { host: wj(Y, "."), isIPV4: !0 };
+    if (Y) return { host: Mj(Y, "."), isIPV4: !0 };
     else return { host: Q, isIPV4: !1 };
   }
   function $7(Q, X = !1) {
@@ -3147,7 +3147,7 @@ var rH = E((zx, oH) => {
     if (X && Y.length === 0) Y = "0";
     return Y;
   }
-  function Mj(Q) {
+  function wj(Q) {
     let X = 0,
       Y = { error: !1, address: "", zone: "" },
       $ = [],
@@ -3194,14 +3194,14 @@ var rH = E((zx, oH) => {
   }
   function iH(Q) {
     if (nH(Q, ":") < 2) return { host: Q, isIPV6: !1 };
-    let X = Mj(Q);
+    let X = wj(Q);
     if (!X.error) {
       let { address: Y, address: $ } = X;
       if (X.zone) ((Y += "%" + X.zone), ($ += "%25" + X.zone));
       return { host: Y, escapedHost: $, isIPV6: !0 };
     } else return { host: Q, isIPV6: !1 };
   }
-  function wj(Q, X) {
+  function Mj(Q, X) {
     let Y = "",
       $ = !0,
       J = Q.length;
@@ -3279,9 +3279,9 @@ var rH = E((zx, oH) => {
     stringArrayToHexStripped: $7,
   };
 });
-var XB = E((Kx, QB) => {
+var XB = P((Kx, QB) => {
   var bj = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu,
-    Ej = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
+    Pj = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
   function tH(Q) {
     return typeof Q.secure === "boolean"
       ? Q.secure
@@ -3297,7 +3297,7 @@ var XB = E((Kx, QB) => {
     if (!Q.path) Q.path = "/";
     return Q;
   }
-  function Pj(Q) {
+  function Ej(Q) {
     return (
       (Q.secure = tH(Q)),
       (Q.resourceName = (Q.path || "/") + (Q.query ? "?" + Q.query : "")),
@@ -3318,9 +3318,9 @@ var XB = E((Kx, QB) => {
     }
     return ((Q.fragment = void 0), Q);
   }
-  function Sj(Q, X) {
+  function Cj(Q, X) {
     if (!Q.path) return ((Q.error = "URN can not be parsed"), Q);
-    let Y = Q.path.match(Ej);
+    let Y = Q.path.match(Pj);
     if (Y) {
       let $ = X.scheme || Q.scheme || "urn";
       ((Q.nid = Y[1].toLowerCase()), (Q.nss = Y[2]));
@@ -3330,7 +3330,7 @@ var XB = E((Kx, QB) => {
     } else Q.error = Q.error || "URN can not be parsed.";
     return Q;
   }
-  function Cj(Q, X) {
+  function Sj(Q, X) {
     let Y = X.scheme || Q.scheme || "urn",
       $ = Q.nid.toLowerCase(),
       J = `${Y}:${X.nid || $}`,
@@ -3361,19 +3361,19 @@ var XB = E((Kx, QB) => {
       parse: aH,
       serialize: sH,
     },
-    BQ = { scheme: "ws", domainHost: !0, parse: Pj, serialize: Zj },
+    BQ = { scheme: "ws", domainHost: !0, parse: Ej, serialize: Zj },
     Tj = {
       scheme: "wss",
       domainHost: BQ.domainHost,
       parse: BQ.parse,
       serialize: BQ.serialize,
     },
-    xj = { scheme: "urn", parse: Sj, serialize: Cj, skipNormalize: !0 },
+    xj = { scheme: "urn", parse: Cj, serialize: Sj, skipNormalize: !0 },
     yj = { scheme: "urn:uuid", parse: _j, serialize: kj, skipNormalize: !0 },
     J7 = { http: eH, https: vj, ws: BQ, wss: Tj, urn: xj, "urn:uuid": yj };
   QB.exports = J7;
 });
-var $B = E((Vx, KQ) => {
+var $B = P((Vx, KQ) => {
   var {
       normalizeIPv6: gj,
       normalizeIPv4: hj,
@@ -3383,18 +3383,18 @@ var $B = E((Vx, KQ) => {
     } = rH(),
     W7 = XB();
   function uj(Q, X) {
-    if (typeof Q === "string") Q = N1(S1(Q, X), X);
-    else if (typeof Q === "object") Q = S1(N1(Q, X), X);
+    if (typeof Q === "string") Q = N1(C1(Q, X), X);
+    else if (typeof Q === "object") Q = C1(N1(Q, X), X);
     return Q;
   }
   function mj(Q, X, Y) {
     let $ = Object.assign({ scheme: "null" }, Y),
-      J = YB(S1(Q, $), S1(X, $), $, !0);
+      J = YB(C1(Q, $), C1(X, $), $, !0);
     return N1(J, { ...$, skipEscape: !0 });
   }
   function YB(Q, X, Y, $) {
     let J = {};
-    if (!$) ((Q = S1(N1(Q, Y), Y)), (X = S1(N1(X, Y), Y)));
+    if (!$) ((Q = C1(N1(Q, Y), Y)), (X = C1(N1(X, Y), Y)));
     if (((Y = Y || {}), !Y.tolerant && X.scheme))
       ((J.scheme = X.scheme),
         (J.userinfo = X.userinfo),
@@ -3437,10 +3437,10 @@ var $B = E((Vx, KQ) => {
   }
   function lj(Q, X, Y) {
     if (typeof Q === "string")
-      ((Q = unescape(Q)), (Q = N1(zQ(S1(Q, Y), !0), { ...Y, skipEscape: !0 })));
+      ((Q = unescape(Q)), (Q = N1(zQ(C1(Q, Y), !0), { ...Y, skipEscape: !0 })));
     else if (typeof Q === "object") Q = N1(zQ(Q, !0), { ...Y, skipEscape: !0 });
     if (typeof X === "string")
-      ((X = unescape(X)), (X = N1(zQ(S1(X, Y), !0), { ...Y, skipEscape: !0 })));
+      ((X = unescape(X)), (X = N1(zQ(C1(X, Y), !0), { ...Y, skipEscape: !0 })));
     else if (typeof X === "object") X = N1(zQ(X, !0), { ...Y, skipEscape: !0 });
     return Q.toLowerCase() === X.toLowerCase();
   }
@@ -3497,7 +3497,7 @@ var $B = E((Vx, KQ) => {
   }
   var dj =
     /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
-  function S1(Q, X) {
+  function C1(Q, X) {
     let Y = Object.assign({}, X),
       $ = {
         scheme: void 0,
@@ -3583,78 +3583,78 @@ var $B = E((Vx, KQ) => {
     resolveComponents: YB,
     equal: lj,
     serialize: N1,
-    parse: S1,
+    parse: C1,
   };
   KQ.exports = G7;
   KQ.exports.default = G7;
   KQ.exports.fastUri = G7;
 });
-var GB = E((WB) => {
+var GB = P((WB) => {
   Object.defineProperty(WB, "__esModule", { value: !0 });
   var JB = $B();
   JB.code = 'require("ajv/dist/runtime/uri").default';
   WB.default = JB;
 });
-var LB = E((C1) => {
-  Object.defineProperty(C1, "__esModule", { value: !0 });
-  C1.CodeGen =
-    C1.Name =
-    C1.nil =
-    C1.stringify =
-    C1.str =
-    C1._ =
-    C1.KeywordCxt =
+var LB = P((S1) => {
+  Object.defineProperty(S1, "__esModule", { value: !0 });
+  S1.CodeGen =
+    S1.Name =
+    S1.nil =
+    S1.stringify =
+    S1.str =
+    S1._ =
+    S1.KeywordCxt =
       void 0;
   var nj = j4();
-  Object.defineProperty(C1, "KeywordCxt", {
+  Object.defineProperty(S1, "KeywordCxt", {
     enumerable: !0,
     get: function () {
       return nj.KeywordCxt;
     },
   });
-  var w9 = c();
-  Object.defineProperty(C1, "_", {
+  var M9 = c();
+  Object.defineProperty(S1, "_", {
     enumerable: !0,
     get: function () {
-      return w9._;
+      return M9._;
     },
   });
-  Object.defineProperty(C1, "str", {
+  Object.defineProperty(S1, "str", {
     enumerable: !0,
     get: function () {
-      return w9.str;
+      return M9.str;
     },
   });
-  Object.defineProperty(C1, "stringify", {
+  Object.defineProperty(S1, "stringify", {
     enumerable: !0,
     get: function () {
-      return w9.stringify;
+      return M9.stringify;
     },
   });
-  Object.defineProperty(C1, "nil", {
+  Object.defineProperty(S1, "nil", {
     enumerable: !0,
     get: function () {
-      return w9.nil;
+      return M9.nil;
     },
   });
-  Object.defineProperty(C1, "Name", {
+  Object.defineProperty(S1, "Name", {
     enumerable: !0,
     get: function () {
-      return w9.Name;
+      return M9.Name;
     },
   });
-  Object.defineProperty(C1, "CodeGen", {
+  Object.defineProperty(S1, "CodeGen", {
     enumerable: !0,
     get: function () {
-      return w9.CodeGen;
+      return M9.CodeGen;
     },
   });
   var oj = WQ(),
     VB = R4(),
     rj = u$(),
-    E4 = HQ(),
+    P4 = HQ(),
     tj = c(),
-    P4 = M4(),
+    E4 = w4(),
     VQ = D4(),
     B7 = a(),
     HB = fH(),
@@ -3720,19 +3720,19 @@ var LB = E((C1) => {
       V,
       L,
       F,
-      M,
+      w,
       N,
       j,
       R,
-      C,
+      S,
       Z,
       X0,
       O0,
-      S0,
-      $6;
+      C0,
+      J6;
     let V1 = Q.strict,
-      J6 = (X = Q.code) === null || X === void 0 ? void 0 : X.optimize,
-      _1 = J6 === !0 || J6 === void 0 ? 1 : J6 || 0,
+      _1 = (X = Q.code) === null || X === void 0 ? void 0 : X.optimize,
+      k1 = _1 === !0 || _1 === void 0 ? 1 : _1 || 0,
       W6 =
         ($ = (Y = Q.code) === null || Y === void 0 ? void 0 : Y.regExp) !==
           null && $ !== void 0
@@ -3766,21 +3766,21 @@ var LB = E((C1) => {
           ? L
           : !1,
       code: Q.code
-        ? { ...Q.code, optimize: _1, regExp: W6 }
-        : { optimize: _1, regExp: W6 },
+        ? { ...Q.code, optimize: k1, regExp: W6 }
+        : { optimize: k1, regExp: W6 },
       loopRequired: (F = Q.loopRequired) !== null && F !== void 0 ? F : BB,
-      loopEnum: (M = Q.loopEnum) !== null && M !== void 0 ? M : BB,
+      loopEnum: (w = Q.loopEnum) !== null && w !== void 0 ? w : BB,
       meta: (N = Q.meta) !== null && N !== void 0 ? N : !0,
       messages: (j = Q.messages) !== null && j !== void 0 ? j : !0,
       inlineRefs: (R = Q.inlineRefs) !== null && R !== void 0 ? R : !0,
-      schemaId: (C = Q.schemaId) !== null && C !== void 0 ? C : "$id",
+      schemaId: (S = Q.schemaId) !== null && S !== void 0 ? S : "$id",
       addUsedSchema: (Z = Q.addUsedSchema) !== null && Z !== void 0 ? Z : !0,
       validateSchema:
         (X0 = Q.validateSchema) !== null && X0 !== void 0 ? X0 : !0,
       validateFormats:
         (O0 = Q.validateFormats) !== null && O0 !== void 0 ? O0 : !0,
-      unicodeRegExp: (S0 = Q.unicodeRegExp) !== null && S0 !== void 0 ? S0 : !0,
-      int32range: ($6 = Q.int32range) !== null && $6 !== void 0 ? $6 : !0,
+      unicodeRegExp: (C0 = Q.unicodeRegExp) !== null && C0 !== void 0 ? C0 : !0,
+      int32range: (J6 = Q.int32range) !== null && J6 !== void 0 ? J6 : !0,
       uriResolver: h,
     };
   }
@@ -3900,7 +3900,7 @@ var LB = E((C1) => {
           throw Error(`schema ${W} must be string`);
       }
       return (
-        (X = (0, P4.normalizeId)(X || J)),
+        (X = (0, E4.normalizeId)(X || J)),
         this._checkUnique(X),
         (this.schemas[X] = this._addSchema(Q, Y, X, $, !0)),
         this
@@ -3933,8 +3933,8 @@ var LB = E((C1) => {
       while (typeof (X = KB.call(this, Q)) == "string") Q = X;
       if (X === void 0) {
         let { schemaId: Y } = this.opts,
-          $ = new E4.SchemaEnv({ schema: {}, schemaId: Y });
-        if (((X = E4.resolveSchema.call(this, $, Q)), !X)) return;
+          $ = new P4.SchemaEnv({ schema: {}, schemaId: Y });
+        if (((X = P4.resolveSchema.call(this, $, Q)), !X)) return;
         this.refs[Q] = X;
       }
       return X.validate || this._compileSchemaEnv(X);
@@ -3964,7 +3964,7 @@ var LB = E((C1) => {
           this._cache.delete(X);
           let Y = Q[this.opts.schemaId];
           if (Y)
-            ((Y = (0, P4.normalizeId)(Y)),
+            ((Y = (0, E4.normalizeId)(Y)),
               delete this.schemas[Y],
               delete this.refs[Y]);
           return this;
@@ -4074,10 +4074,10 @@ var LB = E((C1) => {
         throw Error("schema must be object or boolean");
       let H = this._cache.get(Q);
       if (H !== void 0) return H;
-      Y = (0, P4.normalizeId)(W || Y);
-      let B = P4.getSchemaRefs.call(this, Q, Y);
+      Y = (0, E4.normalizeId)(W || Y);
+      let B = E4.getSchemaRefs.call(this, Q, Y);
       if (
-        ((H = new E4.SchemaEnv({
+        ((H = new P4.SchemaEnv({
           schema: Q,
           schemaId: G,
           meta: X,
@@ -4099,7 +4099,7 @@ var LB = E((C1) => {
     }
     _compileSchemaEnv(Q) {
       if (Q.meta) this._compileMetaSchema(Q);
-      else E4.compileSchema.call(this, Q);
+      else P4.compileSchema.call(this, Q);
       if (!Q.validate) throw Error("ajv implementation error");
       return Q.validate;
     }
@@ -4107,7 +4107,7 @@ var LB = E((C1) => {
       let X = this.opts;
       this.opts = this._metaOpts;
       try {
-        E4.compileSchema.call(this, Q);
+        P4.compileSchema.call(this, Q);
       } finally {
         this.opts = X;
       }
@@ -4115,7 +4115,7 @@ var LB = E((C1) => {
   }
   qQ.ValidationError = oj.default;
   qQ.MissingRefError = VB.default;
-  C1.default = qQ;
+  S1.default = qQ;
   function zB(Q, X, Y, $ = "error") {
     for (let J in Q) {
       let W = J;
@@ -4123,7 +4123,7 @@ var LB = E((C1) => {
     }
   }
   function KB(Q) {
-    return ((Q = (0, P4.normalizeId)(Q)), this.schemas[Q] || this.refs[Q]);
+    return ((Q = (0, E4.normalizeId)(Q)), this.schemas[Q] || this.refs[Q]);
   }
   function $R() {
     let Q = this.opts.schemas;
@@ -4216,7 +4216,7 @@ var LB = E((C1) => {
     return { anyOf: [Q, UR] };
   }
 });
-var OB = E((FB) => {
+var OB = P((FB) => {
   Object.defineProperty(FB, "__esModule", { value: !0 });
   var OR = {
     keyword: "id",
@@ -4226,16 +4226,16 @@ var OB = E((FB) => {
   };
   FB.default = OR;
 });
-var jB = E((wB) => {
-  Object.defineProperty(wB, "__esModule", { value: !0 });
-  wB.callRef = wB.getValidate = void 0;
+var jB = P((MB) => {
+  Object.defineProperty(MB, "__esModule", { value: !0 });
+  MB.callRef = MB.getValidate = void 0;
   var DR = R4(),
     NB = t0(),
     f0 = c(),
-    A9 = P1(),
+    A9 = E1(),
     DB = HQ(),
     UQ = a(),
-    MR = {
+    wR = {
       keyword: "$ref",
       schemaType: "string",
       code(Q) {
@@ -4253,7 +4253,7 @@ var jB = E((wB) => {
           return LQ(Q, f0._`${L}.validate`, z, z.$async);
         }
         function U(L) {
-          let F = MB(Q, L);
+          let F = wB(Q, L);
           LQ(Q, F, L, L.$async);
         }
         function V(L) {
@@ -4263,7 +4263,7 @@ var jB = E((wB) => {
                 ? { ref: L, code: (0, f0.stringify)(L) }
                 : { ref: L },
             ),
-            M = X.name("valid"),
+            w = X.name("valid"),
             N = Q.subschema(
               {
                 schema: L,
@@ -4272,19 +4272,19 @@ var jB = E((wB) => {
                 topSchemaRef: F,
                 errSchemaPath: Y,
               },
-              M,
+              w,
             );
-          (Q.mergeEvaluated(N), Q.ok(M));
+          (Q.mergeEvaluated(N), Q.ok(w));
         }
       },
     };
-  function MB(Q, X) {
+  function wB(Q, X) {
     let { gen: Y } = Q;
     return X.validate
       ? Y.scopeValue("validate", { ref: X.validate })
       : f0._`${Y.scopeValue("wrapper", { ref: X })}.validate`;
   }
-  wB.getValidate = MB;
+  MB.getValidate = wB;
   function LQ(Q, X, Y, $) {
     let { gen: J, it: W } = Q,
       { allErrors: G, schemaEnv: H, opts: B } = W,
@@ -4332,33 +4332,33 @@ var jB = E((wB) => {
     function V(L) {
       var F;
       if (!W.opts.unevaluated) return;
-      let M =
+      let w =
         (F = Y === null || Y === void 0 ? void 0 : Y.validate) === null ||
         F === void 0
           ? void 0
           : F.evaluated;
       if (W.props !== !0)
-        if (M && !M.dynamicProps) {
-          if (M.props !== void 0)
-            W.props = UQ.mergeEvaluated.props(J, M.props, W.props);
+        if (w && !w.dynamicProps) {
+          if (w.props !== void 0)
+            W.props = UQ.mergeEvaluated.props(J, w.props, W.props);
         } else {
           let N = J.var("props", f0._`${L}.evaluated.props`);
           W.props = UQ.mergeEvaluated.props(J, N, W.props, f0.Name);
         }
       if (W.items !== !0)
-        if (M && !M.dynamicItems) {
-          if (M.items !== void 0)
-            W.items = UQ.mergeEvaluated.items(J, M.items, W.items);
+        if (w && !w.dynamicItems) {
+          if (w.items !== void 0)
+            W.items = UQ.mergeEvaluated.items(J, w.items, W.items);
         } else {
           let N = J.var("items", f0._`${L}.evaluated.items`);
           W.items = UQ.mergeEvaluated.items(J, N, W.items, f0.Name);
         }
     }
   }
-  wB.callRef = LQ;
-  wB.default = MR;
+  MB.callRef = LQ;
+  MB.default = wR;
 });
-var IB = E((RB) => {
+var IB = P((RB) => {
   Object.defineProperty(RB, "__esModule", { value: !0 });
   var jR = OB(),
     RR = jB(),
@@ -4374,48 +4374,48 @@ var IB = E((RB) => {
     ];
   RB.default = IR;
 });
-var EB = E((bB) => {
+var PB = P((bB) => {
   Object.defineProperty(bB, "__esModule", { value: !0 });
   var FQ = c(),
-    Q6 = FQ.operators,
+    X6 = FQ.operators,
     OQ = {
-      maximum: { okStr: "<=", ok: Q6.LTE, fail: Q6.GT },
-      minimum: { okStr: ">=", ok: Q6.GTE, fail: Q6.LT },
-      exclusiveMaximum: { okStr: "<", ok: Q6.LT, fail: Q6.GTE },
-      exclusiveMinimum: { okStr: ">", ok: Q6.GT, fail: Q6.LTE },
+      maximum: { okStr: "<=", ok: X6.LTE, fail: X6.GT },
+      minimum: { okStr: ">=", ok: X6.GTE, fail: X6.LT },
+      exclusiveMaximum: { okStr: "<", ok: X6.LT, fail: X6.GTE },
+      exclusiveMinimum: { okStr: ">", ok: X6.GT, fail: X6.LTE },
     },
-    ER = {
+    PR = {
       message: ({ keyword: Q, schemaCode: X }) =>
         FQ.str`must be ${OQ[Q].okStr} ${X}`,
       params: ({ keyword: Q, schemaCode: X }) =>
         FQ._`{comparison: ${OQ[Q].okStr}, limit: ${X}}`,
     },
-    PR = {
+    ER = {
       keyword: Object.keys(OQ),
       type: "number",
       schemaType: "number",
       $data: !0,
-      error: ER,
+      error: PR,
       code(Q) {
         let { keyword: X, data: Y, schemaCode: $ } = Q;
         Q.fail$data(FQ._`${Y} ${OQ[X].fail} ${$} || isNaN(${Y})`);
       },
     };
-  bB.default = PR;
+  bB.default = ER;
 });
-var ZB = E((PB) => {
-  Object.defineProperty(PB, "__esModule", { value: !0 });
+var ZB = P((EB) => {
+  Object.defineProperty(EB, "__esModule", { value: !0 });
   var Z4 = c(),
-    SR = {
+    CR = {
       message: ({ schemaCode: Q }) => Z4.str`must be multiple of ${Q}`,
       params: ({ schemaCode: Q }) => Z4._`{multipleOf: ${Q}}`,
     },
-    CR = {
+    SR = {
       keyword: "multipleOf",
       type: "number",
       schemaType: "number",
       $data: !0,
-      error: SR,
+      error: CR,
       code(Q) {
         let { gen: X, data: Y, schemaCode: $, it: J } = Q,
           W = J.opts.multipleOfPrecision,
@@ -4426,11 +4426,11 @@ var ZB = E((PB) => {
         Q.fail$data(Z4._`(${$} === 0 || (${G} = ${Y}/${$}, ${H}))`);
       },
     };
-  PB.default = CR;
+  EB.default = SR;
 });
-var _B = E((CB) => {
-  Object.defineProperty(CB, "__esModule", { value: !0 });
-  function SB(Q) {
+var _B = P((SB) => {
+  Object.defineProperty(SB, "__esModule", { value: !0 });
+  function CB(Q) {
     let X = Q.length,
       Y = 0,
       $ = 0,
@@ -4441,20 +4441,20 @@ var _B = E((CB) => {
       }
     return Y;
   }
-  CB.default = SB;
-  SB.code = 'require("ajv/dist/runtime/ucs2length").default';
+  SB.default = CB;
+  CB.code = 'require("ajv/dist/runtime/ucs2length").default';
 });
-var vB = E((kB) => {
+var vB = P((kB) => {
   Object.defineProperty(kB, "__esModule", { value: !0 });
-  var E6 = c(),
+  var P6 = c(),
     vR = a(),
     TR = _B(),
     xR = {
       message({ keyword: Q, schemaCode: X }) {
         let Y = Q === "maxLength" ? "more" : "fewer";
-        return E6.str`must NOT have ${Y} than ${X} characters`;
+        return P6.str`must NOT have ${Y} than ${X} characters`;
       },
-      params: ({ schemaCode: Q }) => E6._`{limit: ${Q}}`,
+      params: ({ schemaCode: Q }) => P6._`{limit: ${Q}}`,
     },
     yR = {
       keyword: ["maxLength", "minLength"],
@@ -4464,17 +4464,17 @@ var vB = E((kB) => {
       error: xR,
       code(Q) {
         let { keyword: X, data: Y, schemaCode: $, it: J } = Q,
-          W = X === "maxLength" ? E6.operators.GT : E6.operators.LT,
+          W = X === "maxLength" ? P6.operators.GT : P6.operators.LT,
           G =
             J.opts.unicode === !1
-              ? E6._`${Y}.length`
-              : E6._`${(0, vR.useFunc)(Q.gen, TR.default)}(${Y})`;
-        Q.fail$data(E6._`${G} ${W} ${$}`);
+              ? P6._`${Y}.length`
+              : P6._`${(0, vR.useFunc)(Q.gen, TR.default)}(${Y})`;
+        Q.fail$data(P6._`${G} ${W} ${$}`);
       },
     };
   kB.default = yR;
 });
-var xB = E((TB) => {
+var xB = P((TB) => {
   Object.defineProperty(TB, "__esModule", { value: !0 });
   var hR = t0(),
     NQ = c(),
@@ -4497,15 +4497,15 @@ var xB = E((TB) => {
     };
   TB.default = uR;
 });
-var gB = E((yB) => {
+var gB = P((yB) => {
   Object.defineProperty(yB, "__esModule", { value: !0 });
-  var S4 = c(),
+  var C4 = c(),
     lR = {
       message({ keyword: Q, schemaCode: X }) {
         let Y = Q === "maxProperties" ? "more" : "fewer";
-        return S4.str`must NOT have ${Y} than ${X} properties`;
+        return C4.str`must NOT have ${Y} than ${X} properties`;
       },
-      params: ({ schemaCode: Q }) => S4._`{limit: ${Q}}`,
+      params: ({ schemaCode: Q }) => C4._`{limit: ${Q}}`,
     },
     cR = {
       keyword: ["maxProperties", "minProperties"],
@@ -4515,15 +4515,15 @@ var gB = E((yB) => {
       error: lR,
       code(Q) {
         let { keyword: X, data: Y, schemaCode: $ } = Q,
-          J = X === "maxProperties" ? S4.operators.GT : S4.operators.LT;
-        Q.fail$data(S4._`Object.keys(${Y}).length ${J} ${$}`);
+          J = X === "maxProperties" ? C4.operators.GT : C4.operators.LT;
+        Q.fail$data(C4._`Object.keys(${Y}).length ${J} ${$}`);
       },
     };
   yB.default = cR;
 });
-var fB = E((hB) => {
+var fB = P((hB) => {
   Object.defineProperty(hB, "__esModule", { value: !0 });
-  var C4 = t0(),
+  var S4 = t0(),
     _4 = c(),
     dR = a(),
     iR = {
@@ -4553,14 +4553,14 @@ var fB = E((hB) => {
               (V === null || V === void 0 ? void 0 : V[F]) === void 0 &&
               !L.has(F)
             ) {
-              let M = G.schemaEnv.baseId + G.errSchemaPath,
-                N = `required property "${F}" is not defined at "${M}" (strictRequired)`;
+              let w = G.schemaEnv.baseId + G.errSchemaPath,
+                N = `required property "${F}" is not defined at "${w}" (strictRequired)`;
               (0, dR.checkStrictMode)(G, N, G.opts.strictRequired);
             }
         }
         function z() {
           if (B || W) Q.block$data(_4.nil, q);
-          else for (let V of Y) (0, C4.checkReportMissingProp)(Q, V);
+          else for (let V of Y) (0, S4.checkReportMissingProp)(Q, V);
         }
         function K() {
           let V = X.let("missing");
@@ -4568,14 +4568,14 @@ var fB = E((hB) => {
             let L = X.let("valid", !0);
             (Q.block$data(L, () => U(V, L)), Q.ok(L));
           } else
-            (X.if((0, C4.checkMissingProp)(Q, Y, V)),
-              (0, C4.reportMissingProp)(Q, V),
+            (X.if((0, S4.checkMissingProp)(Q, Y, V)),
+              (0, S4.reportMissingProp)(Q, V),
               X.else());
         }
         function q() {
           X.forOf("prop", $, (V) => {
             (Q.setParams({ missingProperty: V }),
-              X.if((0, C4.noPropertyInData)(X, J, V, H.ownProperties), () =>
+              X.if((0, S4.noPropertyInData)(X, J, V, H.ownProperties), () =>
                 Q.error(),
               ));
           });
@@ -4586,7 +4586,7 @@ var fB = E((hB) => {
               V,
               $,
               () => {
-                (X.assign(L, (0, C4.propertyInData)(X, J, V, H.ownProperties)),
+                (X.assign(L, (0, S4.propertyInData)(X, J, V, H.ownProperties)),
                   X.if((0, _4.not)(L), () => {
                     (Q.error(), X.break());
                   }));
@@ -4598,7 +4598,7 @@ var fB = E((hB) => {
     };
   hB.default = nR;
 });
-var mB = E((uB) => {
+var mB = P((uB) => {
   Object.defineProperty(uB, "__esModule", { value: !0 });
   var k4 = c(),
     rR = {
@@ -4622,29 +4622,29 @@ var mB = E((uB) => {
     };
   uB.default = tR;
 });
-var DQ = E((cB) => {
+var DQ = P((cB) => {
   Object.defineProperty(cB, "__esModule", { value: !0 });
   var lB = o$();
   lB.code = 'require("ajv/dist/runtime/equal").default';
   cB.default = lB;
 });
-var dB = E((pB) => {
+var dB = P((pB) => {
   Object.defineProperty(pB, "__esModule", { value: !0 });
   var z7 = D4(),
-    E0 = c(),
+    P0 = c(),
     eR = a(),
-    QI = DQ(),
-    XI = {
+    Q2 = DQ(),
+    X2 = {
       message: ({ params: { i: Q, j: X } }) =>
-        E0.str`must NOT have duplicate items (items ## ${X} and ${Q} are identical)`,
-      params: ({ params: { i: Q, j: X } }) => E0._`{i: ${Q}, j: ${X}}`,
+        P0.str`must NOT have duplicate items (items ## ${X} and ${Q} are identical)`,
+      params: ({ params: { i: Q, j: X } }) => P0._`{i: ${Q}, j: ${X}}`,
     },
-    YI = {
+    Y2 = {
       keyword: "uniqueItems",
       type: "array",
       schemaType: "boolean",
       $data: !0,
-      error: XI,
+      error: X2,
       code(Q) {
         let {
           gen: X,
@@ -4658,13 +4658,13 @@ var dB = E((pB) => {
         if (!$ && !J) return;
         let B = X.let("valid"),
           z = W.items ? (0, z7.getSchemaTypes)(W.items) : [];
-        (Q.block$data(B, K, E0._`${G} === false`), Q.ok(B));
+        (Q.block$data(B, K, P0._`${G} === false`), Q.ok(B));
         function K() {
-          let L = X.let("i", E0._`${Y}.length`),
+          let L = X.let("i", P0._`${Y}.length`),
             F = X.let("j");
           (Q.setParams({ i: L, j: F }),
             X.assign(B, !0),
-            X.if(E0._`${L} > 1`, () => (q() ? U : V)(L, F)));
+            X.if(P0._`${L} > 1`, () => (q() ? U : V)(L, F)));
         }
         function q() {
           return (
@@ -4672,34 +4672,34 @@ var dB = E((pB) => {
           );
         }
         function U(L, F) {
-          let M = X.name("item"),
+          let w = X.name("item"),
             N = (0, z7.checkDataTypes)(
               z,
-              M,
+              w,
               H.opts.strictNumbers,
               z7.DataType.Wrong,
             ),
-            j = X.const("indices", E0._`{}`);
-          X.for(E0._`;${L}--;`, () => {
+            j = X.const("indices", P0._`{}`);
+          X.for(P0._`;${L}--;`, () => {
             if (
-              (X.let(M, E0._`${Y}[${L}]`),
-              X.if(N, E0._`continue`),
+              (X.let(w, P0._`${Y}[${L}]`),
+              X.if(N, P0._`continue`),
               z.length > 1)
             )
-              X.if(E0._`typeof ${M} == "string"`, E0._`${M} += "_"`);
-            X.if(E0._`typeof ${j}[${M}] == "number"`, () => {
-              (X.assign(F, E0._`${j}[${M}]`),
+              X.if(P0._`typeof ${w} == "string"`, P0._`${w} += "_"`);
+            X.if(P0._`typeof ${j}[${w}] == "number"`, () => {
+              (X.assign(F, P0._`${j}[${w}]`),
                 Q.error(),
                 X.assign(B, !1).break());
-            }).code(E0._`${j}[${M}] = ${L}`);
+            }).code(P0._`${j}[${w}] = ${L}`);
           });
         }
         function V(L, F) {
-          let M = (0, eR.useFunc)(X, QI.default),
+          let w = (0, eR.useFunc)(X, Q2.default),
             N = X.name("outer");
-          X.label(N).for(E0._`;${L}--;`, () =>
-            X.for(E0._`${F} = ${L}; ${F}--;`, () =>
-              X.if(E0._`${M}(${Y}[${L}], ${Y}[${F}])`, () => {
+          X.label(N).for(P0._`;${L}--;`, () =>
+            X.for(P0._`${F} = ${L}; ${F}--;`, () =>
+              X.if(P0._`${w}(${Y}[${L}], ${Y}[${F}])`, () => {
                 (Q.error(), X.assign(B, !1).break(N));
               }),
             ),
@@ -4707,44 +4707,44 @@ var dB = E((pB) => {
         }
       },
     };
-  pB.default = YI;
+  pB.default = Y2;
 });
-var nB = E((iB) => {
+var nB = P((iB) => {
   Object.defineProperty(iB, "__esModule", { value: !0 });
   var K7 = c(),
-    JI = a(),
-    WI = DQ(),
-    GI = {
+    J2 = a(),
+    W2 = DQ(),
+    G2 = {
       message: "must be equal to constant",
       params: ({ schemaCode: Q }) => K7._`{allowedValue: ${Q}}`,
     },
-    HI = {
+    H2 = {
       keyword: "const",
       $data: !0,
-      error: GI,
+      error: G2,
       code(Q) {
         let { gen: X, data: Y, $data: $, schemaCode: J, schema: W } = Q;
         if ($ || (W && typeof W == "object"))
-          Q.fail$data(K7._`!${(0, JI.useFunc)(X, WI.default)}(${Y}, ${J})`);
+          Q.fail$data(K7._`!${(0, J2.useFunc)(X, W2.default)}(${Y}, ${J})`);
         else Q.fail(K7._`${W} !== ${Y}`);
       },
     };
-  iB.default = HI;
+  iB.default = H2;
 });
-var rB = E((oB) => {
+var rB = P((oB) => {
   Object.defineProperty(oB, "__esModule", { value: !0 });
   var v4 = c(),
-    zI = a(),
-    KI = DQ(),
-    VI = {
+    z2 = a(),
+    K2 = DQ(),
+    V2 = {
       message: "must be equal to one of the allowed values",
       params: ({ schemaCode: Q }) => v4._`{allowedValues: ${Q}}`,
     },
-    qI = {
+    q2 = {
       keyword: "enum",
       schemaType: "array",
       $data: !0,
-      error: VI,
+      error: V2,
       code(Q) {
         let { gen: X, data: Y, $data: $, schema: J, schemaCode: W, it: G } = Q;
         if (!$ && J.length === 0) throw Error("enum must have non-empty array");
@@ -4753,7 +4753,7 @@ var rB = E((oB) => {
           z = () =>
             B !== null && B !== void 0
               ? B
-              : (B = (0, zI.useFunc)(X, KI.default)),
+              : (B = (0, z2.useFunc)(X, K2.default)),
           K;
         if (H || $) ((K = X.let("valid")), Q.block$data(K, q));
         else {
@@ -4776,52 +4776,52 @@ var rB = E((oB) => {
         }
       },
     };
-  oB.default = qI;
+  oB.default = q2;
 });
-var aB = E((tB) => {
+var aB = P((tB) => {
   Object.defineProperty(tB, "__esModule", { value: !0 });
-  var LI = EB(),
-    FI = ZB(),
-    OI = vB(),
-    NI = xB(),
-    DI = gB(),
-    MI = fB(),
-    wI = mB(),
-    AI = dB(),
-    jI = nB(),
-    RI = rB(),
-    II = [
-      LI.default,
-      FI.default,
-      OI.default,
-      NI.default,
-      DI.default,
-      MI.default,
-      wI.default,
-      AI.default,
+  var L2 = PB(),
+    F2 = ZB(),
+    O2 = vB(),
+    N2 = xB(),
+    D2 = gB(),
+    w2 = fB(),
+    M2 = mB(),
+    A2 = dB(),
+    j2 = nB(),
+    R2 = rB(),
+    I2 = [
+      L2.default,
+      F2.default,
+      O2.default,
+      N2.default,
+      D2.default,
+      w2.default,
+      M2.default,
+      A2.default,
       { keyword: "type", schemaType: ["string", "array"] },
       { keyword: "nullable", schemaType: "boolean" },
-      jI.default,
-      RI.default,
+      j2.default,
+      R2.default,
     ];
-  tB.default = II;
+  tB.default = I2;
 });
-var q7 = E((eB) => {
+var q7 = P((eB) => {
   Object.defineProperty(eB, "__esModule", { value: !0 });
   eB.validateAdditionalItems = void 0;
-  var P6 = c(),
+  var E6 = c(),
     V7 = a(),
-    EI = {
+    P2 = {
       message: ({ params: { len: Q } }) =>
-        P6.str`must NOT have more than ${Q} items`,
-      params: ({ params: { len: Q } }) => P6._`{limit: ${Q}}`,
+        E6.str`must NOT have more than ${Q} items`,
+      params: ({ params: { len: Q } }) => E6._`{limit: ${Q}}`,
     },
-    PI = {
+    E2 = {
       keyword: "additionalItems",
       type: "array",
       schemaType: ["boolean", "object"],
       before: "uniqueItems",
-      error: EI,
+      error: P2,
       code(Q) {
         let { parentSchema: X, it: Y } = Q,
           { items: $ } = X;
@@ -4838,12 +4838,12 @@ var q7 = E((eB) => {
   function sB(Q, X) {
     let { gen: Y, schema: $, data: J, keyword: W, it: G } = Q;
     G.items = !0;
-    let H = Y.const("len", P6._`${J}.length`);
+    let H = Y.const("len", E6._`${J}.length`);
     if ($ === !1)
-      (Q.setParams({ len: X.length }), Q.pass(P6._`${H} <= ${X.length}`));
+      (Q.setParams({ len: X.length }), Q.pass(E6._`${H} <= ${X.length}`));
     else if (typeof $ == "object" && !(0, V7.alwaysValidSchema)(G, $)) {
-      let z = Y.var("valid", P6._`${H} <= ${X.length}`);
-      (Y.if((0, P6.not)(z), () => B(z)), Q.ok(z));
+      let z = Y.var("valid", E6._`${H} <= ${X.length}`);
+      (Y.if((0, E6.not)(z), () => B(z)), Q.ok(z));
     }
     function B(z) {
       Y.forRange("i", X.length, H, (K) => {
@@ -4854,20 +4854,20 @@ var q7 = E((eB) => {
           ),
           !G.allErrors)
         )
-          Y.if((0, P6.not)(z), () => Y.break());
+          Y.if((0, E6.not)(z), () => Y.break());
       });
     }
   }
   eB.validateAdditionalItems = sB;
-  eB.default = PI;
+  eB.default = E2;
 });
-var U7 = E(($z) => {
+var U7 = P(($z) => {
   Object.defineProperty($z, "__esModule", { value: !0 });
   $z.validateTuple = void 0;
   var Xz = c(),
-    MQ = a(),
-    SI = t0(),
-    CI = {
+    wQ = a(),
+    C2 = t0(),
+    S2 = {
       keyword: "items",
       type: "array",
       schemaType: ["object", "array", "boolean"],
@@ -4875,18 +4875,18 @@ var U7 = E(($z) => {
       code(Q) {
         let { schema: X, it: Y } = Q;
         if (Array.isArray(X)) return Yz(Q, "additionalItems", X);
-        if (((Y.items = !0), (0, MQ.alwaysValidSchema)(Y, X))) return;
-        Q.ok((0, SI.validateArray)(Q));
+        if (((Y.items = !0), (0, wQ.alwaysValidSchema)(Y, X))) return;
+        Q.ok((0, C2.validateArray)(Q));
       },
     };
   function Yz(Q, X, Y = Q.schema) {
     let { gen: $, parentSchema: J, data: W, keyword: G, it: H } = Q;
     if ((K(J), H.opts.unevaluated && Y.length && H.items !== !0))
-      H.items = MQ.mergeEvaluated.items($, Y.length, H.items);
+      H.items = wQ.mergeEvaluated.items($, Y.length, H.items);
     let B = $.name("valid"),
       z = $.const("len", Xz._`${W}.length`);
     Y.forEach((q, U) => {
-      if ((0, MQ.alwaysValidSchema)(H, q)) return;
+      if ((0, wQ.alwaysValidSchema)(H, q)) return;
       ($.if(Xz._`${z} > ${U}`, () =>
         Q.subschema({ keyword: G, schemaProp: U, dataProp: U }, B),
       ),
@@ -4897,58 +4897,58 @@ var U7 = E(($z) => {
         L = Y.length,
         F = L === q.minItems && (L === q.maxItems || q[X] === !1);
       if (U.strictTuples && !F) {
-        let M = `"${G}" is ${L}-tuple, but minItems or maxItems/${X} are not specified or different at path "${V}"`;
-        (0, MQ.checkStrictMode)(H, M, U.strictTuples);
+        let w = `"${G}" is ${L}-tuple, but minItems or maxItems/${X} are not specified or different at path "${V}"`;
+        (0, wQ.checkStrictMode)(H, w, U.strictTuples);
       }
     }
   }
   $z.validateTuple = Yz;
-  $z.default = CI;
+  $z.default = S2;
 });
-var Gz = E((Wz) => {
+var Gz = P((Wz) => {
   Object.defineProperty(Wz, "__esModule", { value: !0 });
-  var kI = U7(),
-    vI = {
+  var k2 = U7(),
+    v2 = {
       keyword: "prefixItems",
       type: "array",
       schemaType: ["array"],
       before: "uniqueItems",
-      code: (Q) => (0, kI.validateTuple)(Q, "items"),
+      code: (Q) => (0, k2.validateTuple)(Q, "items"),
     };
-  Wz.default = vI;
+  Wz.default = v2;
 });
-var zz = E((Bz) => {
+var zz = P((Bz) => {
   Object.defineProperty(Bz, "__esModule", { value: !0 });
   var Hz = c(),
-    xI = a(),
-    yI = t0(),
-    gI = q7(),
-    hI = {
+    x2 = a(),
+    y2 = t0(),
+    g2 = q7(),
+    h2 = {
       message: ({ params: { len: Q } }) =>
         Hz.str`must NOT have more than ${Q} items`,
       params: ({ params: { len: Q } }) => Hz._`{limit: ${Q}}`,
     },
-    fI = {
+    f2 = {
       keyword: "items",
       type: "array",
       schemaType: ["object", "boolean"],
       before: "uniqueItems",
-      error: hI,
+      error: h2,
       code(Q) {
         let { schema: X, parentSchema: Y, it: $ } = Q,
           { prefixItems: J } = Y;
-        if ((($.items = !0), (0, xI.alwaysValidSchema)($, X))) return;
-        if (J) (0, gI.validateAdditionalItems)(Q, J);
-        else Q.ok((0, yI.validateArray)(Q));
+        if ((($.items = !0), (0, x2.alwaysValidSchema)($, X))) return;
+        if (J) (0, g2.validateAdditionalItems)(Q, J);
+        else Q.ok((0, y2.validateArray)(Q));
       },
     };
-  Bz.default = fI;
+  Bz.default = f2;
 });
-var Vz = E((Kz) => {
+var Vz = P((Kz) => {
   Object.defineProperty(Kz, "__esModule", { value: !0 });
   var a0 = c(),
-    wQ = a(),
-    mI = {
+    MQ = a(),
+    m2 = {
       message: ({ params: { min: Q, max: X } }) =>
         X === void 0
           ? a0.str`must contain at least ${Q} valid item(s)`
@@ -4958,13 +4958,13 @@ var Vz = E((Kz) => {
           ? a0._`{minContains: ${Q}}`
           : a0._`{minContains: ${Q}, maxContains: ${X}}`,
     },
-    lI = {
+    l2 = {
       keyword: "contains",
       type: "array",
       schemaType: ["object", "boolean"],
       before: "uniqueItems",
       trackErrors: !0,
-      error: mI,
+      error: m2,
       code(Q) {
         let { gen: X, schema: Y, parentSchema: $, data: J, it: W } = Q,
           G,
@@ -4974,21 +4974,21 @@ var Vz = E((Kz) => {
         else G = 1;
         let K = X.const("len", a0._`${J}.length`);
         if ((Q.setParams({ min: G, max: H }), H === void 0 && G === 0)) {
-          (0, wQ.checkStrictMode)(
+          (0, MQ.checkStrictMode)(
             W,
             '"minContains" == 0 without "maxContains": "contains" keyword ignored',
           );
           return;
         }
         if (H !== void 0 && G > H) {
-          ((0, wQ.checkStrictMode)(
+          ((0, MQ.checkStrictMode)(
             W,
             '"minContains" > "maxContains" is always invalid',
           ),
             Q.fail());
           return;
         }
-        if ((0, wQ.alwaysValidSchema)(W, Y)) {
+        if ((0, MQ.alwaysValidSchema)(W, Y)) {
           let F = a0._`${K} >= ${G}`;
           if (H !== void 0) F = a0._`${F} && ${K} <= ${H}`;
           Q.pass(F);
@@ -5003,21 +5003,21 @@ var Vz = E((Kz) => {
         Q.result(q, () => Q.reset());
         function U() {
           let F = X.name("_valid"),
-            M = X.let("count", 0);
-          V(F, () => X.if(F, () => L(M)));
+            w = X.let("count", 0);
+          V(F, () => X.if(F, () => L(w)));
         }
-        function V(F, M) {
+        function V(F, w) {
           X.forRange("i", 0, K, (N) => {
             (Q.subschema(
               {
                 keyword: "contains",
                 dataProp: N,
-                dataPropType: wQ.Type.Num,
+                dataPropType: MQ.Type.Num,
                 compositeRule: !0,
               },
               F,
             ),
-              M());
+              w());
           });
         }
         function L(F) {
@@ -5031,13 +5031,13 @@ var Vz = E((Kz) => {
         }
       },
     };
-  Kz.default = lI;
+  Kz.default = l2;
 });
-var Nz = E((Lz) => {
+var Nz = P((Lz) => {
   Object.defineProperty(Lz, "__esModule", { value: !0 });
   Lz.validateSchemaDeps = Lz.validatePropertyDeps = Lz.error = void 0;
   var L7 = c(),
-    pI = a(),
+    p2 = a(),
     T4 = t0();
   Lz.error = {
     message: ({ params: { property: Q, depsCount: X, deps: Y } }) => {
@@ -5051,17 +5051,17 @@ var Nz = E((Lz) => {
     depsCount: ${X},
     deps: ${Y}}`,
   };
-  var dI = {
+  var d2 = {
     keyword: "dependencies",
     type: "object",
     schemaType: "object",
     error: Lz.error,
     code(Q) {
-      let [X, Y] = iI(Q);
+      let [X, Y] = i2(Q);
       (qz(Q, X), Uz(Q, Y));
     },
   };
-  function iI({ schema: Q }) {
+  function i2({ schema: Q }) {
     let X = {},
       Y = {};
     for (let $ in Q) {
@@ -5097,7 +5097,7 @@ var Nz = E((Lz) => {
     let { gen: Y, data: $, keyword: J, it: W } = Q,
       G = Y.name("valid");
     for (let H in X) {
-      if ((0, pI.alwaysValidSchema)(W, X[H])) continue;
+      if ((0, p2.alwaysValidSchema)(W, X[H])) continue;
       (Y.if(
         (0, T4.propertyInData)(Y, $, H, W.opts.ownProperties),
         () => {
@@ -5110,24 +5110,24 @@ var Nz = E((Lz) => {
     }
   }
   Lz.validateSchemaDeps = Uz;
-  Lz.default = dI;
+  Lz.default = d2;
 });
-var wz = E((Mz) => {
-  Object.defineProperty(Mz, "__esModule", { value: !0 });
+var Mz = P((wz) => {
+  Object.defineProperty(wz, "__esModule", { value: !0 });
   var Dz = c(),
-    rI = a(),
-    tI = {
+    r2 = a(),
+    t2 = {
       message: "property name must be valid",
       params: ({ params: Q }) => Dz._`{propertyName: ${Q.propertyName}}`,
     },
-    aI = {
+    a2 = {
       keyword: "propertyNames",
       type: "object",
       schemaType: ["object", "boolean"],
-      error: tI,
+      error: t2,
       code(Q) {
         let { gen: X, schema: Y, data: $, it: J } = Q;
-        if ((0, rI.alwaysValidSchema)(J, Y)) return;
+        if ((0, r2.alwaysValidSchema)(J, Y)) return;
         let W = X.name("valid");
         (X.forIn("key", $, (G) => {
           (Q.setParams({ propertyName: G }),
@@ -5148,26 +5148,26 @@ var wz = E((Mz) => {
           Q.ok(W));
       },
     };
-  Mz.default = aI;
+  wz.default = a2;
 });
-var F7 = E((Az) => {
+var F7 = P((Az) => {
   Object.defineProperty(Az, "__esModule", { value: !0 });
   var AQ = t0(),
     z1 = c(),
-    eI = P1(),
+    e2 = E1(),
     jQ = a(),
-    Q2 = {
+    QI = {
       message: "must NOT have additional properties",
       params: ({ params: Q }) =>
         z1._`{additionalProperty: ${Q.additionalProperty}}`,
     },
-    X2 = {
+    XI = {
       keyword: "additionalProperties",
       type: ["object"],
       schemaType: ["boolean", "object"],
       allowUndefined: !0,
       trackErrors: !0,
-      error: Q2,
+      error: QI,
       code(Q) {
         let {
           gen: X,
@@ -5186,58 +5186,58 @@ var F7 = E((Az) => {
           return;
         let z = (0, AQ.allSchemaProperties)($.properties),
           K = (0, AQ.allSchemaProperties)($.patternProperties);
-        (q(), Q.ok(z1._`${W} === ${eI.default.errors}`));
+        (q(), Q.ok(z1._`${W} === ${e2.default.errors}`));
         function q() {
-          X.forIn("key", J, (M) => {
-            if (!z.length && !K.length) L(M);
-            else X.if(U(M), () => L(M));
+          X.forIn("key", J, (w) => {
+            if (!z.length && !K.length) L(w);
+            else X.if(U(w), () => L(w));
           });
         }
-        function U(M) {
+        function U(w) {
           let N;
           if (z.length > 8) {
             let j = (0, jQ.schemaRefOrVal)(G, $.properties, "properties");
-            N = (0, AQ.isOwnProperty)(X, j, M);
+            N = (0, AQ.isOwnProperty)(X, j, w);
           } else if (z.length)
-            N = (0, z1.or)(...z.map((j) => z1._`${M} === ${j}`));
+            N = (0, z1.or)(...z.map((j) => z1._`${w} === ${j}`));
           else N = z1.nil;
           if (K.length)
             N = (0, z1.or)(
               N,
-              ...K.map((j) => z1._`${(0, AQ.usePattern)(Q, j)}.test(${M})`),
+              ...K.map((j) => z1._`${(0, AQ.usePattern)(Q, j)}.test(${w})`),
             );
           return (0, z1.not)(N);
         }
-        function V(M) {
-          X.code(z1._`delete ${J}[${M}]`);
+        function V(w) {
+          X.code(z1._`delete ${J}[${w}]`);
         }
-        function L(M) {
+        function L(w) {
           if (
             B.removeAdditional === "all" ||
             (B.removeAdditional && Y === !1)
           ) {
-            V(M);
+            V(w);
             return;
           }
           if (Y === !1) {
-            if ((Q.setParams({ additionalProperty: M }), Q.error(), !H))
+            if ((Q.setParams({ additionalProperty: w }), Q.error(), !H))
               X.break();
             return;
           }
           if (typeof Y == "object" && !(0, jQ.alwaysValidSchema)(G, Y)) {
             let N = X.name("valid");
             if (B.removeAdditional === "failing")
-              (F(M, N, !1),
+              (F(w, N, !1),
                 X.if((0, z1.not)(N), () => {
-                  (Q.reset(), V(M));
+                  (Q.reset(), V(w));
                 }));
-            else if ((F(M, N), !H)) X.if((0, z1.not)(N), () => X.break());
+            else if ((F(w, N), !H)) X.if((0, z1.not)(N), () => X.break());
           }
         }
-        function F(M, N, j) {
+        function F(w, N, j) {
           let R = {
             keyword: "additionalProperties",
-            dataProp: M,
+            dataProp: w,
             dataPropType: jQ.Type.Str,
           };
           if (j === !1)
@@ -5250,15 +5250,15 @@ var F7 = E((Az) => {
         }
       },
     };
-  Az.default = X2;
+  Az.default = XI;
 });
-var bz = E((Iz) => {
+var bz = P((Iz) => {
   Object.defineProperty(Iz, "__esModule", { value: !0 });
-  var $2 = j4(),
+  var $I = j4(),
     jz = t0(),
     O7 = a(),
     Rz = F7(),
-    J2 = {
+    JI = {
       keyword: "properties",
       type: "object",
       schemaType: "object",
@@ -5269,7 +5269,7 @@ var bz = E((Iz) => {
           $.additionalProperties === void 0
         )
           Rz.default.code(
-            new $2.KeywordCxt(W, Rz.default, "additionalProperties"),
+            new $I.KeywordCxt(W, Rz.default, "additionalProperties"),
           );
         let G = (0, jz.allSchemaProperties)(Y);
         for (let q of G) W.definedProperties.add(q);
@@ -5301,23 +5301,23 @@ var bz = E((Iz) => {
         }
       },
     };
-  Iz.default = J2;
+  Iz.default = JI;
 });
-var Cz = E((Sz) => {
-  Object.defineProperty(Sz, "__esModule", { value: !0 });
-  var Ez = t0(),
+var Sz = P((Cz) => {
+  Object.defineProperty(Cz, "__esModule", { value: !0 });
+  var Pz = t0(),
     RQ = c(),
-    Pz = a(),
+    Ez = a(),
     Zz = a(),
-    G2 = {
+    GI = {
       keyword: "patternProperties",
       type: "object",
       schemaType: "object",
       code(Q) {
         let { gen: X, schema: Y, data: $, parentSchema: J, it: W } = Q,
           { opts: G } = W,
-          H = (0, Ez.allSchemaProperties)(Y),
-          B = H.filter((F) => (0, Pz.alwaysValidSchema)(W, Y[F]));
+          H = (0, Pz.allSchemaProperties)(Y),
+          B = H.filter((F) => (0, Ez.alwaysValidSchema)(W, Y[F]));
         if (
           H.length === 0 ||
           (B.length === H.length && (!W.opts.unevaluated || W.props === !0))
@@ -5337,29 +5337,29 @@ var Cz = E((Sz) => {
           }
         }
         function V(F) {
-          for (let M in z)
-            if (new RegExp(F).test(M))
-              (0, Pz.checkStrictMode)(
+          for (let w in z)
+            if (new RegExp(F).test(w))
+              (0, Ez.checkStrictMode)(
                 W,
-                `property ${M} matches pattern ${F} (use allowMatchingProperties)`,
+                `property ${w} matches pattern ${F} (use allowMatchingProperties)`,
               );
         }
         function L(F) {
-          X.forIn("key", $, (M) => {
-            X.if(RQ._`${(0, Ez.usePattern)(Q, F)}.test(${M})`, () => {
+          X.forIn("key", $, (w) => {
+            X.if(RQ._`${(0, Pz.usePattern)(Q, F)}.test(${w})`, () => {
               let N = B.includes(F);
               if (!N)
                 Q.subschema(
                   {
                     keyword: "patternProperties",
                     schemaProp: F,
-                    dataProp: M,
+                    dataProp: w,
                     dataPropType: Zz.Type.Str,
                   },
                   K,
                 );
               if (W.opts.unevaluated && q !== !0)
-                X.assign(RQ._`${q}[${M}]`, !0);
+                X.assign(RQ._`${q}[${w}]`, !0);
               else if (!N && !W.allErrors)
                 X.if((0, RQ.not)(K), () => X.break());
             });
@@ -5367,18 +5367,18 @@ var Cz = E((Sz) => {
         }
       },
     };
-  Sz.default = G2;
+  Cz.default = GI;
 });
-var kz = E((_z) => {
+var kz = P((_z) => {
   Object.defineProperty(_z, "__esModule", { value: !0 });
-  var B2 = a(),
-    z2 = {
+  var BI = a(),
+    zI = {
       keyword: "not",
       schemaType: ["object", "boolean"],
       trackErrors: !0,
       code(Q) {
         let { gen: X, schema: Y, it: $ } = Q;
-        if ((0, B2.alwaysValidSchema)($, Y)) {
+        if ((0, BI.alwaysValidSchema)($, Y)) {
           Q.fail();
           return;
         }
@@ -5400,33 +5400,33 @@ var kz = E((_z) => {
       },
       error: { message: "must NOT be valid" },
     };
-  _z.default = z2;
+  _z.default = zI;
 });
-var Tz = E((vz) => {
+var Tz = P((vz) => {
   Object.defineProperty(vz, "__esModule", { value: !0 });
-  var V2 = t0(),
-    q2 = {
+  var VI = t0(),
+    qI = {
       keyword: "anyOf",
       schemaType: "array",
       trackErrors: !0,
-      code: V2.validateUnion,
+      code: VI.validateUnion,
       error: { message: "must match a schema in anyOf" },
     };
-  vz.default = q2;
+  vz.default = qI;
 });
-var yz = E((xz) => {
+var yz = P((xz) => {
   Object.defineProperty(xz, "__esModule", { value: !0 });
   var IQ = c(),
-    L2 = a(),
-    F2 = {
+    LI = a(),
+    FI = {
       message: "must match exactly one schema in oneOf",
       params: ({ params: Q }) => IQ._`{passingSchemas: ${Q.passing}}`,
     },
-    O2 = {
+    OI = {
       keyword: "oneOf",
       schemaType: "array",
       trackErrors: !0,
-      error: F2,
+      error: FI,
       code(Q) {
         let { gen: X, schema: Y, parentSchema: $, it: J } = Q;
         if (!Array.isArray(Y)) throw Error("ajv implementation error");
@@ -5445,7 +5445,7 @@ var yz = E((xz) => {
         function z() {
           W.forEach((K, q) => {
             let U;
-            if ((0, L2.alwaysValidSchema)(J, K)) X.var(B, !0);
+            if ((0, LI.alwaysValidSchema)(J, K)) X.var(B, !0);
             else
               U = Q.subschema(
                 { keyword: "oneOf", schemaProp: q, compositeRule: !0 },
@@ -5464,12 +5464,12 @@ var yz = E((xz) => {
         }
       },
     };
-  xz.default = O2;
+  xz.default = OI;
 });
-var hz = E((gz) => {
+var hz = P((gz) => {
   Object.defineProperty(gz, "__esModule", { value: !0 });
-  var D2 = a(),
-    M2 = {
+  var DI = a(),
+    wI = {
       keyword: "allOf",
       schemaType: "array",
       code(Q) {
@@ -5477,27 +5477,27 @@ var hz = E((gz) => {
         if (!Array.isArray(Y)) throw Error("ajv implementation error");
         let J = X.name("valid");
         Y.forEach((W, G) => {
-          if ((0, D2.alwaysValidSchema)($, W)) return;
+          if ((0, DI.alwaysValidSchema)($, W)) return;
           let H = Q.subschema({ keyword: "allOf", schemaProp: G }, J);
           (Q.ok(J), Q.mergeEvaluated(H));
         });
       },
     };
-  gz.default = M2;
+  gz.default = wI;
 });
-var lz = E((mz) => {
+var lz = P((mz) => {
   Object.defineProperty(mz, "__esModule", { value: !0 });
   var bQ = c(),
     uz = a(),
-    A2 = {
+    AI = {
       message: ({ params: Q }) => bQ.str`must match "${Q.ifClause}" schema`,
       params: ({ params: Q }) => bQ._`{failingKeyword: ${Q.ifClause}}`,
     },
-    j2 = {
+    jI = {
       keyword: "if",
       schemaType: ["object", "boolean"],
       trackErrors: !0,
-      error: A2,
+      error: AI,
       code(Q) {
         let { gen: X, parentSchema: Y, it: $ } = Q;
         if (Y.then === void 0 && Y.else === void 0)
@@ -5542,72 +5542,72 @@ var lz = E((mz) => {
     let Y = Q.schema[X];
     return Y !== void 0 && !(0, uz.alwaysValidSchema)(Q, Y);
   }
-  mz.default = j2;
+  mz.default = jI;
 });
-var pz = E((cz) => {
+var pz = P((cz) => {
   Object.defineProperty(cz, "__esModule", { value: !0 });
-  var I2 = a(),
-    b2 = {
+  var II = a(),
+    bI = {
       keyword: ["then", "else"],
       schemaType: ["object", "boolean"],
       code({ keyword: Q, parentSchema: X, it: Y }) {
         if (X.if === void 0)
-          (0, I2.checkStrictMode)(Y, `"${Q}" without "if" is ignored`);
+          (0, II.checkStrictMode)(Y, `"${Q}" without "if" is ignored`);
       },
     };
-  cz.default = b2;
+  cz.default = bI;
 });
-var iz = E((dz) => {
+var iz = P((dz) => {
   Object.defineProperty(dz, "__esModule", { value: !0 });
-  var P2 = q7(),
-    Z2 = Gz(),
-    S2 = U7(),
-    C2 = zz(),
-    _2 = Vz(),
-    k2 = Nz(),
-    v2 = wz(),
-    T2 = F7(),
-    x2 = bz(),
-    y2 = Cz(),
-    g2 = kz(),
-    h2 = Tz(),
-    f2 = yz(),
-    u2 = hz(),
-    m2 = lz(),
-    l2 = pz();
-  function c2(Q = !1) {
+  var EI = q7(),
+    ZI = Gz(),
+    CI = U7(),
+    SI = zz(),
+    _I = Vz(),
+    kI = Nz(),
+    vI = Mz(),
+    TI = F7(),
+    xI = bz(),
+    yI = Sz(),
+    gI = kz(),
+    hI = Tz(),
+    fI = yz(),
+    uI = hz(),
+    mI = lz(),
+    lI = pz();
+  function cI(Q = !1) {
     let X = [
-      g2.default,
-      h2.default,
-      f2.default,
-      u2.default,
-      m2.default,
-      l2.default,
-      v2.default,
-      T2.default,
-      k2.default,
-      x2.default,
-      y2.default,
+      gI.default,
+      hI.default,
+      fI.default,
+      uI.default,
+      mI.default,
+      lI.default,
+      vI.default,
+      TI.default,
+      kI.default,
+      xI.default,
+      yI.default,
     ];
-    if (Q) X.push(Z2.default, C2.default);
-    else X.push(P2.default, S2.default);
-    return (X.push(_2.default), X);
+    if (Q) X.push(ZI.default, SI.default);
+    else X.push(EI.default, CI.default);
+    return (X.push(_I.default), X);
   }
-  dz.default = c2;
+  dz.default = cI;
 });
-var oz = E((nz) => {
+var oz = P((nz) => {
   Object.defineProperty(nz, "__esModule", { value: !0 });
   var N0 = c(),
-    d2 = {
+    dI = {
       message: ({ schemaCode: Q }) => N0.str`must match format "${Q}"`,
       params: ({ schemaCode: Q }) => N0._`{format: ${Q}}`,
     },
-    i2 = {
+    iI = {
       keyword: "format",
       type: ["number", "string"],
       schemaType: "string",
       $data: !0,
-      error: d2,
+      error: dI,
       code(Q, X) {
         let { gen: Y, data: $, $data: J, schema: W, schemaCode: G, it: H } = Q,
           { opts: B, errSchemaPath: z, schemaEnv: K, self: q } = H;
@@ -5620,16 +5620,16 @@ var oz = E((nz) => {
               code: B.code.formats,
             }),
             F = Y.const("fDef", N0._`${L}[${G}]`),
-            M = Y.let("fType"),
+            w = Y.let("fType"),
             N = Y.let("format");
           (Y.if(
             N0._`typeof ${F} == "object" && !(${F} instanceof RegExp)`,
             () =>
-              Y.assign(M, N0._`${F}.type || "string"`).assign(
+              Y.assign(w, N0._`${F}.type || "string"`).assign(
                 N,
                 N0._`${F}.validate`,
               ),
-            () => Y.assign(M, N0._`"string"`).assign(N, F),
+            () => Y.assign(w, N0._`"string"`).assign(N, F),
           ),
             Q.fail$data((0, N0.or)(j(), R())));
           function j() {
@@ -5637,11 +5637,11 @@ var oz = E((nz) => {
             return N0._`${G} && !${N}`;
           }
           function R() {
-            let C = K.$async
+            let S = K.$async
                 ? N0._`(${F}.async ? await ${N}(${$}) : ${N}(${$}))`
                 : N0._`${N}(${$})`,
-              Z = N0._`(typeof ${N} == "function" ? ${C} : ${N}.test(${$}))`;
-            return N0._`${N} && ${N} !== true && ${M} === ${X} && !${Z}`;
+              Z = N0._`(typeof ${N} == "function" ? ${S} : ${N}.test(${$}))`;
+            return N0._`${N} && ${N} !== true && ${w} === ${X} && !${Z}`;
           }
         }
         function V() {
@@ -5651,8 +5651,8 @@ var oz = E((nz) => {
             return;
           }
           if (L === !0) return;
-          let [F, M, N] = R(L);
-          if (F === X) Q.pass(C());
+          let [F, w, N] = R(L);
+          if (F === X) Q.pass(S());
           function j() {
             if (B.strictSchema === !1) {
               q.logger.warn(Z());
@@ -5675,27 +5675,27 @@ var oz = E((nz) => {
               return [Z.type || "string", Z.validate, N0._`${O0}.validate`];
             return ["string", Z, O0];
           }
-          function C() {
+          function S() {
             if (typeof L == "object" && !(L instanceof RegExp) && L.async) {
               if (!K.$async) throw Error("async format in sync schema");
               return N0._`await ${N}(${$})`;
             }
-            return typeof M == "function"
+            return typeof w == "function"
               ? N0._`${N}(${$})`
               : N0._`${N}.test(${$})`;
           }
         }
       },
     };
-  nz.default = i2;
+  nz.default = iI;
 });
-var tz = E((rz) => {
+var tz = P((rz) => {
   Object.defineProperty(rz, "__esModule", { value: !0 });
-  var o2 = oz(),
-    r2 = [o2.default];
-  rz.default = r2;
+  var oI = oz(),
+    rI = [oI.default];
+  rz.default = rI;
 });
-var ez = E((az) => {
+var ez = P((az) => {
   Object.defineProperty(az, "__esModule", { value: !0 });
   az.contentVocabulary = az.metadataVocabulary = void 0;
   az.metadataVocabulary = [
@@ -5713,16 +5713,16 @@ var ez = E((az) => {
     "contentSchema",
   ];
 });
-var YK = E((XK) => {
+var YK = P((XK) => {
   Object.defineProperty(XK, "__esModule", { value: !0 });
-  var s2 = IB(),
-    e2 = aB(),
+  var sI = IB(),
+    eI = aB(),
     Qb = iz(),
     Xb = tz(),
     QK = ez(),
     Yb = [
-      s2.default,
-      e2.default,
+      sI.default,
+      eI.default,
       (0, Qb.default)(),
       Xb.default,
       QK.metadataVocabulary,
@@ -5730,7 +5730,7 @@ var YK = E((XK) => {
     ];
   XK.default = Yb;
 });
-var GK = E((JK) => {
+var GK = P((JK) => {
   Object.defineProperty(JK, "__esModule", { value: !0 });
   JK.DiscrError = void 0;
   var $K;
@@ -5738,7 +5738,7 @@ var GK = E((JK) => {
     ((Q.Tag = "tag"), (Q.Mapping = "mapping"));
   })($K || (JK.DiscrError = $K = {}));
 });
-var zK = E((BK) => {
+var zK = P((BK) => {
   Object.defineProperty(BK, "__esModule", { value: !0 });
   var j9 = c(),
     N7 = GK(),
@@ -5799,9 +5799,9 @@ var zK = E((BK) => {
           var V;
           let L = {},
             F = N(J),
-            M = !0;
-          for (let C = 0; C < G.length; C++) {
-            let Z = G[C];
+            w = !0;
+          for (let S = 0; S < G.length; S++) {
+            let Z = G[S];
             if (
               (Z === null || Z === void 0 ? void 0 : Z.$ref) &&
               !(0, Wb.schemaHasRulesButRef)(Z, W.self.RULES)
@@ -5829,34 +5829,34 @@ var zK = E((BK) => {
               throw Error(
                 `discriminator: oneOf subschemas (or referenced schemas) must have "properties/${H}"`,
               );
-            ((M = M && (F || N(Z))), j(X0, C));
+            ((w = w && (F || N(Z))), j(X0, S));
           }
-          if (!M) throw Error(`discriminator: "${H}" must be required`);
+          if (!w) throw Error(`discriminator: "${H}" must be required`);
           return L;
-          function N({ required: C }) {
-            return Array.isArray(C) && C.includes(H);
+          function N({ required: S }) {
+            return Array.isArray(S) && S.includes(H);
           }
-          function j(C, Z) {
-            if (C.const) R(C.const, Z);
-            else if (C.enum) for (let X0 of C.enum) R(X0, Z);
+          function j(S, Z) {
+            if (S.const) R(S.const, Z);
+            else if (S.enum) for (let X0 of S.enum) R(X0, Z);
             else
               throw Error(
                 `discriminator: "properties/${H}" must have "const" or "enum"`,
               );
           }
-          function R(C, Z) {
-            if (typeof C != "string" || C in L)
+          function R(S, Z) {
+            if (typeof S != "string" || S in L)
               throw Error(
                 `discriminator: "${H}" values must be unique strings`,
               );
-            L[C] = Z;
+            L[S] = Z;
           }
         }
       },
     };
   BK.default = Hb;
 });
-var KK = E((Wy, zb) => {
+var KK = P((Wy, zb) => {
   zb.exports = {
     $schema: "http://json-schema.org/draft-07/schema#",
     $id: "http://json-schema.org/draft-07/schema#",
@@ -5967,7 +5967,7 @@ var KK = E((Wy, zb) => {
     default: !0,
   };
 });
-var M7 = E((u0, D7) => {
+var w7 = P((u0, D7) => {
   Object.defineProperty(u0, "__esModule", { value: !0 });
   u0.MissingRefError =
     u0.ValidationError =
@@ -5985,7 +5985,7 @@ var M7 = E((u0, D7) => {
     qb = zK(),
     VK = KK(),
     Ub = ["/properties"],
-    EQ = "http://json-schema.org/draft-07/schema";
+    PQ = "http://json-schema.org/draft-07/schema";
   class x4 extends Kb.default {
     _addVocabularies() {
       if (
@@ -5998,12 +5998,12 @@ var M7 = E((u0, D7) => {
     _addDefaultMetaSchema() {
       if ((super._addDefaultMetaSchema(), !this.opts.meta)) return;
       let Q = this.opts.$data ? this.$dataMetaSchema(VK, Ub) : VK;
-      (this.addMetaSchema(Q, EQ, !1),
-        (this.refs["http://json-schema.org/schema"] = EQ));
+      (this.addMetaSchema(Q, PQ, !1),
+        (this.refs["http://json-schema.org/schema"] = PQ));
     }
     defaultMeta() {
       return (this.opts.defaultMeta =
-        super.defaultMeta() || (this.getSchema(EQ) ? EQ : void 0));
+        super.defaultMeta() || (this.getSchema(PQ) ? PQ : void 0));
     }
   }
   u0.Ajv = x4;
@@ -6070,13 +6070,13 @@ var M7 = E((u0, D7) => {
     },
   });
 });
-var AK = E((MK) => {
-  Object.defineProperty(MK, "__esModule", { value: !0 });
-  MK.formatNames = MK.fastFormats = MK.fullFormats = void 0;
+var AK = P((wK) => {
+  Object.defineProperty(wK, "__esModule", { value: !0 });
+  wK.formatNames = wK.fastFormats = wK.fullFormats = void 0;
   function D1(Q, X) {
     return { validate: Q, compare: X };
   }
-  MK.fullFormats = {
+  wK.fullFormats = {
     date: D1(FK, R7),
     time: D1(A7(!0), I7),
     "date-time": D1(qK(!0), NK),
@@ -6104,14 +6104,14 @@ var AK = E((MK) => {
     "relative-json-pointer": /^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/,
     byte: bb,
     int32: { type: "number", validate: Zb },
-    int64: { type: "number", validate: Sb },
+    int64: { type: "number", validate: Cb },
     float: { type: "number", validate: LK },
     double: { type: "number", validate: LK },
     password: !0,
     binary: !0,
   };
-  MK.fastFormats = {
-    ...MK.fullFormats,
+  wK.fastFormats = {
+    ...wK.fullFormats,
     date: D1(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, R7),
     time: D1(
       /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
@@ -6135,19 +6135,19 @@ var AK = E((MK) => {
     email:
       /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
   };
-  MK.formatNames = Object.keys(MK.fullFormats);
-  function Mb(Q) {
+  wK.formatNames = Object.keys(wK.fullFormats);
+  function wb(Q) {
     return Q % 4 === 0 && (Q % 100 !== 0 || Q % 400 === 0);
   }
-  var wb = /^(\d\d\d\d)-(\d\d)-(\d\d)$/,
+  var Mb = /^(\d\d\d\d)-(\d\d)-(\d\d)$/,
     Ab = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   function FK(Q) {
-    let X = wb.exec(Q);
+    let X = Mb.exec(Q);
     if (!X) return !1;
     let Y = +X[1],
       $ = +X[2],
       J = +X[3];
-    return $ >= 1 && $ <= 12 && J >= 1 && J <= ($ === 2 && Mb(Y) ? 29 : Ab[$]);
+    return $ >= 1 && $ <= 12 && J >= 1 && J <= ($ === 2 && wb(Y) ? 29 : Ab[$]);
   }
   function R7(Q, X) {
     if (!(Q && X)) return;
@@ -6155,10 +6155,10 @@ var AK = E((MK) => {
     if (Q < X) return -1;
     return 0;
   }
-  var w7 = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
+  var M7 = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
   function A7(Q) {
     return function (Y) {
-      let $ = w7.exec(Y);
+      let $ = M7.exec(Y);
       if (!$) return !1;
       let J = +$[1],
         W = +$[2],
@@ -6183,8 +6183,8 @@ var AK = E((MK) => {
   }
   function OK(Q, X) {
     if (!(Q && X)) return;
-    let Y = w7.exec(Q),
-      $ = w7.exec(X);
+    let Y = M7.exec(Q),
+      $ = M7.exec(X);
     if (!(Y && $)) return;
     if (((Q = Y[1] + Y[2] + Y[3]), (X = $[1] + $[2] + $[3]), Q > X)) return 1;
     if (Q < X) return -1;
@@ -6223,20 +6223,20 @@ var AK = E((MK) => {
   function bb(Q) {
     return ((UK.lastIndex = 0), UK.test(Q));
   }
-  var Eb = -2147483648,
-    Pb = 2147483647;
+  var Pb = -2147483648,
+    Eb = 2147483647;
   function Zb(Q) {
-    return Number.isInteger(Q) && Q <= Pb && Q >= Eb;
+    return Number.isInteger(Q) && Q <= Eb && Q >= Pb;
   }
-  function Sb(Q) {
+  function Cb(Q) {
     return Number.isInteger(Q);
   }
   function LK() {
     return !0;
   }
-  var Cb = /[^\\]\\Z/;
+  var Sb = /[^\\]\\Z/;
   function _b(Q) {
-    if (Cb.test(Q)) return !1;
+    if (Sb.test(Q)) return !1;
     try {
       return (new RegExp(Q), !0);
     } catch (X) {
@@ -6244,26 +6244,26 @@ var AK = E((MK) => {
     }
   }
 });
-var RK = E((jK) => {
+var RK = P((jK) => {
   Object.defineProperty(jK, "__esModule", { value: !0 });
   jK.formatLimitDefinition = void 0;
-  var vb = M7(),
+  var vb = w7(),
     K1 = c(),
-    X6 = K1.operators,
-    PQ = {
-      formatMaximum: { okStr: "<=", ok: X6.LTE, fail: X6.GT },
-      formatMinimum: { okStr: ">=", ok: X6.GTE, fail: X6.LT },
-      formatExclusiveMaximum: { okStr: "<", ok: X6.LT, fail: X6.GTE },
-      formatExclusiveMinimum: { okStr: ">", ok: X6.GT, fail: X6.LTE },
+    Y6 = K1.operators,
+    EQ = {
+      formatMaximum: { okStr: "<=", ok: Y6.LTE, fail: Y6.GT },
+      formatMinimum: { okStr: ">=", ok: Y6.GTE, fail: Y6.LT },
+      formatExclusiveMaximum: { okStr: "<", ok: Y6.LT, fail: Y6.GTE },
+      formatExclusiveMinimum: { okStr: ">", ok: Y6.GT, fail: Y6.LTE },
     },
     Tb = {
       message: ({ keyword: Q, schemaCode: X }) =>
-        K1.str`should be ${PQ[Q].okStr} ${X}`,
+        K1.str`should be ${EQ[Q].okStr} ${X}`,
       params: ({ keyword: Q, schemaCode: X }) =>
-        K1._`{comparison: ${PQ[Q].okStr}, limit: ${X}}`,
+        K1._`{comparison: ${EQ[Q].okStr}, limit: ${X}}`,
     };
   jK.formatLimitDefinition = {
-    keyword: Object.keys(PQ),
+    keyword: Object.keys(EQ),
     type: "string",
     schemaType: "string",
     $data: !0,
@@ -6312,7 +6312,7 @@ var RK = E((jK) => {
         Q.fail$data(q(L));
       }
       function q(U) {
-        return K1._`${U}.compare(${Y}, ${$}) ${PQ[J].fail} 0`;
+        return K1._`${U}.compare(${Y}, ${$}) ${EQ[J].fail} 0`;
       }
     },
     dependencies: ["format"],
@@ -6322,13 +6322,13 @@ var RK = E((jK) => {
   };
   jK.default = xb;
 });
-var PK = E((y4, EK) => {
+var EK = P((y4, PK) => {
   Object.defineProperty(y4, "__esModule", { value: !0 });
   var I9 = AK(),
     gb = RK(),
-    P7 = c(),
-    IK = new P7.Name("fullFormats"),
-    hb = new P7.Name("fastFormats"),
+    E7 = c(),
+    IK = new E7.Name("fullFormats"),
+    hb = new E7.Name("fastFormats"),
     Z7 = (Q, X = { keywords: !0 }) => {
       if (Array.isArray(X)) return (bK(Q, X, I9.fullFormats, IK), Q);
       let [Y, $] =
@@ -6345,10 +6345,10 @@ var PK = E((y4, EK) => {
   function bK(Q, X, Y, $) {
     var J, W;
     ((J = (W = Q.opts.code).formats) !== null && J !== void 0) ||
-      (W.formats = P7._`require("ajv-formats/dist/formats").${$}`);
+      (W.formats = E7._`require("ajv-formats/dist/formats").${$}`);
     for (let G of X) Q.addFormat(G, Y[G]);
   }
-  EK.exports = y4 = Z7;
+  PK.exports = y4 = Z7;
   Object.defineProperty(y4, "__esModule", { value: !0 });
   y4.default = Z7;
 });
@@ -6397,7 +6397,7 @@ function v6() {
   return process.versions.bun !== void 0;
 }
 import { randomUUID as DV } from "crypto";
-import { appendFile as MV, mkdir as wV } from "fs/promises";
+import { appendFile as wV, mkdir as MV } from "fs/promises";
 import { join as p7 } from "path";
 import { join as OV } from "path";
 import { homedir as NV } from "os";
@@ -6406,7 +6406,7 @@ function T6() {
     "NFC",
   );
 }
-function S9(Q) {
+function C9(Q) {
   if (!Q) return !1;
   if (typeof Q === "boolean") return Q;
   let X = Q.toLowerCase().trim();
@@ -6423,7 +6423,7 @@ function AV() {
     (y6 = p7(Q, `sdk-${DV()}.txt`)),
     process.stderr.write(`SDK debug logs: ${y6}
 `),
-    (x6 = wV(Q, { recursive: !0 })
+    (x6 = MV(Q, { recursive: !0 })
       .then(() => {})
       .catch(() => {})),
     x6
@@ -6434,7 +6434,7 @@ function i0(Q) {
   let Y = `${new Date().toISOString()} ${Q}
 `;
   AV().then(() => {
-    if (y6) MV(y6, Y).catch(() => {});
+    if (y6) wV(y6, Y).catch(() => {});
   });
 }
 var jV =
@@ -6446,27 +6446,27 @@ var RV = typeof self == "object" && self && self.Object === Object && self,
 var bV = g6.Symbol,
   h6 = bV;
 var i7 = Object.prototype,
-  EV = i7.hasOwnProperty,
-  PV = i7.toString,
-  C9 = h6 ? h6.toStringTag : void 0;
+  PV = i7.hasOwnProperty,
+  EV = i7.toString,
+  S9 = h6 ? h6.toStringTag : void 0;
 function ZV(Q) {
-  var X = EV.call(Q, C9),
-    Y = Q[C9];
+  var X = PV.call(Q, S9),
+    Y = Q[S9];
   try {
-    Q[C9] = void 0;
+    Q[S9] = void 0;
     var $ = !0;
   } catch (W) {}
-  var J = PV.call(Q);
+  var J = EV.call(Q);
   if ($)
-    if (X) Q[C9] = Y;
-    else delete Q[C9];
+    if (X) Q[S9] = Y;
+    else delete Q[S9];
   return J;
 }
 var n7 = ZV;
-var SV = Object.prototype,
-  CV = SV.toString;
+var CV = Object.prototype,
+  SV = CV.toString;
 function _V(Q) {
-  return CV.call(Q);
+  return SV.call(Q);
 }
 var o7 = _V;
 var kV = "[object Null]",
@@ -6549,9 +6549,9 @@ function Xq(Q, X) {
 }
 var m4 = Xq;
 var Yq = m4(Object, "create"),
-  w1 = Yq;
+  M1 = Yq;
 function $q() {
-  ((this.__data__ = w1 ? w1(null) : {}), (this.size = 0));
+  ((this.__data__ = M1 ? M1(null) : {}), (this.size = 0));
 }
 var $5 = $q;
 function Jq(Q) {
@@ -6564,7 +6564,7 @@ var Wq = "__lodash_hash_undefined__",
   Hq = Gq.hasOwnProperty;
 function Bq(Q) {
   var X = this.__data__;
-  if (w1) {
+  if (M1) {
     var Y = X[Q];
     return Y === Wq ? void 0 : Y;
   }
@@ -6575,7 +6575,7 @@ var zq = Object.prototype,
   Kq = zq.hasOwnProperty;
 function Vq(Q) {
   var X = this.__data__;
-  return w1 ? X[Q] !== void 0 : Kq.call(X, Q);
+  return M1 ? X[Q] !== void 0 : Kq.call(X, Q);
 }
 var G5 = Vq;
 var qq = "__lodash_hash_undefined__";
@@ -6583,7 +6583,7 @@ function Uq(Q, X) {
   var Y = this.__data__;
   return (
     (this.size += this.has(Q) ? 0 : 1),
-    (Y[Q] = w1 && X === void 0 ? qq : X),
+    (Y[Q] = M1 && X === void 0 ? qq : X),
     this
   );
 }
@@ -6616,32 +6616,32 @@ function Oq(Q, X) {
   while (Y--) if (z5(Q[Y][0], X)) return Y;
   return -1;
 }
-var v1 = Oq;
+var T1 = Oq;
 var Nq = Array.prototype,
   Dq = Nq.splice;
-function Mq(Q) {
+function wq(Q) {
   var X = this.__data__,
-    Y = v1(X, Q);
+    Y = T1(X, Q);
   if (Y < 0) return !1;
   var $ = X.length - 1;
   if (Y == $) X.pop();
   else Dq.call(X, Y, 1);
   return (--this.size, !0);
 }
-var K5 = Mq;
-function wq(Q) {
+var K5 = wq;
+function Mq(Q) {
   var X = this.__data__,
-    Y = v1(X, Q);
+    Y = T1(X, Q);
   return Y < 0 ? void 0 : X[Y][1];
 }
-var V5 = wq;
+var V5 = Mq;
 function Aq(Q) {
-  return v1(this.__data__, Q) > -1;
+  return T1(this.__data__, Q) > -1;
 }
 var q5 = Aq;
 function jq(Q, X) {
   var Y = this.__data__,
-    $ = v1(Y, Q);
+    $ = T1(Y, Q);
   if ($ < 0) (++this.size, Y.push([Q, X]));
   else Y[$][1] = X;
   return this;
@@ -6680,30 +6680,30 @@ function bq(Q) {
     : Q === null;
 }
 var N5 = bq;
-function Eq(Q, X) {
+function Pq(Q, X) {
   var Y = Q.__data__;
   return N5(X) ? Y[typeof X == "string" ? "string" : "hash"] : Y.map;
 }
-var T1 = Eq;
-function Pq(Q) {
-  var X = T1(this, Q).delete(Q);
+var x1 = Pq;
+function Eq(Q) {
+  var X = x1(this, Q).delete(Q);
   return ((this.size -= X ? 1 : 0), X);
 }
-var D5 = Pq;
+var D5 = Eq;
 function Zq(Q) {
-  return T1(this, Q).get(Q);
+  return x1(this, Q).get(Q);
 }
-var M5 = Zq;
-function Sq(Q) {
-  return T1(this, Q).has(Q);
+var w5 = Zq;
+function Cq(Q) {
+  return x1(this, Q).has(Q);
 }
-var w5 = Sq;
-function Cq(Q, X) {
-  var Y = T1(this, Q),
+var M5 = Cq;
+function Sq(Q, X) {
+  var Y = x1(this, Q),
     $ = Y.size;
   return (Y.set(Q, X), (this.size += Y.size == $ ? 0 : 1), this);
 }
-var A5 = Cq;
+var A5 = Sq;
 function m6(Q) {
   var X = -1,
     Y = Q == null ? 0 : Q.length;
@@ -6715,8 +6715,8 @@ function m6(Q) {
 }
 m6.prototype.clear = O5;
 m6.prototype.delete = D5;
-m6.prototype.get = M5;
-m6.prototype.has = w5;
+m6.prototype.get = w5;
+m6.prototype.has = M5;
 m6.prototype.set = A5;
 var vQ = m6;
 var _q = "Expected a function";
@@ -7122,16 +7122,16 @@ function l6() {
 }
 import { dirname as _5, join as k5 } from "path";
 import { cwd as dq } from "process";
-import { realpathSync as E5 } from "fs";
+import { realpathSync as P5 } from "fs";
 import { randomUUID as iq } from "crypto";
 function nq() {
   let Q = "";
   if (
     typeof process < "u" &&
     typeof process.cwd === "function" &&
-    typeof E5 === "function"
+    typeof P5 === "function"
   )
-    Q = E5(dq()).normalize("NFC");
+    Q = P5(dq()).normalize("NFC");
   return {
     originalCwd: Q,
     projectRoot: Q,
@@ -7159,6 +7159,8 @@ function nq() {
     modelStrings: null,
     isInteractive: !1,
     kairosActive: !1,
+    sdkAgentProgressSummariesEnabled: !1,
+    userMsgOptIn: !1,
     clientType: "cli",
     sessionSource: void 0,
     questionPreviewFormat: void 0,
@@ -7193,6 +7195,7 @@ function nq() {
     agentColorMap: new Map(),
     agentColorIndex: 0,
     lastAPIRequest: null,
+    lastClassifierRequests: null,
     inMemoryErrorLog: [],
     inlinePlugins: [],
     chromeFlagOverride: void 0,
@@ -7204,6 +7207,7 @@ function nq() {
     sessionPersistenceDisabled: !1,
     hasExitedPlanMode: !1,
     needsPlanModeExitAttachment: !1,
+    needsAutoModeExitAttachment: !1,
     lspRecommendationShownThisSession: !1,
     initJsonSchema: null,
     registeredHooks: null,
@@ -7226,7 +7230,7 @@ function nq() {
   };
 }
 var oq = nq();
-function P5() {
+function E5() {
   return oq.sessionId;
 }
 function Z5({
@@ -7280,9 +7284,9 @@ function Z5({
     },
   };
 }
-var S5 = new Set();
-function C5(Q) {
-  return (S5.add(Q), () => S5.delete(Q));
+var C5 = new Set();
+function S5(Q) {
+  return (C5.add(Q), () => C5.delete(Q));
 }
 var xQ = { verbose: 0, debug: 1, info: 2, warn: 3, error: 4 },
   rq = A1(() => {
@@ -7294,8 +7298,8 @@ var xQ = { verbose: 0, debug: 1, info: 2, warn: 3, error: 4 },
   v5 = A1(() => {
     return (
       tq ||
-      S9(process.env.DEBUG) ||
-      S9(process.env.DEBUG_SDK) ||
+      C9(process.env.DEBUG) ||
+      C9(process.env.DEBUG_SDK) ||
       process.argv.includes("--debug") ||
       process.argv.includes("-d") ||
       T5() ||
@@ -7356,7 +7360,7 @@ function QU() {
       maxBufferSize: 100,
       immediateMode: v5(),
     })),
-      C5(async () => l4?.dispose()));
+      S5(async () => l4?.dispose()));
   }
   return l4;
 }
@@ -7368,7 +7372,7 @@ function j1(Q, { level: X } = { level: "debug" }) {
     Q.includes(`
 `)
   )
-    Q = M0(Q);
+    Q = w0(Q);
   let $ = `${new Date().toISOString()} [${X.toUpperCase()}] ${Q.trim()}
 `;
   if (T5()) {
@@ -7381,7 +7385,7 @@ function y5() {
   return (
     x5() ??
     process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    k5(T6(), "debug", `${P5()}.txt`)
+    k5(T6(), "debug", `${E5()}.txt`)
   );
 }
 var XU = A1(() => {
@@ -7411,7 +7415,7 @@ function $U() {
   return YU;
 }
 var q0 = $U;
-function M0(Q, X, Y) {
+function w0(Q, X, Y) {
   let J = [];
   try {
     const $ = Y0(J, q0`JSON.stringify(${Q})`, 0);
@@ -7423,7 +7427,7 @@ function M0(Q, X, Y) {
     $0(J, G, H);
   }
 }
-var x1 = (Q, X) => {
+var y1 = (Q, X) => {
   let $ = [];
   try {
     const Y = Y0($, q0`JSON.parse(${Q})`, 0);
@@ -7450,9 +7454,9 @@ function g5(Q, X) {
     let J = { sandbox: X };
     if ($)
       try {
-        J = { ...x1($), sandbox: X };
+        J = { ...y1($), sandbox: X };
       } catch {}
-    Y.settings = M0(J);
+    Y.settings = w0(J);
   }
   return Y;
 }
@@ -7523,19 +7527,19 @@ class _9 {
           fallbackModel: V,
           jsonSchema: L,
           permissionMode: F,
-          allowDangerouslySkipPermissions: M,
+          allowDangerouslySkipPermissions: w,
           permissionPromptToolName: N,
           continueConversation: j,
           resume: R,
-          settingSources: C,
+          settingSources: S,
           allowedTools: Z = [],
           disallowedTools: X0 = [],
           tools: O0,
-          mcpServers: S0,
-          strictMcpConfig: $6,
+          mcpServers: C0,
+          strictMcpConfig: J6,
           canUseTool: V1,
-          includePartialMessages: J6,
-          plugins: _1,
+          includePartialMessages: _1,
+          plugins: k1,
           sandbox: W6,
         } = this.options,
         h = [
@@ -7564,7 +7568,7 @@ class _9 {
       if (U) h.push("--model", U);
       if (X) h.push("--agent", X);
       if (Y && Y.length > 0) h.push("--betas", Y.join(","));
-      if (L) h.push("--json-schema", M0(L));
+      if (L) h.push("--json-schema", w0(L));
       if (this.options.debugFile)
         h.push("--debug-file", this.options.debugFile);
       else if (this.options.debug) h.push("--debug");
@@ -7587,12 +7591,12 @@ class _9 {
           if (O0.length === 0) h.push("--tools", "");
           else h.push("--tools", O0.join(","));
         else h.push("--tools", "default");
-      if (S0 && Object.keys(S0).length > 0)
-        h.push("--mcp-config", M0({ mcpServers: S0 }));
-      if (C) h.push("--setting-sources", C.join(","));
-      if ($6) h.push("--strict-mcp-config");
+      if (C0 && Object.keys(C0).length > 0)
+        h.push("--mcp-config", w0({ mcpServers: C0 }));
+      if (S) h.push("--setting-sources", S.join(","));
+      if (J6) h.push("--strict-mcp-config");
       if (F) h.push("--permission-mode", F);
-      if (M) h.push("--allow-dangerously-skip-permissions");
+      if (w) h.push("--allow-dangerously-skip-permissions");
       if (V) {
         if (U && V === U)
           throw Error(
@@ -7600,12 +7604,12 @@ class _9 {
           );
         h.push("--fallback-model", V);
       }
-      if (J6) h.push("--include-partial-messages");
-      for (let C0 of Q) h.push("--add-dir", C0);
-      if (_1 && _1.length > 0)
-        for (let C0 of _1)
-          if (C0.type === "local") h.push("--plugin-dir", C0.path);
-          else throw Error(`Unsupported plugin type: ${C0.type}`);
+      if (_1) h.push("--include-partial-messages");
+      for (let S0 of Q) h.push("--add-dir", S0);
+      if (k1 && k1.length > 0)
+        for (let S0 of k1)
+          if (S0.type === "local") h.push("--plugin-dir", S0.path);
+          else throw Error(`Unsupported plugin type: ${S0.type}`);
       if (this.options.forkSession) h.push("--fork-session");
       if (this.options.resumeSessionAt)
         h.push("--resume-session-at", this.options.resumeSessionAt);
@@ -7616,27 +7620,29 @@ class _9 {
       let b9 = { ...(G ?? {}) };
       if (this.options.settings) b9.settings = this.options.settings;
       let ZQ = g5(b9, W6);
-      for (let [C0, k1] of Object.entries(ZQ))
-        if (k1 === null) h.push(`--${C0}`);
-        else h.push(`--${C0}`, k1);
+      for (let [S0, v1] of Object.entries(ZQ))
+        if (v1 === null) h.push(`--${S0}`);
+        else h.push(`--${S0}`, v1);
       if (!B.CLAUDE_CODE_ENTRYPOINT) B.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
+      if (_1 && !B.CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING)
+        B.CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING = "1";
       if ((delete B.NODE_OPTIONS, B.DEBUG_CLAUDE_AGENT_SDK)) B.DEBUG = "1";
       else delete B.DEBUG;
-      let E9 = HU(H),
-        P9 = E9 ? H : J,
-        G6 = E9 ? [...W, ...h] : [...W, H, ...h],
+      let P9 = HU(H),
+        E9 = P9 ? H : J,
+        G6 = P9 ? [...W, ...h] : [...W, H, ...h],
         h4 = {
-          command: P9,
+          command: E9,
           args: G6,
           cwd: $,
           env: B,
           signal: this.abortController.signal,
         };
       if (this.options.spawnClaudeCodeProcess)
-        (i0(`Spawning Claude Code (custom): ${P9} ${G6.join(" ")}`),
+        (i0(`Spawning Claude Code (custom): ${E9} ${G6.join(" ")}`),
           (this.process = this.options.spawnClaudeCodeProcess(h4)));
       else
-        (i0(`Spawning Claude Code: ${P9} ${G6.join(" ")}`),
+        (i0(`Spawning Claude Code: ${E9} ${G6.join(" ")}`),
           (this.process = this.spawnLocalProcess(h4)));
       ((this.processStdin = this.process.stdin),
         (this.processStdout = this.process.stdout));
@@ -7650,26 +7656,26 @@ class _9 {
           "abort",
           this.abortHandler,
         ),
-        this.process.on("error", (C0) => {
+        this.process.on("error", (S0) => {
           if (((this.ready = !1), this.abortController.signal.aborted))
             this.exitError = new m0("Claude Code process aborted by user");
-          else if (C0.code === "ENOENT") {
-            let k1 = E9
+          else if (S0.code === "ENOENT") {
+            let v1 = P9
               ? `Claude Code native binary not found at ${H}. Please ensure Claude Code is installed via native installer or specify a valid path with options.pathToClaudeCodeExecutable.`
               : `Claude Code executable not found at ${H}. Is options.pathToClaudeCodeExecutable set?`;
-            ((this.exitError = ReferenceError(k1)), i0(this.exitError.message));
+            ((this.exitError = ReferenceError(v1)), i0(this.exitError.message));
           } else
             ((this.exitError = Error(
-              `Failed to spawn Claude Code process: ${C0.message}`,
+              `Failed to spawn Claude Code process: ${S0.message}`,
             )),
               i0(this.exitError.message));
         }),
-        this.process.on("exit", (C0, k1) => {
+        this.process.on("exit", (S0, v1) => {
           if (((this.ready = !1), this.abortController.signal.aborted))
             this.exitError = new m0("Claude Code process aborted by user");
           else {
-            let S6 = this.getProcessExitError(C0, k1);
-            if (S6) ((this.exitError = S6), i0(S6.message));
+            let C6 = this.getProcessExitError(S0, v1);
+            if (C6) ((this.exitError = C6), i0(C6.message));
           }
         }),
         (this.ready = !0));
@@ -7738,7 +7744,7 @@ class _9 {
       for await (let X of Q)
         if (X.trim())
           try {
-            yield x1(X);
+            yield y1(X);
           } catch (Y) {
             throw (
               i0(`Non-JSON stdout: ${X}`),
@@ -8023,7 +8029,7 @@ class v9 {
         };
       await Promise.resolve(
         this.transport.write(
-          M0($) +
+          w0($) +
             `
 `,
         ),
@@ -8039,7 +8045,7 @@ class v9 {
       };
       await Promise.resolve(
         this.transport.write(
-          M0($) +
+          w0($) +
             `
 `,
         ),
@@ -8138,6 +8144,7 @@ class v9 {
         appendSystemPrompt: this.initConfig?.appendSystemPrompt,
         agents: this.initConfig?.agents,
         promptSuggestions: this.initConfig?.promptSuggestions,
+        agentProgressSummaries: this.initConfig?.agentProgressSummaries,
       };
     return (await this.request(Y)).response;
   }
@@ -8200,7 +8207,7 @@ class v9 {
       }),
         Promise.resolve(
           this.transport.write(
-            M0(Y) +
+            w0(Y) +
               `
 `,
           ),
@@ -8281,7 +8288,7 @@ class v9 {
           break;
         await Promise.resolve(
           this.transport.write(
-            M0(Y) +
+            w0(Y) +
               `
 `,
           ),
@@ -8353,7 +8360,7 @@ class v9 {
       request: { subtype: "mcp_message", server_name: Q, message: X },
     };
     this.transport.write(
-      M0(Y) +
+      w0(Y) +
         `
 `,
     );
@@ -8685,7 +8692,7 @@ async function z6(Q) {
 var DU = 1048576,
   m5 = 67108864,
   i5 = 5242880;
-function MU(Q) {
+function wU(Q) {
   let X = Buffer.from('"compact_boundary"'),
     Y = 10,
     $ = Q.lastIndexOf(X);
@@ -8705,7 +8712,7 @@ function MU(Q) {
 async function n5(Q, X) {
   if (X <= m5) {
     let q = await VU(Q),
-      U = MU(q);
+      U = wU(q);
     if (U < 0) return { boundaryEndOffset: 0, postBoundaryBuf: q };
     return {
       boundaryEndOffset: U,
@@ -8728,33 +8735,33 @@ async function n5(Q, X) {
         V = B - q,
         L = U,
         F = q,
-        M = V;
+        w = V;
       while (F > 0) {
-        let { bytesRead: Z } = await K.read(G, L, F, M);
+        let { bytesRead: Z } = await K.read(G, L, F, w);
         if (Z === 0) break;
-        ((L += Z), (F -= Z), (M += Z));
+        ((L += Z), (F -= Z), (w += Z));
       }
       ((H = U), (B = V));
       let N = G.subarray(H),
         j = Math.min(z + J - H, N.length),
         R = N.subarray(0, j);
       z = H;
-      let C = R.lastIndexOf(Y);
-      while (C >= 0) {
-        let Z = N.lastIndexOf($, C) + 1;
+      let S = R.lastIndexOf(Y);
+      while (S >= 0) {
+        let Z = N.lastIndexOf($, S) + 1;
         if (Z === 0 && B > 0) break;
-        let X0 = N.indexOf($, C);
+        let X0 = N.indexOf($, S);
         if (X0 === -1) X0 = N.length;
         let O0 = N.toString("utf-8", Z, X0);
         try {
-          let S0 = JSON.parse(O0);
-          if (S0.type === "system" && S0.subtype === "compact_boundary")
+          let C0 = JSON.parse(O0);
+          if (C0.type === "system" && C0.subtype === "compact_boundary")
             return {
               boundaryEndOffset: B + X0 + 1,
               postBoundaryBuf: Buffer.from(N.subarray(X0 + 1)),
             };
         } catch {}
-        C = C > 0 ? R.lastIndexOf(Y, C - 1) : -1;
+        S = S > 0 ? R.lastIndexOf(Y, S - 1) : -1;
       }
     }
     return null;
@@ -8762,9 +8769,9 @@ async function n5(Q, X) {
     await K.close();
   }
 }
-import { execFile as wU } from "child_process";
+import { execFile as MU } from "child_process";
 import { promisify as AU } from "util";
-var jU = AU(wU);
+var jU = AU(MU);
 async function n4(Q) {
   try {
     let { stdout: X } = await jU("git", ["worktree", "list", "--porcelain"], {
@@ -8787,7 +8794,7 @@ async function mQ(Q, X) {
   try {
     let $ = (await bU(Y)).size;
     if ($ === 0) return null;
-    if ($ > i5 && !S9(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP)) {
+    if ($ > i5 && !C9(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP)) {
       let J = await n5(Y, $);
       if (J) return J.postBoundaryBuf;
     }
@@ -8796,7 +8803,7 @@ async function mQ(Q, X) {
     return null;
   }
 }
-async function EU(Q, X) {
+async function PU(Q, X) {
   let Y = `${Q}.jsonl`;
   if (X) {
     let W = await i4(X),
@@ -8834,7 +8841,7 @@ async function EU(Q, X) {
   }
   return null;
 }
-function PU(Q) {
+function EU(Q) {
   let X = [],
     Y = 10,
     $ = Q.length,
@@ -8847,7 +8854,7 @@ function PU(Q) {
     if (((J = W + 1), G >= W)) continue;
     let H = Q.toString("utf-8", G, W);
     try {
-      let B = x1(H),
+      let B = y1(H),
         z = B.type;
       if (
         (z === "user" ||
@@ -8901,14 +8908,14 @@ function ZU(Q) {
   }
   return z.reverse();
 }
-function SU(Q) {
+function CU(Q) {
   if (Q.type !== "user" && Q.type !== "assistant") return !1;
   if (Q.isMeta) return !1;
   if (Q.isSidechain) return !1;
   if (Q.teamName) return !1;
   return !0;
 }
-function CU(Q) {
+function SU(Q) {
   return {
     type: Q.type,
     uuid: Q.uuid,
@@ -8919,10 +8926,10 @@ function CU(Q) {
 }
 async function r5(Q, X) {
   if (!p4(Q)) return [];
-  let Y = await EU(Q, X?.dir);
+  let Y = await PU(Q, X?.dir);
   if (!Y) return [];
-  let $ = PU(Y),
-    G = ZU($).filter(SU).map(CU),
+  let $ = EU(Y),
+    G = ZU($).filter(CU).map(SU),
     H = X?.offset ?? 0;
   if (X?.limit !== void 0 && X.limit > 0) return G.slice(H, H + X.limit);
   if (H > 0) return G.slice(H);
@@ -8958,7 +8965,7 @@ async function x9(Q, X) {
           L = p5(H) || void 0,
           F = V || T9(B, "lastPrompt") || T9(B, "summary") || L;
         if (!F) return null;
-        let M = T9(B, "gitBranch") || uQ(H, "gitBranch") || void 0,
+        let w = T9(B, "gitBranch") || uQ(H, "gitBranch") || void 0,
           N = uQ(H, "cwd") || X || void 0;
         return {
           sessionId: W,
@@ -8967,7 +8974,7 @@ async function x9(Q, X) {
           fileSize: K,
           customTitle: V,
           firstPrompt: L,
-          gitBranch: M,
+          gitBranch: w,
           cwd: N,
         };
       }),
@@ -9027,8 +9034,8 @@ async function kU(Q, X, Y = !0) {
     if (!V.isDirectory()) continue;
     let L = G ? V.name.toLowerCase() : V.name;
     if (K.has(L)) continue;
-    for (let { path: F, prefix: M } of H)
-      if (L === M || (M.length >= c6 && L.startsWith(M + "-"))) {
+    for (let { path: F, prefix: w } of H)
+      if (L === w || (w.length >= c6 && L.startsWith(w + "-"))) {
         K.add(L);
         let j = await x9(lQ(W, V.name), F);
         z.push(...j);
@@ -9063,20 +9070,20 @@ async function a5(Q) {
   if (X) return kU(X, Y, $);
   return vU(Y);
 }
-var m1 = {};
-_Q(m1, {
+var l1 = {};
+_Q(l1, {
   void: () => NL,
   util: () => d,
   unknown: () => FL,
-  union: () => wL,
+  union: () => ML,
   undefined: () => qL,
   tuple: () => RL,
   transformer: () => vL,
   symbol: () => VL,
   string: () => GJ,
-  strictObject: () => ML,
+  strictObject: () => wL,
   setErrorMap: () => yU,
-  set: () => EL,
+  set: () => PL,
   record: () => IL,
   quotelessJson: () => TU,
   promise: () => kL,
@@ -9096,10 +9103,10 @@ _Q(m1, {
   nan: () => BL,
   map: () => bL,
   makeIssue: () => g9,
-  literal: () => SL,
+  literal: () => CL,
   lazy: () => ZL,
   late: () => GL,
-  isValid: () => y1,
+  isValid: () => g1,
   isDirty: () => r4,
   isAsync: () => d6,
   isAborted: () => o4,
@@ -9107,8 +9114,8 @@ _Q(m1, {
   instanceof: () => HL,
   getParsedType: () => q1,
   getErrorMap: () => p6,
-  function: () => PL,
-  enum: () => CL,
+  function: () => EL,
+  enum: () => SL,
   effect: () => vL,
   discriminatedUnion: () => AL,
   defaultErrorMap: () => R1,
@@ -9122,7 +9129,7 @@ _Q(m1, {
   any: () => LL,
   addIssueToContext: () => b,
   ZodVoid: () => f9,
-  ZodUnknown: () => g1,
+  ZodUnknown: () => h1,
   ZodUnion: () => a6,
   ZodUndefined: () => r6,
   ZodType: () => p,
@@ -9139,7 +9146,7 @@ _Q(m1, {
   ZodParsedType: () => I,
   ZodOptional: () => l0,
   ZodObject: () => U0,
-  ZodNumber: () => h1,
+  ZodNumber: () => f1,
   ZodNullable: () => b1,
   ZodNull: () => t6,
   ZodNever: () => U1,
@@ -9148,12 +9155,12 @@ _Q(m1, {
   ZodMap: () => m9,
   ZodLiteral: () => Q9,
   ZodLazy: () => e6,
-  ZodIssueCode: () => w,
+  ZodIssueCode: () => M,
   ZodIntersection: () => s6,
   ZodFunction: () => n6,
   ZodFirstPartyTypeKind: () => A,
   ZodError: () => x0,
-  ZodEnum: () => u1,
+  ZodEnum: () => m1,
   ZodEffects: () => X1,
   ZodDiscriminatedUnion: () => t4,
   ZodDefault: () => Y9,
@@ -9161,12 +9168,12 @@ _Q(m1, {
   ZodCatch: () => $9,
   ZodBranded: () => a4,
   ZodBoolean: () => o6,
-  ZodBigInt: () => f1,
+  ZodBigInt: () => u1,
   ZodArray: () => e0,
   ZodAny: () => q6,
   Schema: () => p,
   ParseStatus: () => A0,
-  OK: () => P0,
+  OK: () => E0,
   NEVER: () => lL,
   INVALID: () => x,
   EMPTY_PATH: () => gU,
@@ -9289,7 +9296,7 @@ var I = d.arrayToEnum([
         return I.unknown;
     }
   };
-var w = d.arrayToEnum([
+var M = d.arrayToEnum([
     "invalid_type",
     "invalid_literal",
     "custom",
@@ -9386,35 +9393,35 @@ x0.create = (Q) => {
 var xU = (Q, X) => {
     let Y;
     switch (Q.code) {
-      case w.invalid_type:
+      case M.invalid_type:
         if (Q.received === I.undefined) Y = "Required";
         else Y = `Expected ${Q.expected}, received ${Q.received}`;
         break;
-      case w.invalid_literal:
+      case M.invalid_literal:
         Y = `Invalid literal value, expected ${JSON.stringify(Q.expected, d.jsonStringifyReplacer)}`;
         break;
-      case w.unrecognized_keys:
+      case M.unrecognized_keys:
         Y = `Unrecognized key(s) in object: ${d.joinValues(Q.keys, ", ")}`;
         break;
-      case w.invalid_union:
+      case M.invalid_union:
         Y = "Invalid input";
         break;
-      case w.invalid_union_discriminator:
+      case M.invalid_union_discriminator:
         Y = `Invalid discriminator value. Expected ${d.joinValues(Q.options)}`;
         break;
-      case w.invalid_enum_value:
+      case M.invalid_enum_value:
         Y = `Invalid enum value. Expected ${d.joinValues(Q.options)}, received '${Q.received}'`;
         break;
-      case w.invalid_arguments:
+      case M.invalid_arguments:
         Y = "Invalid function arguments";
         break;
-      case w.invalid_return_type:
+      case M.invalid_return_type:
         Y = "Invalid function return type";
         break;
-      case w.invalid_date:
+      case M.invalid_date:
         Y = "Invalid date";
         break;
-      case w.invalid_string:
+      case M.invalid_string:
         if (typeof Q.validation === "object")
           if ("includes" in Q.validation) {
             if (
@@ -9430,7 +9437,7 @@ var xU = (Q, X) => {
         else if (Q.validation !== "regex") Y = `Invalid ${Q.validation}`;
         else Y = "Invalid";
         break;
-      case w.too_small:
+      case M.too_small:
         if (Q.type === "array")
           Y = `Array must contain ${Q.exact ? "exactly" : Q.inclusive ? "at least" : "more than"} ${Q.minimum} element(s)`;
         else if (Q.type === "string")
@@ -9443,7 +9450,7 @@ var xU = (Q, X) => {
           Y = `Date must be ${Q.exact ? "exactly equal to " : Q.inclusive ? "greater than or equal to " : "greater than "}${new Date(Number(Q.minimum))}`;
         else Y = "Invalid input";
         break;
-      case w.too_big:
+      case M.too_big:
         if (Q.type === "array")
           Y = `Array must contain ${Q.exact ? "exactly" : Q.inclusive ? "at most" : "less than"} ${Q.maximum} element(s)`;
         else if (Q.type === "string")
@@ -9456,16 +9463,16 @@ var xU = (Q, X) => {
           Y = `Date must be ${Q.exact ? "exactly" : Q.inclusive ? "smaller than or equal to" : "smaller than"} ${new Date(Number(Q.maximum))}`;
         else Y = "Invalid input";
         break;
-      case w.custom:
+      case M.custom:
         Y = "Invalid input";
         break;
-      case w.invalid_intersection_types:
+      case M.invalid_intersection_types:
         Y = "Intersection results could not be merged";
         break;
-      case w.not_multiple_of:
+      case M.not_multiple_of:
         Y = `Number must be a multiple of ${Q.multipleOf}`;
         break;
-      case w.not_finite:
+      case M.not_finite:
         Y = "Number must be finite";
         break;
       default:
@@ -9553,16 +9560,16 @@ class A0 {
 }
 var x = Object.freeze({ status: "aborted" }),
   K6 = (Q) => ({ status: "dirty", value: Q }),
-  P0 = (Q) => ({ status: "valid", value: Q }),
+  E0 = (Q) => ({ status: "valid", value: Q }),
   o4 = (Q) => Q.status === "aborted",
   r4 = (Q) => Q.status === "dirty",
-  y1 = (Q) => Q.status === "valid",
+  g1 = (Q) => Q.status === "valid",
   d6 = (Q) => typeof Promise < "u" && Q instanceof Promise;
-var S;
+var C;
 (function (Q) {
   ((Q.errToObj = (X) => (typeof X === "string" ? { message: X } : X || {})),
     (Q.toString = (X) => (typeof X === "string" ? X : X?.message)));
-})(S || (S = {}));
+})(C || (C = {}));
 class Q1 {
   constructor(Q, X, Y, $) {
     ((this._cachedPath = []),
@@ -9580,7 +9587,7 @@ class Q1 {
   }
 }
 var e5 = (Q, X) => {
-  if (y1(X)) return { success: !0, data: X.value };
+  if (g1(X)) return { success: !0, data: X.value };
   else {
     if (!Q.common.issues.length)
       throw Error("Validation failed but no issues detected.");
@@ -9693,14 +9700,14 @@ class p {
     if (!this["~standard"].async)
       try {
         let Y = this._parseSync({ data: Q, path: [], parent: X });
-        return y1(Y) ? { value: Y.value } : { issues: X.common.issues };
+        return g1(Y) ? { value: Y.value } : { issues: X.common.issues };
       } catch (Y) {
         if (Y?.message?.toLowerCase()?.includes("encountered"))
           this["~standard"].async = !0;
         X.common = { issues: [], async: !0 };
       }
     return this._parseAsync({ data: Q, path: [], parent: X }).then((Y) =>
-      y1(Y) ? { value: Y.value } : { issues: X.common.issues },
+      g1(Y) ? { value: Y.value } : { issues: X.common.issues },
     );
   }
   async parseAsync(Q, X) {
@@ -9729,7 +9736,7 @@ class p {
     };
     return this._refinement(($, J) => {
       let W = Q($),
-        G = () => J.addIssue({ code: w.custom, ...Y($) });
+        G = () => J.addIssue({ code: M.custom, ...Y($) });
       if (typeof Promise < "u" && W instanceof Promise)
         return W.then((H) => {
           if (!H) return (G(), !1);
@@ -9931,7 +9938,7 @@ class s0 extends p {
       let J = this._getOrReturnCtx(Q);
       return (
         b(J, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.string,
           received: J.parsedType,
         }),
@@ -9945,7 +9952,7 @@ class s0 extends p {
         if (Q.data.length < J.value)
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.too_small,
+              code: M.too_small,
               minimum: J.value,
               type: "string",
               inclusive: !0,
@@ -9957,7 +9964,7 @@ class s0 extends p {
         if (Q.data.length > J.value)
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.too_big,
+              code: M.too_big,
               maximum: J.value,
               type: "string",
               inclusive: !0,
@@ -9971,7 +9978,7 @@ class s0 extends p {
         if (W || G) {
           if ((($ = this._getOrReturnCtx(Q, $)), W))
             b($, {
-              code: w.too_big,
+              code: M.too_big,
               maximum: J.value,
               type: "string",
               inclusive: !0,
@@ -9980,7 +9987,7 @@ class s0 extends p {
             });
           else if (G)
             b($, {
-              code: w.too_small,
+              code: M.too_small,
               minimum: J.value,
               type: "string",
               inclusive: !0,
@@ -9994,7 +10001,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "email",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10004,7 +10011,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "emoji",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10013,7 +10020,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "uuid",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10022,7 +10029,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "nanoid",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10031,7 +10038,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "cuid",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10040,7 +10047,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "cuid2",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10049,7 +10056,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "ulid",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10060,7 +10067,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "url",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10070,7 +10077,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "regex",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10079,7 +10086,7 @@ class s0 extends p {
         if (!Q.data.includes(J.value, J.position))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: { includes: J.value, position: J.position },
               message: J.message,
             }),
@@ -10090,7 +10097,7 @@ class s0 extends p {
         if (!Q.data.startsWith(J.value))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: { startsWith: J.value },
               message: J.message,
             }),
@@ -10099,7 +10106,7 @@ class s0 extends p {
         if (!Q.data.endsWith(J.value))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: { endsWith: J.value },
               message: J.message,
             }),
@@ -10108,7 +10115,7 @@ class s0 extends p {
         if (!$J(J).test(Q.data))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: "datetime",
               message: J.message,
             }),
@@ -10117,7 +10124,7 @@ class s0 extends p {
         if (!eU.test(Q.data))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: "date",
               message: J.message,
             }),
@@ -10126,7 +10133,7 @@ class s0 extends p {
         if (!QL(J).test(Q.data))
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.invalid_string,
+              code: M.invalid_string,
               validation: "time",
               message: J.message,
             }),
@@ -10136,7 +10143,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "duration",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10145,7 +10152,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "ip",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10154,7 +10161,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "jwt",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10163,7 +10170,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "cidr",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10172,7 +10179,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "base64",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10181,7 +10188,7 @@ class s0 extends p {
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
               validation: "base64url",
-              code: w.invalid_string,
+              code: M.invalid_string,
               message: J.message,
             }),
             Y.dirty());
@@ -10191,51 +10198,51 @@ class s0 extends p {
   _regex(Q, X, Y) {
     return this.refinement(($) => Q.test($), {
       validation: X,
-      code: w.invalid_string,
-      ...S.errToObj(Y),
+      code: M.invalid_string,
+      ...C.errToObj(Y),
     });
   }
   _addCheck(Q) {
     return new s0({ ...this._def, checks: [...this._def.checks, Q] });
   }
   email(Q) {
-    return this._addCheck({ kind: "email", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "email", ...C.errToObj(Q) });
   }
   url(Q) {
-    return this._addCheck({ kind: "url", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "url", ...C.errToObj(Q) });
   }
   emoji(Q) {
-    return this._addCheck({ kind: "emoji", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "emoji", ...C.errToObj(Q) });
   }
   uuid(Q) {
-    return this._addCheck({ kind: "uuid", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "uuid", ...C.errToObj(Q) });
   }
   nanoid(Q) {
-    return this._addCheck({ kind: "nanoid", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "nanoid", ...C.errToObj(Q) });
   }
   cuid(Q) {
-    return this._addCheck({ kind: "cuid", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "cuid", ...C.errToObj(Q) });
   }
   cuid2(Q) {
-    return this._addCheck({ kind: "cuid2", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "cuid2", ...C.errToObj(Q) });
   }
   ulid(Q) {
-    return this._addCheck({ kind: "ulid", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "ulid", ...C.errToObj(Q) });
   }
   base64(Q) {
-    return this._addCheck({ kind: "base64", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "base64", ...C.errToObj(Q) });
   }
   base64url(Q) {
-    return this._addCheck({ kind: "base64url", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "base64url", ...C.errToObj(Q) });
   }
   jwt(Q) {
-    return this._addCheck({ kind: "jwt", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "jwt", ...C.errToObj(Q) });
   }
   ip(Q) {
-    return this._addCheck({ kind: "ip", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "ip", ...C.errToObj(Q) });
   }
   cidr(Q) {
-    return this._addCheck({ kind: "cidr", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "cidr", ...C.errToObj(Q) });
   }
   datetime(Q) {
     if (typeof Q === "string")
@@ -10251,7 +10258,7 @@ class s0 extends p {
       precision: typeof Q?.precision > "u" ? null : Q?.precision,
       offset: Q?.offset ?? !1,
       local: Q?.local ?? !1,
-      ...S.errToObj(Q?.message),
+      ...C.errToObj(Q?.message),
     });
   }
   date(Q) {
@@ -10263,40 +10270,40 @@ class s0 extends p {
     return this._addCheck({
       kind: "time",
       precision: typeof Q?.precision > "u" ? null : Q?.precision,
-      ...S.errToObj(Q?.message),
+      ...C.errToObj(Q?.message),
     });
   }
   duration(Q) {
-    return this._addCheck({ kind: "duration", ...S.errToObj(Q) });
+    return this._addCheck({ kind: "duration", ...C.errToObj(Q) });
   }
   regex(Q, X) {
-    return this._addCheck({ kind: "regex", regex: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "regex", regex: Q, ...C.errToObj(X) });
   }
   includes(Q, X) {
     return this._addCheck({
       kind: "includes",
       value: Q,
       position: X?.position,
-      ...S.errToObj(X?.message),
+      ...C.errToObj(X?.message),
     });
   }
   startsWith(Q, X) {
-    return this._addCheck({ kind: "startsWith", value: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "startsWith", value: Q, ...C.errToObj(X) });
   }
   endsWith(Q, X) {
-    return this._addCheck({ kind: "endsWith", value: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "endsWith", value: Q, ...C.errToObj(X) });
   }
   min(Q, X) {
-    return this._addCheck({ kind: "min", value: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "min", value: Q, ...C.errToObj(X) });
   }
   max(Q, X) {
-    return this._addCheck({ kind: "max", value: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "max", value: Q, ...C.errToObj(X) });
   }
   length(Q, X) {
-    return this._addCheck({ kind: "length", value: Q, ...S.errToObj(X) });
+    return this._addCheck({ kind: "length", value: Q, ...C.errToObj(X) });
   }
   nonempty(Q) {
-    return this.min(1, S.errToObj(Q));
+    return this.min(1, C.errToObj(Q));
   }
   trim() {
     return new s0({
@@ -10397,7 +10404,7 @@ function JL(Q, X) {
     G = Number.parseInt(X.toFixed(J).replace(".", ""));
   return (W % G) / 10 ** J;
 }
-class h1 extends p {
+class f1 extends p {
   constructor() {
     super(...arguments);
     ((this.min = this.gte),
@@ -10410,7 +10417,7 @@ class h1 extends p {
       let J = this._getOrReturnCtx(Q);
       return (
         b(J, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.number,
           received: J.parsedType,
         }),
@@ -10424,7 +10431,7 @@ class h1 extends p {
         if (!d.isInteger(Q.data))
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.invalid_type,
+              code: M.invalid_type,
               expected: "integer",
               received: "float",
               message: J.message,
@@ -10434,7 +10441,7 @@ class h1 extends p {
         if (J.inclusive ? Q.data < J.value : Q.data <= J.value)
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.too_small,
+              code: M.too_small,
               minimum: J.value,
               type: "number",
               inclusive: J.inclusive,
@@ -10446,7 +10453,7 @@ class h1 extends p {
         if (J.inclusive ? Q.data > J.value : Q.data >= J.value)
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.too_big,
+              code: M.too_big,
               maximum: J.value,
               type: "number",
               inclusive: J.inclusive,
@@ -10458,7 +10465,7 @@ class h1 extends p {
         if (JL(Q.data, J.value) !== 0)
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.not_multiple_of,
+              code: M.not_multiple_of,
               multipleOf: J.value,
               message: J.message,
             }),
@@ -10466,44 +10473,44 @@ class h1 extends p {
       } else if (J.kind === "finite") {
         if (!Number.isFinite(Q.data))
           ((Y = this._getOrReturnCtx(Q, Y)),
-            b(Y, { code: w.not_finite, message: J.message }),
+            b(Y, { code: M.not_finite, message: J.message }),
             $.dirty());
       } else d.assertNever(J);
     return { status: $.value, value: Q.data };
   }
   gte(Q, X) {
-    return this.setLimit("min", Q, !0, S.toString(X));
+    return this.setLimit("min", Q, !0, C.toString(X));
   }
   gt(Q, X) {
-    return this.setLimit("min", Q, !1, S.toString(X));
+    return this.setLimit("min", Q, !1, C.toString(X));
   }
   lte(Q, X) {
-    return this.setLimit("max", Q, !0, S.toString(X));
+    return this.setLimit("max", Q, !0, C.toString(X));
   }
   lt(Q, X) {
-    return this.setLimit("max", Q, !1, S.toString(X));
+    return this.setLimit("max", Q, !1, C.toString(X));
   }
   setLimit(Q, X, Y, $) {
-    return new h1({
+    return new f1({
       ...this._def,
       checks: [
         ...this._def.checks,
-        { kind: Q, value: X, inclusive: Y, message: S.toString($) },
+        { kind: Q, value: X, inclusive: Y, message: C.toString($) },
       ],
     });
   }
   _addCheck(Q) {
-    return new h1({ ...this._def, checks: [...this._def.checks, Q] });
+    return new f1({ ...this._def, checks: [...this._def.checks, Q] });
   }
   int(Q) {
-    return this._addCheck({ kind: "int", message: S.toString(Q) });
+    return this._addCheck({ kind: "int", message: C.toString(Q) });
   }
   positive(Q) {
     return this._addCheck({
       kind: "min",
       value: 0,
       inclusive: !1,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   negative(Q) {
@@ -10511,7 +10518,7 @@ class h1 extends p {
       kind: "max",
       value: 0,
       inclusive: !1,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   nonpositive(Q) {
@@ -10519,7 +10526,7 @@ class h1 extends p {
       kind: "max",
       value: 0,
       inclusive: !0,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   nonnegative(Q) {
@@ -10527,30 +10534,30 @@ class h1 extends p {
       kind: "min",
       value: 0,
       inclusive: !0,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   multipleOf(Q, X) {
     return this._addCheck({
       kind: "multipleOf",
       value: Q,
-      message: S.toString(X),
+      message: C.toString(X),
     });
   }
   finite(Q) {
-    return this._addCheck({ kind: "finite", message: S.toString(Q) });
+    return this._addCheck({ kind: "finite", message: C.toString(Q) });
   }
   safe(Q) {
     return this._addCheck({
       kind: "min",
       inclusive: !0,
       value: Number.MIN_SAFE_INTEGER,
-      message: S.toString(Q),
+      message: C.toString(Q),
     })._addCheck({
       kind: "max",
       inclusive: !0,
       value: Number.MAX_SAFE_INTEGER,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   get minValue() {
@@ -10589,15 +10596,15 @@ class h1 extends p {
     return Number.isFinite(X) && Number.isFinite(Q);
   }
 }
-h1.create = (Q) => {
-  return new h1({
+f1.create = (Q) => {
+  return new f1({
     checks: [],
     typeName: A.ZodNumber,
     coerce: Q?.coerce || !1,
     ...m(Q),
   });
 };
-class f1 extends p {
+class u1 extends p {
   constructor() {
     super(...arguments);
     ((this.min = this.gte), (this.max = this.lte));
@@ -10617,7 +10624,7 @@ class f1 extends p {
         if (J.inclusive ? Q.data < J.value : Q.data <= J.value)
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.too_small,
+              code: M.too_small,
               type: "bigint",
               minimum: J.value,
               inclusive: J.inclusive,
@@ -10628,7 +10635,7 @@ class f1 extends p {
         if (J.inclusive ? Q.data > J.value : Q.data >= J.value)
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.too_big,
+              code: M.too_big,
               type: "bigint",
               maximum: J.value,
               inclusive: J.inclusive,
@@ -10639,7 +10646,7 @@ class f1 extends p {
         if (Q.data % J.value !== BigInt(0))
           ((Y = this._getOrReturnCtx(Q, Y)),
             b(Y, {
-              code: w.not_multiple_of,
+              code: M.not_multiple_of,
               multipleOf: J.value,
               message: J.message,
             }),
@@ -10651,7 +10658,7 @@ class f1 extends p {
     let X = this._getOrReturnCtx(Q);
     return (
       b(X, {
-        code: w.invalid_type,
+        code: M.invalid_type,
         expected: I.bigint,
         received: X.parsedType,
       }),
@@ -10659,35 +10666,35 @@ class f1 extends p {
     );
   }
   gte(Q, X) {
-    return this.setLimit("min", Q, !0, S.toString(X));
+    return this.setLimit("min", Q, !0, C.toString(X));
   }
   gt(Q, X) {
-    return this.setLimit("min", Q, !1, S.toString(X));
+    return this.setLimit("min", Q, !1, C.toString(X));
   }
   lte(Q, X) {
-    return this.setLimit("max", Q, !0, S.toString(X));
+    return this.setLimit("max", Q, !0, C.toString(X));
   }
   lt(Q, X) {
-    return this.setLimit("max", Q, !1, S.toString(X));
+    return this.setLimit("max", Q, !1, C.toString(X));
   }
   setLimit(Q, X, Y, $) {
-    return new f1({
+    return new u1({
       ...this._def,
       checks: [
         ...this._def.checks,
-        { kind: Q, value: X, inclusive: Y, message: S.toString($) },
+        { kind: Q, value: X, inclusive: Y, message: C.toString($) },
       ],
     });
   }
   _addCheck(Q) {
-    return new f1({ ...this._def, checks: [...this._def.checks, Q] });
+    return new u1({ ...this._def, checks: [...this._def.checks, Q] });
   }
   positive(Q) {
     return this._addCheck({
       kind: "min",
       value: BigInt(0),
       inclusive: !1,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   negative(Q) {
@@ -10695,7 +10702,7 @@ class f1 extends p {
       kind: "max",
       value: BigInt(0),
       inclusive: !1,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   nonpositive(Q) {
@@ -10703,7 +10710,7 @@ class f1 extends p {
       kind: "max",
       value: BigInt(0),
       inclusive: !0,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   nonnegative(Q) {
@@ -10711,14 +10718,14 @@ class f1 extends p {
       kind: "min",
       value: BigInt(0),
       inclusive: !0,
-      message: S.toString(Q),
+      message: C.toString(Q),
     });
   }
   multipleOf(Q, X) {
     return this._addCheck({
       kind: "multipleOf",
       value: Q,
-      message: S.toString(X),
+      message: C.toString(X),
     });
   }
   get minValue() {
@@ -10738,8 +10745,8 @@ class f1 extends p {
     return Q;
   }
 }
-f1.create = (Q) => {
-  return new f1({
+u1.create = (Q) => {
+  return new u1({
     checks: [],
     typeName: A.ZodBigInt,
     coerce: Q?.coerce ?? !1,
@@ -10753,14 +10760,14 @@ class o6 extends p {
       let Y = this._getOrReturnCtx(Q);
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.boolean,
           received: Y.parsedType,
         }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 o6.create = (Q) => {
@@ -10773,7 +10780,7 @@ class V6 extends p {
       let J = this._getOrReturnCtx(Q);
       return (
         b(J, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.date,
           received: J.parsedType,
         }),
@@ -10782,7 +10789,7 @@ class V6 extends p {
     }
     if (Number.isNaN(Q.data.getTime())) {
       let J = this._getOrReturnCtx(Q);
-      return (b(J, { code: w.invalid_date }), x);
+      return (b(J, { code: M.invalid_date }), x);
     }
     let Y = new A0(),
       $ = void 0;
@@ -10791,7 +10798,7 @@ class V6 extends p {
         if (Q.data.getTime() < J.value)
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.too_small,
+              code: M.too_small,
               message: J.message,
               inclusive: !0,
               exact: !1,
@@ -10803,7 +10810,7 @@ class V6 extends p {
         if (Q.data.getTime() > J.value)
           (($ = this._getOrReturnCtx(Q, $)),
             b($, {
-              code: w.too_big,
+              code: M.too_big,
               message: J.message,
               inclusive: !0,
               exact: !1,
@@ -10821,14 +10828,14 @@ class V6 extends p {
     return this._addCheck({
       kind: "min",
       value: Q.getTime(),
-      message: S.toString(X),
+      message: C.toString(X),
     });
   }
   max(Q, X) {
     return this._addCheck({
       kind: "max",
       value: Q.getTime(),
-      message: S.toString(X),
+      message: C.toString(X),
     });
   }
   get minDate() {
@@ -10862,14 +10869,14 @@ class h9 extends p {
       let Y = this._getOrReturnCtx(Q);
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.symbol,
           received: Y.parsedType,
         }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 h9.create = (Q) => {
@@ -10881,14 +10888,14 @@ class r6 extends p {
       let Y = this._getOrReturnCtx(Q);
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.undefined,
           received: Y.parsedType,
         }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 r6.create = (Q) => {
@@ -10900,14 +10907,14 @@ class t6 extends p {
       let Y = this._getOrReturnCtx(Q);
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.null,
           received: Y.parsedType,
         }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 t6.create = (Q) => {
@@ -10919,29 +10926,29 @@ class q6 extends p {
     this._any = !0;
   }
   _parse(Q) {
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 q6.create = (Q) => {
   return new q6({ typeName: A.ZodAny, ...m(Q) });
 };
-class g1 extends p {
+class h1 extends p {
   constructor() {
     super(...arguments);
     this._unknown = !0;
   }
   _parse(Q) {
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
-g1.create = (Q) => {
-  return new g1({ typeName: A.ZodUnknown, ...m(Q) });
+h1.create = (Q) => {
+  return new h1({ typeName: A.ZodUnknown, ...m(Q) });
 };
 class U1 extends p {
   _parse(Q) {
     let X = this._getOrReturnCtx(Q);
     return (
-      b(X, { code: w.invalid_type, expected: I.never, received: X.parsedType }),
+      b(X, { code: M.invalid_type, expected: I.never, received: X.parsedType }),
       x
     );
   }
@@ -10955,14 +10962,14 @@ class f9 extends p {
       let Y = this._getOrReturnCtx(Q);
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.void,
           received: Y.parsedType,
         }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
 }
 f9.create = (Q) => {
@@ -10975,7 +10982,7 @@ class e0 extends p {
     if (X.parsedType !== I.array)
       return (
         b(X, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.array,
           received: X.parsedType,
         }),
@@ -10986,7 +10993,7 @@ class e0 extends p {
         G = X.data.length < $.exactLength.value;
       if (W || G)
         (b(X, {
-          code: W ? w.too_big : w.too_small,
+          code: W ? M.too_big : M.too_small,
           minimum: G ? $.exactLength.value : void 0,
           maximum: W ? $.exactLength.value : void 0,
           type: "array",
@@ -10999,7 +11006,7 @@ class e0 extends p {
     if ($.minLength !== null) {
       if (X.data.length < $.minLength.value)
         (b(X, {
-          code: w.too_small,
+          code: M.too_small,
           minimum: $.minLength.value,
           type: "array",
           inclusive: !0,
@@ -11011,7 +11018,7 @@ class e0 extends p {
     if ($.maxLength !== null) {
       if (X.data.length > $.maxLength.value)
         (b(X, {
-          code: w.too_big,
+          code: M.too_big,
           maximum: $.maxLength.value,
           type: "array",
           inclusive: !0,
@@ -11039,19 +11046,19 @@ class e0 extends p {
   min(Q, X) {
     return new e0({
       ...this._def,
-      minLength: { value: Q, message: S.toString(X) },
+      minLength: { value: Q, message: C.toString(X) },
     });
   }
   max(Q, X) {
     return new e0({
       ...this._def,
-      maxLength: { value: Q, message: S.toString(X) },
+      maxLength: { value: Q, message: C.toString(X) },
     });
   }
   length(Q, X) {
     return new e0({
       ...this._def,
-      exactLength: { value: Q, message: S.toString(X) },
+      exactLength: { value: Q, message: C.toString(X) },
     });
   }
   nonempty(Q) {
@@ -11100,7 +11107,7 @@ class U0 extends p {
       let B = this._getOrReturnCtx(Q);
       return (
         b(B, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.object,
           received: B.parsedType,
         }),
@@ -11135,7 +11142,7 @@ class U0 extends p {
           });
       else if (B === "strict") {
         if (G.length > 0)
-          (b($, { code: w.unrecognized_keys, keys: G }), Y.dirty());
+          (b($, { code: M.unrecognized_keys, keys: G }), Y.dirty());
       } else if (B === "strip");
       else throw Error("Internal ZodObject error: invalid unknownKeys value.");
     } else {
@@ -11170,7 +11177,7 @@ class U0 extends p {
   }
   strict(Q) {
     return (
-      S.errToObj,
+      C.errToObj,
       new U0({
         ...this._def,
         unknownKeys: "strict",
@@ -11179,7 +11186,7 @@ class U0 extends p {
               errorMap: (X, Y) => {
                 let $ = this._def.errorMap?.(X, Y).message ?? Y.defaultError;
                 if (X.code === "unrecognized_keys")
-                  return { message: S.errToObj(Q).message ?? $ };
+                  return { message: C.errToObj(Q).message ?? $ };
                 return { message: $ };
               },
             }
@@ -11288,7 +11295,7 @@ class a6 extends p {
         if (G.result.status === "dirty")
           return (X.common.issues.push(...G.ctx.common.issues), G.result);
       let W = J.map((G) => new x0(G.ctx.common.issues));
-      return (b(X, { code: w.invalid_union, unionErrors: W }), x);
+      return (b(X, { code: M.invalid_union, unionErrors: W }), x);
     }
     if (X.common.async)
       return Promise.all(
@@ -11316,7 +11323,7 @@ class a6 extends p {
       }
       if (J) return (X.common.issues.push(...J.ctx.common.issues), J.result);
       let G = W.map((H) => new x0(H));
-      return (b(X, { code: w.invalid_union, unionErrors: G }), x);
+      return (b(X, { code: M.invalid_union, unionErrors: G }), x);
     }
   }
   get options() {
@@ -11330,7 +11337,7 @@ var I1 = (Q) => {
   if (Q instanceof e6) return I1(Q.schema);
   else if (Q instanceof X1) return I1(Q.innerType());
   else if (Q instanceof Q9) return [Q.value];
-  else if (Q instanceof u1) return Q.options;
+  else if (Q instanceof m1) return Q.options;
   else if (Q instanceof X9) return d.objectValues(Q.enum);
   else if (Q instanceof Y9) return I1(Q._def.innerType);
   else if (Q instanceof r6) return [void 0];
@@ -11348,7 +11355,7 @@ class t4 extends p {
     if (X.parsedType !== I.object)
       return (
         b(X, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.object,
           received: X.parsedType,
         }),
@@ -11360,7 +11367,7 @@ class t4 extends p {
     if (!J)
       return (
         b(X, {
-          code: w.invalid_union_discriminator,
+          code: M.invalid_union_discriminator,
           options: Array.from(this.optionsMap.keys()),
           path: [Y],
         }),
@@ -11439,7 +11446,7 @@ class s6 extends p {
       $ = (J, W) => {
         if (o4(J) || o4(W)) return x;
         let G = iQ(J.value, W.value);
-        if (!G.valid) return (b(Y, { code: w.invalid_intersection_types }), x);
+        if (!G.valid) return (b(Y, { code: M.invalid_intersection_types }), x);
         if (r4(J) || r4(W)) X.dirty();
         return { status: X.value, value: G.data };
       };
@@ -11464,7 +11471,7 @@ class L1 extends p {
     if (Y.parsedType !== I.array)
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.array,
           received: Y.parsedType,
         }),
@@ -11473,7 +11480,7 @@ class L1 extends p {
     if (Y.data.length < this._def.items.length)
       return (
         b(Y, {
-          code: w.too_small,
+          code: M.too_small,
           minimum: this._def.items.length,
           inclusive: !0,
           exact: !1,
@@ -11483,7 +11490,7 @@ class L1 extends p {
       );
     if (!this._def.rest && Y.data.length > this._def.items.length)
       (b(Y, {
-        code: w.too_big,
+        code: M.too_big,
         maximum: this._def.items.length,
         inclusive: !0,
         exact: !1,
@@ -11527,7 +11534,7 @@ class u9 extends p {
     if (Y.parsedType !== I.object)
       return (
         b(Y, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.object,
           received: Y.parsedType,
         }),
@@ -11575,7 +11582,7 @@ class m9 extends p {
     let { status: X, ctx: Y } = this._processInputParams(Q);
     if (Y.parsedType !== I.map)
       return (
-        b(Y, { code: w.invalid_type, expected: I.map, received: Y.parsedType }),
+        b(Y, { code: M.invalid_type, expected: I.map, received: Y.parsedType }),
         x
       );
     let $ = this._def.keyType,
@@ -11618,14 +11625,14 @@ class U6 extends p {
     let { status: X, ctx: Y } = this._processInputParams(Q);
     if (Y.parsedType !== I.set)
       return (
-        b(Y, { code: w.invalid_type, expected: I.set, received: Y.parsedType }),
+        b(Y, { code: M.invalid_type, expected: I.set, received: Y.parsedType }),
         x
       );
     let $ = this._def;
     if ($.minSize !== null) {
       if (Y.data.size < $.minSize.value)
         (b(Y, {
-          code: w.too_small,
+          code: M.too_small,
           minimum: $.minSize.value,
           type: "set",
           inclusive: !0,
@@ -11637,7 +11644,7 @@ class U6 extends p {
     if ($.maxSize !== null) {
       if (Y.data.size > $.maxSize.value)
         (b(Y, {
-          code: w.too_big,
+          code: M.too_big,
           maximum: $.maxSize.value,
           type: "set",
           inclusive: !0,
@@ -11665,13 +11672,13 @@ class U6 extends p {
   min(Q, X) {
     return new U6({
       ...this._def,
-      minSize: { value: Q, message: S.toString(X) },
+      minSize: { value: Q, message: C.toString(X) },
     });
   }
   max(Q, X) {
     return new U6({
       ...this._def,
-      maxSize: { value: Q, message: S.toString(X) },
+      maxSize: { value: Q, message: C.toString(X) },
     });
   }
   size(Q, X) {
@@ -11700,7 +11707,7 @@ class n6 extends p {
     if (X.parsedType !== I.function)
       return (
         b(X, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.function,
           received: X.parsedType,
         }),
@@ -11716,7 +11723,7 @@ class n6 extends p {
           p6(),
           R1,
         ].filter((B) => !!B),
-        issueData: { code: w.invalid_arguments, argumentsError: H },
+        issueData: { code: M.invalid_arguments, argumentsError: H },
       });
     }
     function $(G, H) {
@@ -11729,14 +11736,14 @@ class n6 extends p {
           p6(),
           R1,
         ].filter((B) => !!B),
-        issueData: { code: w.invalid_return_type, returnTypeError: H },
+        issueData: { code: M.invalid_return_type, returnTypeError: H },
       });
     }
     let J = { errorMap: X.common.contextualErrorMap },
       W = X.data;
     if (this._def.returns instanceof L6) {
       let G = this;
-      return P0(async function (...H) {
+      return E0(async function (...H) {
         let B = new x0([]),
           z = await G._def.args.parseAsync(H, J).catch((U) => {
             throw (B.addIssue(Y(H, U)), B);
@@ -11748,7 +11755,7 @@ class n6 extends p {
       });
     } else {
       let G = this;
-      return P0(function (...H) {
+      return E0(function (...H) {
         let B = G._def.args.safeParse(H, J);
         if (!B.success) throw new x0([Y(H, B.error)]);
         let z = Reflect.apply(W, this, B.data),
@@ -11765,7 +11772,7 @@ class n6 extends p {
     return this._def.returns;
   }
   args(...Q) {
-    return new n6({ ...this._def, args: L1.create(Q).rest(g1.create()) });
+    return new n6({ ...this._def, args: L1.create(Q).rest(h1.create()) });
   }
   returns(Q) {
     return new n6({ ...this._def, returns: Q });
@@ -11778,8 +11785,8 @@ class n6 extends p {
   }
   static create(Q, X, Y) {
     return new n6({
-      args: Q ? Q : L1.create([]).rest(g1.create()),
-      returns: X || g1.create(),
+      args: Q ? Q : L1.create([]).rest(h1.create()),
+      returns: X || h1.create(),
       typeName: A.ZodFunction,
       ...m(Y),
     });
@@ -11804,7 +11811,7 @@ class Q9 extends p {
       return (
         b(X, {
           received: X.data,
-          code: w.invalid_literal,
+          code: M.invalid_literal,
           expected: this._def.value,
         }),
         x
@@ -11820,9 +11827,9 @@ Q9.create = (Q, X) => {
   return new Q9({ value: Q, typeName: A.ZodLiteral, ...m(X) });
 };
 function JJ(Q, X) {
-  return new u1({ values: Q, typeName: A.ZodEnum, ...m(X) });
+  return new m1({ values: Q, typeName: A.ZodEnum, ...m(X) });
 }
-class u1 extends p {
+class m1 extends p {
   _parse(Q) {
     if (typeof Q.data !== "string") {
       let X = this._getOrReturnCtx(Q),
@@ -11831,7 +11838,7 @@ class u1 extends p {
         b(X, {
           expected: d.joinValues(Y),
           received: X.parsedType,
-          code: w.invalid_type,
+          code: M.invalid_type,
         }),
         x
       );
@@ -11841,11 +11848,11 @@ class u1 extends p {
       let X = this._getOrReturnCtx(Q),
         Y = this._def.values;
       return (
-        b(X, { received: X.data, code: w.invalid_enum_value, options: Y }),
+        b(X, { received: X.data, code: M.invalid_enum_value, options: Y }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
   get options() {
     return this._def.values;
@@ -11866,16 +11873,16 @@ class u1 extends p {
     return Q;
   }
   extract(Q, X = this._def) {
-    return u1.create(Q, { ...this._def, ...X });
+    return m1.create(Q, { ...this._def, ...X });
   }
   exclude(Q, X = this._def) {
-    return u1.create(
+    return m1.create(
       this.options.filter((Y) => !Q.includes(Y)),
       { ...this._def, ...X },
     );
   }
 }
-u1.create = JJ;
+m1.create = JJ;
 class X9 extends p {
   _parse(Q) {
     let X = d.getValidEnumValues(this._def.values),
@@ -11886,7 +11893,7 @@ class X9 extends p {
         b(Y, {
           expected: d.joinValues($),
           received: Y.parsedType,
-          code: w.invalid_type,
+          code: M.invalid_type,
         }),
         x
       );
@@ -11896,11 +11903,11 @@ class X9 extends p {
     if (!this._cache.has(Q.data)) {
       let $ = d.objectValues(X);
       return (
-        b(Y, { received: Y.data, code: w.invalid_enum_value, options: $ }),
+        b(Y, { received: Y.data, code: M.invalid_enum_value, options: $ }),
         x
       );
     }
-    return P0(Q.data);
+    return E0(Q.data);
   }
   get enum() {
     return this._def.values;
@@ -11918,14 +11925,14 @@ class L6 extends p {
     if (X.parsedType !== I.promise && X.common.async === !1)
       return (
         b(X, {
-          code: w.invalid_type,
+          code: M.invalid_type,
           expected: I.promise,
           received: X.parsedType,
         }),
         x
       );
     let Y = X.parsedType === I.promise ? X.data : Promise.resolve(X.data);
-    return P0(
+    return E0(
       Y.then(($) => {
         return this._def.type.parseAsync($, {
           path: X.path,
@@ -12024,7 +12031,7 @@ class X1 extends p {
           path: Y.path,
           parent: Y,
         });
-        if (!y1(W)) return x;
+        if (!g1(W)) return x;
         let G = $.transform(W.value, J);
         if (G instanceof Promise)
           throw Error(
@@ -12035,7 +12042,7 @@ class X1 extends p {
         return this._def.schema
           ._parseAsync({ data: Y.data, path: Y.path, parent: Y })
           .then((W) => {
-            if (!y1(W)) return x;
+            if (!g1(W)) return x;
             return Promise.resolve($.transform(W.value, J)).then((G) => ({
               status: X.value,
               value: G,
@@ -12057,7 +12064,7 @@ X1.createWithPreprocess = (Q, X, Y) => {
 };
 class l0 extends p {
   _parse(Q) {
-    if (this._getType(Q) === I.undefined) return P0(void 0);
+    if (this._getType(Q) === I.undefined) return E0(void 0);
     return this._def.innerType._parse(Q);
   }
   unwrap() {
@@ -12069,7 +12076,7 @@ l0.create = (Q, X) => {
 };
 class b1 extends p {
   _parse(Q) {
-    if (this._getType(Q) === I.null) return P0(null);
+    if (this._getType(Q) === I.null) return E0(null);
     return this._def.innerType._parse(Q);
   }
   unwrap() {
@@ -12153,7 +12160,7 @@ class l9 extends p {
     if (this._getType(Q) !== I.nan) {
       let Y = this._getOrReturnCtx(Q);
       return (
-        b(Y, { code: w.invalid_type, expected: I.nan, received: Y.parsedType }),
+        b(Y, { code: M.invalid_type, expected: I.nan, received: Y.parsedType }),
         x
       );
     }
@@ -12218,7 +12225,7 @@ class J9 extends p {
   _parse(Q) {
     let X = this._def.innerType._parse(Q),
       Y = ($) => {
-        if (y1($)) $.value = Object.freeze($.value);
+        if (g1($)) $.value = Object.freeze($.value);
         return $;
       };
     return d6(X) ? X.then(($) => Y($)) : Y(X);
@@ -12299,32 +12306,32 @@ var GL = { object: U0.lazycreate },
 var HL = (Q, X = { message: `Input not instance of ${Q.name}` }) =>
     WJ((Y) => Y instanceof Q, X),
   GJ = s0.create,
-  HJ = h1.create,
+  HJ = f1.create,
   BL = l9.create,
-  zL = f1.create,
+  zL = u1.create,
   BJ = o6.create,
   KL = V6.create,
   VL = h9.create,
   qL = r6.create,
   UL = t6.create,
   LL = q6.create,
-  FL = g1.create,
+  FL = h1.create,
   OL = U1.create,
   NL = f9.create,
   DL = e0.create,
   nQ = U0.create,
-  ML = U0.strictCreate,
-  wL = a6.create,
+  wL = U0.strictCreate,
+  ML = a6.create,
   AL = t4.create,
   jL = s6.create,
   RL = L1.create,
   IL = u9.create,
   bL = m9.create,
-  EL = U6.create,
-  PL = n6.create,
+  PL = U6.create,
+  EL = n6.create,
   ZL = e6.create,
-  SL = Q9.create,
-  CL = u1.create,
+  CL = Q9.create,
+  SL = m1.create,
   _L = X9.create,
   kL = L6.create,
   vL = X1.create,
@@ -12337,9 +12344,9 @@ var HL = (Q, X = { message: `Input not instance of ${Q.name}` }) =>
   uL = () => BJ().optional(),
   mL = {
     string: (Q) => s0.create({ ...Q, coerce: !0 }),
-    number: (Q) => h1.create({ ...Q, coerce: !0 }),
+    number: (Q) => f1.create({ ...Q, coerce: !0 }),
     boolean: (Q) => o6.create({ ...Q, coerce: !0 }),
-    bigint: (Q) => f1.create({ ...Q, coerce: !0 }),
+    bigint: (Q) => u1.create({ ...Q, coerce: !0 }),
     date: (Q) => V6.create({ ...Q, coerce: !0 }),
   };
 var lL = x;
@@ -12379,7 +12386,7 @@ function D(Q, X, Y) {
   );
 }
 var pL = Symbol("zod_brand");
-class l1 extends Error {
+class c1 extends Error {
   constructor() {
     super(
       "Encountered Promise during synchronous parse. Use .parseAsync() instead.",
@@ -12422,7 +12429,7 @@ _Q(i, {
   floatSafeRemainder: () => tQ,
   finalizeIssue: () => Y1,
   extend: () => JF,
-  escapeRegex: () => c1,
+  escapeRegex: () => p1,
   esc: () => F6,
   defineLazy: () => J0,
   createTransparentProxy: () => XF,
@@ -12612,7 +12619,7 @@ var QF = (Q) => {
     "symbol",
     "undefined",
   ]);
-function c1(Q) {
+function p1(Q) {
   return Q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function p0(Q, X, Y) {
@@ -12862,7 +12869,7 @@ function JX(Q, X) {
 var WX = (Q) => (X, Y, $, J) => {
     let W = $ ? Object.assign($, { async: !1 }) : { async: !1 },
       G = X._zod.run({ value: Y, issues: [] }, W);
-    if (G instanceof Promise) throw new l1();
+    if (G instanceof Promise) throw new c1();
     if (G.issues.length) {
       let H = new (J?.Err ?? Q)(G.issues.map((B) => Y1(B, W, c0())));
       throw (Q8(H, J?.callee), H);
@@ -12884,7 +12891,7 @@ var WX = (Q) => (X, Y, $, J) => {
   zX = (Q) => (X, Y, $) => {
     let J = $ ? { ...$, async: !1 } : { async: !1 },
       W = X._zod.run({ value: Y, issues: [] }, J);
-    if (W instanceof Promise) throw new l1();
+    if (W instanceof Promise) throw new c1();
     return W.issues.length
       ? {
           success: !1,
@@ -12907,8 +12914,8 @@ var LJ = /^[cC][^\s-]{8,}$/,
   OJ = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/,
   NJ = /^[0-9a-vA-V]{20}$/,
   DJ = /^[A-Za-z0-9]{27}$/,
-  MJ = /^[a-zA-Z0-9_-]{21}$/,
-  wJ =
+  wJ = /^[a-zA-Z0-9_-]{21}$/,
+  MJ =
     /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/;
 var AJ =
     /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/,
@@ -12931,15 +12938,15 @@ var IJ =
     /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
   bJ =
     /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})$/,
-  EJ =
-    /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/,
   PJ =
+    /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/,
+  EJ =
     /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/,
   ZJ =
     /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/,
   qX = /^[A-Za-z0-9_-]*$/,
-  SJ = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+$/;
-var CJ = /^\+(?:[0-9]){6,14}[0-9]$/,
+  CJ = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+$/;
+var SJ = /^\+(?:[0-9]){6,14}[0-9]$/,
   _J =
     "(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))",
   kJ = new RegExp(`^${_J}$`);
@@ -13250,7 +13257,7 @@ var iJ = D("$ZodCheckMaxLength", (Q, X) => {
   }),
   sJ = D("$ZodCheckIncludes", (Q, X) => {
     j0.init(Q, X);
-    let Y = c1(X.includes),
+    let Y = p1(X.includes),
       $ = new RegExp(
         typeof X.position === "number" ? `^.{${X.position}}${Y}` : Y,
       );
@@ -13274,7 +13281,7 @@ var iJ = D("$ZodCheckMaxLength", (Q, X) => {
   }),
   eJ = D("$ZodCheckStartsWith", (Q, X) => {
     j0.init(Q, X);
-    let Y = new RegExp(`^${c1(X.prefix)}.*`);
+    let Y = new RegExp(`^${p1(X.prefix)}.*`);
     (X.pattern ?? (X.pattern = Y),
       Q._zod.onattach.push(($) => {
         let J = $._zod.bag;
@@ -13295,7 +13302,7 @@ var iJ = D("$ZodCheckMaxLength", (Q, X) => {
   }),
   QW = D("$ZodCheckEndsWith", (Q, X) => {
     j0.init(Q, X);
-    let Y = new RegExp(`.*${c1(X.suffix)}$`);
+    let Y = new RegExp(`.*${p1(X.suffix)}$`);
     (X.pattern ?? (X.pattern = Y),
       Q._zod.onattach.push(($) => {
         let J = $._zod.bag;
@@ -13376,7 +13383,7 @@ var e = D("$ZodType", (Q, X) => {
           } else if (B) continue;
           let q = W.issues.length,
             U = K._zod.check(W);
-          if (U instanceof Promise && H?.async === !1) throw new l1();
+          if (U instanceof Promise && H?.async === !1) throw new c1();
           if (z || U instanceof Promise)
             z = (z ?? Promise.resolve()).then(async () => {
               if ((await U, W.issues.length === q)) return;
@@ -13396,7 +13403,7 @@ var e = D("$ZodType", (Q, X) => {
       Q._zod.run = (W, G) => {
         let H = Q._zod.parse(W, G);
         if (H instanceof Promise) {
-          if (G.async === !1) throw new l1();
+          if (G.async === !1) throw new c1();
           return H.then((B) => J(B, $, G));
         }
         return J(H, $, G);
@@ -13454,10 +13461,10 @@ var e = D("$ZodType", (Q, X) => {
     } else X.pattern ?? (X.pattern = VX());
     W0.init(Q, X);
   }),
-  MX = D("$ZodEmail", (Q, X) => {
+  wX = D("$ZodEmail", (Q, X) => {
     (X.pattern ?? (X.pattern = jJ), W0.init(Q, X));
   }),
-  wX = D("$ZodURL", (Q, X) => {
+  MX = D("$ZodURL", (Q, X) => {
     (W0.init(Q, X),
       (Q._zod.check = (Y) => {
         try {
@@ -13470,7 +13477,7 @@ var e = D("$ZodType", (Q, X) => {
                 code: "invalid_format",
                 format: "url",
                 note: "Invalid hostname",
-                pattern: SJ.source,
+                pattern: CJ.source,
                 input: Y.value,
                 inst: Q,
                 continue: !X.abort,
@@ -13511,7 +13518,7 @@ var e = D("$ZodType", (Q, X) => {
     (X.pattern ?? (X.pattern = RJ()), W0.init(Q, X));
   }),
   jX = D("$ZodNanoID", (Q, X) => {
-    (X.pattern ?? (X.pattern = MJ), W0.init(Q, X));
+    (X.pattern ?? (X.pattern = wJ), W0.init(Q, X));
   }),
   RX = D("$ZodCUID", (Q, X) => {
     (X.pattern ?? (X.pattern = LJ), W0.init(Q, X));
@@ -13522,10 +13529,10 @@ var e = D("$ZodType", (Q, X) => {
   bX = D("$ZodULID", (Q, X) => {
     (X.pattern ?? (X.pattern = OJ), W0.init(Q, X));
   }),
-  EX = D("$ZodXID", (Q, X) => {
+  PX = D("$ZodXID", (Q, X) => {
     (X.pattern ?? (X.pattern = NJ), W0.init(Q, X));
   }),
-  PX = D("$ZodKSUID", (Q, X) => {
+  EX = D("$ZodKSUID", (Q, X) => {
     (X.pattern ?? (X.pattern = DJ), W0.init(Q, X));
   }),
   UW = D("$ZodISODateTime", (Q, X) => {
@@ -13538,7 +13545,7 @@ var e = D("$ZodType", (Q, X) => {
     (X.pattern ?? (X.pattern = TJ(X)), W0.init(Q, X));
   }),
   OW = D("$ZodISODuration", (Q, X) => {
-    (X.pattern ?? (X.pattern = wJ), W0.init(Q, X));
+    (X.pattern ?? (X.pattern = MJ), W0.init(Q, X));
   }),
   ZX = D("$ZodIPv4", (Q, X) => {
     (X.pattern ?? (X.pattern = IJ),
@@ -13548,7 +13555,7 @@ var e = D("$ZodType", (Q, X) => {
         $.format = "ipv4";
       }));
   }),
-  SX = D("$ZodIPv6", (Q, X) => {
+  CX = D("$ZodIPv6", (Q, X) => {
     (X.pattern ?? (X.pattern = bJ),
       W0.init(Q, X),
       Q._zod.onattach.push((Y) => {
@@ -13569,11 +13576,11 @@ var e = D("$ZodType", (Q, X) => {
         }
       }));
   }),
-  CX = D("$ZodCIDRv4", (Q, X) => {
-    (X.pattern ?? (X.pattern = EJ), W0.init(Q, X));
+  SX = D("$ZodCIDRv4", (Q, X) => {
+    (X.pattern ?? (X.pattern = PJ), W0.init(Q, X));
   }),
   _X = D("$ZodCIDRv6", (Q, X) => {
-    (X.pattern ?? (X.pattern = PJ),
+    (X.pattern ?? (X.pattern = EJ),
       W0.init(Q, X),
       (Q._zod.check = (Y) => {
         let [$, J] = Y.value.split("/");
@@ -13644,7 +13651,7 @@ var vX = D("$ZodBase64URL", (Q, X) => {
       }));
   }),
   TX = D("$ZodE164", (Q, X) => {
-    (X.pattern ?? (X.pattern = CJ), W0.init(Q, X));
+    (X.pattern ?? (X.pattern = SJ), W0.init(Q, X));
   });
 function VF(Q, X = null) {
   try {
@@ -13845,32 +13852,32 @@ var G8 = D("$ZodObject", (Q, X) => {
         };
       U.write("const input = payload.value;");
       let F = Object.create(null),
-        M = 0;
-      for (let j of V.keys) F[j] = `key_${M++}`;
+        w = 0;
+      for (let j of V.keys) F[j] = `key_${w++}`;
       U.write("const newResult = {}");
       for (let j of V.keys)
         if (V.optionalKeys.has(j)) {
           let R = F[j];
           U.write(`const ${R} = ${L(j)};`);
-          let C = F6(j);
+          let S = F6(j);
           U.write(`
         if (${R}.issues.length) {
-          if (input[${C}] === undefined) {
-            if (${C} in input) {
-              newResult[${C}] = undefined;
+          if (input[${S}] === undefined) {
+            if (${S} in input) {
+              newResult[${S}] = undefined;
             }
           } else {
             payload.issues = payload.issues.concat(
               ${R}.issues.map((iss) => ({
                 ...iss,
-                path: iss.path ? [${C}, ...iss.path] : [${C}],
+                path: iss.path ? [${S}, ...iss.path] : [${S}],
               }))
             );
           }
         } else if (${R}.value === undefined) {
-          if (${C} in input) newResult[${C}] = undefined;
+          if (${S} in input) newResult[${S}] = undefined;
         } else {
-          newResult[${C}] = ${R}.value;
+          newResult[${S}] = ${R}.value;
         }
         `);
         } else {
@@ -13913,30 +13920,30 @@ var G8 = D("$ZodObject", (Q, X) => {
     } else {
       q.value = {};
       let R = K.shape;
-      for (let C of K.keys) {
-        let Z = R[C],
-          X0 = Z._zod.run({ value: V[C], issues: [] }, U),
+      for (let S of K.keys) {
+        let Z = R[S],
+          X0 = Z._zod.run({ value: V[S], issues: [] }, U),
           O0 = Z._zod.optin === "optional" && Z._zod.optout === "optional";
         if (X0 instanceof Promise)
-          L.push(X0.then((S0) => (O0 ? WW(S0, q, C, V) : J8(S0, q, C))));
-        else if (O0) WW(X0, q, C, V);
-        else J8(X0, q, C);
+          L.push(X0.then((C0) => (O0 ? WW(C0, q, S, V) : J8(C0, q, S))));
+        else if (O0) WW(X0, q, S, V);
+        else J8(X0, q, S);
       }
     }
     if (!z) return L.length ? Promise.all(L).then(() => q) : q;
     let F = [],
-      M = K.keySet,
+      w = K.keySet,
       N = z._zod,
       j = N.def.type;
     for (let R of Object.keys(V)) {
-      if (M.has(R)) continue;
+      if (w.has(R)) continue;
       if (j === "never") {
         F.push(R);
         continue;
       }
-      let C = N.run({ value: V[R], issues: [] }, U);
-      if (C instanceof Promise) L.push(C.then((Z) => J8(Z, q, R)));
-      else J8(C, q, R);
+      let S = N.run({ value: V[R], issues: [] }, U);
+      if (S instanceof Promise) L.push(S.then((Z) => J8(Z, q, R)));
+      else J8(S, q, R);
     }
     if (F.length)
       q.issues.push({ code: "unrecognized_keys", keys: F, input: V, inst: Q });
@@ -14206,7 +14213,7 @@ var dX = D("$ZodEnum", (Q, X) => {
     ((Q._zod.values = new Set(Y)),
       (Q._zod.pattern = new RegExp(
         `^(${Y.filter(($) => eQ.has(typeof $))
-          .map(($) => (typeof $ === "string" ? c1($) : $.toString()))
+          .map(($) => (typeof $ === "string" ? p1($) : $.toString()))
           .join("|")})$`,
       )),
       (Q._zod.parse = ($, J) => {
@@ -14227,7 +14234,7 @@ var dX = D("$ZodEnum", (Q, X) => {
     (e.init(Q, X),
       (Q._zod.values = new Set(X.values)),
       (Q._zod.pattern = new RegExp(
-        `^(${X.values.map((Y) => (typeof Y === "string" ? c1(Y) : Y ? Y.toString() : String(Y))).join("|")})$`,
+        `^(${X.values.map((Y) => (typeof Y === "string" ? p1(Y) : Y ? Y.toString() : String(Y))).join("|")})$`,
       )),
       (Q._zod.parse = (Y, $) => {
         let J = Y.value;
@@ -14251,7 +14258,7 @@ var nX = D("$ZodTransform", (Q, X) => {
           return (J instanceof Promise ? J : Promise.resolve(J)).then((G) => {
             return ((Y.value = G), Y);
           });
-        if (J instanceof Promise) throw new l1();
+        if (J instanceof Promise) throw new c1();
         return ((Y.value = J), Y);
       }));
   }),
@@ -14563,7 +14570,7 @@ class B8 {
 function DW() {
   return new B8();
 }
-var p1 = DW();
+var d1 = DW();
 function JY(Q, X) {
   return new Q({ type: "string", ...y(X) });
 }
@@ -14705,7 +14712,7 @@ function DY(Q, X) {
     ...y(X),
   });
 }
-function MY(Q, X) {
+function wY(Q, X) {
   return new Q({
     type: "string",
     format: "ipv6",
@@ -14714,7 +14721,7 @@ function MY(Q, X) {
     ...y(X),
   });
 }
-function wY(Q, X) {
+function MY(Q, X) {
   return new Q({
     type: "string",
     format: "cidrv4",
@@ -14768,7 +14775,7 @@ function bY(Q, X) {
     ...y(X),
   });
 }
-function MW(Q, X) {
+function wW(Q, X) {
   return new Q({
     type: "string",
     format: "datetime",
@@ -14779,7 +14786,7 @@ function MW(Q, X) {
     ...y(X),
   });
 }
-function wW(Q, X) {
+function MW(Q, X) {
   return new Q({
     type: "string",
     format: "date",
@@ -14804,10 +14811,10 @@ function jW(Q, X) {
     ...y(X),
   });
 }
-function EY(Q, X) {
+function PY(Q, X) {
   return new Q({ type: "number", checks: [], ...y(X) });
 }
-function PY(Q, X) {
+function EY(Q, X) {
   return new Q({
     type: "number",
     check: "number_format",
@@ -14819,10 +14826,10 @@ function PY(Q, X) {
 function ZY(Q, X) {
   return new Q({ type: "boolean", ...y(X) });
 }
-function SY(Q, X) {
+function CY(Q, X) {
   return new Q({ type: "null", ...y(X) });
 }
-function CY(Q) {
+function SY(Q) {
   return new Q({ type: "unknown" });
 }
 function _Y(Q, X) {
@@ -14890,20 +14897,20 @@ function gY(Q, X) {
     suffix: Q,
   });
 }
-function M6(Q) {
+function w6(Q) {
   return new XW({ check: "overwrite", tx: Q });
 }
 function hY(Q) {
-  return M6((X) => X.normalize(Q));
+  return w6((X) => X.normalize(Q));
 }
 function fY() {
-  return M6((Q) => Q.trim());
+  return w6((Q) => Q.trim());
 }
 function uY() {
-  return M6((Q) => Q.toLowerCase());
+  return w6((Q) => Q.toLowerCase());
 }
 function mY() {
-  return M6((Q) => Q.toUpperCase());
+  return w6((Q) => Q.toUpperCase());
 }
 function RW(Q, X, Y) {
   return new Q({ type: "array", element: X, ...y(Y) });
@@ -14921,7 +14928,7 @@ function cY(Q, X, Y) {
 class pY {
   constructor(Q) {
     ((this.counter = 0),
-      (this.metadataRegistry = Q?.metadata ?? p1),
+      (this.metadataRegistry = Q?.metadata ?? d1),
       (this.target = Q?.target ?? "draft-2020-12"),
       (this.unrepresentable = Q?.unrepresentable ?? "throw"),
       (this.override = Q?.override ?? (() => {})),
@@ -14961,14 +14968,14 @@ class pY {
             let {
               minimum: L,
               maximum: F,
-              format: M,
+              format: w,
               patterns: N,
               contentEncoding: j,
             } = Q._zod.bag;
             if (typeof L === "number") V.minLength = L;
             if (typeof F === "number") V.maxLength = F;
-            if (M) {
-              if (((V.format = J[M] ?? M), V.format === "")) delete V.format;
+            if (w) {
+              if (((V.format = J[w] ?? w), V.format === "")) delete V.format;
             }
             if (j) V.contentEncoding = j;
             if (N && N.size > 0) {
@@ -14976,9 +14983,9 @@ class pY {
               if (R.length === 1) V.pattern = R[0].source;
               else if (R.length > 1)
                 G.schema.allOf = [
-                  ...R.map((C) => ({
+                  ...R.map((S) => ({
                     ...(this.target === "draft-7" ? { type: "string" } : {}),
-                    pattern: C.source,
+                    pattern: S.source,
                   })),
                 ];
             }
@@ -14989,12 +14996,12 @@ class pY {
               {
                 minimum: L,
                 maximum: F,
-                format: M,
+                format: w,
                 multipleOf: N,
                 exclusiveMaximum: j,
                 exclusiveMinimum: R,
               } = Q._zod.bag;
-            if (typeof M === "string" && M.includes("int")) V.type = "integer";
+            if (typeof w === "string" && w.includes("int")) V.type = "integer";
             else V.type = "number";
             if (typeof R === "number") V.exclusiveMinimum = R;
             if (typeof L === "number") {
@@ -15071,14 +15078,14 @@ class pY {
                 path: [...K.path, "properties", N],
               });
             let F = new Set(Object.keys(L)),
-              M = new Set(
+              w = new Set(
                 [...F].filter((N) => {
                   let j = $.shape[N]._zod;
                   if (this.io === "input") return j.optin === void 0;
                   else return j.optout === void 0;
                 }),
               );
-            if (M.size > 0) V.required = Array.from(M);
+            if (w.size > 0) V.required = Array.from(w);
             if ($.catchall?._zod.def.type === "never")
               V.additionalProperties = !1;
             else if (!$.catchall) {
@@ -15104,8 +15111,8 @@ class pY {
                 ...K,
                 path: [...K.path, "allOf", 1],
               }),
-              M = (j) => "allOf" in j && Object.keys(j).length === 1,
-              N = [...(M(L) ? L.allOf : [L]), ...(M(F) ? F.allOf : [F])];
+              w = (j) => "allOf" in j && Object.keys(j).length === 1,
+              N = [...(w(L) ? L.allOf : [L]), ...(w(F) ? F.allOf : [F])];
             V.allOf = N;
             break;
           }
@@ -15130,9 +15137,9 @@ class pY {
                 ...K,
                 path: [...K.path, "items"],
               });
-            let { minimum: F, maximum: M } = Q._zod.bag;
+            let { minimum: F, maximum: w } = Q._zod.bag;
             if (typeof F === "number") V.minItems = F;
-            if (typeof M === "number") V.maxItems = M;
+            if (typeof w === "number") V.maxItems = w;
             break;
           }
           case "record": {
@@ -15202,9 +15209,9 @@ class pY {
                 format: "binary",
                 contentEncoding: "binary",
               },
-              { minimum: F, maximum: M, mime: N } = Q._zod.bag;
+              { minimum: F, maximum: w, mime: N } = Q._zod.bag;
             if (F !== void 0) L.minLength = F;
-            if (M !== void 0) L.maxLength = M;
+            if (w !== void 0) L.maxLength = w;
             if (N)
               if (N.length === 1)
                 ((L.contentMediaType = N[0]), Object.assign(V, L));
@@ -15573,7 +15580,7 @@ function A6(Q) {
   if ($) return nQ(Q);
   throw Error("Mixed Zod versions detected in object shape.");
 }
-function d1(Q, X) {
+function i1(Q, X) {
   if (n0(Q)) return N6(Q, X);
   return Q.safeParse(X);
 }
@@ -15581,7 +15588,7 @@ async function F8(Q, X) {
   if (n0(Q)) return await D6(Q, X);
   return await Q.safeParseAsync(X);
 }
-function i1(Q) {
+function n1(Q) {
   if (!Q) return;
   let X;
   if (n0(Q)) X = Q._zod?.def?.shape;
@@ -15641,7 +15648,7 @@ function O8(Q) {
 function bW(Q) {
   return Q.description;
 }
-function EW(Q) {
+function PW(Q) {
   if (n0(Q)) return Q._zod?.def?.type === "optional";
   let X = Q;
   if (typeof Q.isOptional === "function") return Q.isOptional();
@@ -15670,34 +15677,34 @@ _Q(X4, {
   duration: () => tY,
   datetime: () => nY,
   date: () => oY,
-  ZodISOTime: () => SW,
-  ZodISODuration: () => CW,
-  ZodISODateTime: () => PW,
+  ZodISOTime: () => CW,
+  ZodISODuration: () => SW,
+  ZodISODateTime: () => EW,
   ZodISODate: () => ZW,
 });
-var PW = D("ZodISODateTime", (Q, X) => {
+var EW = D("ZodISODateTime", (Q, X) => {
   (UW.init(Q, X), B0.init(Q, X));
 });
 function nY(Q) {
-  return MW(PW, Q);
+  return wW(EW, Q);
 }
 var ZW = D("ZodISODate", (Q, X) => {
   (LW.init(Q, X), B0.init(Q, X));
 });
 function oY(Q) {
-  return wW(ZW, Q);
+  return MW(ZW, Q);
 }
-var SW = D("ZodISOTime", (Q, X) => {
+var CW = D("ZodISOTime", (Q, X) => {
   (FW.init(Q, X), B0.init(Q, X));
 });
 function rY(Q) {
-  return AW(SW, Q);
+  return AW(CW, Q);
 }
-var CW = D("ZodISODuration", (Q, X) => {
+var SW = D("ZodISODuration", (Q, X) => {
   (OW.init(Q, X), B0.init(Q, X));
 });
 function tY(Q) {
-  return jW(CW, Q);
+  return jW(SW, Q);
 }
 var _W = (Q, X) => {
     (Y8.init(Q, X),
@@ -15750,14 +15757,14 @@ var F0 = D("ZodType", (Q, X) => {
       (Q.spa = Q.safeParseAsync),
       (Q.refine = (Y, $) => Q.check(oO(Y, $))),
       (Q.superRefine = (Y) => Q.check(rO(Y))),
-      (Q.overwrite = (Y) => Q.check(M6(Y))),
+      (Q.overwrite = (Y) => Q.check(w6(Y))),
       (Q.optional = () => L0(Q)),
       (Q.nullable = () => hW(Q)),
       (Q.nullish = () => L0(hW(Q))),
       (Q.nonoptional = (Y) => mO(Q, Y)),
       (Q.array = () => n(Q)),
       (Q.or = (Y) => G0([Q, Y])),
-      (Q.and = (Y) => M8(Q, Y)),
+      (Q.and = (Y) => w8(Q, Y)),
       (Q.transform = (Y) => sY(Q, cW(Y))),
       (Q.default = (Y) => hO(Q, Y)),
       (Q.prefault = (Y) => uO(Q, Y)),
@@ -15766,18 +15773,18 @@ var F0 = D("ZodType", (Q, X) => {
       (Q.readonly = () => iO(Q)),
       (Q.describe = (Y) => {
         let $ = Q.clone();
-        return (p1.add($, { description: Y }), $);
+        return (d1.add($, { description: Y }), $);
       }),
       Object.defineProperty(Q, "description", {
         get() {
-          return p1.get(Q)?.description;
+          return d1.get(Q)?.description;
         },
         configurable: !0,
       }),
       (Q.meta = (...Y) => {
-        if (Y.length === 0) return p1.get(Q);
+        if (Y.length === 0) return d1.get(Q);
         let $ = Q.clone();
-        return (p1.add($, Y[0]), $);
+        return (d1.add($, Y[0]), $);
       }),
       (Q.isOptional = () => Q.safeParse(void 0).success),
       (Q.isNullable = () => Q.safeParse(null).success),
@@ -15822,14 +15829,14 @@ var F0 = D("ZodType", (Q, X) => {
       (Q.cuid = (Y) => Q.check(UY(VO, Y))),
       (Q.cuid2 = (Y) => Q.check(LY(qO, Y))),
       (Q.ulid = (Y) => Q.check(FY(UO, Y))),
-      (Q.base64 = (Y) => Q.check(jY(wO, Y))),
+      (Q.base64 = (Y) => Q.check(jY(MO, Y))),
       (Q.base64url = (Y) => Q.check(RY(AO, Y))),
       (Q.xid = (Y) => Q.check(OY(LO, Y))),
       (Q.ksuid = (Y) => Q.check(NY(FO, Y))),
       (Q.ipv4 = (Y) => Q.check(DY(OO, Y))),
-      (Q.ipv6 = (Y) => Q.check(MY(NO, Y))),
-      (Q.cidrv4 = (Y) => Q.check(wY(DO, Y))),
-      (Q.cidrv6 = (Y) => Q.check(AY(MO, Y))),
+      (Q.ipv6 = (Y) => Q.check(wY(NO, Y))),
+      (Q.cidrv4 = (Y) => Q.check(MY(DO, Y))),
+      (Q.cidrv6 = (Y) => Q.check(AY(wO, Y))),
       (Q.e164 = (Y) => Q.check(IY(jO, Y))),
       (Q.datetime = (Y) => Q.check(nY(Y))),
       (Q.date = (Y) => Q.check(oY(Y))),
@@ -15843,7 +15850,7 @@ var B0 = D("ZodStringFormat", (Q, X) => {
     (W0.init(Q, X), fW.init(Q, X));
   }),
   HO = D("ZodEmail", (Q, X) => {
-    (MX.init(Q, X), B0.init(Q, X));
+    (wX.init(Q, X), B0.init(Q, X));
   });
 var yW = D("ZodGUID", (Q, X) => {
   (NX.init(Q, X), B0.init(Q, X));
@@ -15852,7 +15859,7 @@ var D8 = D("ZodUUID", (Q, X) => {
   (DX.init(Q, X), B0.init(Q, X));
 });
 var BO = D("ZodURL", (Q, X) => {
-  (wX.init(Q, X), B0.init(Q, X));
+  (MX.init(Q, X), B0.init(Q, X));
 });
 var zO = D("ZodEmoji", (Q, X) => {
   (AX.init(Q, X), B0.init(Q, X));
@@ -15870,24 +15877,24 @@ var UO = D("ZodULID", (Q, X) => {
   (bX.init(Q, X), B0.init(Q, X));
 });
 var LO = D("ZodXID", (Q, X) => {
-  (EX.init(Q, X), B0.init(Q, X));
+  (PX.init(Q, X), B0.init(Q, X));
 });
 var FO = D("ZodKSUID", (Q, X) => {
-  (PX.init(Q, X), B0.init(Q, X));
+  (EX.init(Q, X), B0.init(Q, X));
 });
 var OO = D("ZodIPv4", (Q, X) => {
   (ZX.init(Q, X), B0.init(Q, X));
 });
 var NO = D("ZodIPv6", (Q, X) => {
-  (SX.init(Q, X), B0.init(Q, X));
-});
-var DO = D("ZodCIDRv4", (Q, X) => {
   (CX.init(Q, X), B0.init(Q, X));
 });
-var MO = D("ZodCIDRv6", (Q, X) => {
+var DO = D("ZodCIDRv4", (Q, X) => {
+  (SX.init(Q, X), B0.init(Q, X));
+});
+var wO = D("ZodCIDRv6", (Q, X) => {
   (_X.init(Q, X), B0.init(Q, X));
 });
-var wO = D("ZodBase64", (Q, X) => {
+var MO = D("ZodBase64", (Q, X) => {
   (kX.init(Q, X), B0.init(Q, X));
 });
 var AO = D("ZodBase64URL", (Q, X) => {
@@ -15935,39 +15942,39 @@ var uW = D("ZodNumber", (Q, X) => {
     (Q.format = Y.format ?? null));
 });
 function s(Q) {
-  return EY(uW, Q);
+  return PY(uW, Q);
 }
 var IO = D("ZodNumberFormat", (Q, X) => {
   (yX.init(Q, X), uW.init(Q, X));
 });
 function gW(Q) {
-  return PY(IO, Q);
+  return EY(IO, Q);
 }
 var bO = D("ZodBoolean", (Q, X) => {
   (gX.init(Q, X), F0.init(Q, X));
 });
-function w0(Q) {
+function M0(Q) {
   return ZY(bO, Q);
 }
-var EO = D("ZodNull", (Q, X) => {
+var PO = D("ZodNull", (Q, X) => {
   (hX.init(Q, X), F0.init(Q, X));
 });
 function eY(Q) {
-  return SY(EO, Q);
+  return CY(PO, Q);
 }
-var PO = D("ZodUnknown", (Q, X) => {
+var EO = D("ZodUnknown", (Q, X) => {
   (fX.init(Q, X), F0.init(Q, X));
 });
 function z0() {
-  return CY(PO);
+  return SY(EO);
 }
 var ZO = D("ZodNever", (Q, X) => {
   (uX.init(Q, X), F0.init(Q, X));
 });
-function SO(Q) {
+function CO(Q) {
   return _Y(ZO, Q);
 }
-var CO = D("ZodArray", (Q, X) => {
+var SO = D("ZodArray", (Q, X) => {
   (mX.init(Q, X),
     F0.init(Q, X),
     (Q.element = X.element),
@@ -15978,7 +15985,7 @@ var CO = D("ZodArray", (Q, X) => {
     (Q.unwrap = () => Q.element));
 });
 function n(Q, X) {
-  return RW(CO, Q, X);
+  return RW(SO, Q, X);
 }
 var mW = D("ZodObject", (Q, X) => {
   (G8.init(Q, X),
@@ -15988,7 +15995,7 @@ var mW = D("ZodObject", (Q, X) => {
     (Q.catchall = (Y) => Q.clone({ ...Q._zod.def, catchall: Y })),
     (Q.passthrough = () => Q.clone({ ...Q._zod.def, catchall: z0() })),
     (Q.loose = () => Q.clone({ ...Q._zod.def, catchall: z0() })),
-    (Q.strict = () => Q.clone({ ...Q._zod.def, catchall: SO() })),
+    (Q.strict = () => Q.clone({ ...Q._zod.def, catchall: CO() })),
     (Q.strip = () => Q.clone({ ...Q._zod.def, catchall: void 0 })),
     (Q.extend = (Y) => {
       return i.extend(Q, Y);
@@ -15999,7 +16006,7 @@ var mW = D("ZodObject", (Q, X) => {
     (Q.partial = (...Y) => i.partial(pW, Q, Y[0])),
     (Q.required = (...Y) => i.required(dW, Q, Y[0])));
 });
-function P(Q, X) {
+function E(Q, X) {
   let Y = {
     type: "object",
     get shape() {
@@ -16039,7 +16046,7 @@ function Q$(Q, X, Y) {
 var kO = D("ZodIntersection", (Q, X) => {
   (cX.init(Q, X), F0.init(Q, X));
 });
-function M8(Q, X) {
+function w8(Q, X) {
   return new kO({ type: "intersection", left: Q, right: X });
 }
 var vO = D("ZodRecord", (Q, X) => {
@@ -16239,7 +16246,7 @@ function X$(Q, X) {
 c0($Y());
 var Y$ = "2025-11-25";
 var oW = [Y$, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"],
-  n1 = "io.modelcontextprotocol/related-task",
+  o1 = "io.modelcontextprotocol/related-task",
   A8 = "2.0",
   R0 = nW(
     (Q) => Q !== null && (typeof Q === "object" || typeof Q === "function"),
@@ -16247,22 +16254,22 @@ var oW = [Y$, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"],
   rW = G0([O(), s().int()]),
   tW = O(),
   F_ = _0({ ttl: G0([s(), eY()]).optional(), pollInterval: s().optional() }),
-  tO = P({ ttl: s().optional() }),
-  aO = P({ taskId: O() }),
-  $$ = _0({ progressToken: rW.optional(), [n1]: aO.optional() }),
-  d0 = P({ _meta: $$.optional() }),
+  tO = E({ ttl: s().optional() }),
+  aO = E({ taskId: O() }),
+  $$ = _0({ progressToken: rW.optional(), [o1]: aO.optional() }),
+  d0 = E({ _meta: $$.optional() }),
   $4 = d0.extend({ task: tO.optional() }),
   aW = (Q) => $4.safeParse(Q).success,
-  I0 = P({ method: O(), params: d0.loose().optional() }),
-  o0 = P({ _meta: $$.optional() }),
-  r0 = P({ method: O(), params: o0.loose().optional() }),
+  I0 = E({ method: O(), params: d0.loose().optional() }),
+  o0 = E({ _meta: $$.optional() }),
+  r0 = E({ method: O(), params: o0.loose().optional() }),
   b0 = _0({ _meta: $$.optional() }),
   j8 = G0([O(), s().int()]),
-  sW = P({ jsonrpc: k(A8), id: j8, ...I0.shape }).strict(),
+  sW = E({ jsonrpc: k(A8), id: j8, ...I0.shape }).strict(),
   J$ = (Q) => sW.safeParse(Q).success,
-  eW = P({ jsonrpc: k(A8), ...r0.shape }).strict(),
+  eW = E({ jsonrpc: k(A8), ...r0.shape }).strict(),
   QG = (Q) => eW.safeParse(Q).success,
-  W$ = P({ jsonrpc: k(A8), id: j8, result: b0 }).strict(),
+  W$ = E({ jsonrpc: k(A8), id: j8, result: b0 }).strict(),
   J4 = (Q) => W$.safeParse(Q).success;
 var T;
 (function (Q) {
@@ -16275,10 +16282,10 @@ var T;
     (Q[(Q.InternalError = -32603)] = "InternalError"),
     (Q[(Q.UrlElicitationRequired = -32042)] = "UrlElicitationRequired"));
 })(T || (T = {}));
-var G$ = P({
+var G$ = E({
   jsonrpc: k(A8),
   id: j8.optional(),
-  error: P({ code: s().int(), message: O(), data: z0().optional() }),
+  error: E({ code: s().int(), message: O(), data: z0().optional() }),
 }).strict();
 var XG = (Q) => G$.safeParse(Q).success;
 var O_ = G0([sW, eW, W$, G$]),
@@ -16286,14 +16293,14 @@ var O_ = G0([sW, eW, W$, G$]),
   R8 = b0.strict(),
   sO = o0.extend({ requestId: j8.optional(), reason: O().optional() }),
   I8 = r0.extend({ method: k("notifications/cancelled"), params: sO }),
-  eO = P({
+  eO = E({
     src: O(),
     mimeType: O().optional(),
     sizes: n(O()).optional(),
     theme: y0(["light", "dark"]).optional(),
   }),
-  W4 = P({ icons: n(eO).optional() }),
-  z9 = P({ name: O(), title: O().optional() }),
+  W4 = E({ icons: n(eO).optional() }),
+  z9 = E({ name: O(), title: O().optional() }),
   YG = z9.extend({
     ...z9.shape,
     ...W4.shape,
@@ -16301,7 +16308,7 @@ var O_ = G0([sW, eW, W$, G$]),
     websiteUrl: O().optional(),
     description: O().optional(),
   }),
-  QN = M8(P({ applyDefaults: w0().optional() }), K0(O(), z0())),
+  QN = w8(E({ applyDefaults: M0().optional() }), K0(O(), z0())),
   XN = X$(
     (Q) => {
       if (Q && typeof Q === "object" && !Array.isArray(Q)) {
@@ -16309,8 +16316,8 @@ var O_ = G0([sW, eW, W$, G$]),
       }
       return Q;
     },
-    M8(
-      P({ form: QN.optional(), url: R0.optional() }),
+    w8(
+      E({ form: QN.optional(), url: R0.optional() }),
       K0(O(), z0()).optional(),
     ),
   ),
@@ -16327,25 +16334,25 @@ var O_ = G0([sW, eW, W$, G$]),
     cancel: R0.optional(),
     requests: _0({ tools: _0({ call: R0.optional() }).optional() }).optional(),
   }),
-  JN = P({
+  JN = E({
     experimental: K0(O(), R0).optional(),
-    sampling: P({ context: R0.optional(), tools: R0.optional() }).optional(),
+    sampling: E({ context: R0.optional(), tools: R0.optional() }).optional(),
     elicitation: XN.optional(),
-    roots: P({ listChanged: w0().optional() }).optional(),
+    roots: E({ listChanged: M0().optional() }).optional(),
     tasks: YN.optional(),
   }),
   WN = d0.extend({ protocolVersion: O(), capabilities: JN, clientInfo: YG }),
   H$ = I0.extend({ method: k("initialize"), params: WN });
-var GN = P({
+var GN = E({
     experimental: K0(O(), R0).optional(),
     logging: R0.optional(),
     completions: R0.optional(),
-    prompts: P({ listChanged: w0().optional() }).optional(),
-    resources: P({
-      subscribe: w0().optional(),
-      listChanged: w0().optional(),
+    prompts: E({ listChanged: M0().optional() }).optional(),
+    resources: E({
+      subscribe: M0().optional(),
+      listChanged: M0().optional(),
     }).optional(),
-    tools: P({ listChanged: w0().optional() }).optional(),
+    tools: E({ listChanged: M0().optional() }).optional(),
     tasks: $N.optional(),
   }),
   HN = b0.extend({
@@ -16359,14 +16366,14 @@ var GN = P({
     params: o0.optional(),
   });
 var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
-  BN = P({ progress: s(), total: L0(s()), message: L0(O()) }),
-  zN = P({ ...o0.shape, ...BN.shape, progressToken: rW }),
-  E8 = r0.extend({ method: k("notifications/progress"), params: zN }),
+  BN = E({ progress: s(), total: L0(s()), message: L0(O()) }),
+  zN = E({ ...o0.shape, ...BN.shape, progressToken: rW }),
+  P8 = r0.extend({ method: k("notifications/progress"), params: zN }),
   KN = d0.extend({ cursor: tW.optional() }),
   G4 = I0.extend({ params: KN.optional() }),
   H4 = b0.extend({ nextCursor: tW.optional() }),
   VN = y0(["working", "input_required", "completed", "failed", "cancelled"]),
-  B4 = P({
+  B4 = E({
     taskId: O(),
     status: VN,
     ttl: G0([s(), eY()]),
@@ -16378,24 +16385,24 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
   K9 = b0.extend({ task: B4 }),
   qN = o0.merge(B4),
   z4 = r0.extend({ method: k("notifications/tasks/status"), params: qN }),
-  P8 = I0.extend({
+  E8 = I0.extend({
     method: k("tasks/get"),
     params: d0.extend({ taskId: O() }),
   }),
   Z8 = b0.merge(B4),
-  S8 = I0.extend({
+  C8 = I0.extend({
     method: k("tasks/result"),
     params: d0.extend({ taskId: O() }),
   }),
   D_ = b0.loose(),
-  C8 = G4.extend({ method: k("tasks/list") }),
+  S8 = G4.extend({ method: k("tasks/list") }),
   _8 = H4.extend({ tasks: n(B4) }),
   k8 = I0.extend({
     method: k("tasks/cancel"),
     params: d0.extend({ taskId: O() }),
   }),
   $G = b0.merge(B4),
-  JG = P({ uri: O(), mimeType: L0(O()), _meta: K0(O(), z0()).optional() }),
+  JG = E({ uri: O(), mimeType: L0(O()), _meta: K0(O(), z0()).optional() }),
   WG = JG.extend({ text: O() }),
   z$ = O().refine(
     (Q) => {
@@ -16409,12 +16416,12 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
   ),
   GG = JG.extend({ blob: z$ }),
   K4 = y0(["user", "assistant"]),
-  V9 = P({
+  V9 = E({
     audience: n(K4).optional(),
     priority: s().min(0).max(1).optional(),
     lastModified: X4.datetime({ offset: !0 }).optional(),
   }),
-  HG = P({
+  HG = E({
     ...z9.shape,
     ...W4.shape,
     uri: O(),
@@ -16423,7 +16430,7 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     annotations: V9.optional(),
     _meta: L0(_0({})),
   }),
-  UN = P({
+  UN = E({
     ...z9.shape,
     ...W4.shape,
     uriTemplate: O(),
@@ -16444,14 +16451,14 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     method: k("notifications/resources/list_changed"),
     params: o0.optional(),
   }),
-  MN = K$,
-  wN = I0.extend({ method: k("resources/subscribe"), params: MN }),
+  wN = K$,
+  MN = I0.extend({ method: k("resources/subscribe"), params: wN }),
   AN = K$,
   jN = I0.extend({ method: k("resources/unsubscribe"), params: AN }),
   RN = o0.extend({ uri: O() }),
   IN = r0.extend({ method: k("notifications/resources/updated"), params: RN }),
-  bN = P({ name: O(), description: L0(O()), required: L0(w0()) }),
-  EN = P({
+  bN = E({ name: O(), description: L0(O()), required: L0(M0()) }),
+  PN = E({
     ...z9.shape,
     ...W4.shape,
     description: L0(O()),
@@ -16459,68 +16466,68 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     _meta: L0(_0({})),
   }),
   y8 = G4.extend({ method: k("prompts/list") }),
-  PN = H4.extend({ prompts: n(EN) }),
+  EN = H4.extend({ prompts: n(PN) }),
   ZN = d0.extend({ name: O(), arguments: K0(O(), O()).optional() }),
   g8 = I0.extend({ method: k("prompts/get"), params: ZN }),
-  V$ = P({
+  V$ = E({
     type: k("text"),
     text: O(),
     annotations: V9.optional(),
     _meta: K0(O(), z0()).optional(),
   }),
-  q$ = P({
+  q$ = E({
     type: k("image"),
     data: z$,
     mimeType: O(),
     annotations: V9.optional(),
     _meta: K0(O(), z0()).optional(),
   }),
-  U$ = P({
+  U$ = E({
     type: k("audio"),
     data: z$,
     mimeType: O(),
     annotations: V9.optional(),
     _meta: K0(O(), z0()).optional(),
   }),
-  SN = P({
+  CN = E({
     type: k("tool_use"),
     name: O(),
     id: O(),
     input: K0(O(), z0()),
     _meta: K0(O(), z0()).optional(),
   }),
-  CN = P({
+  SN = E({
     type: k("resource"),
     resource: G0([WG, GG]),
     annotations: V9.optional(),
     _meta: K0(O(), z0()).optional(),
   }),
   _N = HG.extend({ type: k("resource_link") }),
-  L$ = G0([V$, q$, U$, _N, CN]),
-  kN = P({ role: K4, content: L$ }),
+  L$ = G0([V$, q$, U$, _N, SN]),
+  kN = E({ role: K4, content: L$ }),
   vN = b0.extend({ description: O().optional(), messages: n(kN) }),
   TN = r0.extend({
     method: k("notifications/prompts/list_changed"),
     params: o0.optional(),
   }),
-  xN = P({
+  xN = E({
     title: O().optional(),
-    readOnlyHint: w0().optional(),
-    destructiveHint: w0().optional(),
-    idempotentHint: w0().optional(),
-    openWorldHint: w0().optional(),
+    readOnlyHint: M0().optional(),
+    destructiveHint: M0().optional(),
+    idempotentHint: M0().optional(),
+    openWorldHint: M0().optional(),
   }),
-  yN = P({ taskSupport: y0(["required", "optional", "forbidden"]).optional() }),
-  BG = P({
+  yN = E({ taskSupport: y0(["required", "optional", "forbidden"]).optional() }),
+  BG = E({
     ...z9.shape,
     ...W4.shape,
     description: O().optional(),
-    inputSchema: P({
+    inputSchema: E({
       type: k("object"),
       properties: K0(O(), R0).optional(),
       required: n(O()).optional(),
     }).catchall(z0()),
-    outputSchema: P({
+    outputSchema: E({
       type: k("object"),
       properties: K0(O(), R0).optional(),
       required: n(O()).optional(),
@@ -16536,17 +16543,17 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
   f8 = b0.extend({
     content: n(L$).default([]),
     structuredContent: K0(O(), z0()).optional(),
-    isError: w0().optional(),
+    isError: M0().optional(),
   }),
-  M_ = f8.or(b0.extend({ toolResult: z0() })),
+  w_ = f8.or(b0.extend({ toolResult: z0() })),
   hN = $4.extend({ name: O(), arguments: K0(O(), z0()).optional() }),
   q9 = I0.extend({ method: k("tools/call"), params: hN }),
   fN = r0.extend({
     method: k("notifications/tools/list_changed"),
     params: o0.optional(),
   }),
-  w_ = P({
-    autoRefresh: w0().default(!0),
+  M_ = E({
+    autoRefresh: M0().default(!0),
     debounceMs: s().int().nonnegative().default(300),
   }),
   V4 = y0([
@@ -16563,29 +16570,29 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
   F$ = I0.extend({ method: k("logging/setLevel"), params: uN }),
   mN = o0.extend({ level: V4, logger: O().optional(), data: z0() }),
   lN = r0.extend({ method: k("notifications/message"), params: mN }),
-  cN = P({ name: O().optional() }),
-  pN = P({
+  cN = E({ name: O().optional() }),
+  pN = E({
     hints: n(cN).optional(),
     costPriority: s().min(0).max(1).optional(),
     speedPriority: s().min(0).max(1).optional(),
     intelligencePriority: s().min(0).max(1).optional(),
   }),
-  dN = P({ mode: y0(["auto", "required", "none"]).optional() }),
-  iN = P({
+  dN = E({ mode: y0(["auto", "required", "none"]).optional() }),
+  iN = E({
     type: k("tool_result"),
     toolUseId: O().describe(
       "The unique identifier for the corresponding tool call.",
     ),
     content: n(L$).default([]),
-    structuredContent: P({}).loose().optional(),
-    isError: w0().optional(),
+    structuredContent: E({}).loose().optional(),
+    isError: M0().optional(),
     _meta: K0(O(), z0()).optional(),
   }),
   nN = Q$("type", [V$, q$, U$]),
-  w8 = Q$("type", [V$, q$, U$, SN, iN]),
-  oN = P({
+  M8 = Q$("type", [V$, q$, U$, CN, iN]),
+  oN = E({
     role: K4,
-    content: G0([w8, n(w8)]),
+    content: G0([M8, n(M8)]),
     _meta: K0(O(), z0()).optional(),
   }),
   rN = $4.extend({
@@ -16613,15 +16620,15 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
       y0(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(O()),
     ),
     role: K4,
-    content: G0([w8, n(w8)]),
+    content: G0([M8, n(M8)]),
   }),
-  aN = P({
+  aN = E({
     type: k("boolean"),
     title: O().optional(),
     description: O().optional(),
-    default: w0().optional(),
+    default: M0().optional(),
   }),
-  sN = P({
+  sN = E({
     type: k("string"),
     title: O().optional(),
     description: O().optional(),
@@ -16630,7 +16637,7 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     format: y0(["email", "uri", "date", "date-time"]).optional(),
     default: O().optional(),
   }),
-  eN = P({
+  eN = E({
     type: y0(["number", "integer"]),
     title: O().optional(),
     description: O().optional(),
@@ -16638,21 +16645,21 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     maximum: s().optional(),
     default: s().optional(),
   }),
-  QD = P({
+  QD = E({
     type: k("string"),
     title: O().optional(),
     description: O().optional(),
     enum: n(O()),
     default: O().optional(),
   }),
-  XD = P({
+  XD = E({
     type: k("string"),
     title: O().optional(),
     description: O().optional(),
-    oneOf: n(P({ const: O(), title: O() })),
+    oneOf: n(E({ const: O(), title: O() })),
     default: O().optional(),
   }),
-  YD = P({
+  YD = E({
     type: k("string"),
     title: O().optional(),
     description: O().optional(),
@@ -16661,22 +16668,22 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     default: O().optional(),
   }),
   $D = G0([QD, XD]),
-  JD = P({
+  JD = E({
     type: k("array"),
     title: O().optional(),
     description: O().optional(),
     minItems: s().optional(),
     maxItems: s().optional(),
-    items: P({ type: k("string"), enum: n(O()) }),
+    items: E({ type: k("string"), enum: n(O()) }),
     default: n(O()).optional(),
   }),
-  WD = P({
+  WD = E({
     type: k("array"),
     title: O().optional(),
     description: O().optional(),
     minItems: s().optional(),
     maxItems: s().optional(),
-    items: P({ anyOf: n(P({ const: O(), title: O() })) }),
+    items: E({ anyOf: n(E({ const: O(), title: O() })) }),
     default: n(O()).optional(),
   }),
   GD = G0([JD, WD]),
@@ -16685,7 +16692,7 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
   zD = $4.extend({
     mode: k("form").optional(),
     message: O(),
-    requestedSchema: P({
+    requestedSchema: E({
       type: k("object"),
       properties: K0(O(), BD),
       required: n(O()).optional(),
@@ -16708,15 +16715,15 @@ var b8 = I0.extend({ method: k("ping"), params: d0.optional() }),
     action: y0(["accept", "decline", "cancel"]),
     content: X$(
       (Q) => (Q === null ? void 0 : Q),
-      K0(O(), G0([O(), s(), w0(), n(O())])).optional(),
+      K0(O(), G0([O(), s(), M0(), n(O())])).optional(),
     ),
   }),
-  FD = P({ type: k("ref/resource"), uri: O() });
-var OD = P({ type: k("ref/prompt"), name: O() }),
+  FD = E({ type: k("ref/resource"), uri: O() });
+var OD = E({ type: k("ref/prompt"), name: O() }),
   ND = d0.extend({
     ref: G0([OD, FD]),
-    argument: P({ name: O(), value: O() }),
-    context: P({ arguments: K0(O(), O()).optional() }).optional(),
+    argument: E({ name: O(), value: O() }),
+    context: E({ arguments: K0(O(), O()).optional() }).optional(),
   }),
   u8 = I0.extend({ method: k("completion/complete"), params: ND });
 function zG(Q) {
@@ -16735,26 +16742,26 @@ var DD = b0.extend({
     completion: _0({
       values: n(O()).max(100),
       total: L0(s().int()),
-      hasMore: L0(w0()),
+      hasMore: L0(M0()),
     }),
   }),
-  MD = P({
+  wD = E({
     uri: O().startsWith("file://"),
     name: O().optional(),
     _meta: K0(O(), z0()).optional(),
   }),
-  wD = I0.extend({ method: k("roots/list"), params: d0.optional() }),
-  N$ = b0.extend({ roots: n(MD) }),
+  MD = I0.extend({ method: k("roots/list"), params: d0.optional() }),
+  N$ = b0.extend({ roots: n(wD) }),
   AD = r0.extend({
     method: k("notifications/roots/list_changed"),
     params: o0.optional(),
   }),
-  A_ = G0([b8, H$, u8, F$, g8, y8, v8, T8, x8, wN, jN, q9, h8, P8, S8, C8, k8]),
-  j_ = G0([I8, E8, B$, AD, z4]),
+  A_ = G0([b8, H$, u8, F$, g8, y8, v8, T8, x8, MN, jN, q9, h8, E8, C8, S8, k8]),
+  j_ = G0([I8, P8, B$, AD, z4]),
   R_ = G0([R8, q4, O$, U9, N$, Z8, _8, K9]),
-  I_ = G0([b8, tN, qD, wD, P8, S8, C8, k8]),
-  b_ = G0([I8, E8, lN, IN, DN, fN, TN, z4, LD]),
-  E_ = G0([R8, HN, DD, vN, PN, LN, FN, NN, f8, gN, Z8, _8, K9]);
+  I_ = G0([b8, tN, qD, MD, E8, C8, S8, k8]),
+  b_ = G0([I8, P8, lN, IN, DN, fN, TN, z4, LD]),
+  P_ = G0([R8, HN, DD, vN, EN, LN, FN, NN, f8, gN, Z8, _8, K9]);
 class _ extends Error {
   constructor(Q, X, Y) {
     super(`MCP error ${Q}: ${X}`);
@@ -16776,7 +16783,7 @@ class VG extends _ {
     return this.data?.elicitations ?? [];
   }
 }
-function o1(Q) {
+function r1(Q) {
   return Q === "completed" || Q === "failed" || Q === "cancelled";
 }
 var UG = Symbol("Let zodToJsonSchema decide on which parser to use");
@@ -16897,12 +16904,12 @@ function DG() {
 function l8(Q, X) {
   return g(Q.type._def, X);
 }
-var MG = (Q, X) => {
+var wG = (Q, X) => {
   return g(Q.innerType._def, X);
 };
-function M$(Q, X, Y) {
+function w$(Q, X, Y) {
   let $ = Y ?? X.dateStrategy;
-  if (Array.isArray($)) return { anyOf: $.map((J, W) => M$(Q, X, J)) };
+  if (Array.isArray($)) return { anyOf: $.map((J, W) => w$(Q, X, J)) };
   switch ($) {
     case "string":
     case "format:date-time":
@@ -16927,7 +16934,7 @@ var jD = (Q, X) => {
     }
   return Y;
 };
-function wG(Q, X) {
+function MG(Q, X) {
   return { ...g(Q.innerType._def, X), default: Q.defaultValue() };
 }
 function AG(Q, X) {
@@ -16973,7 +16980,7 @@ function IG(Q, X) {
     return { type: Y === "bigint" ? "integer" : Y, enum: [Q.value] };
   return { type: Y === "bigint" ? "integer" : Y, const: Q.value };
 }
-var w$ = void 0,
+var M$ = void 0,
   $1 = {
     cuid: /^[cC][^\s-]{8,}$/,
     cuid2: /^[0-9a-z]+$/,
@@ -16981,12 +16988,12 @@ var w$ = void 0,
     email:
       /^(?!\.)(?!.*\.\.)([a-zA-Z0-9_'+\-\.]*)[a-zA-Z0-9_+-]@([a-zA-Z0-9][a-zA-Z0-9\-]*\.)+[a-zA-Z]{2,}$/,
     emoji: () => {
-      if (w$ === void 0)
-        w$ = RegExp(
+      if (M$ === void 0)
+        M$ = RegExp(
           "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$",
           "u",
         );
-      return w$;
+      return M$;
     },
     uuid: /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
     ipv4: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
@@ -17335,7 +17342,7 @@ function p8(Q, X) {
   }
   return Y;
 }
-function EG(Q, X) {
+function PG(Q, X) {
   if (X.mapStrategy === "record") return p8(Q, X);
   let Y =
       g(Q.keyType._def, {
@@ -17353,7 +17360,7 @@ function EG(Q, X) {
     items: { type: "array", items: [Y, $], minItems: 2, maxItems: 2 },
   };
 }
-function PG(Q) {
+function EG(Q) {
   let X = Q.values,
     $ = Object.keys(Q.values)
       .filter((W) => {
@@ -17376,7 +17383,7 @@ function ZG(Q) {
     ? void 0
     : { not: V0({ ...Q, currentPath: [...Q.currentPath, "not"] }) };
 }
-function SG(Q) {
+function CG(Q) {
   return Q.target === "openApi3"
     ? { enum: ["null"], nullable: !0 }
     : { type: "null" };
@@ -17389,7 +17396,7 @@ var U4 = {
   ZodNull: "null",
 };
 function _G(Q, X) {
-  if (X.target === "openApi3") return CG(Q, X);
+  if (X.target === "openApi3") return SG(Q, X);
   let Y = Q.options instanceof Map ? Array.from(Q.options.values()) : Q.options;
   if (
     Y.every(
@@ -17439,9 +17446,9 @@ function _G(Q, X) {
         [],
       ),
     };
-  return CG(Q, X);
+  return SG(Q, X);
 }
-var CG = (Q, X) => {
+var SG = (Q, X) => {
   let Y = (
     Q.options instanceof Map ? Array.from(Q.options.values()) : Q.options
   )
@@ -17518,7 +17525,7 @@ function TG(Q, X) {
   for (let H in W) {
     let B = W[H];
     if (B === void 0 || B._def === void 0) continue;
-    let z = PD(B);
+    let z = ED(B);
     if (z && Y) {
       if (B._def.typeName === "ZodOptional") B = B._def.innerType;
       if (!B.isNullable()) B = B.nullable();
@@ -17533,11 +17540,11 @@ function TG(Q, X) {
     if ((($.properties[H] = K), !z)) J.push(H);
   }
   if (J.length) $.required = J;
-  let G = ED(Q, X);
+  let G = PD(Q, X);
   if (G !== void 0) $.additionalProperties = G;
   return $;
 }
-function ED(Q, X) {
+function PD(Q, X) {
   if (Q.catchall._def.typeName !== "ZodNever")
     return g(Q.catchall._def, {
       ...X,
@@ -17554,7 +17561,7 @@ function ED(Q, X) {
         : X.rejectedAdditionalProperties;
   }
 }
-function PD(Q) {
+function ED(Q) {
   try {
     return Q.isOptional();
   } catch {
@@ -17645,11 +17652,11 @@ var cG = (Q, X, Y) => {
     case A.ZodBoolean:
       return DG();
     case A.ZodDate:
-      return M$(Q, Y);
+      return w$(Q, Y);
     case A.ZodUndefined:
       return uG(Y);
     case A.ZodNull:
-      return SG(Y);
+      return CG(Y);
     case A.ZodArray:
       return OG(Q, Y);
     case A.ZodUnion:
@@ -17666,13 +17673,13 @@ var cG = (Q, X, Y) => {
     case A.ZodEnum:
       return jG(Q);
     case A.ZodNativeEnum:
-      return PG(Q);
+      return EG(Q);
     case A.ZodNullable:
       return kG(Q, Y);
     case A.ZodOptional:
       return xG(Q, Y);
     case A.ZodMap:
-      return EG(Q, Y);
+      return PG(Q, Y);
     case A.ZodSet:
       return hG(Q, Y);
     case A.ZodLazy:
@@ -17689,13 +17696,13 @@ var cG = (Q, X, Y) => {
     case A.ZodUnknown:
       return mG(Y);
     case A.ZodDefault:
-      return wG(Q, Y);
+      return MG(Q, Y);
     case A.ZodBranded:
       return l8(Q, Y);
     case A.ZodReadonly:
       return lG(Q, Y);
     case A.ZodCatch:
-      return MG(Q, Y);
+      return wG(Q, Y);
     case A.ZodPipeline:
       return yG(Q, Y);
     case A.ZodFunction:
@@ -17722,7 +17729,7 @@ function g(Q, X, Y = !1) {
   X.seen.set(Q, J);
   let W = cG(Q, Q.typeName, X),
     G = typeof W === "function" ? g(W(), X) : W;
-  if (G) SD(Q, X, G);
+  if (G) CD(Q, X, G);
   if (X.postProcess) {
     let H = X.postProcess(G, Q, X);
     return ((J.jsonSchema = G), H);
@@ -17751,7 +17758,7 @@ var ZD = (Q, X) => {
       }
     }
   },
-  SD = (Q, X, Y) => {
+  CD = (Q, X, Y) => {
     if (Q.description) {
       if (((Y.description = Q.description), X.markdownDescription))
         Y.markdownDescription = Q.description;
@@ -17838,7 +17845,7 @@ var j$ = (Q, X) => {
     );
   return H;
 };
-function CD(Q) {
+function SD(Q) {
   if (!Q) return "draft-7";
   if (Q === "jsonSchema7" || Q === "draft-7") return "draft-7";
   if (Q === "jsonSchema2019-09" || Q === "draft-2020-12")
@@ -17847,14 +17854,14 @@ function CD(Q) {
 }
 function R$(Q, X) {
   if (n0(Q))
-    return dY(Q, { target: CD(X?.target), io: X?.pipeStrategy ?? "input" });
+    return dY(Q, { target: SD(X?.target), io: X?.pipeStrategy ?? "input" });
   return j$(Q, {
     strictUnions: X?.strictUnions ?? !0,
     pipeStrategy: X?.pipeStrategy ?? "input",
   });
 }
 function I$(Q) {
-  let Y = i1(Q)?.method;
+  let Y = n1(Q)?.method;
   if (!Y) throw Error("Schema is missing a method literal");
   let $ = N8(Y);
   if (typeof $ !== "string")
@@ -17862,12 +17869,12 @@ function I$(Q) {
   return $;
 }
 function b$(Q, X) {
-  let Y = d1(Q, X);
+  let Y = i1(Q, X);
   if (!Y.success) throw Y.error;
   return Y.data;
 }
 var _D = 60000;
-class E$ {
+class P$ {
   constructor(Q) {
     if (
       ((this._options = Q),
@@ -17884,7 +17891,7 @@ class E$ {
       this.setNotificationHandler(I8, (X) => {
         this._oncancel(X);
       }),
-      this.setNotificationHandler(E8, (X) => {
+      this.setNotificationHandler(P8, (X) => {
         this._onprogress(X);
       }),
       this.setRequestHandler(b8, (X) => ({})),
@@ -17892,7 +17899,7 @@ class E$ {
       (this._taskMessageQueue = Q?.taskMessageQueue),
       this._taskStore)
     )
-      (this.setRequestHandler(P8, async (X, Y) => {
+      (this.setRequestHandler(E8, async (X, Y) => {
         let $ = await this._taskStore.getTask(X.params.taskId, Y.sessionId);
         if (!$)
           throw new _(
@@ -17901,7 +17908,7 @@ class E$ {
           );
         return { ...$ };
       }),
-        this.setRequestHandler(S8, async (X, Y) => {
+        this.setRequestHandler(C8, async (X, Y) => {
           let $ = async () => {
             let J = X.params.taskId;
             if (this._taskMessageQueue) {
@@ -17938,20 +17945,20 @@ class E$ {
             }
             let W = await this._taskStore.getTask(J, Y.sessionId);
             if (!W) throw new _(T.InvalidParams, `Task not found: ${J}`);
-            if (!o1(W.status))
+            if (!r1(W.status))
               return (await this._waitForTaskUpdate(J, Y.signal), await $());
-            if (o1(W.status)) {
+            if (r1(W.status)) {
               let G = await this._taskStore.getTaskResult(J, Y.sessionId);
               return (
                 this._clearTaskQueue(J),
-                { ...G, _meta: { ...G._meta, [n1]: { taskId: J } } }
+                { ...G, _meta: { ...G._meta, [o1]: { taskId: J } } }
               );
             }
             return await $();
           };
           return await $();
         }),
-        this.setRequestHandler(C8, async (X, Y) => {
+        this.setRequestHandler(S8, async (X, Y) => {
           try {
             let { tasks: $, nextCursor: J } = await this._taskStore.listTasks(
               X.params?.cursor,
@@ -17973,7 +17980,7 @@ class E$ {
                 T.InvalidParams,
                 `Task not found: ${X.params.taskId}`,
               );
-            if (o1($.status))
+            if (r1($.status))
               throw new _(
                 T.InvalidParams,
                 `Cannot cancel task in terminal status: ${$.status}`,
@@ -18091,7 +18098,7 @@ class E$ {
   _onrequest(Q, X) {
     let Y = this._requestHandlers.get(Q.method) ?? this.fallbackRequestHandler,
       $ = this._transport,
-      J = Q.params?._meta?.[n1]?.taskId;
+      J = Q.params?._meta?.[o1]?.taskId;
     if (Y === void 0) {
       let z = {
         jsonrpc: "2.0",
@@ -18276,7 +18283,7 @@ class E$ {
       else throw new _(T.InternalError, "Task creation did not return a task");
       while (!0) {
         let G = await this.getTask({ taskId: J }, Y);
-        if ((yield { type: "taskStatus", task: G }, o1(G.status))) {
+        if ((yield { type: "taskStatus", task: G }, r1(G.status))) {
           if (G.status === "completed")
             yield {
               type: "result",
@@ -18350,7 +18357,7 @@ class E$ {
       if (H)
         U.params = {
           ...U.params,
-          _meta: { ...(U.params?._meta || {}), [n1]: H },
+          _meta: { ...(U.params?._meta || {}), [o1]: H },
         };
       let V = (N) => {
         (this._responseHandlers.delete(q),
@@ -18375,7 +18382,7 @@ class E$ {
         if (Y?.signal?.aborted) return;
         if (N instanceof Error) return z(N);
         try {
-          let j = d1(X, N.result);
+          let j = i1(X, N.result);
           if (!j.success) z(j.error);
           else B(j.data);
         } catch (j) {
@@ -18395,8 +18402,8 @@ class E$ {
         F,
         Y?.resetTimeoutOnProgress ?? !1,
       );
-      let M = H?.taskId;
-      if (M) {
+      let w = H?.taskId;
+      if (w) {
         let N = (j) => {
           let R = this._responseHandlers.get(q);
           if (R) R(j);
@@ -18406,7 +18413,7 @@ class E$ {
             );
         };
         (this._requestResolvers.set(q, N),
-          this._enqueueTaskMessage(M, {
+          this._enqueueTaskMessage(w, {
             type: "request",
             message: U,
             timestamp: Date.now(),
@@ -18447,7 +18454,7 @@ class E$ {
         jsonrpc: "2.0",
         params: {
           ...Q.params,
-          _meta: { ...(Q.params?._meta || {}), [n1]: X.relatedTask },
+          _meta: { ...(Q.params?._meta || {}), [o1]: X.relatedTask },
         },
       };
       await this._enqueueTaskMessage(Y, {
@@ -18477,7 +18484,7 @@ class E$ {
               ...G,
               params: {
                 ...G.params,
-                _meta: { ...(G.params?._meta || {}), [n1]: X.relatedTask },
+                _meta: { ...(G.params?._meta || {}), [o1]: X.relatedTask },
               },
             };
           this._transport?.send(G, X).catch((H) => this._onerror(H));
@@ -18490,7 +18497,7 @@ class E$ {
         ...W,
         params: {
           ...W.params,
-          _meta: { ...(W.params?._meta || {}), [n1]: X.relatedTask },
+          _meta: { ...(W.params?._meta || {}), [o1]: X.relatedTask },
         },
       };
     await this._transport.send(W, X);
@@ -18602,7 +18609,7 @@ class E$ {
         let G = await Y.getTask($, X);
         if (G) {
           let H = z4.parse({ method: "notifications/tasks/status", params: G });
-          if ((await this.notification(H), o1(G.status)))
+          if ((await this.notification(H), r1(G.status)))
             this._cleanupTaskProgressHandler($);
         }
       },
@@ -18616,7 +18623,7 @@ class E$ {
             T.InvalidParams,
             `Task "${$}" not found - it may have been cleaned up`,
           );
-        if (o1(G.status))
+        if (r1(G.status))
           throw new _(
             T.InvalidParams,
             `Cannot update task "${$}" from terminal status "${G.status}" to "${J}". Terminal states (completed, failed, cancelled) cannot transition to other states.`,
@@ -18625,7 +18632,7 @@ class E$ {
         let H = await Y.getTask($, X);
         if (H) {
           let B = z4.parse({ method: "notifications/tasks/status", params: H });
-          if ((await this.notification(B), o1(H.status)))
+          if ((await this.notification(B), r1(H.status)))
             this._cleanupTaskProgressHandler($);
         }
       },
@@ -18650,8 +18657,8 @@ function dG(Q, X) {
   }
   return Y;
 }
-var ZK = c7(M7(), 1),
-  SK = c7(PK(), 1);
+var ZK = c7(w7(), 1),
+  CK = c7(EK(), 1);
 function fb() {
   let Q = new ZK.default({
     strict: !1,
@@ -18659,9 +18666,9 @@ function fb() {
     validateSchema: !1,
     allErrors: !0,
   });
-  return (SK.default(Q), Q);
+  return (CK.default(Q), Q);
 }
-class S7 {
+class C7 {
   constructor(Q) {
     this._ajv = Q ?? fb();
   }
@@ -18681,7 +18688,7 @@ class S7 {
     };
   }
 }
-class C7 {
+class S7 {
   constructor(Q) {
     this._server = Q;
   }
@@ -18763,7 +18770,7 @@ class C7 {
     return this._server.cancelTask({ taskId: Q }, X);
   }
 }
-function CK(Q, X, Y) {
+function SK(Q, X, Y) {
   if (!Q)
     throw Error(`${Y} does not support task creation (required for ${X})`);
   switch (X) {
@@ -18797,7 +18804,7 @@ function _K(Q, X, Y) {
       break;
   }
 }
-class _7 extends E$ {
+class _7 extends P$ {
   constructor(Q, X) {
     super(X);
     if (
@@ -18812,7 +18819,7 @@ class _7 extends E$ {
       }),
       (this._capabilities = X?.capabilities ?? {}),
       (this._instructions = X?.instructions),
-      (this._jsonSchemaValidator = X?.jsonSchemaValidator ?? new S7()),
+      (this._jsonSchemaValidator = X?.jsonSchemaValidator ?? new C7()),
       this.setRequestHandler(H$, (Y) => this._oninitialize(Y)),
       this.setNotificationHandler(B$, () => this.oninitialized?.()),
       this._capabilities.logging)
@@ -18827,7 +18834,7 @@ class _7 extends E$ {
       });
   }
   get experimental() {
-    if (!this._experimental) this._experimental = { tasks: new C7(this) };
+    if (!this._experimental) this._experimental = { tasks: new S7(this) };
     return this._experimental;
   }
   registerCapabilities(Q) {
@@ -18836,7 +18843,7 @@ class _7 extends E$ {
     this._capabilities = dG(this._capabilities, Q);
   }
   setRequestHandler(Q, X) {
-    let $ = i1(Q)?.method;
+    let $ = n1(Q)?.method;
     if (!$) throw Error("Schema is missing a method literal");
     let J;
     if (n0($)) {
@@ -18850,7 +18857,7 @@ class _7 extends E$ {
       throw Error("Schema method literal must be a string");
     if (J === "tools/call") {
       let G = async (H, B) => {
-        let z = d1(q9, H);
+        let z = i1(q9, H);
         if (!z.success) {
           let V = z.error instanceof Error ? z.error.message : String(z.error);
           throw new _(T.InvalidParams, `Invalid tools/call request: ${V}`);
@@ -18858,7 +18865,7 @@ class _7 extends E$ {
         let { params: K } = z.data,
           q = await Promise.resolve(X(H, B));
         if (K.task) {
-          let V = d1(K9, q);
+          let V = i1(K9, q);
           if (!V.success) {
             let L =
               V.error instanceof Error ? V.error.message : String(V.error);
@@ -18866,7 +18873,7 @@ class _7 extends E$ {
           }
           return V.data;
         }
-        let U = d1(f8, q);
+        let U = i1(f8, q);
         if (!U.success) {
           let V = U.error instanceof Error ? U.error.message : String(U.error);
           throw new _(T.InvalidParams, `Invalid tools/call result: ${V}`);
@@ -18984,7 +18991,7 @@ class _7 extends E$ {
   }
   assertTaskHandlerCapability(Q) {
     if (!this._capabilities) return;
-    CK(this._capabilities.tasks?.requests, Q, "Server");
+    SK(this._capabilities.tasks?.requests, Q, "Server");
   }
   async _oninitialize(Q) {
     let X = Q.params.protocolVersion;
@@ -19251,8 +19258,8 @@ class y7 {
   }
   setToolRequestHandlers() {
     if (this._toolHandlersInitialized) return;
-    (this.server.assertCanSetRequestHandler(Y6(h8)),
-      this.server.assertCanSetRequestHandler(Y6(q9)),
+    (this.server.assertCanSetRequestHandler($6(h8)),
+      this.server.assertCanSetRequestHandler($6(q9)),
       this.server.registerCapabilities({ tools: { listChanged: !0 } }),
       this.server.setRequestHandler(h8, () => ({
         tools: Object.entries(this._registeredTools)
@@ -19399,7 +19406,7 @@ class y7 {
   }
   setCompletionRequestHandler() {
     if (this._completionHandlerInitialized) return;
-    (this.server.assertCanSetRequestHandler(Y6(u8)),
+    (this.server.assertCanSetRequestHandler($6(u8)),
       this.server.registerCapabilities({ completions: {} }),
       this.server.setRequestHandler(u8, async (Q) => {
         switch (Q.params.ref.type) {
@@ -19421,7 +19428,7 @@ class y7 {
     if (!Y) throw new _(T.InvalidParams, `Prompt ${X.name} not found`);
     if (!Y.enabled) throw new _(T.InvalidParams, `Prompt ${X.name} disabled`);
     if (!Y.argsSchema) return g4;
-    let J = i1(Y.argsSchema)?.[Q.params.argument.name];
+    let J = n1(Y.argsSchema)?.[Q.params.argument.name];
     if (!k7(J)) return g4;
     let W = TK(J);
     if (!W) return g4;
@@ -19446,9 +19453,9 @@ class y7 {
   }
   setResourceRequestHandlers() {
     if (this._resourceHandlersInitialized) return;
-    (this.server.assertCanSetRequestHandler(Y6(v8)),
-      this.server.assertCanSetRequestHandler(Y6(T8)),
-      this.server.assertCanSetRequestHandler(Y6(x8)),
+    (this.server.assertCanSetRequestHandler($6(v8)),
+      this.server.assertCanSetRequestHandler($6(T8)),
+      this.server.assertCanSetRequestHandler($6(x8)),
       this.server.registerCapabilities({ resources: { listChanged: !0 } }),
       this.server.setRequestHandler(v8, async (Q, X) => {
         let Y = Object.entries(this._registeredResources)
@@ -19491,8 +19498,8 @@ class y7 {
   }
   setPromptRequestHandlers() {
     if (this._promptHandlersInitialized) return;
-    (this.server.assertCanSetRequestHandler(Y6(y8)),
-      this.server.assertCanSetRequestHandler(Y6(g8)),
+    (this.server.assertCanSetRequestHandler($6(y8)),
+      this.server.assertCanSetRequestHandler($6(g8)),
       this.server.registerCapabilities({ prompts: { listChanged: !0 } }),
       this.server.setRequestHandler(y8, () => ({
         prompts: Object.entries(this._registeredPrompts)
@@ -19819,16 +19826,16 @@ function xK(Q) {
   return Q;
 }
 function db(Q) {
-  let X = i1(Q);
+  let X = n1(Q);
   if (!X) return [];
   return Object.entries(X).map(([Y, $]) => {
     let J = bW($),
-      W = EW($);
+      W = PW($);
     return { name: Y, description: J, required: !W };
   });
 }
-function Y6(Q) {
-  let Y = i1(Q)?.method;
+function $6(Q) {
+  let Y = n1(Q)?.method;
   if (!Y) throw Error("Schema is missing a method literal");
   let $ = N8(Y);
   if (typeof $ === "string") return $;
@@ -19878,14 +19885,14 @@ function hK(Q) {
 }
 var fK = 15000,
   ob = hK(() =>
-    m1.object({
-      session_id: m1.string(),
-      ws_url: m1.string(),
-      work_dir: m1.string().optional(),
-      session_key: m1.string().optional(),
+    l1.object({
+      session_id: l1.string(),
+      ws_url: l1.string(),
+      work_dir: l1.string().optional(),
+      session_key: l1.string().optional(),
     }),
   );
-class M1 extends Error {
+class w1 extends Error {
   constructor(Q) {
     super(Q);
     this.name = "DirectConnectError";
@@ -19958,7 +19965,7 @@ class mK {
     let $ = setTimeout(() => {
       if (!this.readyState) {
         Y.close();
-        let J = new M1(`WebSocket connection timeout after ${fK}ms`);
+        let J = new w1(`WebSocket connection timeout after ${fK}ms`);
         ((this.exitError = J), this.readyReject?.(J));
       }
     }, fK);
@@ -19979,7 +19986,7 @@ class mK {
           if (!B) continue;
           let z;
           try {
-            z = x1(B);
+            z = y1(B);
           } catch {
             continue;
           }
@@ -19988,7 +19995,7 @@ class mK {
       }),
       Y.addEventListener("error", () => {
         clearTimeout($);
-        let J = new M1("WebSocket connection error");
+        let J = new w1("WebSocket connection error");
         if (((this.exitError = J), this.readyReject?.(J), this.messageReject))
           (this.messageReject(J),
             (this.messageReject = void 0),
@@ -20000,7 +20007,7 @@ class mK {
           (this.closed = !0),
           J.code !== 1000 && J.code !== 1001 && !this.exitError)
         )
-          this.exitError = new M1(
+          this.exitError = new w1(
             `WebSocket closed abnormally: ${J.code} ${J.reason}`,
           );
         if (this.messageResolve)
@@ -20032,7 +20039,7 @@ class mK {
     if (this.abortController.signal.aborted) throw new m0("Operation aborted");
     if (!this.readyState) await this.readyPromise;
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
-      throw new M1("Transport is not ready for writing");
+      throw new w1("Transport is not ready for writing");
     this.ws.send(Q);
   }
   isReady() {
@@ -20089,7 +20096,7 @@ function rb(Q) {
     return { serverUrl: `http://${J.host}`, authToken: W };
   }
   if (Q.startsWith("cc+unix://"))
-    throw new M1(
+    throw new w1(
       "Unix socket connect (cc+unix://) is not supported by the SDK transport",
     );
   let X = /^https?:\/\//i.test(Q) ? Q : `http://${Q}`,
@@ -20108,21 +20115,21 @@ async function tb(Q) {
     $ = await fetch(`${Q.serverUrl}/sessions`, {
       method: "POST",
       headers: X,
-      body: M0(Y),
+      body: w0(Y),
     });
   } catch (W) {
-    throw new M1(
+    throw new w1(
       `Failed to connect to server at ${Q.serverUrl}: ${W instanceof Error ? W.message : String(W)}`,
     );
   }
   if (!$.ok) {
     let W = await $.text().catch(() => "");
-    throw new M1(
+    throw new w1(
       `Failed to create session: ${$.status} ${$.statusText}${W ? ` — ${W}` : ""}`,
     );
   }
   let J = ob().safeParse(await $.json());
-  if (!J.success) throw new M1(`Invalid session response: ${J.error.message}`);
+  if (!J.success) throw new w1(`Invalid session response: ${J.error.message}`);
   return {
     sessionId: J.data.session_id,
     wsUrl: J.data.ws_url,
@@ -20151,11 +20158,11 @@ function zg({ prompt: Q, options: X }) {
   else if (Y.type === "preset") B = Y.append;
   let z = G.pathToClaudeCodeExecutable;
   if (!z) {
-    let C6 = ab(import.meta.url),
-      _6 = lK(C6, "..");
+    let S6 = ab(import.meta.url),
+      _6 = lK(S6, "..");
     z = lK(_6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.71";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.72";
   let {
       abortController: K = k6(),
       additionalDirectories: q = [],
@@ -20163,31 +20170,31 @@ function zg({ prompt: Q, options: X }) {
       agents: V,
       allowedTools: L = [],
       betas: F,
-      canUseTool: M,
+      canUseTool: w,
       continue: N,
       cwd: j,
       debug: R,
-      debugFile: C,
+      debugFile: S,
       disallowedTools: Z = [],
       tools: X0,
       env: O0,
-      executable: S0 = v6() ? "bun" : "node",
-      executableArgs: $6 = [],
+      executable: C0 = v6() ? "bun" : "node",
+      executableArgs: J6 = [],
       extraArgs: V1 = {},
-      fallbackModel: J6,
-      enableFileCheckpointing: _1,
+      fallbackModel: _1,
+      enableFileCheckpointing: k1,
       toolConfig: W6,
       forkSession: h,
       hooks: b9,
       includePartialMessages: ZQ,
-      onElicitation: E9,
-      persistSession: P9,
+      onElicitation: P9,
+      persistSession: E9,
       thinking: G6,
       effort: h4,
       maxThinkingTokens: Z6,
-      maxTurns: C0,
-      maxBudgetUsd: k1,
-      mcpServers: S6,
+      maxTurns: S0,
+      maxBudgetUsd: v1,
+      mcpServers: C6,
       model: cK,
       outputFormat: g7,
       permissionMode: pK = "default",
@@ -20205,17 +20212,17 @@ function zg({ prompt: Q, options: X }) {
     H6 = O0;
   if (!H6) H6 = { ...process.env };
   if (!H6.CLAUDE_CODE_ENTRYPOINT) H6.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (_1) H6.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
+  if (k1) H6.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (W6?.askUserQuestion?.previewFormat)
     H6.CLAUDE_CODE_QUESTION_PREVIEW_FORMAT = W6.askUserQuestion.previewFormat;
   if (!z) throw Error("pathToClaudeCodeExecutable is required");
-  let SQ = {},
+  let CQ = {},
     u7 = new Map();
-  if (S6)
-    for (let [C6, _6] of Object.entries(S6))
+  if (C6)
+    for (let [S6, _6] of Object.entries(C6))
       if (_6.type === "sdk" && "instance" in _6)
-        (u7.set(C6, _6.instance), (SQ[C6] = { type: "sdk", name: C6 }));
-      else SQ[C6] = _6;
+        (u7.set(S6, _6.instance), (CQ[S6] = { type: "sdk", name: S6 }));
+      else CQ[S6] = _6;
   let eK = typeof Q === "string",
     Z9;
   if (G6)
@@ -20240,9 +20247,9 @@ function zg({ prompt: Q, options: X }) {
       betas: F,
       cwd: j,
       debug: R,
-      debugFile: C,
-      executable: S0,
-      executableArgs: $6,
+      debugFile: S,
+      executable: C0,
+      executableArgs: J6,
       extraArgs: h7 ? { ...V1, workload: h7 } : V1,
       pathToClaudeCodeExecutable: z,
       env: H6,
@@ -20250,10 +20257,10 @@ function zg({ prompt: Q, options: X }) {
       stderr: aK,
       thinkingConfig: Z9,
       effort: h4,
-      maxTurns: C0,
-      maxBudgetUsd: k1,
+      maxTurns: S0,
+      maxBudgetUsd: v1,
       model: cK,
-      fallbackModel: J6,
+      fallbackModel: _1,
       jsonSchema: f7,
       permissionMode: pK,
       allowDangerouslySkipPermissions: dK,
@@ -20262,17 +20269,17 @@ function zg({ prompt: Q, options: X }) {
       resume: oK,
       resumeSessionAt: rK,
       sessionId: tK,
-      settings: typeof $ === "object" ? M0($) : $,
+      settings: typeof $ === "object" ? w0($) : $,
       settingSources: J ?? [],
       allowedTools: L,
       disallowedTools: Z,
       tools: X0,
-      mcpServers: SQ,
+      mcpServers: CQ,
       strictMcpConfig: sK,
-      canUseTool: !!M,
+      canUseTool: !!w,
       hooks: !!b9,
       includePartialMessages: ZQ,
-      persistSession: P9,
+      persistSession: E9,
       plugins: nK,
       sandbox: W,
       spawnClaudeCodeProcess: G.spawnClaudeCodeProcess,
@@ -20282,11 +20289,12 @@ function zg({ prompt: Q, options: X }) {
       appendSystemPrompt: B,
       agents: V,
       promptSuggestions: G.promptSuggestions,
+      agentProgressSummaries: G.agentProgressSummaries,
     },
-    l7 = new v9(m7, eK, M, b9, K, u7, f7, QV, E9);
+    l7 = new v9(m7, eK, w, b9, K, u7, f7, QV, P9);
   if (typeof Q === "string")
     m7.write(
-      M0({
+      w0({
         type: "user",
         session_id: "",
         message: { role: "user", content: [{ type: "text", text: Q }] },
@@ -20338,6 +20346,6 @@ export {
   LV as HOOK_EVENTS,
   FV as EXIT_REASONS,
   mK as DirectConnectTransport,
-  M1 as DirectConnectError,
+  w1 as DirectConnectError,
   m0 as AbortError,
 };
