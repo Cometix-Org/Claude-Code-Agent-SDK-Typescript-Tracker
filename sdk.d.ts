@@ -48,9 +48,9 @@ export declare type AgentDefinition = {
    */
   prompt: string;
   /**
-   * Model to use for this agent. If omitted or 'inherit', uses the main model
+   * Model alias (e.g. 'sonnet', 'opus', 'haiku') or full model ID (e.g. 'claude-opus-4-5'). If omitted or 'inherit', uses the main model
    */
-  model?: "sonnet" | "opus" | "haiku" | "inherit";
+  model?: string;
   mcpServers?: AgentMcpServerSpec[];
   /**
    * Experimental: Critical reminder added to system prompt
@@ -1619,6 +1619,18 @@ export declare function query(_params: {
 }): Query;
 
 /**
+ * Rename a session. Appends a custom-title entry to the session's JSONL file.
+ * @param sessionId - UUID of the session
+ * @param title - New title
+ * @param options - `{ dir?: string }` project path; omit to search all projects
+ */
+export declare function renameSession(
+  _sessionId: string,
+  _title: string,
+  _options?: SessionMutationOptions,
+): Promise<void>;
+
+/**
  * Result of a rewindFiles operation.
  */
 export declare type RewindFilesResult = {
@@ -1925,6 +1937,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpOAuthCallbackUrlRequest
   | SDKControlRemoteControlRequest
   | SDKControlSetProactiveRequest
+  | SDKControlGenerateSessionTitleRequest
   | SDKControlStopTaskRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
@@ -2508,6 +2521,18 @@ export declare type SessionMessage = {
   parent_tool_use_id: null;
 };
 
+/**
+ * Options shared by session mutation functions (renameSession, tagSession,
+ * deleteSession).
+ */
+export declare type SessionMutationOptions = {
+  /**
+   * Project directory path (same semantics as `listSessions({ dir })`).
+   * When omitted, all project directories are searched for the session file.
+   */
+  dir?: string;
+};
+
 export declare type SessionStartHookInput = BaseHookInput & {
   hook_event_name: "SessionStart";
   source: "startup" | "resume" | "clear" | "compact";
@@ -2620,10 +2645,6 @@ export declare interface Settings {
      * Disable the ability to bypass permission prompts
      */
     disableBypassPermissionsMode?: "disable";
-    /**
-     * Disable auto mode
-     */
-    disableAutoMode?: "disable";
     /**
      * Additional directories to include in the permission scope
      */
@@ -3343,6 +3364,10 @@ export declare interface Settings {
    */
   autoMemoryEnabled?: boolean;
   /**
+   * Custom directory path for auto-memory storage. Supports ~/ prefix for home directory expansion. Ignored if set in projectSettings (checked-in .claude/settings.json) for security. When unset, defaults to ~/.claude/projects/<sanitized-cwd>/memory/.
+   */
+  autoMemoryDirectory?: string;
+  /**
    * Show thinking summaries in the transcript view (ctrl+o). Default: false.
    */
   showThinkingSummaries?: boolean;
@@ -3350,6 +3375,10 @@ export declare interface Settings {
    * Whether the user has accepted the bypass permissions mode dialog
    */
   skipDangerousModePermissionPrompt?: boolean;
+  /**
+   * Disable auto mode
+   */
+  disableAutoMode?: "disable";
   /**
    * SSH connection configurations for remote environments. Typically set in managed settings by enterprise administrators to pre-configure SSH connections for team members.
    */
