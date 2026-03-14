@@ -239,6 +239,7 @@ declare namespace coreTypes {
     PermissionRuleValue,
     PermissionUpdateDestination,
     PermissionUpdate,
+    PostCompactHookInput,
     PostToolUseFailureHookInput,
     PostToolUseFailureHookSpecificOutput,
     PostToolUseHookInput,
@@ -323,6 +324,9 @@ declare type CreateSdkMcpServerOptions = {
   tools?: Array<SdkMcpToolDefinition<any>>;
 };
 
+/**
+ * Hook input for the Elicitation event. Fired when an MCP server requests user input. Hooks can auto-respond (accept/decline) instead of showing the dialog.
+ */
 export declare type ElicitationHookInput = BaseHookInput & {
   hook_event_name: "Elicitation";
   mcp_server_name: string;
@@ -333,6 +337,9 @@ export declare type ElicitationHookInput = BaseHookInput & {
   requested_schema?: Record<string, unknown>;
 };
 
+/**
+ * Hook-specific output for the Elicitation event. Return this to programmatically accept or decline an MCP elicitation request.
+ */
 export declare type ElicitationHookSpecificOutput = {
   hookEventName: "Elicitation";
   action?: "accept" | "decline" | "cancel";
@@ -363,6 +370,9 @@ export declare type ElicitationRequest = {
  */
 export declare type ElicitationResult = ElicitResult;
 
+/**
+ * Hook input for the ElicitationResult event. Fired after the user responds to an MCP elicitation. Hooks can observe or override the response before it is sent to the server.
+ */
 export declare type ElicitationResultHookInput = BaseHookInput & {
   hook_event_name: "ElicitationResult";
   mcp_server_name: string;
@@ -372,6 +382,9 @@ export declare type ElicitationResultHookInput = BaseHookInput & {
   content?: Record<string, unknown>;
 };
 
+/**
+ * Hook-specific output for the ElicitationResult event. Return this to override the action or content before the response is sent to the MCP server.
+ */
 export declare type ElicitationResultHookSpecificOutput = {
   hookEventName: "ElicitationResult";
   action?: "accept" | "decline" | "cancel";
@@ -397,6 +410,43 @@ export declare type ExitReason =
  * Fast mode state: off, in cooldown after rate limit, or actively enabled.
  */
 export declare type FastModeState = "off" | "cooldown" | "on";
+
+/**
+ * Fork a session into a new branch with fresh UUIDs.
+ *
+ * Copies transcript messages from the source session into a new session file,
+ * remapping every message UUID and preserving the parentUuid chain. Supports
+ * `upToMessageId` for branching from a specific point in the conversation.
+ *
+ * Forked sessions start without undo history (file-history snapshots are not
+ * copied).
+ *
+ * @param sessionId - UUID of the source session
+ * @param options - `{ dir?, upToMessageId?, title? }`
+ * @returns `{ sessionId }` — UUID of the new forked session
+ */
+export declare function forkSession(
+  _sessionId: string,
+  _options?: ForkSessionOptions,
+): Promise<ForkSessionResult>;
+
+/**
+ * Options for forking a session into a new branch.
+ */
+export declare type ForkSessionOptions = SessionMutationOptions & {
+  /** Slice transcript up to this message UUID (inclusive). If omitted, full copy. */
+  upToMessageId?: string;
+  /** Custom title for the fork. If omitted, derives from original title + " (fork)". */
+  title?: string;
+};
+
+/**
+ * Result of a fork operation.
+ */
+export declare type ForkSessionResult = {
+  /** New session UUID. Resumable via `resumeSession(sessionId)`. */
+  sessionId: string;
+};
 
 /**
  * Reads metadata for a single session by ID. Unlike `listSessions`, this only
@@ -462,6 +512,7 @@ export declare const HOOK_EVENTS: readonly [
   "SubagentStart",
   "SubagentStop",
   "PreCompact",
+  "PostCompact",
   "PermissionRequest",
   "Setup",
   "TeammateIdle",
@@ -507,6 +558,7 @@ export declare type HookEvent =
   | "SubagentStart"
   | "SubagentStop"
   | "PreCompact"
+  | "PostCompact"
   | "PermissionRequest"
   | "Setup"
   | "TeammateIdle"
@@ -530,6 +582,7 @@ export declare type HookInput =
   | SubagentStartHookInput
   | SubagentStopHookInput
   | PreCompactHookInput
+  | PostCompactHookInput
   | PermissionRequestHookInput
   | SetupHookInput
   | TeammateIdleHookInput
@@ -1401,6 +1454,15 @@ export declare type PermissionUpdateDestination =
   | "session"
   | "cliArg";
 
+export declare type PostCompactHookInput = BaseHookInput & {
+  hook_event_name: "PostCompact";
+  trigger: "manual" | "auto";
+  /**
+   * The conversation summary produced by compaction
+   */
+  compact_summary: string;
+};
+
 export declare type PostToolUseFailureHookInput = BaseHookInput & {
   hook_event_name: "PostToolUseFailure";
   tool_name: string;
@@ -1808,6 +1870,14 @@ export declare type SDKCompactBoundaryMessage = {
   compact_metadata: {
     trigger: "manual" | "auto";
     pre_tokens: number;
+    /**
+     * Relink info for messagesToKeep. Loaders splice the preserved segment at anchor_uuid (summary for suffix-preserving, boundary for prefix-preserving partial compact) so resume includes preserved content. Unset when compaction summarizes everything (no messagesToKeep).
+     */
+    preserved_segment?: {
+      head_uuid: UUID;
+      anchor_uuid: UUID;
+      tail_uuid: UUID;
+    };
   };
   uuid: UUID;
   session_id: string;
@@ -1819,6 +1889,14 @@ export declare type SDKCompactBoundaryMessage = {
 declare type SDKControlApplyFlagSettingsRequest = {
   subtype: "apply_flag_settings";
   settings: Record<string, unknown>;
+};
+
+/**
+ * Drops a pending async user message from the command queue by uuid. No-op if already dequeued for execution.
+ */
+declare type SDKControlCancelAsyncMessageRequest = {
+  subtype: "cancel_async_message";
+  message_uuid: string;
 };
 
 /**
@@ -1961,6 +2039,7 @@ declare type SDKControlRequestInner =
   | SDKHookCallbackRequest
   | SDKControlMcpMessageRequest
   | SDKControlRewindFilesRequest
+  | SDKControlCancelAsyncMessageRequest
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
@@ -2025,6 +2104,9 @@ declare type SDKControlStopTaskRequest = {
   task_id: string;
 };
 
+/**
+ * Emitted when an MCP server confirms that a URL-mode elicitation is complete.
+ */
 export declare type SDKElicitationCompleteMessage = {
   type: "system";
   subtype: "elicitation_complete";
@@ -2564,7 +2646,7 @@ export declare type SessionMessage = {
 
 /**
  * Options shared by session mutation functions (renameSession, tagSession,
- * deleteSession).
+ * deleteSession, forkSession).
  */
 export declare type SessionMutationOptions = {
   /**
@@ -2627,7 +2709,7 @@ export declare interface Settings {
    */
   respectGitignore?: boolean;
   /**
-   * Number of days to retain chat transcripts (0 to disable cleanup)
+   * Number of days to retain chat transcripts (default: 30). Setting to 0 disables session persistence entirely: no transcripts are written and existing transcripts are deleted at startup.
    */
   cleanupPeriodDays?: number;
   /**
@@ -2887,13 +2969,17 @@ export declare interface Settings {
     }[];
   };
   /**
-   * Git worktree configuration for --worktree flag. Symlinks prevent duplicating large directories like node_modules across worktrees.
+   * Git worktree configuration for --worktree flag.
    */
   worktree?: {
     /**
      * Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: "node_modules", ".cache", ".bin"
      */
     symlinkDirectories?: string[];
+    /**
+     * Directories to include when creating worktrees, via git sparse-checkout (cone mode). Dramatically faster in large monorepos — only the listed paths are written to disk.
+     */
+    sparsePaths?: string[];
   };
   /**
    * Disable all hooks and statusLine execution
@@ -3242,7 +3328,7 @@ export declare interface Settings {
    */
   outputStyle?: string;
   /**
-   * Preferred language for Claude responses (e.g., "japanese", "spanish")
+   * Preferred language for Claude responses and voice dictation (e.g., "japanese", "spanish")
    */
   language?: string;
   /**
@@ -3306,6 +3392,10 @@ export declare interface Settings {
     };
     [k: string]: unknown;
   };
+  /**
+   * Probability (0–1) that the session quality survey appears when eligible. 0.05 is a reasonable starting point.
+   */
+  feedbackSurveyRate?: number;
   /**
    * Whether to show tips in the spinner
    */
@@ -3617,6 +3707,7 @@ export declare type SyncHookJSONOutput = {
   decision?: "approve" | "block";
   systemMessage?: string;
   reason?: string;
+
   hookSpecificOutput?:
     | PreToolUseHookSpecificOutput
     | UserPromptSubmitHookSpecificOutput
