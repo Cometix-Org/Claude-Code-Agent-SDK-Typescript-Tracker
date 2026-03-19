@@ -311,6 +311,7 @@ declare namespace coreTypes {
     SetupHookInput,
     SetupHookSpecificOutput,
     SlashCommand,
+    StopFailureHookInput,
     StopHookInput,
     SubagentStartHookInput,
     SubagentStartHookSpecificOutput,
@@ -414,6 +415,7 @@ export declare type ElicitationResultHookSpecificOutput = {
 
 export declare const EXIT_REASONS: readonly [
   "clear",
+  "resume",
   "logout",
   "prompt_input_exit",
   "other",
@@ -422,6 +424,7 @@ export declare const EXIT_REASONS: readonly [
 
 export declare type ExitReason =
   | "clear"
+  | "resume"
   | "logout"
   | "prompt_input_exit"
   | "other"
@@ -530,6 +533,7 @@ export declare const HOOK_EVENTS: readonly [
   "SessionStart",
   "SessionEnd",
   "Stop",
+  "StopFailure",
   "SubagentStart",
   "SubagentStop",
   "PreCompact",
@@ -576,6 +580,7 @@ export declare type HookEvent =
   | "SessionStart"
   | "SessionEnd"
   | "Stop"
+  | "StopFailure"
   | "SubagentStart"
   | "SubagentStop"
   | "PreCompact"
@@ -600,6 +605,7 @@ export declare type HookInput =
   | SessionStartHookInput
   | SessionEndHookInput
   | StopHookInput
+  | StopFailureHookInput
   | SubagentStartHookInput
   | SubagentStopHookInput
   | PreCompactHookInput
@@ -2105,9 +2111,11 @@ declare type SDKControlRequestInner =
   | SDKControlMcpOAuthCallbackUrlRequest
   | SDKControlClaudeAuthenticateRequest
   | SDKControlClaudeOAuthCallbackRequest
+  | SDKControlClaudeOAuthWaitForCompletionRequest
   | SDKControlRemoteControlRequest
   | SDKControlSetProactiveRequest
   | SDKControlGenerateSessionTitleRequest
+  | SDKControlSideQuestionRequest
   | SDKControlStopTaskRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
@@ -3742,6 +3750,13 @@ declare type StdoutMessage =
   | SDKControlRequest
   | SDKControlCancelRequest
   | SDKKeepAliveMessage;
+
+export declare type StopFailureHookInput = BaseHookInput & {
+  hook_event_name: "StopFailure";
+  error: SDKAssistantMessageError;
+  error_details?: string;
+  last_assistant_message?: string;
+};
 
 export declare type StopHookInput = BaseHookInput & {
   hook_event_name: "Stop";
