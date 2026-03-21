@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.80
+// Version: 0.2.81
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -6866,6 +6866,8 @@ function sq() {
     promptCache1hAllowlist: null,
     promptId: null,
     lastMainRequestId: void 0,
+    lastApiCompletionTimestamp: null,
+    pendingPostCompaction: !1,
   };
 }
 var eq = sq();
@@ -20816,7 +20818,7 @@ function Ph({ prompt: Q, options: $ }) {
       y6 = HV(x6, "..");
     z = HV(y6, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.80";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.81";
   let {
       abortController: K = g6(),
       additionalDirectories: U = [],
