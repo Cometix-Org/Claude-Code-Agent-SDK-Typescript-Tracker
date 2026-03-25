@@ -65,6 +65,10 @@ export declare type AgentDefinition = {
    */
   skills?: string[];
   /**
+   * Auto-submitted as the first user turn when this agent is the main thread agent. Slash commands are processed. Prepended to any user-provided prompt.
+   */
+  initialPrompt?: string;
+  /**
    * Maximum number of agentic turns (API round-trips) before stopping
    */
   maxTurns?: number;
@@ -225,12 +229,16 @@ declare namespace coreTypes {
     BaseOutputFormat,
     ConfigChangeHookInput,
     ConfigScope,
+    CwdChangedHookInput,
+    CwdChangedHookSpecificOutput,
     ElicitationHookInput,
     ElicitationHookSpecificOutput,
     ElicitationResultHookInput,
     ElicitationResultHookSpecificOutput,
     ExitReason,
     FastModeState,
+    FileChangedHookInput,
+    FileChangedHookSpecificOutput,
     HookEvent,
     HookInput,
     HookJSONOutput,
@@ -252,6 +260,7 @@ declare namespace coreTypes {
     OutputFormat,
     OutputFormatType,
     PermissionBehavior,
+    PermissionDecisionClassification,
     PermissionMode,
     PermissionRequestHookInput,
     PermissionRequestHookSpecificOutput,
@@ -292,6 +301,7 @@ declare namespace coreTypes {
     SDKResultMessage,
     SDKResultSuccess,
     SDKSessionInfo,
+    SDKSessionStateChangedMessage,
     SDKStatusMessage,
     SDKStatus,
     SDKSystemMessage,
@@ -344,6 +354,17 @@ declare type CreateSdkMcpServerOptions = {
   name: string;
   version?: string;
   tools?: Array<SdkMcpToolDefinition<any>>;
+};
+
+export declare type CwdChangedHookInput = BaseHookInput & {
+  hook_event_name: "CwdChanged";
+  old_cwd: string;
+  new_cwd: string;
+};
+
+export declare type CwdChangedHookSpecificOutput = {
+  hookEventName: "CwdChanged";
+  watchPaths?: string[];
 };
 
 /**
@@ -434,6 +455,17 @@ export declare type ExitReason =
  * Fast mode state: off, in cooldown after rate limit, or actively enabled.
  */
 export declare type FastModeState = "off" | "cooldown" | "on";
+
+export declare type FileChangedHookInput = BaseHookInput & {
+  hook_event_name: "FileChanged";
+  file_path: string;
+  event: "change" | "add" | "unlink";
+};
+
+export declare type FileChangedHookSpecificOutput = {
+  hookEventName: "FileChanged";
+  watchPaths?: string[];
+};
 
 /**
  * Fork a session into a new branch with fresh UUIDs.
@@ -548,6 +580,8 @@ export declare const HOOK_EVENTS: readonly [
   "WorktreeCreate",
   "WorktreeRemove",
   "InstructionsLoaded",
+  "CwdChanged",
+  "FileChanged",
 ];
 
 /**
@@ -594,7 +628,9 @@ export declare type HookEvent =
   | "ConfigChange"
   | "WorktreeCreate"
   | "WorktreeRemove"
-  | "InstructionsLoaded";
+  | "InstructionsLoaded"
+  | "CwdChanged"
+  | "FileChanged";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -619,7 +655,9 @@ export declare type HookInput =
   | ConfigChangeHookInput
   | InstructionsLoadedHookInput
   | WorktreeCreateHookInput
-  | WorktreeRemoveHookInput;
+  | WorktreeRemoveHookInput
+  | CwdChangedHookInput
+  | FileChangedHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -1390,6 +1428,14 @@ export declare type OutputFormatType = "json_schema";
 export declare type PermissionBehavior = "allow" | "deny" | "ask";
 
 /**
+ * Classification of this permission decision for telemetry. SDK hosts that prompt users (desktop apps, IDEs) should set this to reflect what actually happened: user_temporary for allow-once, user_permanent for always-allow (both the click and later cache hits), user_reject for deny. If unset, the CLI infers conservatively (temporary for allow, reject for deny). The vocabulary matches tool_decision OTel events (monitoring-usage docs).
+ */
+export declare type PermissionDecisionClassification =
+  | "user_temporary"
+  | "user_permanent"
+  | "user_reject";
+
+/**
  * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
  */
 export declare type PermissionMode =
@@ -1427,12 +1473,14 @@ export declare type PermissionResult =
       updatedInput?: Record<string, unknown>;
       updatedPermissions?: PermissionUpdate[];
       toolUseID?: string;
+      decisionClassification?: PermissionDecisionClassification;
     }
   | {
       behavior: "deny";
       message: string;
       interrupt?: boolean;
       toolUseID?: string;
+      decisionClassification?: PermissionDecisionClassification;
     };
 
 export declare type PermissionRuleValue = {
@@ -1691,6 +1739,17 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
       dryRun?: boolean;
     },
   ): Promise<RewindFilesResult>;
+  /**
+   * Seed the CLI's readFileState cache with a path+mtime entry. Use when
+   * the client observed a Read that has since been removed from context
+   * (e.g. by snip), so a subsequent Edit won't fail "file not read yet".
+   * If the file changed on disk since the given mtime, the seed is skipped
+   * and Edit will correctly require a fresh Read.
+   *
+   * @param path - Path to the file that was previously Read
+   * @param mtime - File mtime (floored ms) at the time of the observed Read
+   */
+  seedReadState(path: string, mtime: number): Promise<void>;
 
   /**
    * Reconnect an MCP server by name.
@@ -1833,6 +1892,7 @@ export declare type SandboxSettings = z.infer<
 declare const SandboxSettingsSchema: () => z.ZodObject<
   {
     enabled: z.ZodOptional<z.ZodBoolean>;
+    failIfUnavailable: z.ZodOptional<z.ZodBoolean>;
     autoAllowBashIfSandboxed: z.ZodOptional<z.ZodBoolean>;
     allowUnsandboxedCommands: z.ZodOptional<z.ZodBoolean>;
     network: z.ZodOptional<
@@ -2102,6 +2162,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpMessageRequest
   | SDKControlRewindFilesRequest
   | SDKControlCancelAsyncMessageRequest
+  | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
@@ -2133,6 +2194,15 @@ declare type SDKControlRewindFilesRequest = {
   subtype: "rewind_files";
   user_message_id: string;
   dry_run?: boolean;
+};
+
+/**
+ * Seeds the readFileState cache with a path+mtime entry. Use when a prior Read was removed from context (e.g. by snip) so Edit validation would fail despite the client having observed the Read. The mtime lets the CLI detect if the file changed since the seeded Read — same staleness check as the normal path.
+ */
+declare type SDKControlSeedReadStateRequest = {
+  subtype: "seed_read_state";
+  path: string;
+  mtime: number;
 };
 
 /**
@@ -2285,6 +2355,7 @@ export declare type SdkMcpToolDefinition<
   description: string;
   inputSchema: Schema;
   annotations?: ToolAnnotations;
+  _meta?: Record<string, unknown>;
   handler: (
     args: InferShape<Schema>,
     extra: unknown,
@@ -2310,6 +2381,7 @@ export declare type SDKMessage =
   | SDKTaskNotificationMessage
   | SDKTaskStartedMessage
   | SDKTaskProgressMessage
+  | SDKSessionStateChangedMessage
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
   | SDKRateLimitEvent
@@ -2565,6 +2637,17 @@ export declare type SDKSessionOptions = {
   permissionMode?: PermissionMode;
 };
 
+/**
+ * Mirrors notifySessionStateChanged. 'idle' fires after heldBackResult flushes and the bg-agent do-while exits — authoritative turn-over signal.
+ */
+export declare type SDKSessionStateChangedMessage = {
+  type: "system";
+  subtype: "session_state_changed";
+  state: "idle" | "running" | "requires_action";
+  uuid: UUID;
+  session_id: string;
+};
+
 export declare type SDKStatus = "compacting" | null;
 
 export declare type SDKStatusMessage = {
@@ -2648,6 +2731,10 @@ export declare type SDKTaskStartedMessage = {
   tool_use_id?: string;
   description: string;
   task_type?: string;
+  /**
+   * meta.name from the workflow script (e.g. 'spec'). Only set when task_type is 'local_workflow'.
+   */
+  workflow_name?: string;
   prompt?: string;
   uuid: UUID;
   session_id: string;
@@ -2743,6 +2830,7 @@ export declare type SessionStartHookSpecificOutput = {
   hookEventName: "SessionStart";
   additionalContext?: string;
   initialUserMessage?: string;
+  watchPaths?: string[];
 };
 
 /**
@@ -3779,6 +3867,10 @@ export declare interface Settings {
   skipWebFetchPreflight?: boolean;
   sandbox?: {
     enabled?: boolean;
+    /**
+     * Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies, unsupported platform, or platform not in enabledPlatforms). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate.
+     */
+    failIfUnavailable?: boolean;
     autoAllowBashIfSandboxed?: boolean;
     /**
      * Allow commands to run outside the sandbox via the dangerouslyDisableSandbox parameter. When false, the dangerouslyDisableSandbox parameter is completely ignored and all commands must run sandboxed. Default: true.
@@ -3880,6 +3972,10 @@ export declare interface Settings {
    * Persisted effort level for supported models.
    */
   effortLevel?: "low" | "medium" | "high";
+  /**
+   * Advisor model for the server-side advisor tool.
+   */
+  advisorModel?: string;
   /**
    * When true, fast mode is enabled. When absent or false, fast mode is off.
    */
@@ -4184,7 +4280,9 @@ export declare type SyncHookJSONOutput = {
     | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput
     | ElicitationHookSpecificOutput
-    | ElicitationResultHookSpecificOutput;
+    | ElicitationResultHookSpecificOutput
+    | CwdChangedHookSpecificOutput
+    | FileChangedHookSpecificOutput;
 };
 
 /**
@@ -4254,6 +4352,7 @@ export declare function tool<Schema extends AnyZodRawShape>(
   ) => Promise<CallToolResult>,
   _extras?: {
     annotations?: ToolAnnotations;
+    searchHint?: string;
   },
 ): SdkMcpToolDefinition<Schema>;
 
