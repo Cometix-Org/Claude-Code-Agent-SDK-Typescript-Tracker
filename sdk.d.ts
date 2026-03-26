@@ -328,6 +328,7 @@ declare namespace coreTypes {
     SubagentStopHookInput,
     SyncHookJSONOutput,
     TaskCompletedHookInput,
+    TaskCreatedHookInput,
     TeammateIdleHookInput,
     ThinkingAdaptive,
     ThinkingConfig,
@@ -336,6 +337,7 @@ declare namespace coreTypes {
     UserPromptSubmitHookInput,
     UserPromptSubmitHookSpecificOutput,
     WorktreeCreateHookInput,
+    WorktreeCreateHookSpecificOutput,
     WorktreeRemoveHookInput,
   };
 }
@@ -366,6 +368,16 @@ export declare type CwdChangedHookSpecificOutput = {
   hookEventName: "CwdChanged";
   watchPaths?: string[];
 };
+
+/**
+ * Effort level for controlling how much thinking/reasoning Claude applies.
+ *
+ * - `'low'` — Minimal thinking, fastest responses
+ * - `'medium'` — Moderate thinking
+ * - `'high'` — Deep reasoning (default)
+ * - `'max'` — Maximum effort (select models only)
+ */
+export declare type EffortLevel = "low" | "medium" | "high" | "max";
 
 /**
  * Hook input for the Elicitation event. Fired when an MCP server requests user input. Hooks can auto-respond (accept/decline) instead of showing the dialog.
@@ -573,6 +585,7 @@ export declare const HOOK_EVENTS: readonly [
   "PermissionRequest",
   "Setup",
   "TeammateIdle",
+  "TaskCreated",
   "TaskCompleted",
   "Elicitation",
   "ElicitationResult",
@@ -622,6 +635,7 @@ export declare type HookEvent =
   | "PermissionRequest"
   | "Setup"
   | "TeammateIdle"
+  | "TaskCreated"
   | "TaskCompleted"
   | "Elicitation"
   | "ElicitationResult"
@@ -649,6 +663,7 @@ export declare type HookInput =
   | PermissionRequestHookInput
   | SetupHookInput
   | TeammateIdleHookInput
+  | TaskCreatedHookInput
   | TaskCompletedHookInput
   | ElicitationHookInput
   | ElicitationResultHookInput
@@ -1158,7 +1173,7 @@ export declare type Options = {
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
    */
-  effort?: "low" | "medium" | "high" | "max";
+  effort?: EffortLevel;
   /**
    * Maximum number of tokens the model can use for its thinking/reasoning process.
    * Helps control cost and latency for complex tasks.
@@ -1178,6 +1193,16 @@ export declare type Options = {
    * budget is exceeded, returning an `error_max_budget_usd` result.
    */
   maxBudgetUsd?: number;
+  /**
+   * API-side task budget in tokens. When set, the model is made aware of
+   * its remaining token budget so it can pace tool use and wrap up before
+   * the limit. Sent as `output_config.task_budget` with the
+   * `task-budgets-2026-03-13` beta header.
+   * @alpha
+   */
+  taskBudget?: {
+    total: number;
+  };
   /**
    * MCP (Model Context Protocol) server configurations.
    * Keys are server names, values are server configurations.
@@ -1582,7 +1607,7 @@ export declare type PreToolUseHookInput = BaseHookInput & {
 
 export declare type PreToolUseHookSpecificOutput = {
   hookEventName: "PreToolUse";
-  permissionDecision?: "allow" | "deny" | "ask";
+  permissionDecision?: PermissionBehavior;
   permissionDecisionReason?: string;
   updatedInput?: Record<string, unknown>;
   additionalContext?: string;
@@ -2166,6 +2191,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpSetServersRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
+  | SDKControlChannelEnableRequest
   | SDKControlEndSessionRequest
   | SDKControlMcpAuthenticateRequest
   | SDKControlMcpClearAuthRequest
@@ -4043,6 +4069,17 @@ export declare interface Settings {
    */
   plansDirectory?: string;
   /**
+   * Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.
+   */
+  channelsEnabled?: boolean;
+  /**
+   * Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist — admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true.
+   */
+  allowedChannelPlugins?: {
+    marketplace: string;
+    plugin: string;
+  }[];
+  /**
    * Reduce or disable animations for accessibility (spinner shimmer, flash effects, etc.)
    */
   prefersReducedMotion?: boolean;
@@ -4282,7 +4319,8 @@ export declare type SyncHookJSONOutput = {
     | ElicitationHookSpecificOutput
     | ElicitationResultHookSpecificOutput
     | CwdChangedHookSpecificOutput
-    | FileChangedHookSpecificOutput;
+    | FileChangedHookSpecificOutput
+    | WorktreeCreateHookSpecificOutput;
 };
 
 /**
@@ -4299,6 +4337,15 @@ export declare function tagSession(
 
 export declare type TaskCompletedHookInput = BaseHookInput & {
   hook_event_name: "TaskCompleted";
+  task_id: string;
+  task_subject: string;
+  task_description?: string;
+  teammate_name?: string;
+  team_name?: string;
+};
+
+export declare type TaskCreatedHookInput = BaseHookInput & {
+  hook_event_name: "TaskCreated";
   task_id: string;
   task_subject: string;
   task_description?: string;
@@ -4455,6 +4502,14 @@ export declare type UserPromptSubmitHookSpecificOutput = {
 export declare type WorktreeCreateHookInput = BaseHookInput & {
   hook_event_name: "WorktreeCreate";
   name: string;
+};
+
+/**
+ * Hook-specific output for the WorktreeCreate event. Provides the absolute path to the created worktree directory. Command hooks print the path on stdout instead.
+ */
+export declare type WorktreeCreateHookSpecificOutput = {
+  hookEventName: "WorktreeCreate";
+  worktreePath: string;
 };
 
 export declare type WorktreeRemoveHookInput = BaseHookInput & {
