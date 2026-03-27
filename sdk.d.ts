@@ -1745,6 +1745,13 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   mcpServerStatus(): Promise<McpServerStatus[]>;
   /**
+   * Reload plugins from disk and return the refreshed commands, agents,
+   * plugins, and MCP server status.
+   *
+   * @returns The refreshed session components after plugin reload
+   */
+  reloadPlugins(): Promise<SDKControlReloadPluginsResponse>;
+  /**
    * Get information about the authenticated account.
    *
    * @returns Account information including email, organization, and subscription type
@@ -2090,7 +2097,7 @@ declare type SDKControlInitializeRequest = {
 /**
  * Response from session initialization with available commands, models, and account info.
  */
-declare type SDKControlInitializeResponse = {
+export declare type SDKControlInitializeResponse = {
   commands: coreTypes.SlashCommand[];
   agents: coreTypes.AgentInfo[];
   output_style: string;
@@ -2169,6 +2176,28 @@ declare type SDKControlPermissionRequest = {
   description?: string;
 };
 
+/**
+ * Reloads plugins from disk and returns the refreshed session components.
+ */
+declare type SDKControlReloadPluginsRequest = {
+  subtype: "reload_plugins";
+};
+
+/**
+ * Refreshed commands, agents, plugins, and MCP server status after reload.
+ */
+export declare type SDKControlReloadPluginsResponse = {
+  commands: coreTypes.SlashCommand[];
+  agents: coreTypes.AgentInfo[];
+  plugins: {
+    name: string;
+    path: string;
+    source?: string;
+  }[];
+  mcpServers: coreTypes.McpServerStatus[];
+  error_count: number;
+};
+
 export declare type SDKControlRequest = {
   type: "control_request";
   request_id: string;
@@ -2189,6 +2218,7 @@ declare type SDKControlRequestInner =
   | SDKControlCancelAsyncMessageRequest
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
+  | SDKControlReloadPluginsRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
   | SDKControlChannelEnableRequest
@@ -3052,6 +3082,10 @@ export declare interface Settings {
              */
             command: string;
             /**
+             * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
+             */
+            if?: string;
+            /**
              * Shell interpreter. 'bash' uses your $SHELL (bash/zsh/sh); 'powershell' uses pwsh. Defaults to bash.
              */
             shell?: "bash" | "powershell";
@@ -3086,6 +3120,10 @@ export declare interface Settings {
              */
             prompt: string;
             /**
+             * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
+             */
+            if?: string;
+            /**
              * Timeout in seconds for this specific prompt evaluation
              */
             timeout?: number;
@@ -3112,6 +3150,10 @@ export declare interface Settings {
              */
             prompt: string;
             /**
+             * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
+             */
+            if?: string;
+            /**
              * Timeout in seconds for agent execution (default 60)
              */
             timeout?: number;
@@ -3137,6 +3179,10 @@ export declare interface Settings {
              * URL to POST the hook input JSON to
              */
             url: string;
+            /**
+             * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
+             */
+            if?: string;
             /**
              * Timeout in seconds for this specific request
              */
@@ -4254,6 +4300,7 @@ declare type StdoutMessage =
   | coreTypes.SDKMessage
   | coreTypes.SDKStreamlinedTextMessage
   | coreTypes.SDKStreamlinedToolUseSummaryMessage
+  | coreTypes.SDKPostTurnSummaryMessage
   | SDKControlResponse
   | SDKControlRequest
   | SDKControlCancelRequest

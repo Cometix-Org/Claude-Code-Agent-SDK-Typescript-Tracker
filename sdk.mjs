@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.84
+// Version: 0.2.85
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -6808,6 +6808,7 @@ function cj() {
     modelStrings: null,
     isInteractive: !1,
     kairosActive: !1,
+    strictToolResultPairing: !1,
     sdkAgentProgressSummariesEnabled: !1,
     userMsgOptIn: !1,
     clientType: "cli",
@@ -11931,6 +11932,7 @@ class cX {
           $.type === "streamlined_tool_use_summary"
         )
           continue;
+        if ($.type === "system" && $.subtype === "post_turn_summary") continue;
         if ($.type === "result") {
           if (
             ((this.lastErrorResultText = $.is_error
@@ -12252,6 +12254,9 @@ class cX {
   }
   async mcpServerStatus() {
     return (await this.request({ subtype: "mcp_status" })).response.mcpServers;
+  }
+  async reloadPlugins() {
+    return (await this.request({ subtype: "reload_plugins" })).response;
   }
   async setMcpServers($) {
     let X = {},
@@ -30413,7 +30418,7 @@ function Aa({ prompt: $, options: X }) {
       y1 = sD(T1, "..");
     H = sD(y1, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.84";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.85";
   let {
       abortController: K = g1(),
       additionalDirectories: V = [],
