@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.85
+// Version: 0.2.86
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
 var NL = Object.create;
 var {
   getPrototypeOf: VL,
-  defineProperty: s7,
+  defineProperty: a7,
   getOwnPropertyNames: OL,
 } = Object;
 var wL = Object.prototype.hasOwnProperty;
@@ -27,10 +27,10 @@ var qL,
     J = $ != null ? NL(VL($)) : {};
     let W =
       X || !$ || !$.__esModule
-        ? s7(J, "default", { value: $, enumerable: !0 })
+        ? a7(J, "default", { value: $, enumerable: !0 })
         : J;
     for (let G of OL($))
-      if (!wL.call(W, G)) s7(W, G, { get: BL.bind($, G), enumerable: !0 });
+      if (!wL.call(W, G)) a7(W, G, { get: BL.bind($, G), enumerable: !0 });
     if (Q) Y.set($, W);
     return W;
   };
@@ -41,7 +41,7 @@ function jL($, X) {
 }
 var e4 = ($, X) => {
   for (var J in X)
-    s7($, J, {
+    a7($, J, {
       get: X[J],
       enumerable: !0,
       configurable: !0,
@@ -93,7 +93,7 @@ var FL = Symbol.dispose || Symbol.for("Symbol.dispose"),
       };
     return z();
   };
-var M9 = k((QO) => {
+var I9 = k((QO) => {
   Object.defineProperty(QO, "__esModule", { value: !0 });
   QO.regexpCode =
     QO.getEsmExportName =
@@ -113,7 +113,7 @@ var M9 = k((QO) => {
   class w7 {}
   QO._CodeOrName = w7;
   QO.IDENTIFIER = /^[a-z$_][a-z$_0-9]*$/i;
-  class y0 extends w7 {
+  class T0 extends w7 {
     constructor($) {
       super();
       if (!QO.IDENTIFIER.test($))
@@ -130,7 +130,7 @@ var M9 = k((QO) => {
       return { [this.str]: 1 };
     }
   }
-  QO.Name = y0;
+  QO.Name = T0;
   class C6 extends w7 {
     constructor($) {
       super();
@@ -155,7 +155,7 @@ var M9 = k((QO) => {
       return ($ = this._names) !== null && $ !== void 0
         ? $
         : (this._names = this._items.reduce((X, J) => {
-            if (J instanceof y0) X[J.str] = (X[J.str] || 0) + 1;
+            if (J instanceof T0) X[J.str] = (X[J.str] || 0) + 1;
             return X;
           }, {}));
     }
@@ -165,28 +165,28 @@ var M9 = k((QO) => {
   function JO($, ...X) {
     let J = [$[0]],
       Q = 0;
-    while (Q < X.length) (j3(J, X[Q]), J.push($[++Q]));
+    while (Q < X.length) (L3(J, X[Q]), J.push($[++Q]));
     return new C6(J);
   }
   QO._ = JO;
-  var L3 = new C6("+");
+  var D3 = new C6("+");
   function YO($, ...X) {
-    let J = [I9($[0])],
+    let J = [F9($[0])],
       Q = 0;
-    while (Q < X.length) (J.push(L3), j3(J, X[Q]), J.push(L3, I9($[++Q])));
+    while (Q < X.length) (J.push(D3), L3(J, X[Q]), J.push(D3, F9($[++Q])));
     return (JZ(J), new C6(J));
   }
   QO.str = YO;
-  function j3($, X) {
+  function L3($, X) {
     if (X instanceof C6) $.push(...X._items);
-    else if (X instanceof y0) $.push(X);
+    else if (X instanceof T0) $.push(X);
     else $.push(zZ(X));
   }
-  QO.addCodeArg = j3;
+  QO.addCodeArg = L3;
   function JZ($) {
     let X = 1;
     while (X < $.length - 1) {
-      if ($[X] === L3) {
+      if ($[X] === D3) {
         let J = YZ($[X - 1], $[X + 1]);
         if (J !== void 0) {
           $.splice(X - 1, 3, J);
@@ -201,12 +201,12 @@ var M9 = k((QO) => {
     if (X === '""') return $;
     if ($ === '""') return X;
     if (typeof $ == "string") {
-      if (X instanceof y0 || $[$.length - 1] !== '"') return;
+      if (X instanceof T0 || $[$.length - 1] !== '"') return;
       if (typeof X != "string") return `${$.slice(0, -1)}${X}"`;
       if (X[0] === '"') return $.slice(0, -1) + X.slice(1);
       return;
     }
-    if (typeof X == "string" && X[0] === '"' && !($ instanceof y0))
+    if (typeof X == "string" && X[0] === '"' && !($ instanceof T0))
       return `"${$}${X.slice(1)}`;
     return;
   }
@@ -217,18 +217,18 @@ var M9 = k((QO) => {
   function zZ($) {
     return typeof $ == "number" || typeof $ == "boolean" || $ === null
       ? $
-      : I9(Array.isArray($) ? $.join(",") : $);
+      : F9(Array.isArray($) ? $.join(",") : $);
   }
   function WZ($) {
-    return new C6(I9($));
+    return new C6(F9($));
   }
   QO.stringify = WZ;
-  function I9($) {
+  function F9($) {
     return JSON.stringify($)
       .replace(/\u2028/g, "\\u2028")
       .replace(/\u2029/g, "\\u2029");
   }
-  QO.safeStringify = I9;
+  QO.safeStringify = F9;
   function GZ($) {
     return typeof $ == "string" && QO.IDENTIFIER.test($)
       ? new C6(`.${$}`)
@@ -247,7 +247,7 @@ var M9 = k((QO) => {
   }
   QO.regexpCode = HZ;
 });
-var A3 = k((UO) => {
+var M3 = k((UO) => {
   Object.defineProperty(UO, "__esModule", { value: !0 });
   UO.ValueScope =
     UO.ValueScopeName =
@@ -255,7 +255,7 @@ var A3 = k((UO) => {
     UO.varKinds =
     UO.UsedValueState =
       void 0;
-  var $6 = M9();
+  var $6 = I9();
   class WO extends Error {
     constructor($) {
       super(`CodeGen: "code" for ${$} not defined`);
@@ -271,7 +271,7 @@ var A3 = k((UO) => {
     let: new $6.Name("let"),
     var: new $6.Name("var"),
   };
-  class I3 {
+  class F3 {
     constructor({ prefixes: $, parent: X } = {}) {
       ((this._names = {}), (this._prefixes = $), (this._parent = X));
     }
@@ -300,8 +300,8 @@ var A3 = k((UO) => {
       return (this._names[$] = { prefix: $, index: 0 });
     }
   }
-  UO.Scope = I3;
-  class M3 extends $6.Name {
+  UO.Scope = F3;
+  class I3 extends $6.Name {
     constructor($, X) {
       super(X);
       this.prefix = $;
@@ -310,9 +310,9 @@ var A3 = k((UO) => {
       ((this.value = $), (this.scopePath = $6._`.${new $6.Name(X)}[${J}]`));
     }
   }
-  UO.ValueScopeName = M3;
+  UO.ValueScopeName = I3;
   var MZ = $6._`\n`;
-  class GO extends I3 {
+  class GO extends F3 {
     constructor($) {
       super($);
       ((this._values = {}),
@@ -323,7 +323,7 @@ var A3 = k((UO) => {
       return this._scope;
     }
     name($) {
-      return new M3($, this._newName($));
+      return new I3($, this._newName($));
     }
     value($, X) {
       var J;
@@ -409,9 +409,9 @@ var a = k((X6) => {
     X6.str =
     X6._ =
       void 0;
-  var Y$ = M9(),
-    k6 = A3(),
-    l4 = M9();
+  var Y$ = I9(),
+    k6 = M3(),
+    l4 = I9();
   Object.defineProperty(X6, "_", {
     enumerable: !0,
     get: function () {
@@ -460,7 +460,7 @@ var a = k((X6) => {
       return l4.Name;
     },
   });
-  var M7 = A3();
+  var M7 = M3();
   Object.defineProperty(X6, "Scope", {
     enumerable: !0,
     get: function () {
@@ -517,14 +517,14 @@ var a = k((X6) => {
     }
     optimizeNames($, X) {
       if (!$[this.name.str]) return;
-      if (this.rhs) this.rhs = f0(this.rhs, $, X);
+      if (this.rhs) this.rhs = g0(this.rhs, $, X);
       return this;
     }
     get names() {
       return this.rhs instanceof Y$._CodeOrName ? this.rhs.names : {};
     }
   }
-  class Z3 extends c4 {
+  class P3 extends c4 {
     constructor($, X, J) {
       super();
       ((this.lhs = $), (this.rhs = X), (this.sideEffects = J));
@@ -535,14 +535,14 @@ var a = k((X6) => {
     optimizeNames($, X) {
       if (this.lhs instanceof Y$.Name && !$[this.lhs.str] && !this.sideEffects)
         return;
-      return ((this.rhs = f0(this.rhs, $, X)), this);
+      return ((this.rhs = g0(this.rhs, $, X)), this);
     }
     get names() {
       let $ = this.lhs instanceof Y$.Name ? {} : { ...this.lhs.names };
       return I7($, this.rhs);
     }
   }
-  class NO extends Z3 {
+  class NO extends P3 {
     constructor($, X, J, Q) {
       super($, J, Q);
       this.op = X;
@@ -593,7 +593,7 @@ var a = k((X6) => {
       return `${this.code}` ? this : void 0;
     }
     optimizeNames($, X) {
-      return ((this.code = f0(this.code, $, X)), this);
+      return ((this.code = g0(this.code, $, X)), this);
     }
     get names() {
       return this.code instanceof Y$._CodeOrName ? this.code.names : {};
@@ -638,8 +638,8 @@ var a = k((X6) => {
     }
   }
   class qO extends A7 {}
-  class A9 extends i4 {}
-  A9.kind = "else";
+  class M9 extends i4 {}
+  M9.kind = "else";
   class O4 extends i4 {
     constructor($, X) {
       super(X);
@@ -657,7 +657,7 @@ var a = k((X6) => {
       let X = this.else;
       if (X) {
         let J = X.optimizeNodes();
-        X = this.else = Array.isArray(J) ? new A9(J) : J;
+        X = this.else = Array.isArray(J) ? new M9(J) : J;
       }
       if (X) {
         if ($ === !1) return X instanceof O4 ? X : X.nodes;
@@ -677,7 +677,7 @@ var a = k((X6) => {
         !(super.optimizeNames($, X) || this.else))
       )
         return;
-      return ((this.condition = f0(this.condition, $, X)), this);
+      return ((this.condition = g0(this.condition, $, X)), this);
     }
     get names() {
       let $ = super.names;
@@ -686,9 +686,9 @@ var a = k((X6) => {
     }
   }
   O4.kind = "if";
-  class g0 extends i4 {}
-  g0.kind = "for";
-  class DO extends g0 {
+  class y0 extends i4 {}
+  y0.kind = "for";
+  class DO extends y0 {
     constructor($) {
       super();
       this.iteration = $;
@@ -698,13 +698,13 @@ var a = k((X6) => {
     }
     optimizeNames($, X) {
       if (!super.optimizeNames($, X)) return;
-      return ((this.iteration = f0(this.iteration, $, X)), this);
+      return ((this.iteration = g0(this.iteration, $, X)), this);
     }
     get names() {
       return Z1(super.names, this.iteration.names);
     }
   }
-  class LO extends g0 {
+  class LO extends y0 {
     constructor($, X, J, Q) {
       super();
       ((this.varKind = $), (this.name = X), (this.from = J), (this.to = Q));
@@ -719,7 +719,7 @@ var a = k((X6) => {
       return I7($, this.to);
     }
   }
-  class b3 extends g0 {
+  class A3 extends y0 {
     constructor($, X, J, Q) {
       super();
       ((this.loop = $),
@@ -735,7 +735,7 @@ var a = k((X6) => {
     }
     optimizeNames($, X) {
       if (!super.optimizeNames($, X)) return;
-      return ((this.iterable = f0(this.iterable, $, X)), this);
+      return ((this.iterable = g0(this.iterable, $, X)), this);
     }
     get names() {
       return Z1(super.names, this.iterable.names);
@@ -864,7 +864,7 @@ var a = k((X6) => {
       return this._def(k6.varKinds.var, $, X, J);
     }
     assign($, X, J) {
-      return this._leafNode(new Z3($, X, J));
+      return this._leafNode(new P3($, X, J));
     }
     add($, X) {
       return this._leafNode(new NO($, X6.operators.ADD, X));
@@ -894,10 +894,10 @@ var a = k((X6) => {
       return this._elseNode(new O4($));
     }
     else() {
-      return this._elseNode(new A9());
+      return this._elseNode(new M9());
     }
     endIf() {
-      return this._endBlockNode(O4, A9);
+      return this._endBlockNode(O4, M9);
     }
     _for($, X) {
       if ((this._blockNode($), X)) this.code(X).endFor();
@@ -924,16 +924,16 @@ var a = k((X6) => {
           (this.var(Y, Y$._`${z}[${W}]`), J(Y));
         });
       }
-      return this._for(new b3("of", Q, Y, X), () => J(Y));
+      return this._for(new A3("of", Q, Y, X), () => J(Y));
     }
     forIn($, X, J, Q = this.opts.es5 ? k6.varKinds.var : k6.varKinds.const) {
       if (this.opts.ownProperties)
         return this.forOf($, Y$._`Object.keys(${X})`, J);
       let Y = this._scope.toName($);
-      return this._for(new b3("in", Q, Y, X), () => J(Y));
+      return this._for(new A3("in", Q, Y, X), () => J(Y));
     }
     endFor() {
-      return this._endBlockNode(g0);
+      return this._endBlockNode(y0);
     }
     label($) {
       return this._leafNode(new VO($));
@@ -1024,7 +1024,7 @@ var a = k((X6) => {
   function I7($, X) {
     return X instanceof Y$._CodeOrName ? Z1($, X.names) : $;
   }
-  function f0($, X, J) {
+  function g0($, X, J) {
     if ($ instanceof Y$.Name) return Q($);
     if (!Y($)) return $;
     return new Y$._Code(
@@ -1055,7 +1055,7 @@ var a = k((X6) => {
   function IO($) {
     return typeof $ == "boolean" || typeof $ == "number" || $ === null
       ? !$
-      : Y$._`!${P3($)}`;
+      : Y$._`!${b3($)}`;
   }
   X6.not = IO;
   var EZ = MO(X6.operators.AND);
@@ -1070,9 +1070,9 @@ var a = k((X6) => {
   X6.or = vZ;
   function MO($) {
     return (X, J) =>
-      X === Y$.nil ? J : J === Y$.nil ? X : Y$._`${P3(X)} ${$} ${P3(J)}`;
+      X === Y$.nil ? J : J === Y$.nil ? X : Y$._`${b3(X)} ${$} ${b3(J)}`;
   }
-  function P3($) {
+  function b3($) {
     return $ instanceof Y$.Name ? $ : Y$._`(${$})`;
   }
 });
@@ -1098,7 +1098,7 @@ var Q$ = k((CO) => {
     CO.toHash =
       void 0;
   var K$ = a(),
-    xZ = M9();
+    xZ = I9();
   function TZ($) {
     let X = {};
     for (let J of $) X[J] = !0;
@@ -1144,14 +1144,14 @@ var Q$ = k((CO) => {
   }
   CO.unescapeFragment = hZ;
   function uZ($) {
-    return encodeURIComponent(R3($));
+    return encodeURIComponent(E3($));
   }
   CO.escapeFragment = uZ;
-  function R3($) {
+  function E3($) {
     if (typeof $ == "number") return `${$}`;
     return $.replace(/~/g, "~0").replace(/\//g, "~1");
   }
-  CO.escapeJsonPointer = R3;
+  CO.escapeJsonPointer = E3;
   function RO($) {
     return $.replace(/~1/g, "/").replace(/~0/g, "~");
   }
@@ -1195,7 +1195,7 @@ var Q$ = k((CO) => {
       mergeToName: ($, X, J) =>
         $.if(K$._`${J} !== true`, () => {
           if (X === !0) $.assign(J, !0);
-          else ($.assign(J, K$._`${J} || {}`), S3($, J, X));
+          else ($.assign(J, K$._`${J} || {}`), R3($, J, X));
         }),
       mergeValues: ($, X) => ($ === !0 ? !0 : { ...$, ...X }),
       resultToName: SO,
@@ -1216,16 +1216,16 @@ var Q$ = k((CO) => {
   function SO($, X) {
     if (X === !0) return $.var("props", !0);
     let J = $.var("props", K$._`{}`);
-    if (X !== void 0) S3($, J, X);
+    if (X !== void 0) R3($, J, X);
     return J;
   }
   CO.evaluatedPropsToName = SO;
-  function S3($, X, J) {
+  function R3($, X, J) {
     Object.keys(J).forEach((Q) =>
       $.assign(K$._`${X}${(0, K$.getProperty)(Q)}`, !0),
     );
   }
-  CO.setEvaluated = S3;
+  CO.setEvaluated = R3;
   var PO = {};
   function lZ($, X) {
     return $.scopeValue("func", {
@@ -1234,13 +1234,13 @@ var Q$ = k((CO) => {
     });
   }
   CO.useFunc = lZ;
-  var E3;
+  var Z3;
   (function ($) {
     (($[($.Num = 0)] = "Num"), ($[($.Str = 1)] = "Str"));
-  })(E3 || (CO.Type = E3 = {}));
+  })(Z3 || (CO.Type = Z3 = {}));
   function cZ($, X, J) {
     if ($ instanceof K$.Name) {
-      let Q = X === E3.Num;
+      let Q = X === Z3.Num;
       return J
         ? Q
           ? K$._`"[" + ${$} + "]"`
@@ -1249,7 +1249,7 @@ var Q$ = k((CO) => {
           ? K$._`"/" + ${$}`
           : K$._`"/" + ${$}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
     }
-    return J ? (0, K$.getProperty)($).toString() : "/" + R3($);
+    return J ? (0, K$.getProperty)($).toString() : "/" + E3($);
   }
   CO.getErrorPath = cZ;
   function vO($, X, J = $.opts.strictSchema) {
@@ -1282,7 +1282,7 @@ var w4 = k((_O) => {
     };
   _O.default = GE;
 });
-var b9 = k((gO) => {
+var A9 = k((gO) => {
   Object.defineProperty(gO, "__esModule", { value: !0 });
   gO.extendErrors =
     gO.resetErrorsCount =
@@ -1426,7 +1426,7 @@ var b9 = k((gO) => {
 var lO = k((uO) => {
   Object.defineProperty(uO, "__esModule", { value: !0 });
   uO.boolOrEmptySchema = uO.topBoolOrEmptySchema = void 0;
-  var IE = b9(),
+  var IE = A9(),
     ME = a(),
     AE = w4(),
     bE = { message: "boolean schema is false" };
@@ -1458,7 +1458,7 @@ var lO = k((uO) => {
     (0, IE.reportError)(Y, bE, void 0, X);
   }
 });
-var C3 = k((cO) => {
+var v3 = k((cO) => {
   Object.defineProperty(cO, "__esModule", { value: !0 });
   cO.getRules = cO.isJSONType = void 0;
   var RE = [
@@ -1492,7 +1492,7 @@ var C3 = k((cO) => {
   }
   cO.getRules = CE;
 });
-var k3 = k((dO) => {
+var C3 = k((dO) => {
   Object.defineProperty(dO, "__esModule", { value: !0 });
   dO.shouldUseRule = dO.shouldUseGroup = dO.schemaHasRulesForType = void 0;
   function _E({ schema: $, self: X }, J) {
@@ -1515,7 +1515,7 @@ var k3 = k((dO) => {
   }
   dO.shouldUseRule = nO;
 });
-var P9 = k((sO) => {
+var b9 = k((sO) => {
   Object.defineProperty(sO, "__esModule", { value: !0 });
   sO.reportTypeError =
     sO.checkDataTypes =
@@ -1525,15 +1525,15 @@ var P9 = k((sO) => {
     sO.getSchemaTypes =
     sO.DataType =
       void 0;
-  var yE = C3(),
-    gE = k3(),
-    fE = b9(),
+  var yE = v3(),
+    gE = C3(),
+    fE = A9(),
     t = a(),
     oO = Q$(),
-    h0;
+    f0;
   (function ($) {
     (($[($.Correct = 0)] = "Correct"), ($[($.Wrong = 1)] = "Wrong"));
-  })(h0 || (sO.DataType = h0 = {}));
+  })(f0 || (sO.DataType = f0 = {}));
   function hE($) {
     let X = tO($.type);
     if (X.includes("null")) {
@@ -1564,10 +1564,10 @@ var P9 = k((sO) => {
           (0, gE.schemaHasRulesForType)($, X[0])
         );
     if (W) {
-      let G = x3(X, Q, Y.strictNumbers, h0.Wrong);
+      let G = _3(X, Q, Y.strictNumbers, f0.Wrong);
       J.if(G, () => {
         if (z.length) lE($, X, z);
-        else T3($);
+        else x3($);
       });
     }
     return W;
@@ -1589,13 +1589,13 @@ var P9 = k((sO) => {
         () =>
           Q.assign(Y, t._`${Y}[0]`)
             .assign(W, t._`typeof ${Y}`)
-            .if(x3(X, Y, z.strictNumbers), () => Q.assign(G, Y)),
+            .if(_3(X, Y, z.strictNumbers), () => Q.assign(G, Y)),
       );
     Q.if(t._`${G} !== undefined`);
     for (let H of J)
       if (aO.has(H) || (H === "array" && z.coerceTypes === "array")) U(H);
     (Q.else(),
-      T3($),
+      x3($),
       Q.endIf(),
       Q.if(t._`${G} !== undefined`, () => {
         (Q.assign(Y, G), cE($, G));
@@ -1641,8 +1641,8 @@ var P9 = k((sO) => {
   function cE({ gen: $, parentData: X, parentDataProperty: J }, Q) {
     $.if(t._`${X} !== undefined`, () => $.assign(t._`${X}[${J}]`, Q));
   }
-  function _3($, X, J, Q = h0.Correct) {
-    let Y = Q === h0.Correct ? t.operators.EQ : t.operators.NEQ,
+  function k3($, X, J, Q = f0.Correct) {
+    let Y = Q === f0.Correct ? t.operators.EQ : t.operators.NEQ,
       z;
     switch ($) {
       case "null":
@@ -1662,7 +1662,7 @@ var P9 = k((sO) => {
       default:
         return t._`typeof ${X} ${Y} ${$}`;
     }
-    return Q === h0.Correct ? z : (0, t.not)(z);
+    return Q === f0.Correct ? z : (0, t.not)(z);
     function W(G = t.nil) {
       return (0, t.and)(
         t._`typeof ${X} == "number"`,
@@ -1671,9 +1671,9 @@ var P9 = k((sO) => {
       );
     }
   }
-  sO.checkDataType = _3;
-  function x3($, X, J, Q) {
-    if ($.length === 1) return _3($[0], X, J, Q);
+  sO.checkDataType = k3;
+  function _3($, X, J, Q) {
+    if ($.length === 1) return k3($[0], X, J, Q);
     let Y,
       z = (0, oO.toHash)($);
     if (z.array && z.object) {
@@ -1684,20 +1684,20 @@ var P9 = k((sO) => {
         delete z.object);
     } else Y = t.nil;
     if (z.number) delete z.integer;
-    for (let W in z) Y = (0, t.and)(Y, _3(W, X, J, Q));
+    for (let W in z) Y = (0, t.and)(Y, k3(W, X, J, Q));
     return Y;
   }
-  sO.checkDataTypes = x3;
+  sO.checkDataTypes = _3;
   var iE = {
     message: ({ schema: $ }) => `must be ${$}`,
     params: ({ schema: $, schemaValue: X }) =>
       typeof $ == "string" ? t._`{type: ${$}}` : t._`{type: ${X}}`,
   };
-  function T3($) {
+  function x3($) {
     let X = pE($);
     (0, fE.reportError)(X, iE);
   }
-  sO.reportTypeError = T3;
+  sO.reportTypeError = x3;
   function pE($) {
     let { gen: X, data: J, schema: Q } = $,
       Y = (0, oO.schemaRefOrVal)($, Q, "type");
@@ -1717,7 +1717,7 @@ var P9 = k((sO) => {
 var Yw = k((Xw) => {
   Object.defineProperty(Xw, "__esModule", { value: !0 });
   Xw.assignDefaults = void 0;
-  var u0 = a(),
+  var h0 = a(),
     sE = Q$();
   function eE($, X) {
     let { properties: J, items: Q } = $.schema;
@@ -1729,15 +1729,15 @@ var Yw = k((Xw) => {
   function $w($, X, J) {
     let { gen: Q, compositeRule: Y, data: z, opts: W } = $;
     if (J === void 0) return;
-    let G = u0._`${z}${(0, u0.getProperty)(X)}`;
+    let G = h0._`${z}${(0, h0.getProperty)(X)}`;
     if (Y) {
       (0, sE.checkStrictMode)($, `default is ignored for: ${G}`);
       return;
     }
-    let U = u0._`${G} === undefined`;
+    let U = h0._`${G} === undefined`;
     if (W.useDefaults === "empty")
-      U = u0._`${U} || ${G} === null || ${G} === ""`;
-    Q.if(U, u0._`${G} = ${(0, u0.stringify)(J)}`);
+      U = h0._`${U} || ${G} === null || ${G} === ""`;
+    Q.if(U, h0._`${G} = ${(0, h0.stringify)(J)}`);
   }
 });
 var M6 = k((Ww) => {
@@ -1757,12 +1757,12 @@ var M6 = k((Ww) => {
     Ww.checkReportMissingProp =
       void 0;
   var j$ = a(),
-    y3 = Q$(),
+    T3 = Q$(),
     p4 = w4(),
     $R = Q$();
   function XR($, X) {
     let { gen: J, data: Q, it: Y } = $;
-    J.if(f3(J, Q, X, Y.opts.ownProperties), () => {
+    J.if(g3(J, Q, X, Y.opts.ownProperties), () => {
       ($.setParams({ missingProperty: j$._`${X}` }, !0), $.error());
     });
   }
@@ -1770,7 +1770,7 @@ var M6 = k((Ww) => {
   function JR({ gen: $, data: X, it: { opts: J } }, Q, Y) {
     return (0, j$.or)(
       ...Q.map((z) =>
-        (0, j$.and)(f3($, X, z, J.ownProperties), j$._`${Y} = ${z}`),
+        (0, j$.and)(g3($, X, z, J.ownProperties), j$._`${Y} = ${z}`),
       ),
     );
   }
@@ -1786,26 +1786,26 @@ var M6 = k((Ww) => {
     });
   }
   Ww.hasPropFunc = Qw;
-  function g3($, X, J) {
+  function y3($, X, J) {
     return j$._`${Qw($)}.call(${X}, ${J})`;
   }
-  Ww.isOwnProperty = g3;
+  Ww.isOwnProperty = y3;
   function QR($, X, J, Q) {
     let Y = j$._`${X}${(0, j$.getProperty)(J)} !== undefined`;
-    return Q ? j$._`${Y} && ${g3($, X, J)}` : Y;
+    return Q ? j$._`${Y} && ${y3($, X, J)}` : Y;
   }
   Ww.propertyInData = QR;
-  function f3($, X, J, Q) {
+  function g3($, X, J, Q) {
     let Y = j$._`${X}${(0, j$.getProperty)(J)} === undefined`;
-    return Q ? (0, j$.or)(Y, (0, j$.not)(g3($, X, J))) : Y;
+    return Q ? (0, j$.or)(Y, (0, j$.not)(y3($, X, J))) : Y;
   }
-  Ww.noPropertyInData = f3;
+  Ww.noPropertyInData = g3;
   function zw($) {
     return $ ? Object.keys($).filter((X) => X !== "__proto__") : [];
   }
   Ww.allSchemaProperties = zw;
   function zR($, X) {
-    return zw(X).filter((J) => !(0, y3.alwaysValidSchema)($, X[J]));
+    return zw(X).filter((J) => !(0, T3.alwaysValidSchema)($, X[J]));
   }
   Ww.schemaProperties = zR;
   function WR(
@@ -1858,7 +1858,7 @@ var M6 = k((Ww) => {
     function W(G) {
       let U = X.const("len", j$._`${J}.length`);
       X.forRange("i", 0, U, (H) => {
-        ($.subschema({ keyword: Q, dataProp: H, dataPropType: y3.Type.Num }, z),
+        ($.subschema({ keyword: Q, dataProp: H, dataPropType: T3.Type.Num }, z),
           X.if((0, j$.not)(z), G));
       });
     }
@@ -1867,7 +1867,7 @@ var M6 = k((Ww) => {
   function KR($) {
     let { gen: X, schema: J, keyword: Q, it: Y } = $;
     if (!Array.isArray(J)) throw Error("ajv implementation error");
-    if (J.some((U) => (0, y3.alwaysValidSchema)(Y, U)) && !Y.opts.unevaluated)
+    if (J.some((U) => (0, T3.alwaysValidSchema)(Y, U)) && !Y.opts.unevaluated)
       return;
     let W = X.let("valid", !1),
       G = X.name("_valid");
@@ -1899,7 +1899,7 @@ var Vw = k((Kw) => {
   var o$ = a(),
     R1 = w4(),
     AR = M6(),
-    bR = b9();
+    bR = A9();
   function PR($, X) {
     let { gen: J, keyword: Q, schema: Y, parentSchema: z, it: W } = $,
       G = X.macro.call(W.self, Y, z, W),
@@ -2130,7 +2130,7 @@ var qw = k((ww) => {
   }
   ww.extendSubschemaMode = yR;
 });
-var h3 = k((Ko, Dw) => {
+var f3 = k((Ko, Dw) => {
   Dw.exports = function $(X, J) {
     if (X === J) return !0;
     if (X && J && typeof X == "object" && typeof J == "object") {
@@ -2230,7 +2230,7 @@ var jw = k((No, Lw) => {
     return $.replace(/~/g, "~0").replace(/\//g, "~1");
   }
 });
-var Z9 = k((Aw) => {
+var P9 = k((Aw) => {
   Object.defineProperty(Aw, "__esModule", { value: !0 });
   Aw.getSchemaRefs =
     Aw.resolveUrl =
@@ -2240,7 +2240,7 @@ var Z9 = k((Aw) => {
     Aw.inlineRef =
       void 0;
   var uR = Q$(),
-    mR = h3(),
+    mR = f3(),
     lR = jw(),
     cR = new Set([
       "type",
@@ -2262,7 +2262,7 @@ var Z9 = k((Aw) => {
     ]);
   function iR($, X = !0) {
     if (typeof $ == "boolean") return !0;
-    if (X === !0) return !u3($);
+    if (X === !0) return !h3($);
     if (!X) return !1;
     return Fw($) <= X;
   }
@@ -2274,12 +2274,12 @@ var Z9 = k((Aw) => {
     "$dynamicRef",
     "$dynamicAnchor",
   ]);
-  function u3($) {
+  function h3($) {
     for (let X in $) {
       if (pR.has(X)) return !0;
       let J = $[X];
-      if (Array.isArray(J) && J.some(u3)) return !0;
-      if (typeof J == "object" && u3(J)) return !0;
+      if (Array.isArray(J) && J.some(h3)) return !0;
+      if (typeof J == "object" && h3(J)) return !0;
     }
     return !1;
   }
@@ -2294,7 +2294,7 @@ var Z9 = k((Aw) => {
     return X;
   }
   function Iw($, X = "", J) {
-    if (J !== !1) X = m0(X);
+    if (J !== !1) X = u0(X);
     let Q = $.parse(X);
     return Mw($, Q);
   }
@@ -2304,19 +2304,19 @@ var Z9 = k((Aw) => {
   }
   Aw._getFullPath = Mw;
   var nR = /#\/?$/;
-  function m0($) {
+  function u0($) {
     return $ ? $.replace(nR, "") : "";
   }
-  Aw.normalizeId = m0;
+  Aw.normalizeId = u0;
   function dR($, X, J) {
-    return ((J = m0(J)), $.resolve(X, J));
+    return ((J = u0(J)), $.resolve(X, J));
   }
   Aw.resolveUrl = dR;
   var rR = /^[a-z_][-a-z0-9._]*$/i;
   function oR($, X) {
     if (typeof $ == "boolean") return {};
     let { schemaId: J, uriResolver: Q } = this.opts,
-      Y = m0($[J] || X),
+      Y = u0($[J] || X),
       z = { "": Y },
       W = Iw(Q, Y, !1),
       G = {},
@@ -2330,12 +2330,12 @@ var Z9 = k((Aw) => {
         (M.call(this, V.$anchor), M.call(this, V.$dynamicAnchor), (z[O] = L));
         function j(b) {
           let x = this.opts.uriResolver.resolve;
-          if (((b = m0(L ? x(L, b) : b)), U.has(b))) throw K(b);
+          if (((b = u0(L ? x(L, b) : b)), U.has(b))) throw K(b);
           U.add(b);
           let h = this.refs[b];
           if (typeof h == "string") h = this.refs[h];
           if (typeof h == "object") H(V, h.schema, b);
-          else if (b !== m0(B))
+          else if (b !== u0(B))
             if (b[0] === "#") (H(V, G[b], b), (G[b] = V));
             else this.refs[b] = B;
           return b;
@@ -2358,21 +2358,21 @@ var Z9 = k((Aw) => {
   }
   Aw.getSchemaRefs = oR;
 });
-var S9 = k((hw) => {
+var R9 = k((hw) => {
   Object.defineProperty(hw, "__esModule", { value: !0 });
   hw.getData = hw.KeywordCxt = hw.validateFunctionCode = void 0;
   var Sw = lO(),
-    Pw = P9(),
-    l3 = k3(),
-    E7 = P9(),
+    Pw = b9(),
+    m3 = C3(),
+    E7 = b9(),
     XS = Yw(),
-    R9 = Vw(),
-    m3 = qw(),
+    E9 = Vw(),
+    u3 = qw(),
     u = a(),
     d = w4(),
-    JS = Z9(),
+    JS = P9(),
     B4 = Q$(),
-    E9 = b9();
+    Z9 = A9();
   function YS($) {
     if (kw($)) {
       if ((_w($), Cw($))) {
@@ -2573,7 +2573,7 @@ var S9 = k((hw) => {
       V(K.post);
     });
     function V(O) {
-      if (!(0, l3.shouldUseGroup)(z, O)) return;
+      if (!(0, m3.shouldUseGroup)(z, O)) return;
       if (O.type) {
         if (
           (Y.if((0, E7.checkDataType)(O.type, W, U.strictNumbers)),
@@ -2595,7 +2595,7 @@ var S9 = k((hw) => {
     if (Y) (0, XS.assignDefaults)($, X.type);
     J.block(() => {
       for (let z of X.rules)
-        if ((0, l3.shouldUseRule)(Q, z)) gw($, z.keyword, z.definition, X.type);
+        if ((0, m3.shouldUseRule)(Q, z)) gw($, z.keyword, z.definition, X.type);
     });
   }
   function qS($, X) {
@@ -2611,22 +2611,22 @@ var S9 = k((hw) => {
     }
     (X.forEach((J) => {
       if (!yw($.dataTypes, J))
-        c3($, `type "${J}" not allowed by context "${$.dataTypes.join(",")}"`);
+        l3($, `type "${J}" not allowed by context "${$.dataTypes.join(",")}"`);
     }),
       IS($, X));
   }
   function LS($, X) {
     if (X.length > 1 && !(X.length === 2 && X.includes("null")))
-      c3($, "use allowUnionTypes to allow union type keyword");
+      l3($, "use allowUnionTypes to allow union type keyword");
   }
   function jS($, X) {
     let J = $.self.RULES.all;
     for (let Q in J) {
       let Y = J[Q];
-      if (typeof Y == "object" && (0, l3.shouldUseRule)($.schema, Y)) {
+      if (typeof Y == "object" && (0, m3.shouldUseRule)($.schema, Y)) {
         let { type: z } = Y.definition;
         if (z.length && !z.some((W) => FS(X, W)))
-          c3($, `missing type "${z.join(",")}" for keyword "${Q}"`);
+          l3($, `missing type "${z.join(",")}" for keyword "${Q}"`);
       }
     }
   }
@@ -2643,15 +2643,15 @@ var S9 = k((hw) => {
       else if (X.includes("integer") && Q === "number") J.push("integer");
     $.dataTypes = J;
   }
-  function c3($, X) {
+  function l3($, X) {
     let J = $.schemaEnv.baseId + $.errSchemaPath;
     ((X += ` at "${J}" (strictTypes)`),
       (0, B4.checkStrictMode)($, X, $.opts.strictTypes));
   }
-  class i3 {
+  class c3 {
     constructor($, X, J) {
       if (
-        ((0, R9.validateKeywordUsage)($, X, J),
+        ((0, E9.validateKeywordUsage)($, X, J),
         (this.gen = $.gen),
         (this.allErrors = $.allErrors),
         (this.keyword = J),
@@ -2675,7 +2675,7 @@ var S9 = k((hw) => {
         this.schemaCode = $.gen.const("vSchema", fw(this.$data, $));
       else if (
         ((this.schemaCode = this.schemaValue),
-        !(0, R9.validSchemaType)(this.schema, X.schemaType, X.allowUndefined))
+        !(0, E9.validSchemaType)(this.schema, X.schemaType, X.allowUndefined))
       )
         throw Error(`${J} value must be ${JSON.stringify(X.schemaType)}`);
       if ("code" in X ? X.trackErrors : X.errors !== !1)
@@ -2718,15 +2718,15 @@ var S9 = k((hw) => {
       this._error($, J);
     }
     _error($, X) {
-      ($ ? E9.reportExtraError : E9.reportError)(this, this.def.error, X);
+      ($ ? Z9.reportExtraError : Z9.reportError)(this, this.def.error, X);
     }
     $dataError() {
-      (0, E9.reportError)(this, this.def.$dataError || E9.keyword$DataError);
+      (0, Z9.reportError)(this, this.def.$dataError || Z9.keyword$DataError);
     }
     reset() {
       if (this.errsCount === void 0)
         throw Error('add "trackErrors" to keyword definition');
-      (0, E9.resetErrorsCount)(this.gen, this.errsCount);
+      (0, Z9.resetErrorsCount)(this.gen, this.errsCount);
     }
     ok($) {
       if (!this.allErrors) this.gen.if($);
@@ -2771,9 +2771,9 @@ var S9 = k((hw) => {
       }
     }
     subschema($, X) {
-      let J = (0, m3.getSubschema)(this.it, $);
-      ((0, m3.extendSubschemaData)(J, this.it, $),
-        (0, m3.extendSubschemaMode)(J, $));
+      let J = (0, u3.getSubschema)(this.it, $);
+      ((0, u3.extendSubschemaData)(J, this.it, $),
+        (0, u3.extendSubschemaMode)(J, $));
       let Q = { ...this.it, ...J, items: void 0, props: void 0 };
       return (US(Q, X), Q);
     }
@@ -2791,13 +2791,13 @@ var S9 = k((hw) => {
         return (Q.if(X, () => this.mergeEvaluated($, u.Name)), !0);
     }
   }
-  hw.KeywordCxt = i3;
+  hw.KeywordCxt = c3;
   function gw($, X, J, Q) {
-    let Y = new i3($, J, X);
+    let Y = new c3($, J, X);
     if ("code" in J) J.code(Y, Q);
-    else if (Y.$data && J.validate) (0, R9.funcKeywordCode)(Y, J);
-    else if ("macro" in J) (0, R9.macroKeywordCode)(Y, J);
-    else if (J.compile || J.validate) (0, R9.funcKeywordCode)(Y, J);
+    else if (Y.$data && J.validate) (0, E9.funcKeywordCode)(Y, J);
+    else if ("macro" in J) (0, E9.macroKeywordCode)(Y, J);
+    else if (J.compile || J.validate) (0, E9.funcKeywordCode)(Y, J);
   }
   var MS = /^\/(?:[^~]|~0|~1)*$/,
     AS = /^([0-9]+)(#|\/(?:[^~]|~0|~1)*)?$/;
@@ -2841,15 +2841,15 @@ var R7 = k((lw) => {
   }
   lw.default = mw;
 });
-var v9 = k((iw) => {
+var S9 = k((iw) => {
   Object.defineProperty(iw, "__esModule", { value: !0 });
-  var p3 = Z9();
+  var i3 = P9();
   class cw extends Error {
     constructor($, X, J, Q) {
       super(Q || `can't resolve reference ${J} from id ${X}`);
-      ((this.missingRef = (0, p3.resolveUrl)($, X, J)),
-        (this.missingSchema = (0, p3.normalizeId)(
-          (0, p3.getFullPath)($, this.missingRef),
+      ((this.missingRef = (0, i3.resolveUrl)($, X, J)),
+        (this.missingSchema = (0, i3.normalizeId)(
+          (0, i3.getFullPath)($, this.missingRef),
         )));
     }
   }
@@ -2866,10 +2866,10 @@ var v7 = k((dw) => {
   var _6 = a(),
     RS = R7(),
     S1 = w4(),
-    x6 = Z9(),
+    x6 = P9(),
     pw = Q$(),
-    SS = S9();
-  class C9 {
+    SS = R9();
+  class v9 {
     constructor($) {
       var X;
       ((this.refs = {}), (this.dynamicAnchors = {}));
@@ -2891,8 +2891,8 @@ var v7 = k((dw) => {
         (this.refs = {}));
     }
   }
-  dw.SchemaEnv = C9;
-  function d3($) {
+  dw.SchemaEnv = v9;
+  function n3($) {
     let X = nw.call(this, $);
     if (X) return X;
     let J = (0, x6.getFullPath)(this.opts.uriResolver, $.root.baseId),
@@ -2984,7 +2984,7 @@ var v7 = k((dw) => {
       this._compilations.delete($);
     }
   }
-  dw.compileSchema = d3;
+  dw.compileSchema = n3;
   function vS($, X, J) {
     var Q;
     J = (0, x6.resolveUrl)(this.opts.uriResolver, X, J);
@@ -2994,7 +2994,7 @@ var v7 = k((dw) => {
     if (z === void 0) {
       let W = (Q = $.localRefs) === null || Q === void 0 ? void 0 : Q[J],
         { schemaId: G } = this.opts;
-      if (W) z = new C9({ schema: W, schemaId: G, root: $, baseId: X });
+      if (W) z = new v9({ schema: W, schemaId: G, root: $, baseId: X });
     }
     if (z === void 0) return;
     return ($.refs[J] = CS.call(this, z));
@@ -3002,7 +3002,7 @@ var v7 = k((dw) => {
   dw.resolveRef = vS;
   function CS($) {
     if ((0, x6.inlineRef)($.schema, this.opts.inlineRefs)) return $.schema;
-    return $.validate ? $ : d3.call(this, $);
+    return $.validate ? $ : n3.call(this, $);
   }
   function nw($) {
     for (let X of this._compilations) if (kS(X, $)) return X;
@@ -3020,26 +3020,26 @@ var v7 = k((dw) => {
     let J = this.opts.uriResolver.parse(X),
       Q = (0, x6._getFullPath)(this.opts.uriResolver, J),
       Y = (0, x6.getFullPath)(this.opts.uriResolver, $.baseId, void 0);
-    if (Object.keys($.schema).length > 0 && Q === Y) return n3.call(this, J, $);
+    if (Object.keys($.schema).length > 0 && Q === Y) return p3.call(this, J, $);
     let z = (0, x6.normalizeId)(Q),
       W = this.refs[z] || this.schemas[z];
     if (typeof W == "string") {
       let G = S7.call(this, $, W);
       if (typeof (G === null || G === void 0 ? void 0 : G.schema) !== "object")
         return;
-      return n3.call(this, J, G);
+      return p3.call(this, J, G);
     }
     if (typeof (W === null || W === void 0 ? void 0 : W.schema) !== "object")
       return;
-    if (!W.validate) d3.call(this, W);
+    if (!W.validate) n3.call(this, W);
     if (z === (0, x6.normalizeId)(X)) {
       let { schema: G } = W,
         { schemaId: U } = this.opts,
         H = G[U];
       if (H) Y = (0, x6.resolveUrl)(this.opts.uriResolver, Y, H);
-      return new C9({ schema: G, schemaId: U, root: $, baseId: Y });
+      return new v9({ schema: G, schemaId: U, root: $, baseId: Y });
     }
-    return n3.call(this, J, W);
+    return p3.call(this, J, W);
   }
   dw.resolveSchema = S7;
   var xS = new Set([
@@ -3049,7 +3049,7 @@ var v7 = k((dw) => {
     "dependencies",
     "definitions",
   ]);
-  function n3($, { baseId: X, schema: J, root: Q }) {
+  function p3($, { baseId: X, schema: J, root: Q }) {
     var Y;
     if (((Y = $.fragment) === null || Y === void 0 ? void 0 : Y[0]) !== "/")
       return;
@@ -3072,7 +3072,7 @@ var v7 = k((dw) => {
     }
     let { schemaId: W } = this.opts;
     if (
-      ((z = z || new C9({ schema: J, schemaId: W, root: Q, baseId: X })),
+      ((z = z || new v9({ schema: J, schemaId: W, root: Q, baseId: X })),
       z.schema !== z.root.schema)
     )
       return z;
@@ -3136,7 +3136,7 @@ var zB = k((jo, QB) => {
     if (J) return { host: iS(J, "."), isIPV4: !0 };
     else return { host: $, isIPV4: !1 };
   }
-  function r3($, X = !1) {
+  function d3($, X = !1) {
     let J = "",
       Q = !0;
     for (let Y of $) {
@@ -3158,7 +3158,7 @@ var zB = k((jo, QB) => {
     function U() {
       if (Y.length) {
         if (z === !1) {
-          let H = r3(Y);
+          let H = d3(Y);
           if (H !== void 0) Q.push(H);
           else return ((J.error = !0), !1);
         }
@@ -3189,7 +3189,7 @@ var zB = k((jo, QB) => {
     if (Y.length)
       if (z) J.zone = Y.join("");
       else if (G) Q.push(Y.join(""));
-      else Q.push(r3(Y));
+      else Q.push(d3(Y));
     return ((J.address = Q.join("")), J);
   }
   function JB($) {
@@ -3276,7 +3276,7 @@ var zB = k((jo, QB) => {
     removeDotSegments: nS,
     normalizeIPv4: XB,
     normalizeIPv6: JB,
-    stringArrayToHexStripped: r3,
+    stringArrayToHexStripped: d3,
   };
 });
 var NB = k((Fo, KB) => {
@@ -3325,7 +3325,7 @@ var NB = k((Fo, KB) => {
       let Q = X.scheme || $.scheme || "urn";
       (($.nid = J[1].toLowerCase()), ($.nss = J[2]));
       let Y = `${Q}:${X.nid || $.nid}`,
-        z = o3[Y];
+        z = r3[Y];
       if ((($.path = void 0), z)) $ = z.parse($, X);
     } else $.error = $.error || "URN can not be parsed.";
     return $;
@@ -3334,7 +3334,7 @@ var NB = k((Fo, KB) => {
     let J = X.scheme || $.scheme || "urn",
       Q = $.nid.toLowerCase(),
       Y = `${J}:${X.nid || Q}`,
-      z = o3[Y];
+      z = r3[Y];
     if (z) $ = z.serialize($, X);
     let W = $,
       G = $.nss;
@@ -3370,18 +3370,18 @@ var NB = k((Fo, KB) => {
     },
     zv = { scheme: "urn", parse: eS, serialize: $v, skipNormalize: !0 },
     Wv = { scheme: "urn:uuid", parse: Xv, serialize: Jv, skipNormalize: !0 },
-    o3 = { http: HB, https: Yv, ws: C7, wss: Qv, urn: zv, "urn:uuid": Wv };
-  KB.exports = o3;
+    r3 = { http: HB, https: Yv, ws: C7, wss: Qv, urn: zv, "urn:uuid": Wv };
+  KB.exports = r3;
 });
 var OB = k((Io, _7) => {
   var {
       normalizeIPv6: Gv,
       normalizeIPv4: Uv,
-      removeDotSegments: k9,
+      removeDotSegments: C9,
       recomposeAuthority: Hv,
       normalizeComponentEncoding: k7,
     } = zB(),
-    t3 = NB();
+    o3 = NB();
   function Kv($, X) {
     if (typeof $ === "string") $ = p6(q4($, X), X);
     else if (typeof $ === "object") $ = q4(p6($, X), X);
@@ -3400,21 +3400,21 @@ var OB = k((Io, _7) => {
         (Y.userinfo = X.userinfo),
         (Y.host = X.host),
         (Y.port = X.port),
-        (Y.path = k9(X.path || "")),
+        (Y.path = C9(X.path || "")),
         (Y.query = X.query));
     else {
       if (X.userinfo !== void 0 || X.host !== void 0 || X.port !== void 0)
         ((Y.userinfo = X.userinfo),
           (Y.host = X.host),
           (Y.port = X.port),
-          (Y.path = k9(X.path || "")),
+          (Y.path = C9(X.path || "")),
           (Y.query = X.query));
       else {
         if (!X.path)
           if (((Y.path = $.path), X.query !== void 0)) Y.query = X.query;
           else Y.query = $.query;
         else {
-          if (X.path.charAt(0) === "/") Y.path = k9(X.path);
+          if (X.path.charAt(0) === "/") Y.path = C9(X.path);
           else {
             if (
               ($.userinfo !== void 0 ||
@@ -3425,7 +3425,7 @@ var OB = k((Io, _7) => {
               Y.path = "/" + X.path;
             else if (!$.path) Y.path = X.path;
             else Y.path = $.path.slice(0, $.path.lastIndexOf("/") + 1) + X.path;
-            Y.path = k9(Y.path);
+            Y.path = C9(Y.path);
           }
           Y.query = X.query;
         }
@@ -3463,7 +3463,7 @@ var OB = k((Io, _7) => {
       },
       Q = Object.assign({}, X),
       Y = [],
-      z = t3[(Q.scheme || J.scheme || "").toLowerCase()];
+      z = o3[(Q.scheme || J.scheme || "").toLowerCase()];
     if (z && z.serialize) z.serialize(J, Q);
     if (J.path !== void 0)
       if (!Q.skipEscape) {
@@ -3478,7 +3478,7 @@ var OB = k((Io, _7) => {
     }
     if (J.path !== void 0) {
       let G = J.path;
-      if (!Q.absolutePath && (!z || !z.absolutePath)) G = k9(G);
+      if (!Q.absolutePath && (!z || !z.absolutePath)) G = C9(G);
       if (W === void 0) G = G.replace(/^\/\//u, "/%2F");
       Y.push(G);
     }
@@ -3550,7 +3550,7 @@ var OB = k((Io, _7) => {
         J.reference !== Q.reference
       )
         Q.error = Q.error || "URI is not a " + J.reference + " reference.";
-      let G = t3[(J.scheme || Q.scheme || "").toLowerCase()];
+      let G = o3[(J.scheme || Q.scheme || "").toLowerCase()];
       if (!J.unicodeSupport && (!G || !G.unicodeSupport)) {
         if (
           Q.host &&
@@ -3576,8 +3576,8 @@ var OB = k((Io, _7) => {
     } else Q.error = Q.error || "URI can not be parsed.";
     return Q;
   }
-  var a3 = {
-    SCHEMES: t3,
+  var t3 = {
+    SCHEMES: o3,
     normalize: Kv,
     resolve: Nv,
     resolveComponents: VB,
@@ -3585,9 +3585,9 @@ var OB = k((Io, _7) => {
     serialize: p6,
     parse: q4,
   };
-  _7.exports = a3;
-  _7.exports.default = a3;
-  _7.exports.fastUri = a3;
+  _7.exports = t3;
+  _7.exports.default = t3;
+  _7.exports.fastUri = t3;
 });
 var qB = k((BB) => {
   Object.defineProperty(BB, "__esModule", { value: !0 });
@@ -3605,58 +3605,58 @@ var bB = k((D4) => {
     D4._ =
     D4.KeywordCxt =
       void 0;
-  var Dv = S9();
+  var Dv = R9();
   Object.defineProperty(D4, "KeywordCxt", {
     enumerable: !0,
     get: function () {
       return Dv.KeywordCxt;
     },
   });
-  var l0 = a();
+  var m0 = a();
   Object.defineProperty(D4, "_", {
     enumerable: !0,
     get: function () {
-      return l0._;
+      return m0._;
     },
   });
   Object.defineProperty(D4, "str", {
     enumerable: !0,
     get: function () {
-      return l0.str;
+      return m0.str;
     },
   });
   Object.defineProperty(D4, "stringify", {
     enumerable: !0,
     get: function () {
-      return l0.stringify;
+      return m0.stringify;
     },
   });
   Object.defineProperty(D4, "nil", {
     enumerable: !0,
     get: function () {
-      return l0.nil;
+      return m0.nil;
     },
   });
   Object.defineProperty(D4, "Name", {
     enumerable: !0,
     get: function () {
-      return l0.Name;
+      return m0.Name;
     },
   });
   Object.defineProperty(D4, "CodeGen", {
     enumerable: !0,
     get: function () {
-      return l0.CodeGen;
+      return m0.CodeGen;
     },
   });
   var Lv = R7(),
-    IB = v9(),
-    jv = C3(),
-    _9 = v7(),
+    IB = S9(),
+    jv = v3(),
+    k9 = v7(),
     Fv = a(),
-    x9 = Z9(),
-    x7 = P9(),
-    e3 = Q$(),
+    _9 = P9(),
+    x7 = b9(),
+    s3 = Q$(),
     DB = ow(),
     Iv = qB(),
     MB = ($, X) => new RegExp($, X);
@@ -3738,7 +3738,7 @@ var bB = k((D4) => {
           null && Q !== void 0
           ? Q
           : MB,
-      r0 = (Y = $.uriResolver) !== null && Y !== void 0 ? Y : Iv.default;
+      d0 = (Y = $.uriResolver) !== null && Y !== void 0 ? Y : Iv.default;
     return {
       strictSchema:
         (W = (z = $.strictSchema) !== null && z !== void 0 ? z : g6) !== null &&
@@ -3781,7 +3781,7 @@ var bB = k((D4) => {
         (x$ = $.validateFormats) !== null && x$ !== void 0 ? x$ : !0,
       unicodeRegExp: (Q6 = $.unicodeRegExp) !== null && Q6 !== void 0 ? Q6 : !0,
       int32range: (r6 = $.int32range) !== null && r6 !== void 0 ? r6 : !0,
-      uriResolver: r0,
+      uriResolver: d0,
     };
   }
   class T7 {
@@ -3900,7 +3900,7 @@ var bB = k((D4) => {
           throw Error(`schema ${z} must be string`);
       }
       return (
-        (X = (0, x9.normalizeId)(X || Y)),
+        (X = (0, _9.normalizeId)(X || Y)),
         this._checkUnique(X),
         (this.schemas[X] = this._addSchema($, J, X, Q, !0)),
         this
@@ -3933,8 +3933,8 @@ var bB = k((D4) => {
       while (typeof (X = FB.call(this, $)) == "string") $ = X;
       if (X === void 0) {
         let { schemaId: J } = this.opts,
-          Q = new _9.SchemaEnv({ schema: {}, schemaId: J });
-        if (((X = _9.resolveSchema.call(this, Q, $)), !X)) return;
+          Q = new k9.SchemaEnv({ schema: {}, schemaId: J });
+        if (((X = k9.resolveSchema.call(this, Q, $)), !X)) return;
         this.refs[$] = X;
       }
       return X.validate || this._compileSchemaEnv(X);
@@ -3964,7 +3964,7 @@ var bB = k((D4) => {
           this._cache.delete(X);
           let J = $[this.opts.schemaId];
           if (J)
-            ((J = (0, x9.normalizeId)(J)),
+            ((J = (0, _9.normalizeId)(J)),
               delete this.schemas[J],
               delete this.refs[J]);
           return this;
@@ -3990,7 +3990,7 @@ var bB = k((D4) => {
           throw Error("addKeywords: keyword must be string or non-empty array");
       } else throw Error("invalid addKeywords parameters");
       if ((xv.call(this, J, X), !X))
-        return ((0, e3.eachItem)(J, (Y) => s3.call(this, Y)), this);
+        return ((0, s3.eachItem)(J, (Y) => a3.call(this, Y)), this);
       yv.call(this, X);
       let Q = {
         ...X,
@@ -3998,11 +3998,11 @@ var bB = k((D4) => {
         schemaType: (0, x7.getJSONTypes)(X.schemaType),
       };
       return (
-        (0, e3.eachItem)(
+        (0, s3.eachItem)(
           J,
           Q.type.length === 0
-            ? (Y) => s3.call(this, Y, Q)
-            : (Y) => Q.type.forEach((z) => s3.call(this, Y, Q, z)),
+            ? (Y) => a3.call(this, Y, Q)
+            : (Y) => Q.type.forEach((z) => a3.call(this, Y, Q, z)),
         ),
         this
       );
@@ -4074,10 +4074,10 @@ var bB = k((D4) => {
         throw Error("schema must be object or boolean");
       let G = this._cache.get($);
       if (G !== void 0) return G;
-      J = (0, x9.normalizeId)(z || J);
-      let U = x9.getSchemaRefs.call(this, $, J);
+      J = (0, _9.normalizeId)(z || J);
+      let U = _9.getSchemaRefs.call(this, $, J);
       if (
-        ((G = new _9.SchemaEnv({
+        ((G = new k9.SchemaEnv({
           schema: $,
           schemaId: W,
           meta: X,
@@ -4099,7 +4099,7 @@ var bB = k((D4) => {
     }
     _compileSchemaEnv($) {
       if ($.meta) this._compileMetaSchema($);
-      else _9.compileSchema.call(this, $);
+      else k9.compileSchema.call(this, $);
       if (!$.validate) throw Error("ajv implementation error");
       return $.validate;
     }
@@ -4107,7 +4107,7 @@ var bB = k((D4) => {
       let X = this.opts;
       this.opts = this._metaOpts;
       try {
-        _9.compileSchema.call(this, $);
+        k9.compileSchema.call(this, $);
       } finally {
         this.opts = X;
       }
@@ -4123,7 +4123,7 @@ var bB = k((D4) => {
     }
   }
   function FB($) {
-    return (($ = (0, x9.normalizeId)($)), this.schemas[$] || this.refs[$]);
+    return (($ = (0, _9.normalizeId)($)), this.schemas[$] || this.refs[$]);
   }
   function Ev() {
     let $ = this.opts.schemas;
@@ -4165,7 +4165,7 @@ var bB = k((D4) => {
   function xv($, X) {
     let { RULES: J } = this;
     if (
-      ((0, e3.eachItem)($, (Q) => {
+      ((0, s3.eachItem)($, (Q) => {
         if (J.keywords[Q]) throw Error(`Keyword ${Q} is already defined`);
         if (!_v.test(Q)) throw Error(`Keyword ${Q} has invalid name`);
       }),
@@ -4175,7 +4175,7 @@ var bB = k((D4) => {
     if (X.$data && !("code" in X || "validate" in X))
       throw Error('$data keyword must have "code" or "validate" function');
   }
-  function s3($, X, J) {
+  function a3($, X, J) {
     var Q;
     let Y = X === null || X === void 0 ? void 0 : X.post;
     if (J && Y) throw Error('keyword with "post" flag cannot have "type"');
@@ -4229,10 +4229,10 @@ var ZB = k((PB) => {
 var kB = k((vB) => {
   Object.defineProperty(vB, "__esModule", { value: !0 });
   vB.callRef = vB.getValidate = void 0;
-  var lv = v9(),
+  var lv = S9(),
     EB = M6(),
     J6 = a(),
-    c0 = w4(),
+    l0 = w4(),
     RB = v7(),
     y7 = Q$(),
     cv = {
@@ -4288,7 +4288,7 @@ var kB = k((vB) => {
   function g7($, X, J, Q) {
     let { gen: Y, it: z } = $,
       { allErrors: W, schemaEnv: G, opts: U } = z,
-      H = U.passContext ? c0.default.this : J6.nil;
+      H = U.passContext ? l0.default.this : J6.nil;
     if (Q) K();
     else V();
     function K() {
@@ -4324,10 +4324,10 @@ var kB = k((vB) => {
     function O(w) {
       let B = J6._`${w}.errors`;
       (Y.assign(
-        c0.default.vErrors,
-        J6._`${c0.default.vErrors} === null ? ${B} : ${c0.default.vErrors}.concat(${B})`,
+        l0.default.vErrors,
+        J6._`${l0.default.vErrors} === null ? ${B} : ${l0.default.vErrors}.concat(${B})`,
       ),
-        Y.assign(c0.default.errors, J6._`${c0.default.vErrors}.length`));
+        Y.assign(l0.default.errors, J6._`${l0.default.vErrors}.length`));
     }
     function N(w) {
       var B;
@@ -4405,10 +4405,10 @@ var yB = k((TB) => {
 });
 var fB = k((gB) => {
   Object.defineProperty(gB, "__esModule", { value: !0 });
-  var T9 = a(),
+  var x9 = a(),
     ev = {
-      message: ({ schemaCode: $ }) => T9.str`must be multiple of ${$}`,
-      params: ({ schemaCode: $ }) => T9._`{multipleOf: ${$}}`,
+      message: ({ schemaCode: $ }) => x9.str`must be multiple of ${$}`,
+      params: ({ schemaCode: $ }) => x9._`{multipleOf: ${$}}`,
     },
     $C = {
       keyword: "multipleOf",
@@ -4421,9 +4421,9 @@ var fB = k((gB) => {
           z = Y.opts.multipleOfPrecision,
           W = X.let("res"),
           G = z
-            ? T9._`Math.abs(Math.round(${W}) - ${W}) > 1e-${z}`
-            : T9._`${W} !== parseInt(${W})`;
-        $.fail$data(T9._`(${Q} === 0 || (${W} = ${J}/${Q}, ${G}))`);
+            ? x9._`Math.abs(Math.round(${W}) - ${W}) > 1e-${z}`
+            : x9._`${W} !== parseInt(${W})`;
+        $.fail$data(x9._`(${Q} === 0 || (${W} = ${J}/${Q}, ${G}))`);
       },
     };
   gB.default = $C;
@@ -4478,10 +4478,10 @@ var pB = k((iB) => {
   Object.defineProperty(iB, "__esModule", { value: !0 });
   var UC = M6(),
     HC = Q$(),
-    i0 = a(),
+    c0 = a(),
     KC = {
-      message: ({ schemaCode: $ }) => i0.str`must match pattern "${$}"`,
-      params: ({ schemaCode: $ }) => i0._`{pattern: ${$}}`,
+      message: ({ schemaCode: $ }) => c0.str`must match pattern "${$}"`,
+      params: ({ schemaCode: $ }) => c0._`{pattern: ${$}}`,
     },
     NC = {
       keyword: "pattern",
@@ -4496,17 +4496,17 @@ var pB = k((iB) => {
           let { regExp: U } = W.opts.code,
             H =
               U.code === "new RegExp"
-                ? i0._`new RegExp`
+                ? c0._`new RegExp`
                 : (0, HC.useFunc)(X, U),
             K = X.let("valid");
           (X.try(
-            () => X.assign(K, i0._`${H}(${z}, ${G}).test(${J})`),
+            () => X.assign(K, c0._`${H}(${z}, ${G}).test(${J})`),
             () => X.assign(K, !1),
           ),
-            $.fail$data(i0._`!${K}`));
+            $.fail$data(c0._`!${K}`));
         } else {
           let U = (0, UC.usePattern)($, Y);
-          $.fail$data(i0._`!${U}.test(${J})`);
+          $.fail$data(c0._`!${U}.test(${J})`);
         }
       },
     };
@@ -4514,13 +4514,13 @@ var pB = k((iB) => {
 });
 var dB = k((nB) => {
   Object.defineProperty(nB, "__esModule", { value: !0 });
-  var y9 = a(),
+  var T9 = a(),
     OC = {
       message({ keyword: $, schemaCode: X }) {
         let J = $ === "maxProperties" ? "more" : "fewer";
-        return y9.str`must NOT have ${J} than ${X} properties`;
+        return T9.str`must NOT have ${J} than ${X} properties`;
       },
-      params: ({ schemaCode: $ }) => y9._`{limit: ${$}}`,
+      params: ({ schemaCode: $ }) => T9._`{limit: ${$}}`,
     },
     wC = {
       keyword: ["maxProperties", "minProperties"],
@@ -4530,22 +4530,22 @@ var dB = k((nB) => {
       error: OC,
       code($) {
         let { keyword: X, data: J, schemaCode: Q } = $,
-          Y = X === "maxProperties" ? y9.operators.GT : y9.operators.LT;
-        $.fail$data(y9._`Object.keys(${J}).length ${Y} ${Q}`);
+          Y = X === "maxProperties" ? T9.operators.GT : T9.operators.LT;
+        $.fail$data(T9._`Object.keys(${J}).length ${Y} ${Q}`);
       },
     };
   nB.default = wC;
 });
 var oB = k((rB) => {
   Object.defineProperty(rB, "__esModule", { value: !0 });
-  var g9 = M6(),
-    f9 = a(),
+  var y9 = M6(),
+    g9 = a(),
     qC = Q$(),
     DC = {
       message: ({ params: { missingProperty: $ } }) =>
-        f9.str`must have required property '${$}'`,
+        g9.str`must have required property '${$}'`,
       params: ({ params: { missingProperty: $ } }) =>
-        f9._`{missingProperty: ${$}}`,
+        g9._`{missingProperty: ${$}}`,
     },
     LC = {
       keyword: "required",
@@ -4574,8 +4574,8 @@ var oB = k((rB) => {
             }
         }
         function H() {
-          if (U || z) $.block$data(f9.nil, V);
-          else for (let N of J) (0, g9.checkReportMissingProp)($, N);
+          if (U || z) $.block$data(g9.nil, V);
+          else for (let N of J) (0, y9.checkReportMissingProp)($, N);
         }
         function K() {
           let N = X.let("missing");
@@ -4583,14 +4583,14 @@ var oB = k((rB) => {
             let w = X.let("valid", !0);
             ($.block$data(w, () => O(N, w)), $.ok(w));
           } else
-            (X.if((0, g9.checkMissingProp)($, J, N)),
-              (0, g9.reportMissingProp)($, N),
+            (X.if((0, y9.checkMissingProp)($, J, N)),
+              (0, y9.reportMissingProp)($, N),
               X.else());
         }
         function V() {
           X.forOf("prop", Q, (N) => {
             ($.setParams({ missingProperty: N }),
-              X.if((0, g9.noPropertyInData)(X, Y, N, G.ownProperties), () =>
+              X.if((0, y9.noPropertyInData)(X, Y, N, G.ownProperties), () =>
                 $.error(),
               ));
           });
@@ -4601,12 +4601,12 @@ var oB = k((rB) => {
               N,
               Q,
               () => {
-                (X.assign(w, (0, g9.propertyInData)(X, Y, N, G.ownProperties)),
-                  X.if((0, f9.not)(w), () => {
+                (X.assign(w, (0, y9.propertyInData)(X, Y, N, G.ownProperties)),
+                  X.if((0, g9.not)(w), () => {
                     ($.error(), X.break());
                   }));
               },
-              f9.nil,
+              g9.nil,
             ));
         }
       },
@@ -4615,13 +4615,13 @@ var oB = k((rB) => {
 });
 var aB = k((tB) => {
   Object.defineProperty(tB, "__esModule", { value: !0 });
-  var h9 = a(),
+  var f9 = a(),
     FC = {
       message({ keyword: $, schemaCode: X }) {
         let J = $ === "maxItems" ? "more" : "fewer";
-        return h9.str`must NOT have ${J} than ${X} items`;
+        return f9.str`must NOT have ${J} than ${X} items`;
       },
-      params: ({ schemaCode: $ }) => h9._`{limit: ${$}}`,
+      params: ({ schemaCode: $ }) => f9._`{limit: ${$}}`,
     },
     IC = {
       keyword: ["maxItems", "minItems"],
@@ -4631,21 +4631,21 @@ var aB = k((tB) => {
       error: FC,
       code($) {
         let { keyword: X, data: J, schemaCode: Q } = $,
-          Y = X === "maxItems" ? h9.operators.GT : h9.operators.LT;
-        $.fail$data(h9._`${J}.length ${Y} ${Q}`);
+          Y = X === "maxItems" ? f9.operators.GT : f9.operators.LT;
+        $.fail$data(f9._`${J}.length ${Y} ${Q}`);
       },
     };
   tB.default = IC;
 });
 var u7 = k((eB) => {
   Object.defineProperty(eB, "__esModule", { value: !0 });
-  var sB = h3();
+  var sB = f3();
   sB.code = 'require("ajv/dist/runtime/equal").default';
   eB.default = sB;
 });
 var Xq = k(($q) => {
   Object.defineProperty($q, "__esModule", { value: !0 });
-  var $U = P9(),
+  var e3 = b9(),
     h$ = a(),
     bC = Q$(),
     PC = u7(),
@@ -4672,7 +4672,7 @@ var Xq = k(($q) => {
         } = $;
         if (!Q && !Y) return;
         let U = X.let("valid"),
-          H = z.items ? (0, $U.getSchemaTypes)(z.items) : [];
+          H = z.items ? (0, e3.getSchemaTypes)(z.items) : [];
         ($.block$data(U, K, h$._`${W} === false`), $.ok(U));
         function K() {
           let w = X.let("i", h$._`${J}.length`),
@@ -4688,11 +4688,11 @@ var Xq = k(($q) => {
         }
         function O(w, B) {
           let L = X.name("item"),
-            j = (0, $U.checkDataTypes)(
+            j = (0, e3.checkDataTypes)(
               H,
               L,
               G.opts.strictNumbers,
-              $U.DataType.Wrong,
+              e3.DataType.Wrong,
             ),
             M = X.const("indices", h$._`{}`);
           X.for(h$._`;${w}--;`, () => {
@@ -4726,12 +4726,12 @@ var Xq = k(($q) => {
 });
 var Yq = k((Jq) => {
   Object.defineProperty(Jq, "__esModule", { value: !0 });
-  var XU = a(),
+  var $U = a(),
     SC = Q$(),
     vC = u7(),
     CC = {
       message: "must be equal to constant",
-      params: ({ schemaCode: $ }) => XU._`{allowedValue: ${$}}`,
+      params: ({ schemaCode: $ }) => $U._`{allowedValue: ${$}}`,
     },
     kC = {
       keyword: "const",
@@ -4740,20 +4740,20 @@ var Yq = k((Jq) => {
       code($) {
         let { gen: X, data: J, $data: Q, schemaCode: Y, schema: z } = $;
         if (Q || (z && typeof z == "object"))
-          $.fail$data(XU._`!${(0, SC.useFunc)(X, vC.default)}(${J}, ${Y})`);
-        else $.fail(XU._`${z} !== ${J}`);
+          $.fail$data($U._`!${(0, SC.useFunc)(X, vC.default)}(${J}, ${Y})`);
+        else $.fail($U._`${z} !== ${J}`);
       },
     };
   Jq.default = kC;
 });
 var zq = k((Qq) => {
   Object.defineProperty(Qq, "__esModule", { value: !0 });
-  var u9 = a(),
+  var h9 = a(),
     xC = Q$(),
     TC = u7(),
     yC = {
       message: "must be equal to one of the allowed values",
-      params: ({ schemaCode: $ }) => u9._`{allowedValues: ${$}}`,
+      params: ({ schemaCode: $ }) => h9._`{allowedValues: ${$}}`,
     },
     gC = {
       keyword: "enum",
@@ -4774,20 +4774,20 @@ var zq = k((Qq) => {
         else {
           if (!Array.isArray(Y)) throw Error("ajv implementation error");
           let N = X.const("vSchema", z);
-          K = (0, u9.or)(...Y.map((w, B) => O(N, B)));
+          K = (0, h9.or)(...Y.map((w, B) => O(N, B)));
         }
         $.pass(K);
         function V() {
           (X.assign(K, !1),
             X.forOf("v", z, (N) =>
-              X.if(u9._`${H()}(${J}, ${N})`, () => X.assign(K, !0).break()),
+              X.if(h9._`${H()}(${J}, ${N})`, () => X.assign(K, !0).break()),
             ));
         }
         function O(N, w) {
           let B = Y[w];
           return typeof B === "object" && B !== null
-            ? u9._`${H()}(${J}, ${N}[${w}])`
-            : u9._`${J} === ${B}`;
+            ? h9._`${H()}(${J}, ${N}[${w}])`
+            : h9._`${J} === ${B}`;
         }
       },
     };
@@ -4821,11 +4821,11 @@ var Gq = k((Wq) => {
     ];
   Wq.default = oC;
 });
-var YU = k((Hq) => {
+var JU = k((Hq) => {
   Object.defineProperty(Hq, "__esModule", { value: !0 });
   Hq.validateAdditionalItems = void 0;
   var C1 = a(),
-    JU = Q$(),
+    XU = Q$(),
     aC = {
       message: ({ params: { len: $ } }) =>
         C1.str`must NOT have more than ${$} items`,
@@ -4841,7 +4841,7 @@ var YU = k((Hq) => {
         let { parentSchema: X, it: J } = $,
           { items: Q } = X;
         if (!Array.isArray(Q)) {
-          (0, JU.checkStrictMode)(
+          (0, XU.checkStrictMode)(
             J,
             '"additionalItems" is ignored when "items" is not an array of schemas',
           );
@@ -4856,7 +4856,7 @@ var YU = k((Hq) => {
     let G = J.const("len", C1._`${Y}.length`);
     if (Q === !1)
       ($.setParams({ len: X.length }), $.pass(C1._`${G} <= ${X.length}`));
-    else if (typeof Q == "object" && !(0, JU.alwaysValidSchema)(W, Q)) {
+    else if (typeof Q == "object" && !(0, XU.alwaysValidSchema)(W, Q)) {
       let H = J.var("valid", C1._`${G} <= ${X.length}`);
       (J.if((0, C1.not)(H), () => U(H)), $.ok(H));
     }
@@ -4864,7 +4864,7 @@ var YU = k((Hq) => {
       J.forRange("i", X.length, G, (K) => {
         if (
           ($.subschema(
-            { keyword: z, dataProp: K, dataPropType: JU.Type.Num },
+            { keyword: z, dataProp: K, dataPropType: XU.Type.Num },
             H,
           ),
           !W.allErrors)
@@ -4876,7 +4876,7 @@ var YU = k((Hq) => {
   Hq.validateAdditionalItems = Uq;
   Hq.default = sC;
 });
-var QU = k((Oq) => {
+var YU = k((Oq) => {
   Object.defineProperty(Oq, "__esModule", { value: !0 });
   Oq.validateTuple = void 0;
   var Nq = a(),
@@ -4922,7 +4922,7 @@ var QU = k((Oq) => {
 });
 var qq = k((Bq) => {
   Object.defineProperty(Bq, "__esModule", { value: !0 });
-  var Yk = QU(),
+  var Yk = YU(),
     Qk = {
       keyword: "prefixItems",
       type: "array",
@@ -4937,7 +4937,7 @@ var jq = k((Lq) => {
   var Dq = a(),
     Wk = Q$(),
     Gk = M6(),
-    Uk = YU(),
+    Uk = JU(),
     Hk = {
       message: ({ params: { len: $ } }) =>
         Dq.str`must NOT have more than ${$} items`,
@@ -5051,17 +5051,17 @@ var Iq = k((Fq) => {
 var Eq = k((bq) => {
   Object.defineProperty(bq, "__esModule", { value: !0 });
   bq.validateSchemaDeps = bq.validatePropertyDeps = bq.error = void 0;
-  var zU = a(),
+  var QU = a(),
     Bk = Q$(),
-    m9 = M6();
+    u9 = M6();
   bq.error = {
     message: ({ params: { property: $, depsCount: X, deps: J } }) => {
       let Q = X === 1 ? "property" : "properties";
-      return zU.str`must have ${Q} ${J} when property ${$} is present`;
+      return QU.str`must have ${Q} ${J} when property ${$} is present`;
     },
     params: ({
       params: { property: $, depsCount: X, deps: J, missingProperty: Q },
-    }) => zU._`{property: ${$},
+    }) => QU._`{property: ${$},
     missingProperty: ${Q},
     depsCount: ${X},
     deps: ${J}}`,
@@ -5093,17 +5093,17 @@ var Eq = k((bq) => {
     for (let W in X) {
       let G = X[W];
       if (G.length === 0) continue;
-      let U = (0, m9.propertyInData)(J, Q, W, Y.opts.ownProperties);
+      let U = (0, u9.propertyInData)(J, Q, W, Y.opts.ownProperties);
       if (
         ($.setParams({ property: W, depsCount: G.length, deps: G.join(", ") }),
         Y.allErrors)
       )
         J.if(U, () => {
-          for (let H of G) (0, m9.checkReportMissingProp)($, H);
+          for (let H of G) (0, u9.checkReportMissingProp)($, H);
         });
       else
-        (J.if(zU._`${U} && (${(0, m9.checkMissingProp)($, G, z)})`),
-          (0, m9.reportMissingProp)($, z),
+        (J.if(QU._`${U} && (${(0, u9.checkMissingProp)($, G, z)})`),
+          (0, u9.reportMissingProp)($, z),
           J.else());
     }
   }
@@ -5114,7 +5114,7 @@ var Eq = k((bq) => {
     for (let G in X) {
       if ((0, Bk.alwaysValidSchema)(z, X[G])) continue;
       (J.if(
-        (0, m9.propertyInData)(J, Q, G, z.opts.ownProperties),
+        (0, u9.propertyInData)(J, Q, G, z.opts.ownProperties),
         () => {
           let U = $.subschema({ keyword: Y, schemaProp: G }, W);
           $.mergeValidEvaluated(U, W);
@@ -5165,7 +5165,7 @@ var vq = k((Sq) => {
     };
   Sq.default = Mk;
 });
-var WU = k((Cq) => {
+var zU = k((Cq) => {
   Object.defineProperty(Cq, "__esModule", { value: !0 });
   var c7 = M6(),
     T6 = a(),
@@ -5269,10 +5269,10 @@ var WU = k((Cq) => {
 });
 var Tq = k((xq) => {
   Object.defineProperty(xq, "__esModule", { value: !0 });
-  var Rk = S9(),
+  var Rk = R9(),
     kq = M6(),
-    GU = Q$(),
-    _q = WU(),
+    WU = Q$(),
+    _q = zU(),
     Sk = {
       keyword: "properties",
       type: "object",
@@ -5289,8 +5289,8 @@ var Tq = k((xq) => {
         let W = (0, kq.allSchemaProperties)(J);
         for (let V of W) z.definedProperties.add(V);
         if (z.opts.unevaluated && W.length && z.props !== !0)
-          z.props = GU.mergeEvaluated.props(X, (0, GU.toHash)(W), z.props);
-        let G = W.filter((V) => !(0, GU.alwaysValidSchema)(z, J[V]));
+          z.props = WU.mergeEvaluated.props(X, (0, WU.toHash)(W), z.props);
+        let G = W.filter((V) => !(0, WU.alwaysValidSchema)(z, J[V]));
         if (G.length === 0) return;
         let U = X.name("valid");
         for (let V of G) {
@@ -5574,14 +5574,14 @@ var $D = k((eq) => {
 });
 var JD = k((XD) => {
   Object.defineProperty(XD, "__esModule", { value: !0 });
-  var sk = YU(),
+  var sk = JU(),
     ek = qq(),
-    $_ = QU(),
+    $_ = YU(),
     X_ = jq(),
     J_ = Iq(),
     Y_ = Eq(),
     Q_ = vq(),
-    z_ = WU(),
+    z_ = zU(),
     W_ = Tq(),
     G_ = uq(),
     U_ = lq(),
@@ -5755,18 +5755,18 @@ var qD = k((wD) => {
 });
 var jD = k((LD) => {
   Object.defineProperty(LD, "__esModule", { value: !0 });
-  var p0 = a(),
-    UU = qD(),
+  var i0 = a(),
+    GU = qD(),
     DD = v7(),
-    S_ = v9(),
+    S_ = S9(),
     v_ = Q$(),
     C_ = {
       message: ({ params: { discrError: $, tagName: X } }) =>
-        $ === UU.DiscrError.Tag
+        $ === GU.DiscrError.Tag
           ? `tag "${X}" must be string`
           : `value of tag "${X}" must be in oneOf`,
       params: ({ params: { discrError: $, tag: X, tagName: J } }) =>
-        p0._`{error: ${$}, tag: ${J}, tagValue: ${X}}`,
+        i0._`{error: ${$}, tag: ${J}, tagValue: ${X}}`,
     },
     k_ = {
       keyword: "discriminator",
@@ -5784,22 +5784,22 @@ var jD = k((LD) => {
         if (Q.mapping) throw Error("discriminator: mapping is not supported");
         if (!W) throw Error("discriminator: requires oneOf keyword");
         let U = X.let("valid", !1),
-          H = X.const("tag", p0._`${J}${(0, p0.getProperty)(G)}`);
+          H = X.const("tag", i0._`${J}${(0, i0.getProperty)(G)}`);
         (X.if(
-          p0._`typeof ${H} == "string"`,
+          i0._`typeof ${H} == "string"`,
           () => K(),
           () =>
-            $.error(!1, { discrError: UU.DiscrError.Tag, tag: H, tagName: G }),
+            $.error(!1, { discrError: GU.DiscrError.Tag, tag: H, tagName: G }),
         ),
           $.ok(U));
         function K() {
           let N = O();
           X.if(!1);
           for (let w in N)
-            (X.elseIf(p0._`${H} === ${w}`), X.assign(U, V(N[w])));
+            (X.elseIf(i0._`${H} === ${w}`), X.assign(U, V(N[w])));
           (X.else(),
             $.error(!1, {
-              discrError: UU.DiscrError.Mapping,
+              discrError: GU.DiscrError.Mapping,
               tag: H,
               tagName: G,
             }),
@@ -5808,7 +5808,7 @@ var jD = k((LD) => {
         function V(N) {
           let w = X.name("valid"),
             B = $.subschema({ keyword: "oneOf", schemaProp: N }, w);
-          return ($.mergeEvaluated(B, p0.Name), w);
+          return ($.mergeEvaluated(B, i0.Name), w);
         }
         function O() {
           var N;
@@ -5982,7 +5982,7 @@ var FD = k((qt, x_) => {
     default: !0,
   };
 });
-var KU = k((Y6, HU) => {
+var HU = k((Y6, UU) => {
   Object.defineProperty(Y6, "__esModule", { value: !0 });
   Y6.MissingRefError =
     Y6.ValidationError =
@@ -6001,7 +6001,7 @@ var KU = k((Y6, HU) => {
     ID = FD(),
     f_ = ["/properties"],
     r7 = "http://json-schema.org/draft-07/schema";
-  class l9 extends T_.default {
+  class m9 extends T_.default {
     _addVocabularies() {
       if (
         (super._addVocabularies(),
@@ -6021,53 +6021,53 @@ var KU = k((Y6, HU) => {
         super.defaultMeta() || (this.getSchema(r7) ? r7 : void 0));
     }
   }
-  Y6.Ajv = l9;
-  HU.exports = Y6 = l9;
-  HU.exports.Ajv = l9;
+  Y6.Ajv = m9;
+  UU.exports = Y6 = m9;
+  UU.exports.Ajv = m9;
   Object.defineProperty(Y6, "__esModule", { value: !0 });
-  Y6.default = l9;
-  var h_ = S9();
+  Y6.default = m9;
+  var h_ = R9();
   Object.defineProperty(Y6, "KeywordCxt", {
     enumerable: !0,
     get: function () {
       return h_.KeywordCxt;
     },
   });
-  var n0 = a();
+  var p0 = a();
   Object.defineProperty(Y6, "_", {
     enumerable: !0,
     get: function () {
-      return n0._;
+      return p0._;
     },
   });
   Object.defineProperty(Y6, "str", {
     enumerable: !0,
     get: function () {
-      return n0.str;
+      return p0.str;
     },
   });
   Object.defineProperty(Y6, "stringify", {
     enumerable: !0,
     get: function () {
-      return n0.stringify;
+      return p0.stringify;
     },
   });
   Object.defineProperty(Y6, "nil", {
     enumerable: !0,
     get: function () {
-      return n0.nil;
+      return p0.nil;
     },
   });
   Object.defineProperty(Y6, "Name", {
     enumerable: !0,
     get: function () {
-      return n0.Name;
+      return p0.Name;
     },
   });
   Object.defineProperty(Y6, "CodeGen", {
     enumerable: !0,
     get: function () {
-      return n0.CodeGen;
+      return p0.CodeGen;
     },
   });
   var u_ = R7();
@@ -6077,7 +6077,7 @@ var KU = k((Y6, HU) => {
       return u_.default;
     },
   });
-  var m_ = v9();
+  var m_ = S9();
   Object.defineProperty(Y6, "MissingRefError", {
     enumerable: !0,
     get: function () {
@@ -6092,10 +6092,10 @@ var CD = k((SD) => {
     return { validate: $, compare: X };
   }
   SD.fullFormats = {
-    date: n6(PD, wU),
-    time: n6(VU(!0), BU),
+    date: n6(PD, OU),
+    time: n6(NU(!0), wU),
     "date-time": n6(MD(!0), ED),
-    "iso-time": n6(VU(), ZD),
+    "iso-time": n6(NU(), ZD),
     "iso-date-time": n6(MD(), RD),
     duration:
       /^P(?!$)((\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?|(\d+W)?)$/,
@@ -6127,10 +6127,10 @@ var CD = k((SD) => {
   };
   SD.fastFormats = {
     ...SD.fullFormats,
-    date: n6(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, wU),
+    date: n6(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, OU),
     time: n6(
       /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
-      BU,
+      wU,
     ),
     "date-time": n6(
       /^\d\d\d\d-[0-1]\d-[0-3]\dt(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
@@ -6164,16 +6164,16 @@ var CD = k((SD) => {
       Y = +X[3];
     return Q >= 1 && Q <= 12 && Y >= 1 && Y <= (Q === 2 && i_(J) ? 29 : n_[Q]);
   }
-  function wU($, X) {
+  function OU($, X) {
     if (!($ && X)) return;
     if ($ > X) return 1;
     if ($ < X) return -1;
     return 0;
   }
-  var NU = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
-  function VU($) {
+  var KU = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
+  function NU($) {
     return function (J) {
-      let Q = NU.exec(J);
+      let Q = KU.exec(J);
       if (!Q) return !1;
       let Y = +Q[1],
         z = +Q[2],
@@ -6189,7 +6189,7 @@ var CD = k((SD) => {
       return (O === 23 || O === -1) && (V === 59 || V === -1) && W < 61;
     };
   }
-  function BU($, X) {
+  function wU($, X) {
     if (!($ && X)) return;
     let J = new Date("2020-01-01T" + $).valueOf(),
       Q = new Date("2020-01-01T" + X).valueOf();
@@ -6198,18 +6198,18 @@ var CD = k((SD) => {
   }
   function ZD($, X) {
     if (!($ && X)) return;
-    let J = NU.exec($),
-      Q = NU.exec(X);
+    let J = KU.exec($),
+      Q = KU.exec(X);
     if (!(J && Q)) return;
     if ((($ = J[1] + J[2] + J[3]), (X = Q[1] + Q[2] + Q[3]), $ > X)) return 1;
     if ($ < X) return -1;
     return 0;
   }
-  var OU = /t|\s/i;
+  var VU = /t|\s/i;
   function MD($) {
-    let X = VU($);
+    let X = NU($);
     return function (Q) {
-      let Y = Q.split(OU);
+      let Y = Q.split(VU);
       return Y.length === 2 && PD(Y[0]) && X(Y[1]);
     };
   }
@@ -6222,11 +6222,11 @@ var CD = k((SD) => {
   }
   function RD($, X) {
     if (!($ && X)) return;
-    let [J, Q] = $.split(OU),
-      [Y, z] = X.split(OU),
-      W = wU(J, Y);
+    let [J, Q] = $.split(VU),
+      [Y, z] = X.split(VU),
+      W = OU(J, Y);
     if (W === void 0) return;
-    return W || BU(Q, z);
+    return W || wU(Q, z);
   }
   var d_ = /\/|:/,
     r_ =
@@ -6262,7 +6262,7 @@ var CD = k((SD) => {
 var _D = k((kD) => {
   Object.defineProperty(kD, "__esModule", { value: !0 });
   kD.formatLimitDefinition = void 0;
-  var Qx = KU(),
+  var Qx = HU(),
     y6 = a(),
     r4 = y6.operators,
     o7 = {
@@ -6337,41 +6337,41 @@ var _D = k((kD) => {
   };
   kD.default = Wx;
 });
-var gD = k((c9, yD) => {
-  Object.defineProperty(c9, "__esModule", { value: !0 });
-  var d0 = CD(),
+var gD = k((l9, yD) => {
+  Object.defineProperty(l9, "__esModule", { value: !0 });
+  var n0 = CD(),
     Ux = _D(),
-    LU = a(),
-    xD = new LU.Name("fullFormats"),
-    Hx = new LU.Name("fastFormats"),
-    jU = ($, X = { keywords: !0 }) => {
-      if (Array.isArray(X)) return (TD($, X, d0.fullFormats, xD), $);
+    DU = a(),
+    xD = new DU.Name("fullFormats"),
+    Hx = new DU.Name("fastFormats"),
+    LU = ($, X = { keywords: !0 }) => {
+      if (Array.isArray(X)) return (TD($, X, n0.fullFormats, xD), $);
       let [J, Q] =
-          X.mode === "fast" ? [d0.fastFormats, Hx] : [d0.fullFormats, xD],
-        Y = X.formats || d0.formatNames;
+          X.mode === "fast" ? [n0.fastFormats, Hx] : [n0.fullFormats, xD],
+        Y = X.formats || n0.formatNames;
       if ((TD($, Y, J, Q), X.keywords)) (0, Ux.default)($);
       return $;
     };
-  jU.get = ($, X = "full") => {
-    let Q = (X === "fast" ? d0.fastFormats : d0.fullFormats)[$];
+  LU.get = ($, X = "full") => {
+    let Q = (X === "fast" ? n0.fastFormats : n0.fullFormats)[$];
     if (!Q) throw Error(`Unknown format "${$}"`);
     return Q;
   };
   function TD($, X, J, Q) {
     var Y, z;
     ((Y = (z = $.opts.code).formats) !== null && Y !== void 0) ||
-      (z.formats = LU._`require("ajv-formats/dist/formats").${Q}`);
+      (z.formats = DU._`require("ajv-formats/dist/formats").${Q}`);
     for (let W of X) $.addFormat(W, J[W]);
   }
-  yD.exports = c9 = jU;
-  Object.defineProperty(c9, "__esModule", { value: !0 });
-  c9.default = jU;
+  yD.exports = l9 = LU;
+  Object.defineProperty(l9, "__esModule", { value: !0 });
+  l9.default = LU;
 });
 import { join as sD } from "path";
 import { fileURLToPath as Mx } from "url";
 import { setMaxListeners as ML } from "events";
 var AL = 50;
-function g1($ = AL) {
+function y1($ = AL) {
   let X = new AbortController();
   return (ML($, X.signal), X);
 }
@@ -6414,591 +6414,9 @@ var bL = [
     "bypass_permissions_disabled",
   ];
 class t$ extends Error {}
-function f1() {
+function g1() {
   return process.versions.bun !== void 0;
 }
-import { randomUUID as fj } from "crypto";
-import { appendFile as hj, mkdir as uj } from "fs/promises";
-import { join as VH } from "path";
-import { join as yj } from "path";
-import { homedir as gj } from "os";
-var ZL =
-    typeof global == "object" && global && global.Object === Object && global,
-  TU = ZL;
-var EL = typeof self == "object" && self && self.Object === Object && self,
-  RL = TU || EL || Function("return this")(),
-  h1 = RL;
-var SL = h1.Symbol,
-  u1 = SL;
-var yU = Object.prototype,
-  vL = yU.hasOwnProperty,
-  CL = yU.toString,
-  s0 = u1 ? u1.toStringTag : void 0;
-function kL($) {
-  var X = vL.call($, s0),
-    J = $[s0];
-  try {
-    $[s0] = void 0;
-    var Q = !0;
-  } catch (z) {}
-  var Y = CL.call($);
-  if (Q)
-    if (X) $[s0] = J;
-    else delete $[s0];
-  return Y;
-}
-var gU = kL;
-var _L = Object.prototype,
-  xL = _L.toString;
-function TL($) {
-  return xL.call($);
-}
-var fU = TL;
-var yL = "[object Null]",
-  gL = "[object Undefined]",
-  hU = u1 ? u1.toStringTag : void 0;
-function fL($) {
-  if ($ == null) return $ === void 0 ? gL : yL;
-  return hU && hU in Object($) ? gU($) : fU($);
-}
-var uU = fL;
-function hL($) {
-  var X = typeof $;
-  return $ != null && (X == "object" || X == "function");
-}
-var d9 = hL;
-var uL = "[object AsyncFunction]",
-  mL = "[object Function]",
-  lL = "[object GeneratorFunction]",
-  cL = "[object Proxy]";
-function iL($) {
-  if (!d9($)) return !1;
-  var X = uU($);
-  return X == mL || X == lL || X == uL || X == cL;
-}
-var mU = iL;
-var pL = h1["__core-js_shared__"],
-  r9 = pL;
-var lU = (function () {
-  var $ = /[^.]+$/.exec((r9 && r9.keys && r9.keys.IE_PROTO) || "");
-  return $ ? "Symbol(src)_1." + $ : "";
-})();
-function nL($) {
-  return !!lU && lU in $;
-}
-var cU = nL;
-var dL = Function.prototype,
-  rL = dL.toString;
-function oL($) {
-  if ($ != null) {
-    try {
-      return rL.call($);
-    } catch (X) {}
-    try {
-      return $ + "";
-    } catch (X) {}
-  }
-  return "";
-}
-var iU = oL;
-var tL = /[\\^$.*+?()[\]{}|]/g,
-  aL = /^\[object .+?Constructor\]$/,
-  sL = Function.prototype,
-  eL = Object.prototype,
-  $j = sL.toString,
-  Xj = eL.hasOwnProperty,
-  Jj = RegExp(
-    "^" +
-      $j
-        .call(Xj)
-        .replace(tL, "\\$&")
-        .replace(
-          /hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g,
-          "$1.*?",
-        ) +
-      "$",
-  );
-function Yj($) {
-  if (!d9($) || cU($)) return !1;
-  var X = mU($) ? Jj : aL;
-  return X.test(iU($));
-}
-var pU = Yj;
-function Qj($, X) {
-  return $ == null ? void 0 : $[X];
-}
-var nU = Qj;
-function zj($, X) {
-  var J = nU($, X);
-  return pU(J) ? J : void 0;
-}
-var o9 = zj;
-var Wj = o9(Object, "create"),
-  t6 = Wj;
-function Gj() {
-  ((this.__data__ = t6 ? t6(null) : {}), (this.size = 0));
-}
-var dU = Gj;
-function Uj($) {
-  var X = this.has($) && delete this.__data__[$];
-  return ((this.size -= X ? 1 : 0), X);
-}
-var rU = Uj;
-var Hj = "__lodash_hash_undefined__",
-  Kj = Object.prototype,
-  Nj = Kj.hasOwnProperty;
-function Vj($) {
-  var X = this.__data__;
-  if (t6) {
-    var J = X[$];
-    return J === Hj ? void 0 : J;
-  }
-  return Nj.call(X, $) ? X[$] : void 0;
-}
-var oU = Vj;
-var Oj = Object.prototype,
-  wj = Oj.hasOwnProperty;
-function Bj($) {
-  var X = this.__data__;
-  return t6 ? X[$] !== void 0 : wj.call(X, $);
-}
-var tU = Bj;
-var qj = "__lodash_hash_undefined__";
-function Dj($, X) {
-  var J = this.__data__;
-  return (
-    (this.size += this.has($) ? 0 : 1),
-    (J[$] = t6 && X === void 0 ? qj : X),
-    this
-  );
-}
-var aU = Dj;
-function m1($) {
-  var X = -1,
-    J = $ == null ? 0 : $.length;
-  this.clear();
-  while (++X < J) {
-    var Q = $[X];
-    this.set(Q[0], Q[1]);
-  }
-}
-m1.prototype.clear = dU;
-m1.prototype.delete = rU;
-m1.prototype.get = oU;
-m1.prototype.has = tU;
-m1.prototype.set = aU;
-var e7 = m1;
-function Lj() {
-  ((this.__data__ = []), (this.size = 0));
-}
-var sU = Lj;
-function jj($, X) {
-  return $ === X || ($ !== $ && X !== X);
-}
-var eU = jj;
-function Fj($, X) {
-  var J = $.length;
-  while (J--) if (eU($[J][0], X)) return J;
-  return -1;
-}
-var j4 = Fj;
-var Ij = Array.prototype,
-  Mj = Ij.splice;
-function Aj($) {
-  var X = this.__data__,
-    J = j4(X, $);
-  if (J < 0) return !1;
-  var Q = X.length - 1;
-  if (J == Q) X.pop();
-  else Mj.call(X, J, 1);
-  return (--this.size, !0);
-}
-var $H = Aj;
-function bj($) {
-  var X = this.__data__,
-    J = j4(X, $);
-  return J < 0 ? void 0 : X[J][1];
-}
-var XH = bj;
-function Pj($) {
-  return j4(this.__data__, $) > -1;
-}
-var JH = Pj;
-function Zj($, X) {
-  var J = this.__data__,
-    Q = j4(J, $);
-  if (Q < 0) (++this.size, J.push([$, X]));
-  else J[Q][1] = X;
-  return this;
-}
-var YH = Zj;
-function l1($) {
-  var X = -1,
-    J = $ == null ? 0 : $.length;
-  this.clear();
-  while (++X < J) {
-    var Q = $[X];
-    this.set(Q[0], Q[1]);
-  }
-}
-l1.prototype.clear = sU;
-l1.prototype.delete = $H;
-l1.prototype.get = XH;
-l1.prototype.has = JH;
-l1.prototype.set = YH;
-var QH = l1;
-var Ej = o9(h1, "Map"),
-  zH = Ej;
-function Rj() {
-  ((this.size = 0),
-    (this.__data__ = {
-      hash: new e7(),
-      map: new (zH || QH)(),
-      string: new e7(),
-    }));
-}
-var WH = Rj;
-function Sj($) {
-  var X = typeof $;
-  return X == "string" || X == "number" || X == "symbol" || X == "boolean"
-    ? $ !== "__proto__"
-    : $ === null;
-}
-var GH = Sj;
-function vj($, X) {
-  var J = $.__data__;
-  return GH(X) ? J[typeof X == "string" ? "string" : "hash"] : J.map;
-}
-var F4 = vj;
-function Cj($) {
-  var X = F4(this, $).delete($);
-  return ((this.size -= X ? 1 : 0), X);
-}
-var UH = Cj;
-function kj($) {
-  return F4(this, $).get($);
-}
-var HH = kj;
-function _j($) {
-  return F4(this, $).has($);
-}
-var KH = _j;
-function xj($, X) {
-  var J = F4(this, $),
-    Q = J.size;
-  return (J.set($, X), (this.size += J.size == Q ? 0 : 1), this);
-}
-var NH = xj;
-function c1($) {
-  var X = -1,
-    J = $ == null ? 0 : $.length;
-  this.clear();
-  while (++X < J) {
-    var Q = $[X];
-    this.set(Q[0], Q[1]);
-  }
-}
-c1.prototype.clear = WH;
-c1.prototype.delete = UH;
-c1.prototype.get = HH;
-c1.prototype.has = KH;
-c1.prototype.set = NH;
-var $z = c1;
-var Tj = "Expected a function";
-function Xz($, X) {
-  if (typeof $ != "function" || (X != null && typeof X != "function"))
-    throw TypeError(Tj);
-  var J = function () {
-    var Q = arguments,
-      Y = X ? X.apply(this, Q) : Q[0],
-      z = J.cache;
-    if (z.has(Y)) return z.get(Y);
-    var W = $.apply(this, Q);
-    return ((J.cache = z.set(Y, W) || z), W);
-  };
-  return ((J.cache = new (Xz.Cache || $z)()), J);
-}
-Xz.Cache = $z;
-var b6 = Xz;
-var i1 = b6(
-  () => {
-    return (process.env.CLAUDE_CONFIG_DIR ?? yj(gj(), ".claude")).normalize(
-      "NFC",
-    );
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-);
-function e0($) {
-  if (!$) return !1;
-  if (typeof $ === "boolean") return $;
-  let X = $.toLowerCase().trim();
-  return ["1", "true", "yes", "on"].includes(X);
-}
-var n1,
-  p1 = null;
-function mj() {
-  if (p1) return p1;
-  if (!process.env.DEBUG_CLAUDE_AGENT_SDK)
-    return ((n1 = null), (p1 = Promise.resolve()), p1);
-  let $ = VH(i1(), "debug");
-  return (
-    (n1 = VH($, `sdk-${fj()}.txt`)),
-    process.stderr.write(`SDK debug logs: ${n1}
-`),
-    (p1 = uj($, { recursive: !0 })
-      .then(() => {})
-      .catch(() => {})),
-    p1
-  );
-}
-function V6($) {
-  if (n1 === null) return;
-  let J = `${new Date().toISOString()} ${$}
-`;
-  mj().then(() => {
-    if (n1) hj(n1, J).catch(() => {});
-  });
-}
-import {
-  appendFile as lF,
-  mkdir as cF,
-  unlink as iF,
-  symlink as pF,
-} from "fs/promises";
-import { dirname as DK, join as LK } from "path";
-import { cwd as lj } from "process";
-import { realpathSync as OH } from "fs";
-import { randomUUID as t9 } from "crypto";
-function cj() {
-  let $ = "";
-  if (
-    typeof process < "u" &&
-    typeof process.cwd === "function" &&
-    typeof OH === "function"
-  ) {
-    let J = lj();
-    try {
-      $ = OH(J).normalize("NFC");
-    } catch {
-      $ = J.normalize("NFC");
-    }
-  }
-  return {
-    originalCwd: $,
-    projectRoot: $,
-    totalCostUSD: 0,
-    totalAPIDuration: 0,
-    totalAPIDurationWithoutRetries: 0,
-    totalToolDuration: 0,
-    turnHookDurationMs: 0,
-    turnToolDurationMs: 0,
-    turnClassifierDurationMs: 0,
-    turnToolCount: 0,
-    turnHookCount: 0,
-    turnClassifierCount: 0,
-    startTime: Date.now(),
-    lastInteractionTime: Date.now(),
-    totalLinesAdded: 0,
-    totalLinesRemoved: 0,
-    hasUnknownModelCost: !1,
-    cwd: $,
-    modelUsage: {},
-    mainLoopModelOverride: void 0,
-    initialMainLoopModel: null,
-    modelStrings: null,
-    isInteractive: !1,
-    kairosActive: !1,
-    strictToolResultPairing: !1,
-    sdkAgentProgressSummariesEnabled: !1,
-    userMsgOptIn: !1,
-    clientType: "cli",
-    sessionSource: void 0,
-    questionPreviewFormat: void 0,
-    sessionIngressToken: void 0,
-    oauthTokenFromFd: void 0,
-    apiKeyFromFd: void 0,
-    flagSettingsPath: void 0,
-    flagSettingsInline: null,
-    allowedSettingSources: [
-      "userSettings",
-      "projectSettings",
-      "localSettings",
-      "flagSettings",
-      "policySettings",
-    ],
-    meter: null,
-    sessionCounter: null,
-    locCounter: null,
-    prCounter: null,
-    commitCounter: null,
-    costCounter: null,
-    tokenCounter: null,
-    codeEditToolDecisionCounter: null,
-    activeTimeCounter: null,
-    statsStore: null,
-    sessionId: t9(),
-    parentSessionId: void 0,
-    loggerProvider: null,
-    eventLogger: null,
-    meterProvider: null,
-    tracerProvider: null,
-    agentColorMap: new Map(),
-    agentColorIndex: 0,
-    lastAPIRequest: null,
-    lastAPIRequestMessages: null,
-    lastClassifierRequests: null,
-    cachedClaudeMdContent: null,
-    inMemoryErrorLog: [],
-    inlinePlugins: [],
-    chromeFlagOverride: void 0,
-    useCoworkPlugins: !1,
-    sessionBypassPermissionsMode: !1,
-    scheduledTasksEnabled: !1,
-    sessionCronTasks: [],
-    sessionCreatedTeams: new Set(),
-    sessionTrustAccepted: !1,
-    sessionPersistenceDisabled: !1,
-    hasExitedPlanMode: !1,
-    needsPlanModeExitAttachment: !1,
-    needsAutoModeExitAttachment: !1,
-    lspRecommendationShownThisSession: !1,
-    initJsonSchema: null,
-    registeredHooks: null,
-    planSlugCache: new Map(),
-    teleportedSessionInfo: null,
-    invokedSkills: new Map(),
-    slowOperations: [],
-    sdkBetas: void 0,
-    mainThreadAgentType: void 0,
-    isRemoteMode: !1,
-    ...{},
-    directConnectServerUrl: void 0,
-    systemPromptSectionCache: new Map(),
-    lastEmittedDate: null,
-    additionalDirectoriesForClaudeMd: [],
-    allowedChannels: [],
-    hasDevChannels: !1,
-    sessionProjectDir: null,
-    promptCache1hAllowlist: null,
-    promptCache1hEligible: null,
-    promptId: null,
-    lastMainRequestId: void 0,
-    lastApiCompletionTimestamp: null,
-    pendingPostCompaction: !1,
-  };
-}
-var ij = cj();
-function wH() {
-  return ij.sessionId;
-}
-function BH({
-  writeFn: $,
-  flushIntervalMs: X = 1000,
-  maxBufferSize: J = 100,
-  maxBufferBytes: Q = 1 / 0,
-  immediateMode: Y = !1,
-}) {
-  let z = [],
-    W = 0,
-    G = null,
-    U = null;
-  function H() {
-    if (G) (clearTimeout(G), (G = null));
-  }
-  function K() {
-    if (U) ($(U.join("")), (U = null));
-    if (z.length === 0) return;
-    ($(z.join("")), (z = []), (W = 0), H());
-  }
-  function V() {
-    if (!G) G = setTimeout(K, X);
-  }
-  function O() {
-    if (U) {
-      (U.push(...z), (z = []), (W = 0), H());
-      return;
-    }
-    let N = z;
-    ((z = []),
-      (W = 0),
-      H(),
-      (U = N),
-      setImmediate(() => {
-        let w = U;
-        if (((U = null), w)) $(w.join(""));
-      }));
-  }
-  return {
-    write(N) {
-      if (Y) {
-        $(N);
-        return;
-      }
-      if ((z.push(N), (W += N.length), V(), z.length >= J || W >= Q)) O();
-    },
-    flush: K,
-    dispose() {
-      K();
-    },
-  };
-}
-var qH = new Set();
-function DH($) {
-  return (qH.add($), () => qH.delete($));
-}
-var LH = b6(($) => {
-  if (!$ || $.trim() === "") return null;
-  let X = $.split(",")
-    .map((z) => z.trim())
-    .filter(Boolean);
-  if (X.length === 0) return null;
-  let J = X.some((z) => z.startsWith("!")),
-    Q = X.some((z) => !z.startsWith("!"));
-  if (J && Q) return null;
-  let Y = X.map((z) => z.replace(/^!/, "").toLowerCase());
-  return { include: J ? [] : Y, exclude: J ? Y : [], isExclusive: J };
-});
-function pj($) {
-  let X = [],
-    J = $.match(/^MCP server ["']([^"']+)["']/);
-  if (J && J[1]) (X.push("mcp"), X.push(J[1].toLowerCase()));
-  else {
-    let z = $.match(/^([^:[]+):/);
-    if (z && z[1]) X.push(z[1].trim().toLowerCase());
-  }
-  let Q = $.match(/^\[([^\]]+)]/);
-  if (Q && Q[1]) X.push(Q[1].trim().toLowerCase());
-  if ($.toLowerCase().includes("1p event:")) X.push("1p");
-  let Y = $.match(/:\s*([^:]+?)(?:\s+(?:type|mode|status|event))?:/);
-  if (Y && Y[1]) {
-    let z = Y[1].trim().toLowerCase();
-    if (z.length < 30 && !z.includes(" ")) X.push(z);
-  }
-  return Array.from(new Set(X));
-}
-function nj($, X) {
-  if (!X) return !0;
-  if ($.length === 0) return !1;
-  if (X.isExclusive) return !$.some((J) => X.exclude.includes(J));
-  else return $.some((J) => X.include.includes(J));
-}
-function jH($, X) {
-  if (!X) return !0;
-  let J = pj($);
-  return nj(J, X);
-}
-import * as r from "fs";
-import {
-  stat as CF,
-  readdir as kF,
-  readFile as BK,
-  unlink as _F,
-  rmdir as xF,
-  rm as TF,
-  mkdir as yF,
-  rename as gF,
-  open as fF,
-} from "fs/promises";
 function v($, X, J, Q, Y) {
   if (Q === "m") throw TypeError("Private method is not writable");
   if (Q === "a" && !Y)
@@ -7018,16 +6436,16 @@ function D($, X, J, Q) {
     );
   return J === "m" ? Q : J === "a" ? Q.call($) : Q ? Q.value : X.get($);
 }
-var Jz = function () {
+var s7 = function () {
   let { crypto: $ } = globalThis;
-  if ($?.randomUUID) return ((Jz = $.randomUUID.bind($)), $.randomUUID());
+  if ($?.randomUUID) return ((s7 = $.randomUUID.bind($)), $.randomUUID());
   let X = new Uint8Array(1),
     J = $ ? () => $.getRandomValues(X)[0] : () => (Math.random() * 255) & 255;
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (Q) =>
     (+Q ^ (J() & (15 >> (+Q / 4)))).toString(16),
   );
 };
-function a6($) {
+function t6($) {
   return (
     typeof $ === "object" &&
     $ !== null &&
@@ -7036,7 +6454,7 @@ function a6($) {
         String($.message).includes("FetchRequestCanceledException")))
   );
 }
-var $X = ($) => {
+var a0 = ($) => {
   if ($ instanceof Error) return $;
   if (typeof $ === "object" && $ !== null) {
     try {
@@ -7077,16 +6495,16 @@ class v$ extends T {
     return "(no status code or body)";
   }
   static generate($, X, J, Q) {
-    if (!$ || !Q) return new $1({ message: J, cause: $X(X) });
+    if (!$ || !Q) return new $1({ message: J, cause: a0(X) });
     let Y = X;
-    if ($ === 400) return new JX($, Y, J, Q);
-    if ($ === 401) return new YX($, Y, J, Q);
-    if ($ === 403) return new QX($, Y, J, Q);
-    if ($ === 404) return new zX($, Y, J, Q);
-    if ($ === 409) return new WX($, Y, J, Q);
-    if ($ === 422) return new GX($, Y, J, Q);
-    if ($ === 429) return new UX($, Y, J, Q);
-    if ($ >= 500) return new HX($, Y, J, Q);
+    if ($ === 400) return new e0($, Y, J, Q);
+    if ($ === 401) return new $X($, Y, J, Q);
+    if ($ === 403) return new XX($, Y, J, Q);
+    if ($ === 404) return new JX($, Y, J, Q);
+    if ($ === 409) return new YX($, Y, J, Q);
+    if ($ === 422) return new QX($, Y, J, Q);
+    if ($ === 429) return new zX($, Y, J, Q);
+    if ($ >= 500) return new WX($, Y, J, Q);
     return new v$($, Y, J, Q);
   }
 }
@@ -7101,60 +6519,60 @@ class $1 extends v$ {
     if (X) this.cause = X;
   }
 }
-class XX extends $1 {
+class s0 extends $1 {
   constructor({ message: $ } = {}) {
     super({ message: $ ?? "Request timed out." });
   }
 }
+class e0 extends v$ {}
+class $X extends v$ {}
+class XX extends v$ {}
 class JX extends v$ {}
 class YX extends v$ {}
 class QX extends v$ {}
 class zX extends v$ {}
 class WX extends v$ {}
-class GX extends v$ {}
-class UX extends v$ {}
-class HX extends v$ {}
-var rj = /^[a-z][a-z0-9+.-]*:/i,
-  FH = ($) => {
-    return rj.test($);
+var EL = /^[a-z][a-z0-9+.-]*:/i,
+  TU = ($) => {
+    return EL.test($);
   },
-  Yz = ($) => ((Yz = Array.isArray), Yz($)),
-  Qz = Yz;
-function a9($) {
+  e7 = ($) => ((e7 = Array.isArray), e7($)),
+  $z = e7;
+function d9($) {
   if (typeof $ !== "object") return {};
   return $ ?? {};
 }
-function IH($) {
+function yU($) {
   if (!$) return !0;
   for (let X in $) return !1;
   return !0;
 }
-function MH($, X) {
+function gU($, X) {
   return Object.prototype.hasOwnProperty.call($, X);
 }
-var AH = ($, X) => {
+var fU = ($, X) => {
   if (typeof X !== "number" || !Number.isInteger(X))
     throw new T(`${$} must be an integer`);
   if (X < 0) throw new T(`${$} must be a positive integer`);
   return X;
 };
-var s9 = ($) => {
+var r9 = ($) => {
   try {
     return JSON.parse($);
   } catch (X) {
     return;
   }
 };
-var bH = ($) => new Promise((X) => setTimeout(X, $));
-var I4 = "0.74.0";
-var RH = () => {
+var hU = ($) => new Promise((X) => setTimeout(X, $));
+var j4 = "0.74.0";
+var cU = () => {
   return (
     typeof window < "u" &&
     typeof window.document < "u" &&
     typeof navigator < "u"
   );
 };
-function oj() {
+function RL() {
   if (typeof Deno < "u" && Deno.build != null) return "deno";
   if (typeof EdgeRuntime < "u") return "edge";
   if (
@@ -7165,14 +6583,14 @@ function oj() {
     return "node";
   return "unknown";
 }
-var tj = () => {
-  let $ = oj();
+var SL = () => {
+  let $ = RL();
   if ($ === "deno")
     return {
       "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": I4,
-      "X-Stainless-OS": ZH(Deno.build.os),
-      "X-Stainless-Arch": PH(Deno.build.arch),
+      "X-Stainless-Package-Version": j4,
+      "X-Stainless-OS": mU(Deno.build.os),
+      "X-Stainless-Arch": uU(Deno.build.arch),
       "X-Stainless-Runtime": "deno",
       "X-Stainless-Runtime-Version":
         typeof Deno.version === "string"
@@ -7182,7 +6600,7 @@ var tj = () => {
   if (typeof EdgeRuntime < "u")
     return {
       "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": I4,
+      "X-Stainless-Package-Version": j4,
       "X-Stainless-OS": "Unknown",
       "X-Stainless-Arch": `other:${EdgeRuntime}`,
       "X-Stainless-Runtime": "edge",
@@ -7191,17 +6609,17 @@ var tj = () => {
   if ($ === "node")
     return {
       "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": I4,
-      "X-Stainless-OS": ZH(globalThis.process.platform ?? "unknown"),
-      "X-Stainless-Arch": PH(globalThis.process.arch ?? "unknown"),
+      "X-Stainless-Package-Version": j4,
+      "X-Stainless-OS": mU(globalThis.process.platform ?? "unknown"),
+      "X-Stainless-Arch": uU(globalThis.process.arch ?? "unknown"),
       "X-Stainless-Runtime": "node",
       "X-Stainless-Runtime-Version": globalThis.process.version ?? "unknown",
     };
-  let X = aj();
+  let X = vL();
   if (X)
     return {
       "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": I4,
+      "X-Stainless-Package-Version": j4,
       "X-Stainless-OS": "Unknown",
       "X-Stainless-Arch": "unknown",
       "X-Stainless-Runtime": `browser:${X.browser}`,
@@ -7209,14 +6627,14 @@ var tj = () => {
     };
   return {
     "X-Stainless-Lang": "js",
-    "X-Stainless-Package-Version": I4,
+    "X-Stainless-Package-Version": j4,
     "X-Stainless-OS": "Unknown",
     "X-Stainless-Arch": "unknown",
     "X-Stainless-Runtime": "unknown",
     "X-Stainless-Runtime-Version": "unknown",
   };
 };
-function aj() {
+function vL() {
   if (typeof navigator > "u" || !navigator) return null;
   let $ = [
     { key: "edge", pattern: /Edge(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
@@ -7241,7 +6659,7 @@ function aj() {
   }
   return null;
 }
-var PH = ($) => {
+var uU = ($) => {
     if ($ === "x32") return "x32";
     if ($ === "x86_64" || $ === "x64") return "x64";
     if ($ === "arm") return "arm";
@@ -7249,7 +6667,7 @@ var PH = ($) => {
     if ($) return `other:${$}`;
     return "unknown";
   },
-  ZH = ($) => {
+  mU = ($) => {
     if ((($ = $.toLowerCase()), $.includes("ios"))) return "iOS";
     if ($ === "android") return "Android";
     if ($ === "darwin") return "MacOS";
@@ -7260,17 +6678,17 @@ var PH = ($) => {
     if ($) return `Other:${$}`;
     return "Unknown";
   },
-  EH,
-  SH = () => {
-    return EH ?? (EH = tj());
+  lU,
+  iU = () => {
+    return lU ?? (lU = SL());
   };
-function vH() {
+function pU() {
   if (typeof fetch < "u") return fetch;
   throw Error(
     "`fetch` is not defined as a global; Either pass `fetch` to the client, `new Anthropic({ fetch })` or polyfill the global, `globalThis.fetch = fetch`",
   );
 }
-function zz(...$) {
+function Xz(...$) {
   let X = globalThis.ReadableStream;
   if (typeof X > "u")
     throw Error(
@@ -7278,12 +6696,12 @@ function zz(...$) {
     );
   return new X(...$);
 }
-function e9($) {
+function o9($) {
   let X =
     Symbol.asyncIterator in $
       ? $[Symbol.asyncIterator]()
       : $[Symbol.iterator]();
-  return zz({
+  return Xz({
     start() {},
     async pull(J) {
       let { done: Q, value: Y } = await X.next();
@@ -7295,7 +6713,7 @@ function e9($) {
     },
   });
 }
-function KX($) {
+function GX($) {
   if ($[Symbol.asyncIterator]) return $;
   let X = $.getReader();
   return {
@@ -7317,7 +6735,7 @@ function KX($) {
     },
   };
 }
-async function CH($) {
+async function nU($) {
   if ($ === null || typeof $ !== "object") return;
   if ($[Symbol.asyncIterator]) {
     await $[Symbol.asyncIterator]().return?.();
@@ -7327,13 +6745,13 @@ async function CH($) {
     J = X.cancel();
   (X.releaseLock(), await J);
 }
-var kH = ({ headers: $, body: X }) => {
+var dU = ({ headers: $, body: X }) => {
   return {
     bodyHeaders: { "content-type": "application/json" },
     body: JSON.stringify(X),
   };
 };
-function TH($) {
+function tU($) {
   let X = 0;
   for (let Y of $) X += Y.length;
   let J = new Uint8Array(X),
@@ -7341,22 +6759,22 @@ function TH($) {
   for (let Y of $) (J.set(Y, Q), (Q += Y.length));
   return J;
 }
-var _H;
-function NX($) {
+var rU;
+function UX($) {
   let X;
-  return (_H ?? ((X = new globalThis.TextEncoder()), (_H = X.encode.bind(X))))(
+  return (rU ?? ((X = new globalThis.TextEncoder()), (rU = X.encode.bind(X))))(
     $,
   );
 }
-var xH;
-function Wz($) {
+var oU;
+function Jz($) {
   let X;
-  return (xH ?? ((X = new globalThis.TextDecoder()), (xH = X.decode.bind(X))))(
+  return (oU ?? ((X = new globalThis.TextDecoder()), (oU = X.decode.bind(X))))(
     $,
   );
 }
 var z6, W6;
-class M4 {
+class F4 {
   constructor() {
     (z6.set(this, void 0),
       W6.set(this, void 0),
@@ -7369,12 +6787,12 @@ class M4 {
       $ instanceof ArrayBuffer
         ? new Uint8Array($)
         : typeof $ === "string"
-          ? NX($)
+          ? UX($)
           : $;
-    v(this, z6, TH([D(this, z6, "f"), X]), "f");
+    v(this, z6, tU([D(this, z6, "f"), X]), "f");
     let J = [],
       Q;
-    while ((Q = $F(D(this, z6, "f"), D(this, W6, "f"))) != null) {
+    while ((Q = _L(D(this, z6, "f"), D(this, W6, "f"))) != null) {
       if (Q.carriage && D(this, W6, "f") == null) {
         v(this, W6, Q.index, "f");
         continue;
@@ -7383,13 +6801,13 @@ class M4 {
         D(this, W6, "f") != null &&
         (Q.index !== D(this, W6, "f") + 1 || Q.carriage)
       ) {
-        (J.push(Wz(D(this, z6, "f").subarray(0, D(this, W6, "f") - 1))),
+        (J.push(Jz(D(this, z6, "f").subarray(0, D(this, W6, "f") - 1))),
           v(this, z6, D(this, z6, "f").subarray(D(this, W6, "f")), "f"),
           v(this, W6, null, "f"));
         continue;
       }
       let Y = D(this, W6, "f") !== null ? Q.preceding - 1 : Q.preceding,
-        z = Wz(D(this, z6, "f").subarray(0, Y));
+        z = Jz(D(this, z6, "f").subarray(0, Y));
       (J.push(z),
         v(this, z6, D(this, z6, "f").subarray(Q.index), "f"),
         v(this, W6, null, "f"));
@@ -7403,20 +6821,20 @@ class M4 {
   }
 }
 ((z6 = new WeakMap()), (W6 = new WeakMap()));
-M4.NEWLINE_CHARS = new Set([
+F4.NEWLINE_CHARS = new Set([
   `
 `,
   "\r",
 ]);
-M4.NEWLINE_REGEXP = /\r\n|[\n\r]/g;
-function $F($, X) {
+F4.NEWLINE_REGEXP = /\r\n|[\n\r]/g;
+function _L($, X) {
   for (let Y = X ?? 0; Y < $.length; Y++) {
     if ($[Y] === 10) return { preceding: Y, index: Y + 1, carriage: !1 };
     if ($[Y] === 13) return { preceding: Y, index: Y + 1, carriage: !0 };
   }
   return null;
 }
-function yH($) {
+function aU($) {
   for (let Q = 0; Q < $.length - 1; Q++) {
     if ($[Q] === 10 && $[Q + 1] === 10) return Q + 2;
     if ($[Q] === 13 && $[Q + 1] === 13) return Q + 2;
@@ -7431,37 +6849,37 @@ function yH($) {
   }
   return -1;
 }
-var XJ = { off: 0, error: 200, warn: 300, info: 400, debug: 500 },
-  Gz = ($, X, J) => {
+var a9 = { off: 0, error: 200, warn: 300, info: 400, debug: 500 },
+  Yz = ($, X, J) => {
     if (!$) return;
-    if (MH(XJ, $)) return $;
+    if (gU(a9, $)) return $;
     _$(J).warn(
-      `${X} was set to ${JSON.stringify($)}, expected one of ${JSON.stringify(Object.keys(XJ))}`,
+      `${X} was set to ${JSON.stringify($)}, expected one of ${JSON.stringify(Object.keys(a9))}`,
     );
     return;
   };
-function VX() {}
-function $J($, X, J) {
-  if (!X || XJ[$] > XJ[J]) return VX;
+function HX() {}
+function t9($, X, J) {
+  if (!X || a9[$] > a9[J]) return HX;
   else return X[$].bind(X);
 }
-var XF = { error: VX, warn: VX, info: VX, debug: VX },
-  gH = new WeakMap();
+var xL = { error: HX, warn: HX, info: HX, debug: HX },
+  sU = new WeakMap();
 function _$($) {
   let X = $.logger,
     J = $.logLevel ?? "off";
-  if (!X) return XF;
-  let Q = gH.get(X);
+  if (!X) return xL;
+  let Q = sU.get(X);
   if (Q && Q[0] === J) return Q[1];
   let Y = {
-    error: $J("error", X, J),
-    warn: $J("warn", X, J),
-    info: $J("info", X, J),
-    debug: $J("debug", X, J),
+    error: t9("error", X, J),
+    warn: t9("warn", X, J),
+    info: t9("info", X, J),
+    debug: t9("debug", X, J),
   };
-  return (gH.set(X, [J, Y]), Y);
+  return (sU.set(X, [J, Y]), Y);
 }
-var s6 = ($) => {
+var a6 = ($) => {
   if ($.options) (($.options = { ...$.options }), delete $.options.headers);
   if ($.headers)
     $.headers = Object.fromEntries(
@@ -7484,13 +6902,13 @@ var s6 = ($) => {
   }
   return $;
 };
-var OX;
+var KX;
 class G6 {
   constructor($, X, J) {
     ((this.iterator = $),
-      OX.set(this, void 0),
+      KX.set(this, void 0),
       (this.controller = X),
-      v(this, OX, J, "f"));
+      v(this, KX, J, "f"));
   }
   static fromSSEResponse($, X, J) {
     let Q = !1,
@@ -7503,7 +6921,7 @@ class G6 {
       Q = !0;
       let W = !1;
       try {
-        for await (let G of JF($, X)) {
+        for await (let G of TL($, X)) {
           if (G.event === "completion")
             try {
               yield JSON.parse(G.data);
@@ -7533,11 +6951,11 @@ class G6 {
             }
           if (G.event === "ping") continue;
           if (G.event === "error")
-            throw new v$(void 0, s9(G.data) ?? G.data, void 0, $.headers);
+            throw new v$(void 0, r9(G.data) ?? G.data, void 0, $.headers);
         }
         W = !0;
       } catch (G) {
-        if (a6(G)) return;
+        if (t6(G)) return;
         throw G;
       } finally {
         if (!W) X.abort();
@@ -7548,8 +6966,8 @@ class G6 {
   static fromReadableStream($, X, J) {
     let Q = !1;
     async function* Y() {
-      let W = new M4(),
-        G = KX($);
+      let W = new F4(),
+        G = GX($);
       for await (let U of G) for (let H of W.decode(U)) yield H;
       for (let U of W.flush()) yield U;
     }
@@ -7567,7 +6985,7 @@ class G6 {
         }
         W = !0;
       } catch (G) {
-        if (a6(G)) return;
+        if (t6(G)) return;
         throw G;
       } finally {
         if (!W) X.abort();
@@ -7575,7 +6993,7 @@ class G6 {
     }
     return new G6(z, X, J);
   }
-  [((OX = new WeakMap()), Symbol.asyncIterator)]() {
+  [((KX = new WeakMap()), Symbol.asyncIterator)]() {
     return this.iterator();
   }
   tee() {
@@ -7594,14 +7012,14 @@ class G6 {
         };
       };
     return [
-      new G6(() => Q($), this.controller, D(this, OX, "f")),
-      new G6(() => Q(X), this.controller, D(this, OX, "f")),
+      new G6(() => Q($), this.controller, D(this, KX, "f")),
+      new G6(() => Q(X), this.controller, D(this, KX, "f")),
     ];
   }
   toReadableStream() {
     let $ = this,
       X;
-    return zz({
+    return Xz({
       async start() {
         X = $[Symbol.asyncIterator]();
       },
@@ -7609,7 +7027,7 @@ class G6 {
         try {
           let { value: Q, done: Y } = await X.next();
           if (Y) return J.close();
-          let z = NX(
+          let z = UX(
             JSON.stringify(Q) +
               `
 `,
@@ -7625,7 +7043,7 @@ class G6 {
     });
   }
 }
-async function* JF($, X) {
+async function* TL($, X) {
   if (!$.body) {
     if (
       (X.abort(),
@@ -7637,10 +7055,10 @@ async function* JF($, X) {
       );
     throw new T("Attempted to iterate over a response with no body");
   }
-  let J = new fH(),
-    Q = new M4(),
-    Y = KX($.body);
-  for await (let z of YF(Y))
+  let J = new eU(),
+    Q = new F4(),
+    Y = GX($.body);
+  for await (let z of yL(Y))
     for (let W of Q.decode(z)) {
       let G = J.decode(W);
       if (G) yield G;
@@ -7650,7 +7068,7 @@ async function* JF($, X) {
     if (W) yield W;
   }
 }
-async function* YF($) {
+async function* yL($) {
   let X = new Uint8Array();
   for await (let J of $) {
     if (J == null) continue;
@@ -7658,16 +7076,16 @@ async function* YF($) {
         J instanceof ArrayBuffer
           ? new Uint8Array(J)
           : typeof J === "string"
-            ? NX(J)
+            ? UX(J)
             : J,
       Y = new Uint8Array(X.length + Q.length);
     (Y.set(X), Y.set(Q, X.length), (X = Y));
     let z;
-    while ((z = yH(X)) !== -1) (yield X.slice(0, z), (X = X.slice(z)));
+    while ((z = aU(X)) !== -1) (yield X.slice(0, z), (X = X.slice(z)));
   }
   if (X.length > 0) yield X;
 }
-class fH {
+class eU {
   constructor() {
     ((this.event = null), (this.data = []), (this.chunks = []));
   }
@@ -7684,19 +7102,19 @@ class fH {
       return ((this.event = null), (this.data = []), (this.chunks = []), Y);
     }
     if ((this.chunks.push($), $.startsWith(":"))) return null;
-    let [X, J, Q] = QF($, ":");
+    let [X, J, Q] = gL($, ":");
     if (Q.startsWith(" ")) Q = Q.substring(1);
     if (X === "event") this.event = Q;
     else if (X === "data") this.data.push(Q);
     return null;
   }
 }
-function QF($, X) {
+function gL($, X) {
   let J = $.indexOf(X);
   if (J !== -1) return [$.substring(0, J), X, $.substring(J + X.length)];
   return [$, "", ""];
 }
-async function JJ($, X) {
+async function s9($, X) {
   let {
       response: J,
       requestLogID: Q,
@@ -7718,14 +7136,14 @@ async function JJ($, X) {
       if (U?.includes("application/json") || U?.endsWith("+json")) {
         if (J.headers.get("content-length") === "0") return;
         let O = await J.json();
-        return Uz(O, J);
+        return Qz(O, J);
       }
       return await J.text();
     })();
   return (
     _$($).debug(
       `[${Q}] response parsed`,
-      s6({
+      a6({
         retryOfRequestLogID: Y,
         url: J.url,
         status: J.status,
@@ -7736,27 +7154,27 @@ async function JJ($, X) {
     W
   );
 }
-function Uz($, X) {
+function Qz($, X) {
   if (!$ || typeof $ !== "object" || Array.isArray($)) return $;
   return Object.defineProperty($, "_request_id", {
     value: X.headers.get("request-id"),
     enumerable: !1,
   });
 }
-var wX;
+var NX;
 class X1 extends Promise {
-  constructor($, X, J = JJ) {
+  constructor($, X, J = s9) {
     super((Q) => {
       Q(null);
     });
     ((this.responsePromise = X),
       (this.parseResponse = J),
-      wX.set(this, void 0),
-      v(this, wX, $, "f"));
+      NX.set(this, void 0),
+      v(this, NX, $, "f"));
   }
   _thenUnwrap($) {
-    return new X1(D(this, wX, "f"), this.responsePromise, async (X, J) =>
-      Uz($(await this.parseResponse(X, J), J), J.response),
+    return new X1(D(this, NX, "f"), this.responsePromise, async (X, J) =>
+      Qz($(await this.parseResponse(X, J), J), J.response),
     );
   }
   asResponse() {
@@ -7769,7 +7187,7 @@ class X1 extends Promise {
   parse() {
     if (!this.parsedPromise)
       this.parsedPromise = this.responsePromise.then(($) =>
-        this.parseResponse(D(this, wX, "f"), $),
+        this.parseResponse(D(this, NX, "f"), $),
       );
     return this.parsedPromise;
   }
@@ -7783,12 +7201,12 @@ class X1 extends Promise {
     return this.parse().finally($);
   }
 }
-wX = new WeakMap();
-var YJ;
-class Hz {
+NX = new WeakMap();
+var e9;
+class zz {
   constructor($, X, J, Q) {
-    (YJ.set(this, void 0),
-      v(this, YJ, $, "f"),
+    (e9.set(this, void 0),
+      v(this, e9, $, "f"),
       (this.options = Q),
       (this.response = X),
       (this.body = J));
@@ -7803,24 +7221,24 @@ class Hz {
       throw new T(
         "No next page expected; please check `.hasNextPage()` before calling `.getNextPage()`.",
       );
-    return await D(this, YJ, "f").requestAPIList(this.constructor, $);
+    return await D(this, e9, "f").requestAPIList(this.constructor, $);
   }
   async *iterPages() {
     let $ = this;
     yield $;
     while ($.hasNextPage()) (($ = await $.getNextPage()), yield $);
   }
-  async *[((YJ = new WeakMap()), Symbol.asyncIterator)]() {
+  async *[((e9 = new WeakMap()), Symbol.asyncIterator)]() {
     for await (let $ of this.iterPages())
       for (let X of $.getPaginatedItems()) yield X;
   }
 }
-class QJ extends X1 {
+class $J extends X1 {
   constructor($, X, J) {
     super(
       $,
       X,
-      async (Q, Y) => new J(Q, Y.response, await JJ(Q, Y), Y.options),
+      async (Q, Y) => new J(Q, Y.response, await s9(Q, Y), Y.options),
     );
   }
   async *[Symbol.asyncIterator]() {
@@ -7828,7 +7246,7 @@ class QJ extends X1 {
     for await (let X of $) yield X;
   }
 }
-class P6 extends Hz {
+class b6 extends zz {
   constructor($, X, J, Q) {
     super($, X, J, Q);
     ((this.data = J.data || []),
@@ -7849,18 +7267,18 @@ class P6 extends Hz {
       if (!X) return null;
       return {
         ...this.options,
-        query: { ...a9(this.options.query), before_id: X },
+        query: { ...d9(this.options.query), before_id: X },
       };
     }
     let $ = this.last_id;
     if (!$) return null;
     return {
       ...this.options,
-      query: { ...a9(this.options.query), after_id: $ },
+      query: { ...d9(this.options.query), after_id: $ },
     };
   }
 }
-class BX extends Hz {
+class VX extends zz {
   constructor($, X, J, Q) {
     super($, X, J, Q);
     ((this.data = J.data || []),
@@ -7877,10 +7295,10 @@ class BX extends Hz {
   nextPageRequestOptions() {
     let $ = this.next_page;
     if (!$) return null;
-    return { ...this.options, query: { ...a9(this.options.query), page: $ } };
+    return { ...this.options, query: { ...d9(this.options.query), page: $ } };
   }
 }
-var Nz = () => {
+var Gz = () => {
   if (typeof File > "u") {
     let { process: $ } = globalThis,
       X =
@@ -7895,9 +7313,9 @@ var Nz = () => {
   }
 };
 function J1($, X, J) {
-  return (Nz(), new File($, X ?? "unknown_file", J));
+  return (Gz(), new File($, X ?? "unknown_file", J));
 }
-function qX($, X) {
+function OX($, X) {
   let J =
     (typeof $ === "object" &&
       $ !== null &&
@@ -7908,17 +7326,17 @@ function qX($, X) {
     "";
   return X ? J.split(/[\\/]/).pop() || void 0 : J;
 }
-var Vz = ($) =>
+var Uz = ($) =>
   $ != null &&
   typeof $ === "object" &&
   typeof $[Symbol.asyncIterator] === "function";
-var d1 = async ($, X, J = !0) => {
-    return { ...$, body: await GF($.body, X, J) };
+var f1 = async ($, X, J = !0) => {
+    return { ...$, body: await uL($.body, X, J) };
   },
-  hH = new WeakMap();
-function WF($) {
+  $H = new WeakMap();
+function hL($) {
   let X = typeof $ === "function" ? $ : $.fetch,
-    J = hH.get(X);
+    J = $H.get(X);
   if (J) return J;
   let Q = (async () => {
     try {
@@ -7930,23 +7348,23 @@ function WF($) {
       return !0;
     }
   })();
-  return (hH.set(X, Q), Q);
+  return ($H.set(X, Q), Q);
 }
-var GF = async ($, X, J = !0) => {
-    if (!(await WF(X)))
+var uL = async ($, X, J = !0) => {
+    if (!(await hL(X)))
       throw TypeError(
         "The provided fetch function does not support file uploads with the current global FormData class.",
       );
     let Q = new FormData();
     return (
       await Promise.all(
-        Object.entries($ || {}).map(([Y, z]) => Kz(Q, Y, z, J)),
+        Object.entries($ || {}).map(([Y, z]) => Wz(Q, Y, z, J)),
       ),
       Q
     );
   },
-  UF = ($) => $ instanceof Blob && "name" in $;
-var Kz = async ($, X, J, Q) => {
+  mL = ($) => $ instanceof Blob && "name" in $;
+var Wz = async ($, X, J, Q) => {
   if (J === void 0) return;
   if (J == null)
     throw TypeError(
@@ -7958,22 +7376,22 @@ var Kz = async ($, X, J, Q) => {
     let Y = {},
       z = J.headers.get("Content-Type");
     if (z) Y = { type: z };
-    $.append(X, J1([await J.blob()], qX(J, Q), Y));
-  } else if (Vz(J))
-    $.append(X, J1([await new Response(e9(J)).blob()], qX(J, Q)));
-  else if (UF(J)) $.append(X, J1([J], qX(J, Q), { type: J.type }));
+    $.append(X, J1([await J.blob()], OX(J, Q), Y));
+  } else if (Uz(J))
+    $.append(X, J1([await new Response(o9(J)).blob()], OX(J, Q)));
+  else if (mL(J)) $.append(X, J1([J], OX(J, Q), { type: J.type }));
   else if (Array.isArray(J))
-    await Promise.all(J.map((Y) => Kz($, X + "[]", Y, Q)));
+    await Promise.all(J.map((Y) => Wz($, X + "[]", Y, Q)));
   else if (typeof J === "object")
     await Promise.all(
-      Object.entries(J).map(([Y, z]) => Kz($, `${X}[${Y}]`, z, Q)),
+      Object.entries(J).map(([Y, z]) => Wz($, `${X}[${Y}]`, z, Q)),
     );
   else
     throw TypeError(
       `Invalid value given to form, expected a string, number, boolean, object, Array, File or Blob but got ${J} instead`,
     );
 };
-var uH = ($) =>
+var XH = ($) =>
     $ != null &&
     typeof $ === "object" &&
     typeof $.size === "number" &&
@@ -7981,19 +7399,19 @@ var uH = ($) =>
     typeof $.text === "function" &&
     typeof $.slice === "function" &&
     typeof $.arrayBuffer === "function",
-  HF = ($) =>
+  lL = ($) =>
     $ != null &&
     typeof $ === "object" &&
     typeof $.name === "string" &&
     typeof $.lastModified === "number" &&
-    uH($),
-  KF = ($) =>
+    XH($),
+  cL = ($) =>
     $ != null &&
     typeof $ === "object" &&
     typeof $.url === "string" &&
     typeof $.blob === "function";
-async function zJ($, X, J) {
-  if ((Nz(), ($ = await $), X || (X = qX($, !0)), HF($))) {
+async function XJ($, X, J) {
+  if ((Gz(), ($ = await $), X || (X = OX($, !0)), lL($))) {
     if ($ instanceof File && X == null && J == null) return $;
     return J1([await $.arrayBuffer()], X ?? $.name, {
       type: $.type,
@@ -8001,21 +7419,21 @@ async function zJ($, X, J) {
       ...J,
     });
   }
-  if (KF($)) {
+  if (cL($)) {
     let Y = await $.blob();
     return (
       X || (X = new URL($.url).pathname.split(/[\\/]/).pop()),
-      J1(await Oz(Y), X, J)
+      J1(await Hz(Y), X, J)
     );
   }
-  let Q = await Oz($);
+  let Q = await Hz($);
   if (!J?.type) {
     let Y = Q.find((z) => typeof z === "object" && "type" in z && z.type);
     if (typeof Y === "string") J = { ...J, type: Y };
   }
   return J1(Q, X, J);
 }
-async function Oz($) {
+async function Hz($) {
   let X = [];
   if (
     typeof $ === "string" ||
@@ -8023,17 +7441,17 @@ async function Oz($) {
     $ instanceof ArrayBuffer
   )
     X.push($);
-  else if (uH($)) X.push($ instanceof Blob ? $ : await $.arrayBuffer());
-  else if (Vz($)) for await (let J of $) X.push(...(await Oz(J)));
+  else if (XH($)) X.push($ instanceof Blob ? $ : await $.arrayBuffer());
+  else if (Uz($)) for await (let J of $) X.push(...(await Hz(J)));
   else {
     let J = $?.constructor?.name;
     throw Error(
-      `Unexpected data type: ${typeof $}${J ? `; constructor: ${J}` : ""}${NF($)}`,
+      `Unexpected data type: ${typeof $}${J ? `; constructor: ${J}` : ""}${iL($)}`,
     );
   }
   return X;
 }
-function NF($) {
+function iL($) {
   if (typeof $ !== "object" || $ === null) return "";
   return `; props: [${Object.getOwnPropertyNames($)
     .map((J) => `"${J}"`)
@@ -8044,10 +7462,10 @@ class A$ {
     this._client = $;
   }
 }
-var mH = Symbol.for("brand.privateNullableHeaders");
-function* OF($) {
+var JH = Symbol.for("brand.privateNullableHeaders");
+function* nL($) {
   if (!$) return;
-  if (mH in $) {
+  if (JH in $) {
     let { values: Q, nulls: Y } = $;
     yield* Q.entries();
     for (let z of Y) yield [z, null];
@@ -8056,13 +7474,13 @@ function* OF($) {
   let X = !1,
     J;
   if ($ instanceof Headers) J = $.entries();
-  else if (Qz($)) J = $;
+  else if ($z($)) J = $;
   else ((X = !0), (J = Object.entries($ ?? {})));
   for (let Q of J) {
     let Y = Q[0];
     if (typeof Y !== "string")
       throw TypeError("expected header name to be a string");
-    let z = Qz(Q[1]) ? Q[1] : [Q[1]],
+    let z = $z(Q[1]) ? Q[1] : [Q[1]],
       W = !1;
     for (let G of z) {
       if (G === void 0) continue;
@@ -8076,47 +7494,47 @@ var n = ($) => {
     J = new Set();
   for (let Q of $) {
     let Y = new Set();
-    for (let [z, W] of OF(Q)) {
+    for (let [z, W] of nL(Q)) {
       let G = z.toLowerCase();
       if (!Y.has(G)) (X.delete(z), Y.add(G));
       if (W === null) (X.delete(z), J.add(G));
       else (X.append(z, W), J.delete(G));
     }
   }
-  return { [mH]: !0, values: X, nulls: J };
+  return { [JH]: !0, values: X, nulls: J };
 };
-var DX = Symbol("anthropic.sdk.stainlessHelper");
-function WJ($) {
-  return typeof $ === "object" && $ !== null && DX in $;
+var wX = Symbol("anthropic.sdk.stainlessHelper");
+function JJ($) {
+  return typeof $ === "object" && $ !== null && wX in $;
 }
-function wz($, X) {
+function Kz($, X) {
   let J = new Set();
   if ($) {
-    for (let Q of $) if (WJ(Q)) J.add(Q[DX]);
+    for (let Q of $) if (JJ(Q)) J.add(Q[wX]);
   }
   if (X)
     for (let Q of X) {
-      if (WJ(Q)) J.add(Q[DX]);
+      if (JJ(Q)) J.add(Q[wX]);
       if (Array.isArray(Q.content)) {
-        for (let Y of Q.content) if (WJ(Y)) J.add(Y[DX]);
+        for (let Y of Q.content) if (JJ(Y)) J.add(Y[wX]);
       }
     }
   return Array.from(J);
 }
-function GJ($, X) {
-  let J = wz($, X);
+function YJ($, X) {
+  let J = Kz($, X);
   if (J.length === 0) return {};
   return { "x-stainless-helper": J.join(", ") };
 }
-function lH($) {
-  if (WJ($)) return { "x-stainless-helper": $[DX] };
+function YH($) {
+  if (JJ($)) return { "x-stainless-helper": $[wX] };
   return {};
 }
-function iH($) {
+function zH($) {
   return $.replace(/[^A-Za-z0-9\-._~!$&'()*+,;=:@]+/g, encodeURIComponent);
 }
-var cH = Object.freeze(Object.create(null)),
-  wF = ($ = iH) =>
+var QH = Object.freeze(Object.create(null)),
+  dL = ($ = zH) =>
     function (J, ...Q) {
       if (J.length === 1) return J[0];
       let Y = !1,
@@ -8131,7 +7549,7 @@ var cH = Object.freeze(Object.create(null)),
               (typeof N === "object" &&
                 N.toString ===
                   Object.getPrototypeOf(
-                    Object.getPrototypeOf(N.hasOwnProperty ?? cH) ?? cH,
+                    Object.getPrototypeOf(N.hasOwnProperty ?? QH) ?? QH,
                   )?.toString))
           )
             ((w = N + ""),
@@ -8166,11 +7584,11 @@ ${V}`);
       }
       return W;
     },
-  F$ = wF(iH);
-class LX extends A$ {
+  F$ = dL(zH);
+class BX extends A$ {
   list($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
-    return this._client.getAPIList("/v1/files", P6, {
+    return this._client.getAPIList("/v1/files", b6, {
       query: Q,
       ...X,
       headers: n([
@@ -8217,7 +7635,7 @@ class LX extends A$ {
     let { betas: J, ...Q } = $;
     return this._client.post(
       "/v1/files",
-      d1(
+      f1(
         {
           body: Q,
           ...X,
@@ -8228,7 +7646,7 @@ class LX extends A$ {
                 "files-api-2025-04-14",
               ].toString(),
             },
-            lH(Q.file),
+            YH(Q.file),
             X?.headers,
           ]),
         },
@@ -8237,7 +7655,7 @@ class LX extends A$ {
     );
   }
 }
-class jX extends A$ {
+class qX extends A$ {
   retrieve($, X = {}, J) {
     let { betas: Q } = X ?? {};
     return this._client.get(F$`/v1/models/${$}?beta=true`, {
@@ -8254,7 +7672,7 @@ class jX extends A$ {
   }
   list($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
-    return this._client.getAPIList("/v1/models?beta=true", P6, {
+    return this._client.getAPIList("/v1/models?beta=true", b6, {
       query: Q,
       ...X,
       headers: n([
@@ -8268,7 +7686,7 @@ class jX extends A$ {
     });
   }
 }
-var UJ = {
+var QJ = {
   "claude-opus-4-20250514": 8192,
   "claude-opus-4-0": 8192,
   "claude-4-opus-20250514": 8192,
@@ -8278,11 +7696,11 @@ var UJ = {
   "anthropic.claude-opus-4-1-20250805-v1:0": 8192,
   "claude-opus-4-1@20250805": 8192,
 };
-function pH($) {
+function WH($) {
   return $?.output_format ?? $?.output_config?.format;
 }
-function Bz($, X, J) {
-  let Q = pH(X);
+function Nz($, X, J) {
+  let Q = WH(X);
   if (!X || !("parse" in (Q ?? {})))
     return {
       ...$,
@@ -8308,13 +7726,13 @@ function Bz($, X, J) {
       }),
       parsed_output: null,
     };
-  return qz($, X, J);
+  return Vz($, X, J);
 }
-function qz($, X, J) {
+function Vz($, X, J) {
   let Q = null,
     Y = $.content.map((z) => {
       if (z.type === "text") {
-        let W = DF(X, z.text);
+        let W = tL(X, z.text);
         if (Q === null) Q = W;
         let G = Object.defineProperty({ ...z }, "parsed_output", {
           value: W,
@@ -8336,8 +7754,8 @@ function qz($, X, J) {
     });
   return { ...$, content: Y, parsed_output: Q };
 }
-function DF($, X) {
-  let J = pH($);
+function tL($, X) {
+  let J = WH($);
   if (J?.type !== "json_schema") return null;
   try {
     if ("parse" in J) return J.parse(X);
@@ -8346,7 +7764,7 @@ function DF($, X) {
     throw new T(`Failed to parse structured output: ${Q}`);
   }
 }
-var LF = ($) => {
+var aL = ($) => {
     let X = 0,
       J = [];
     while (X < $.length) {
@@ -8430,31 +7848,31 @@ var LF = ($) => {
     }
     return J;
   },
-  r1 = ($) => {
+  h1 = ($) => {
     if ($.length === 0) return $;
     let X = $[$.length - 1];
     switch (X.type) {
       case "separator":
-        return (($ = $.slice(0, $.length - 1)), r1($));
+        return (($ = $.slice(0, $.length - 1)), h1($));
         break;
       case "number":
         let J = X.value[X.value.length - 1];
         if (J === "." || J === "-")
-          return (($ = $.slice(0, $.length - 1)), r1($));
+          return (($ = $.slice(0, $.length - 1)), h1($));
       case "string":
         let Q = $[$.length - 2];
         if (Q?.type === "delimiter")
-          return (($ = $.slice(0, $.length - 1)), r1($));
+          return (($ = $.slice(0, $.length - 1)), h1($));
         else if (Q?.type === "brace" && Q.value === "{")
-          return (($ = $.slice(0, $.length - 1)), r1($));
+          return (($ = $.slice(0, $.length - 1)), h1($));
         break;
       case "delimiter":
-        return (($ = $.slice(0, $.length - 1)), r1($));
+        return (($ = $.slice(0, $.length - 1)), h1($));
         break;
     }
     return $;
   },
-  jF = ($) => {
+  sL = ($) => {
     let X = [];
     if (
       ($.map((J) => {
@@ -8473,7 +7891,7 @@ var LF = ($) => {
       });
     return $;
   },
-  FF = ($) => {
+  eL = ($) => {
     let X = "";
     return (
       $.map((J) => {
@@ -8489,65 +7907,65 @@ var LF = ($) => {
       X
     );
   },
-  HJ = ($) => JSON.parse(FF(jF(r1(LF($)))));
-var O6,
-  A4,
-  o1,
+  zJ = ($) => JSON.parse(eL(sL(h1(aL($)))));
+var V6,
+  I4,
+  u1,
+  DX,
+  WJ,
+  LX,
+  jX,
+  GJ,
   FX,
-  KJ,
+  s6,
   IX,
-  MX,
-  NJ,
-  AX,
-  e6,
-  bX,
-  VJ,
-  OJ,
+  UJ,
+  HJ,
   Y1,
-  wJ,
-  BJ,
-  PX,
-  Dz,
-  nH,
-  qJ,
-  Lz,
-  jz,
-  Fz,
-  dH,
-  rH = "__json_buf";
-function oH($) {
+  KJ,
+  NJ,
+  MX,
+  Oz,
+  GH,
+  VJ,
+  wz,
+  Bz,
+  qz,
+  UH,
+  HH = "__json_buf";
+function KH($) {
   return (
     $.type === "tool_use" ||
     $.type === "server_tool_use" ||
     $.type === "mcp_tool_use"
   );
 }
-class ZX {
+class AX {
   constructor($, X) {
-    (O6.add(this),
+    (V6.add(this),
       (this.messages = []),
       (this.receivedMessages = []),
-      A4.set(this, void 0),
-      o1.set(this, null),
+      I4.set(this, void 0),
+      u1.set(this, null),
       (this.controller = new AbortController()),
-      FX.set(this, void 0),
-      KJ.set(this, () => {}),
-      IX.set(this, () => {}),
-      MX.set(this, void 0),
-      NJ.set(this, () => {}),
-      AX.set(this, () => {}),
-      e6.set(this, {}),
-      bX.set(this, !1),
-      VJ.set(this, !1),
-      OJ.set(this, !1),
+      DX.set(this, void 0),
+      WJ.set(this, () => {}),
+      LX.set(this, () => {}),
+      jX.set(this, void 0),
+      GJ.set(this, () => {}),
+      FX.set(this, () => {}),
+      s6.set(this, {}),
+      IX.set(this, !1),
+      UJ.set(this, !1),
+      HJ.set(this, !1),
       Y1.set(this, !1),
-      wJ.set(this, void 0),
-      BJ.set(this, void 0),
-      PX.set(this, void 0),
-      qJ.set(this, (J) => {
-        if ((v(this, VJ, !0, "f"), a6(J))) J = new T$();
+      KJ.set(this, void 0),
+      NJ.set(this, void 0),
+      MX.set(this, void 0),
+      VJ.set(this, (J) => {
+        if ((v(this, UJ, !0, "f"), t6(J))) J = new T$();
         if (J instanceof T$)
-          return (v(this, OJ, !0, "f"), this._emit("abort", J));
+          return (v(this, HJ, !0, "f"), this._emit("abort", J));
         if (J instanceof T) return this._emit("error", J);
         if (J instanceof Error) {
           let Q = new T(J.message);
@@ -8557,46 +7975,46 @@ class ZX {
       }),
       v(
         this,
-        FX,
+        DX,
         new Promise((J, Q) => {
-          (v(this, KJ, J, "f"), v(this, IX, Q, "f"));
+          (v(this, WJ, J, "f"), v(this, LX, Q, "f"));
         }),
         "f",
       ),
       v(
         this,
-        MX,
+        jX,
         new Promise((J, Q) => {
-          (v(this, NJ, J, "f"), v(this, AX, Q, "f"));
+          (v(this, GJ, J, "f"), v(this, FX, Q, "f"));
         }),
         "f",
       ),
-      D(this, FX, "f").catch(() => {}),
-      D(this, MX, "f").catch(() => {}),
-      v(this, o1, $, "f"),
-      v(this, PX, X?.logger ?? console, "f"));
+      D(this, DX, "f").catch(() => {}),
+      D(this, jX, "f").catch(() => {}),
+      v(this, u1, $, "f"),
+      v(this, MX, X?.logger ?? console, "f"));
   }
   get response() {
-    return D(this, wJ, "f");
+    return D(this, KJ, "f");
   }
   get request_id() {
-    return D(this, BJ, "f");
+    return D(this, NJ, "f");
   }
   async withResponse() {
     v(this, Y1, !0, "f");
-    let $ = await D(this, FX, "f");
+    let $ = await D(this, DX, "f");
     if (!$) throw Error("Could not resolve a `Response` object");
     return { data: this, response: $, request_id: $.headers.get("request-id") };
   }
   static fromReadableStream($) {
-    let X = new ZX(null);
+    let X = new AX(null);
     return (X._run(() => X._fromReadableStream($)), X);
   }
   static createMessage($, X, J, { logger: Q } = {}) {
-    let Y = new ZX(X, { logger: Q });
+    let Y = new AX(X, { logger: Q });
     for (let z of X.messages) Y._addMessageParam(z);
     return (
-      v(Y, o1, { ...X, stream: !0 }, "f"),
+      v(Y, u1, { ...X, stream: !0 }, "f"),
       Y._run(() =>
         Y._createMessage(
           $,
@@ -8615,7 +8033,7 @@ class ZX {
       () => {
         (this._emitFinal(), this._emit("end"));
       },
-      D(this, qJ, "f"),
+      D(this, VJ, "f"),
     );
   }
   _addMessageParam($) {
@@ -8633,46 +8051,46 @@ class ZX {
         Q.addEventListener("abort", Y));
     }
     try {
-      D(this, O6, "m", Lz).call(this);
+      D(this, V6, "m", wz).call(this);
       let { response: z, data: W } = await $.create(
         { ...X, stream: !0 },
         { ...J, signal: this.controller.signal },
       ).withResponse();
       this._connected(z);
-      for await (let G of W) D(this, O6, "m", jz).call(this, G);
+      for await (let G of W) D(this, V6, "m", Bz).call(this, G);
       if (W.controller.signal?.aborted) throw new T$();
-      D(this, O6, "m", Fz).call(this);
+      D(this, V6, "m", qz).call(this);
     } finally {
       if (Q && Y) Q.removeEventListener("abort", Y);
     }
   }
   _connected($) {
     if (this.ended) return;
-    (v(this, wJ, $, "f"),
-      v(this, BJ, $?.headers.get("request-id"), "f"),
-      D(this, KJ, "f").call(this, $),
+    (v(this, KJ, $, "f"),
+      v(this, NJ, $?.headers.get("request-id"), "f"),
+      D(this, WJ, "f").call(this, $),
       this._emit("connect"));
   }
   get ended() {
-    return D(this, bX, "f");
+    return D(this, IX, "f");
   }
   get errored() {
-    return D(this, VJ, "f");
+    return D(this, UJ, "f");
   }
   get aborted() {
-    return D(this, OJ, "f");
+    return D(this, HJ, "f");
   }
   abort() {
     this.controller.abort();
   }
   on($, X) {
     return (
-      (D(this, e6, "f")[$] || (D(this, e6, "f")[$] = [])).push({ listener: X }),
+      (D(this, s6, "f")[$] || (D(this, s6, "f")[$] = [])).push({ listener: X }),
       this
     );
   }
   off($, X) {
-    let J = D(this, e6, "f")[$];
+    let J = D(this, s6, "f")[$];
     if (!J) return this;
     let Q = J.findIndex((Y) => Y.listener === X);
     if (Q >= 0) J.splice(Q, 1);
@@ -8680,7 +8098,7 @@ class ZX {
   }
   once($, X) {
     return (
-      (D(this, e6, "f")[$] || (D(this, e6, "f")[$] = [])).push({
+      (D(this, s6, "f")[$] || (D(this, s6, "f")[$] = [])).push({
         listener: X,
         once: !0,
       }),
@@ -8694,43 +8112,43 @@ class ZX {
     });
   }
   async done() {
-    (v(this, Y1, !0, "f"), await D(this, MX, "f"));
+    (v(this, Y1, !0, "f"), await D(this, jX, "f"));
   }
   get currentMessage() {
-    return D(this, A4, "f");
+    return D(this, I4, "f");
   }
   async finalMessage() {
-    return (await this.done(), D(this, O6, "m", Dz).call(this));
+    return (await this.done(), D(this, V6, "m", Oz).call(this));
   }
   async finalText() {
-    return (await this.done(), D(this, O6, "m", nH).call(this));
+    return (await this.done(), D(this, V6, "m", GH).call(this));
   }
   _emit($, ...X) {
-    if (D(this, bX, "f")) return;
-    if ($ === "end") (v(this, bX, !0, "f"), D(this, NJ, "f").call(this));
-    let J = D(this, e6, "f")[$];
+    if (D(this, IX, "f")) return;
+    if ($ === "end") (v(this, IX, !0, "f"), D(this, GJ, "f").call(this));
+    let J = D(this, s6, "f")[$];
     if (J)
-      ((D(this, e6, "f")[$] = J.filter((Q) => !Q.once)),
+      ((D(this, s6, "f")[$] = J.filter((Q) => !Q.once)),
         J.forEach(({ listener: Q }) => Q(...X)));
     if ($ === "abort") {
       let Q = X[0];
       if (!D(this, Y1, "f") && !J?.length) Promise.reject(Q);
-      (D(this, IX, "f").call(this, Q),
-        D(this, AX, "f").call(this, Q),
+      (D(this, LX, "f").call(this, Q),
+        D(this, FX, "f").call(this, Q),
         this._emit("end"));
       return;
     }
     if ($ === "error") {
       let Q = X[0];
       if (!D(this, Y1, "f") && !J?.length) Promise.reject(Q);
-      (D(this, IX, "f").call(this, Q),
-        D(this, AX, "f").call(this, Q),
+      (D(this, LX, "f").call(this, Q),
+        D(this, FX, "f").call(this, Q),
         this._emit("end"));
     }
   }
   _emitFinal() {
     if (this.receivedMessages.at(-1))
-      this._emit("finalMessage", D(this, O6, "m", Dz).call(this));
+      this._emit("finalMessage", D(this, V6, "m", Oz).call(this));
   }
   async _fromReadableStream($, X) {
     let J = X?.signal,
@@ -8741,41 +8159,41 @@ class ZX {
         J.addEventListener("abort", Q));
     }
     try {
-      (D(this, O6, "m", Lz).call(this), this._connected(null));
+      (D(this, V6, "m", wz).call(this), this._connected(null));
       let Y = G6.fromReadableStream($, this.controller);
-      for await (let z of Y) D(this, O6, "m", jz).call(this, z);
+      for await (let z of Y) D(this, V6, "m", Bz).call(this, z);
       if (Y.controller.signal?.aborted) throw new T$();
-      D(this, O6, "m", Fz).call(this);
+      D(this, V6, "m", qz).call(this);
     } finally {
       if (J && Q) J.removeEventListener("abort", Q);
     }
   }
-  [((A4 = new WeakMap()),
-  (o1 = new WeakMap()),
+  [((I4 = new WeakMap()),
+  (u1 = new WeakMap()),
+  (DX = new WeakMap()),
+  (WJ = new WeakMap()),
+  (LX = new WeakMap()),
+  (jX = new WeakMap()),
+  (GJ = new WeakMap()),
   (FX = new WeakMap()),
-  (KJ = new WeakMap()),
+  (s6 = new WeakMap()),
   (IX = new WeakMap()),
-  (MX = new WeakMap()),
-  (NJ = new WeakMap()),
-  (AX = new WeakMap()),
-  (e6 = new WeakMap()),
-  (bX = new WeakMap()),
-  (VJ = new WeakMap()),
-  (OJ = new WeakMap()),
+  (UJ = new WeakMap()),
+  (HJ = new WeakMap()),
   (Y1 = new WeakMap()),
-  (wJ = new WeakMap()),
-  (BJ = new WeakMap()),
-  (PX = new WeakMap()),
-  (qJ = new WeakMap()),
-  (O6 = new WeakSet()),
-  (Dz = function () {
+  (KJ = new WeakMap()),
+  (NJ = new WeakMap()),
+  (MX = new WeakMap()),
+  (VJ = new WeakMap()),
+  (V6 = new WeakSet()),
+  (Oz = function () {
     if (this.receivedMessages.length === 0)
       throw new T(
         "stream ended without producing a Message with role=assistant",
       );
     return this.receivedMessages.at(-1);
   }),
-  (nH = function () {
+  (GH = function () {
     if (this.receivedMessages.length === 0)
       throw new T(
         "stream ended without producing a Message with role=assistant",
@@ -8790,13 +8208,13 @@ class ZX {
       );
     return X.join(" ");
   }),
-  (Lz = function () {
+  (wz = function () {
     if (this.ended) return;
-    v(this, A4, void 0, "f");
+    v(this, I4, void 0, "f");
   }),
-  (jz = function (X) {
+  (Bz = function (X) {
     if (this.ended) return;
-    let J = D(this, O6, "m", dH).call(this, X);
+    let J = D(this, V6, "m", UH).call(this, X);
     switch ((this._emit("streamEvent", X, J), X.type)) {
       case "content_block_delta": {
         let Q = J.content.at(-1);
@@ -8812,7 +8230,7 @@ class ZX {
             break;
           }
           case "input_json_delta": {
-            if (oH(Q) && Q.input)
+            if (KH(Q) && Q.input)
               this._emit("inputJson", X.delta.partial_json, Q.input);
             break;
           }
@@ -8831,14 +8249,14 @@ class ZX {
             break;
           }
           default:
-            tH(X.delta);
+            NH(X.delta);
         }
         break;
       }
       case "message_stop": {
         (this._addMessageParam(J),
           this._addMessage(
-            Bz(J, D(this, o1, "f"), { logger: D(this, PX, "f") }),
+            Nz(J, D(this, u1, "f"), { logger: D(this, MX, "f") }),
             !0,
           ));
         break;
@@ -8848,7 +8266,7 @@ class ZX {
         break;
       }
       case "message_start": {
-        v(this, A4, J, "f");
+        v(this, I4, J, "f");
         break;
       }
       case "content_block_start":
@@ -8856,17 +8274,17 @@ class ZX {
         break;
     }
   }),
-  (Fz = function () {
+  (qz = function () {
     if (this.ended) throw new T("stream has ended, this shouldn't happen");
-    let X = D(this, A4, "f");
+    let X = D(this, I4, "f");
     if (!X) throw new T("request ended without sending any chunks");
     return (
-      v(this, A4, void 0, "f"),
-      Bz(X, D(this, o1, "f"), { logger: D(this, PX, "f") })
+      v(this, I4, void 0, "f"),
+      Nz(X, D(this, u1, "f"), { logger: D(this, MX, "f") })
     );
   }),
-  (dH = function (X) {
-    let J = D(this, A4, "f");
+  (UH = function (X) {
+    let J = D(this, I4, "f");
     if (X.type === "message_start") {
       if (J)
         throw new T(
@@ -8922,12 +8340,12 @@ class ZX {
             break;
           }
           case "input_json_delta": {
-            if (Q && oH(Q)) {
-              let Y = Q[rH] || "";
+            if (Q && KH(Q)) {
+              let Y = Q[HH] || "";
               Y += X.delta.partial_json;
               let z = { ...Q };
               if (
-                (Object.defineProperty(z, rH, {
+                (Object.defineProperty(z, HH, {
                   value: Y,
                   enumerable: !1,
                   writable: !0,
@@ -8935,12 +8353,12 @@ class ZX {
                 Y)
               )
                 try {
-                  z.input = HJ(Y);
+                  z.input = zJ(Y);
                 } catch (W) {
                   let G = new T(
                     `Unable to parse tool parameter JSON from model. Please retry your request or adjust your prompt. Error: ${W}. JSON: ${Y}`,
                   );
-                  D(this, qJ, "f").call(this, G);
+                  D(this, VJ, "f").call(this, G);
                 }
               J.content[X.index] = z;
             }
@@ -8968,7 +8386,7 @@ class ZX {
             break;
           }
           default:
-            tH(X.delta);
+            NH(X.delta);
         }
         return J;
       }
@@ -9026,8 +8444,8 @@ class ZX {
     ).toReadableStream();
   }
 }
-function tH($) {}
-class t1 extends Error {
+function NH($) {}
+class m1 extends Error {
   constructor($) {
     let X =
       typeof $ === "string"
@@ -9040,8 +8458,8 @@ class t1 extends Error {
     ((this.name = "ToolError"), (this.content = $));
   }
 }
-var aH = 1e5,
-  sH = `You have been working on the task described above but have not yet completed it. Write a continuation summary that will allow you (or another instance of yourself) to resume work efficiently in a future context window where the conversation history will be replaced with this summary. Your summary should be structured, concise, and actionable. Include:
+var VH = 1e5,
+  OH = `You have been working on the task described above but have not yet completed it. Write a continuation summary that will allow you (or another instance of yourself) to resume work efficiently in a future context window where the conversation history will be replaced with this summary. Your summary should be structured, concise, and actionable. Include:
 1. Task Overview
 The user's core request and success criteria
 Any clarifications or constraints they specified
@@ -9064,8 +8482,8 @@ Domain-specific details that aren't obvious
 Any promises made to the user
 Be concise but complete—err on the side of including information that would prevent duplicate work or repeated mistakes. Write in a way that enables immediate resumption of the task.
 Wrap your summary in <summary></summary> tags.`;
-var EX, a1, Q1, C$, RX, U6, $4, b4, SX, eH, Iz;
-function $K() {
+var bX, l1, Q1, C$, PX, U6, e6, M4, ZX, wH, Dz;
+function BH() {
   let $, X;
   return {
     promise: new Promise((Q, Y) => {
@@ -9075,43 +8493,43 @@ function $K() {
     reject: X,
   };
 }
-class vX {
+class EX {
   constructor($, X, J) {
-    (EX.add(this),
+    (bX.add(this),
       (this.client = $),
-      a1.set(this, !1),
+      l1.set(this, !1),
       Q1.set(this, !1),
       C$.set(this, void 0),
-      RX.set(this, void 0),
+      PX.set(this, void 0),
       U6.set(this, void 0),
-      $4.set(this, void 0),
-      b4.set(this, void 0),
-      SX.set(this, 0),
+      e6.set(this, void 0),
+      M4.set(this, void 0),
+      ZX.set(this, 0),
       v(
         this,
         C$,
         { params: { ...X, messages: structuredClone(X.messages) } },
         "f",
       ));
-    let Y = ["BetaToolRunner", ...wz(X.tools, X.messages)].join(", ");
+    let Y = ["BetaToolRunner", ...Kz(X.tools, X.messages)].join(", ");
     (v(
       this,
-      RX,
+      PX,
       { ...J, headers: n([{ "x-stainless-helper": Y }, J?.headers]) },
       "f",
     ),
-      v(this, b4, $K(), "f"));
+      v(this, M4, BH(), "f"));
   }
-  async *[((a1 = new WeakMap()),
+  async *[((l1 = new WeakMap()),
   (Q1 = new WeakMap()),
   (C$ = new WeakMap()),
-  (RX = new WeakMap()),
+  (PX = new WeakMap()),
   (U6 = new WeakMap()),
-  ($4 = new WeakMap()),
-  (b4 = new WeakMap()),
-  (SX = new WeakMap()),
-  (EX = new WeakSet()),
-  (eH = async function () {
+  (e6 = new WeakMap()),
+  (M4 = new WeakMap()),
+  (ZX = new WeakMap()),
+  (bX = new WeakSet()),
+  (wH = async function () {
     let X = D(this, C$, "f").params.compactionControl;
     if (!X || !X.enabled) return !1;
     let J = 0;
@@ -9126,10 +8544,10 @@ class vX {
       } catch {
         return !1;
       }
-    let Q = X.contextTokenThreshold ?? aH;
+    let Q = X.contextTokenThreshold ?? VH;
     if (J < Q) return !1;
     let Y = X.model ?? D(this, C$, "f").params.model,
-      z = X.summaryPrompt ?? sH,
+      z = X.summaryPrompt ?? OH,
       W = D(this, C$, "f").params.messages;
     if (W[W.length - 1].role === "assistant") {
       let U = W[W.length - 1];
@@ -9161,20 +8579,20 @@ class vX {
   }),
   Symbol.asyncIterator)]() {
     var $;
-    if (D(this, a1, "f")) throw new T("Cannot iterate over a consumed stream");
-    (v(this, a1, !0, "f"), v(this, Q1, !0, "f"), v(this, $4, void 0, "f"));
+    if (D(this, l1, "f")) throw new T("Cannot iterate over a consumed stream");
+    (v(this, l1, !0, "f"), v(this, Q1, !0, "f"), v(this, e6, void 0, "f"));
     try {
       while (!0) {
         let X;
         try {
           if (
             D(this, C$, "f").params.max_iterations &&
-            D(this, SX, "f") >= D(this, C$, "f").params.max_iterations
+            D(this, ZX, "f") >= D(this, C$, "f").params.max_iterations
           )
             break;
           (v(this, Q1, !1, "f"),
-            v(this, $4, void 0, "f"),
-            v(this, SX, (($ = D(this, SX, "f")), $++, $), "f"),
+            v(this, e6, void 0, "f"),
+            v(this, ZX, (($ = D(this, ZX, "f")), $++, $), "f"),
             v(this, U6, void 0, "f"));
           let {
             max_iterations: J,
@@ -9182,7 +8600,7 @@ class vX {
             ...Y
           } = D(this, C$, "f").params;
           if (Y.stream)
-            ((X = this.client.beta.messages.stream({ ...Y }, D(this, RX, "f"))),
+            ((X = this.client.beta.messages.stream({ ...Y }, D(this, PX, "f"))),
               v(this, U6, X.finalMessage(), "f"),
               D(this, U6, "f").catch(() => {}),
               yield X);
@@ -9192,17 +8610,17 @@ class vX {
               U6,
               this.client.beta.messages.create(
                 { ...Y, stream: !1 },
-                D(this, RX, "f"),
+                D(this, PX, "f"),
               ),
               "f",
             ),
               yield D(this, U6, "f"));
-          if (!(await D(this, EX, "m", eH).call(this))) {
+          if (!(await D(this, bX, "m", wH).call(this))) {
             if (!D(this, Q1, "f")) {
               let { role: G, content: U } = await D(this, U6, "f");
               D(this, C$, "f").params.messages.push({ role: G, content: U });
             }
-            let W = await D(this, EX, "m", Iz).call(
+            let W = await D(this, bX, "m", Dz).call(
               this,
               D(this, C$, "f").params.messages.at(-1),
             );
@@ -9215,13 +8633,13 @@ class vX {
       }
       if (!D(this, U6, "f"))
         throw new T("ToolRunner concluded without a message from the server");
-      D(this, b4, "f").resolve(await D(this, U6, "f"));
+      D(this, M4, "f").resolve(await D(this, U6, "f"));
     } catch (X) {
       throw (
-        v(this, a1, !1, "f"),
-        D(this, b4, "f").promise.catch(() => {}),
-        D(this, b4, "f").reject(X),
-        v(this, b4, $K(), "f"),
+        v(this, l1, !1, "f"),
+        D(this, M4, "f").promise.catch(() => {}),
+        D(this, M4, "f").reject(X),
+        v(this, M4, BH(), "f"),
         X
       );
     }
@@ -9230,18 +8648,18 @@ class vX {
     if (typeof $ === "function")
       D(this, C$, "f").params = $(D(this, C$, "f").params);
     else D(this, C$, "f").params = $;
-    (v(this, Q1, !0, "f"), v(this, $4, void 0, "f"));
+    (v(this, Q1, !0, "f"), v(this, e6, void 0, "f"));
   }
   async generateToolResponse() {
     let $ = (await D(this, U6, "f")) ?? this.params.messages.at(-1);
     if (!$) return null;
-    return D(this, EX, "m", Iz).call(this, $);
+    return D(this, bX, "m", Dz).call(this, $);
   }
   done() {
-    return D(this, b4, "f").promise;
+    return D(this, M4, "f").promise;
   }
   async runUntilDone() {
-    if (!D(this, a1, "f")) for await (let $ of this);
+    if (!D(this, l1, "f")) for await (let $ of this);
     return this.done();
   }
   get params() {
@@ -9254,11 +8672,11 @@ class vX {
     return this.runUntilDone().then($, X);
   }
 }
-Iz = async function (X) {
-  if (D(this, $4, "f") !== void 0) return D(this, $4, "f");
-  return (v(this, $4, IF(D(this, C$, "f").params, X), "f"), D(this, $4, "f"));
+Dz = async function (X) {
+  if (D(this, e6, "f") !== void 0) return D(this, e6, "f");
+  return (v(this, e6, $j(D(this, C$, "f").params, X), "f"), D(this, e6, "f"));
 };
-async function IF($, X = $.messages.at(-1)) {
+async function $j($, X = $.messages.at(-1)) {
   if (
     !X ||
     X.role !== "assistant" ||
@@ -9292,7 +8710,7 @@ async function IF($, X = $.messages.at(-1)) {
             type: "tool_result",
             tool_use_id: Y.id,
             content:
-              W instanceof t1
+              W instanceof m1
                 ? W.content
                 : `Error: ${W instanceof Error ? W.message : String(W)}`,
             is_error: !0,
@@ -9302,12 +8720,12 @@ async function IF($, X = $.messages.at(-1)) {
     ),
   };
 }
-class s1 {
+class c1 {
   constructor($, X) {
     ((this.iterator = $), (this.controller = X));
   }
   async *decoder() {
-    let $ = new M4();
+    let $ = new F4();
     for await (let X of this.iterator)
       for (let J of $.decode(X)) yield JSON.parse(J);
     for (let X of $.flush()) yield JSON.parse(X);
@@ -9327,10 +8745,10 @@ class s1 {
         );
       throw new T("Attempted to iterate over a response with no body");
     }
-    return new s1(KX($.body), X);
+    return new c1(GX($.body), X);
   }
 }
-class CX extends A$ {
+class RX extends A$ {
   create($, X) {
     let { betas: J, ...Q } = $;
     return this._client.post("/v1/messages/batches?beta=true", {
@@ -9364,7 +8782,7 @@ class CX extends A$ {
   }
   list($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
-    return this._client.getAPIList("/v1/messages/batches?beta=true", P6, {
+    return this._client.getAPIList("/v1/messages/batches?beta=true", b6, {
       query: Q,
       ...X,
       headers: n([
@@ -9431,10 +8849,10 @@ class CX extends A$ {
         stream: !0,
         __binaryResponse: !0,
       })
-      ._thenUnwrap((z, W) => s1.fromResponse(W.response, W.controller));
+      ._thenUnwrap((z, W) => c1.fromResponse(W.response, W.controller));
   }
 }
-var XK = {
+var qH = {
     "claude-1.3": "November 6th, 2024",
     "claude-1.3-100k": "November 6th, 2024",
     "claude-instant-1.1": "November 6th, 2024",
@@ -9447,28 +8865,28 @@ var XK = {
     "claude-3-7-sonnet-latest": "February 19th, 2026",
     "claude-3-7-sonnet-20250219": "February 19th, 2026",
   },
-  AF = ["claude-opus-4-6"];
-class P4 extends A$ {
+  Jj = ["claude-opus-4-6"];
+class A4 extends A$ {
   constructor() {
     super(...arguments);
-    this.batches = new CX(this._client);
+    this.batches = new RX(this._client);
   }
   create($, X) {
-    let J = JK($),
+    let J = DH($),
       { betas: Q, ...Y } = J;
-    if (Y.model in XK)
-      console.warn(`The model '${Y.model}' is deprecated and will reach end-of-life on ${XK[Y.model]}
+    if (Y.model in qH)
+      console.warn(`The model '${Y.model}' is deprecated and will reach end-of-life on ${qH[Y.model]}
 Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for more information.`);
-    if (Y.model in AF && Y.thinking && Y.thinking.type === "enabled")
+    if (Y.model in Jj && Y.thinking && Y.thinking.type === "enabled")
       console.warn(
         `Using Claude with ${Y.model} and 'thinking.type=enabled' is deprecated. Use 'thinking.type=adaptive' instead which results in better model performance in our testing: https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking`,
       );
     let z = this._client._options.timeout;
     if (!Y.stream && z == null) {
-      let G = UJ[Y.model] ?? void 0;
+      let G = QJ[Y.model] ?? void 0;
       z = this._client.calculateNonstreamingTimeout(Y.max_tokens, G);
     }
-    let W = GJ(Y.tools, Y.messages);
+    let W = YJ(Y.tools, Y.messages);
     return this._client.post("/v1/messages?beta=true", {
       body: Y,
       timeout: z ?? 600000,
@@ -9500,15 +8918,15 @@ Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resour
         ]),
       }),
       this.create($, X).then((J) =>
-        qz(J, $, { logger: this._client.logger ?? console }),
+        Vz(J, $, { logger: this._client.logger ?? console }),
       )
     );
   }
   stream($, X) {
-    return ZX.createMessage(this, $, X);
+    return AX.createMessage(this, $, X);
   }
   countTokens($, X) {
-    let J = JK($),
+    let J = DH($),
       { betas: Q, ...Y } = J;
     return this._client.post("/v1/messages/count_tokens?beta=true", {
       body: Y,
@@ -9525,10 +8943,10 @@ Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resour
     });
   }
   toolRunner($, X) {
-    return new vX(this._client, $, X);
+    return new EX(this._client, $, X);
   }
 }
-function JK($) {
+function DH($) {
   if (!$.output_format) return $;
   if ($.output_config?.format)
     throw new T(
@@ -9537,15 +8955,15 @@ function JK($) {
   let { output_format: X, ...J } = $;
   return { ...J, output_config: { ...$.output_config, format: X } };
 }
-P4.Batches = CX;
-P4.BetaToolRunner = vX;
-P4.ToolError = t1;
-class kX extends A$ {
+A4.Batches = RX;
+A4.BetaToolRunner = EX;
+A4.ToolError = m1;
+class SX extends A$ {
   create($, X = {}, J) {
     let { betas: Q, ...Y } = X ?? {};
     return this._client.post(
       F$`/v1/skills/${$}/versions?beta=true`,
-      d1(
+      f1(
         {
           body: Y,
           ...J,
@@ -9572,7 +8990,7 @@ class kX extends A$ {
   }
   list($, X = {}, J) {
     let { betas: Q, ...Y } = X ?? {};
-    return this._client.getAPIList(F$`/v1/skills/${$}/versions?beta=true`, BX, {
+    return this._client.getAPIList(F$`/v1/skills/${$}/versions?beta=true`, VX, {
       query: Y,
       ...J,
       headers: n([
@@ -9592,16 +9010,16 @@ class kX extends A$ {
     });
   }
 }
-class e1 extends A$ {
+class i1 extends A$ {
   constructor() {
     super(...arguments);
-    this.versions = new kX(this._client);
+    this.versions = new SX(this._client);
   }
   create($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
     return this._client.post(
       "/v1/skills?beta=true",
-      d1(
+      f1(
         {
           body: Q,
           ...X,
@@ -9629,7 +9047,7 @@ class e1 extends A$ {
   }
   list($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
-    return this._client.getAPIList("/v1/skills?beta=true", BX, {
+    return this._client.getAPIList("/v1/skills?beta=true", VX, {
       query: Q,
       ...X,
       headers: n([
@@ -9649,21 +9067,21 @@ class e1 extends A$ {
     });
   }
 }
-e1.Versions = kX;
+i1.Versions = SX;
 class f6 extends A$ {
   constructor() {
     super(...arguments);
-    ((this.models = new jX(this._client)),
-      (this.messages = new P4(this._client)),
-      (this.files = new LX(this._client)),
-      (this.skills = new e1(this._client)));
+    ((this.models = new qX(this._client)),
+      (this.messages = new A4(this._client)),
+      (this.files = new BX(this._client)),
+      (this.skills = new i1(this._client)));
   }
 }
-f6.Models = jX;
-f6.Messages = P4;
-f6.Files = LX;
-f6.Skills = e1;
-class $0 extends A$ {
+f6.Models = qX;
+f6.Messages = A4;
+f6.Files = BX;
+f6.Skills = i1;
+class p1 extends A$ {
   create($, X) {
     let { betas: J, ...Q } = $;
     return this._client.post("/v1/complete", {
@@ -9682,11 +9100,11 @@ class $0 extends A$ {
     });
   }
 }
-function YK($) {
+function LH($) {
   return $?.output_config?.format;
 }
-function Mz($, X, J) {
-  let Q = YK(X);
+function Lz($, X, J) {
+  let Q = LH(X);
   if (!X || !("parse" in (Q ?? {})))
     return {
       ...$,
@@ -9700,13 +9118,13 @@ function Mz($, X, J) {
       }),
       parsed_output: null,
     };
-  return Az($, X, J);
+  return jz($, X, J);
 }
-function Az($, X, J) {
+function jz($, X, J) {
   let Q = null,
     Y = $.content.map((z) => {
       if (z.type === "text") {
-        let W = EF(X, z.text);
+        let W = Wj(X, z.text);
         if (Q === null) Q = W;
         return Object.defineProperty({ ...z }, "parsed_output", {
           value: W,
@@ -9717,8 +9135,8 @@ function Az($, X, J) {
     });
   return { ...$, content: Y, parsed_output: Q };
 }
-function EF($, X) {
-  let J = YK($);
+function Wj($, X) {
+  let J = LH($);
   if (J?.type !== "json_schema") return null;
   try {
     if ("parse" in J) return J.parse(X);
@@ -9727,60 +9145,60 @@ function EF($, X) {
     throw new T(`Failed to parse structured output: ${Q}`);
   }
 }
-var w6,
-  Z4,
-  X0,
+var O6,
+  b4,
+  n1,
+  vX,
+  OJ,
+  CX,
+  kX,
+  wJ,
   _X,
-  DJ,
+  $4,
   xX,
-  TX,
-  LJ,
-  yX,
-  X4,
-  gX,
-  jJ,
-  FJ,
+  BJ,
+  qJ,
   z1,
-  IJ,
-  MJ,
-  fX,
+  DJ,
+  LJ,
+  TX,
+  Fz,
+  jH,
+  Iz,
+  Mz,
+  Az,
   bz,
-  QK,
-  Pz,
-  Zz,
-  Ez,
-  Rz,
-  zK,
-  WK = "__json_buf";
-function GK($) {
+  FH,
+  IH = "__json_buf";
+function MH($) {
   return $.type === "tool_use" || $.type === "server_tool_use";
 }
-class hX {
+class yX {
   constructor($, X) {
-    (w6.add(this),
+    (O6.add(this),
       (this.messages = []),
       (this.receivedMessages = []),
-      Z4.set(this, void 0),
-      X0.set(this, null),
+      b4.set(this, void 0),
+      n1.set(this, null),
       (this.controller = new AbortController()),
-      _X.set(this, void 0),
-      DJ.set(this, () => {}),
-      xX.set(this, () => {}),
-      TX.set(this, void 0),
-      LJ.set(this, () => {}),
-      yX.set(this, () => {}),
-      X4.set(this, {}),
-      gX.set(this, !1),
-      jJ.set(this, !1),
-      FJ.set(this, !1),
+      vX.set(this, void 0),
+      OJ.set(this, () => {}),
+      CX.set(this, () => {}),
+      kX.set(this, void 0),
+      wJ.set(this, () => {}),
+      _X.set(this, () => {}),
+      $4.set(this, {}),
+      xX.set(this, !1),
+      BJ.set(this, !1),
+      qJ.set(this, !1),
       z1.set(this, !1),
-      IJ.set(this, void 0),
-      MJ.set(this, void 0),
-      fX.set(this, void 0),
-      Pz.set(this, (J) => {
-        if ((v(this, jJ, !0, "f"), a6(J))) J = new T$();
+      DJ.set(this, void 0),
+      LJ.set(this, void 0),
+      TX.set(this, void 0),
+      Iz.set(this, (J) => {
+        if ((v(this, BJ, !0, "f"), t6(J))) J = new T$();
         if (J instanceof T$)
-          return (v(this, FJ, !0, "f"), this._emit("abort", J));
+          return (v(this, qJ, !0, "f"), this._emit("abort", J));
         if (J instanceof T) return this._emit("error", J);
         if (J instanceof Error) {
           let Q = new T(J.message);
@@ -9790,46 +9208,46 @@ class hX {
       }),
       v(
         this,
-        _X,
+        vX,
         new Promise((J, Q) => {
-          (v(this, DJ, J, "f"), v(this, xX, Q, "f"));
+          (v(this, OJ, J, "f"), v(this, CX, Q, "f"));
         }),
         "f",
       ),
       v(
         this,
-        TX,
+        kX,
         new Promise((J, Q) => {
-          (v(this, LJ, J, "f"), v(this, yX, Q, "f"));
+          (v(this, wJ, J, "f"), v(this, _X, Q, "f"));
         }),
         "f",
       ),
-      D(this, _X, "f").catch(() => {}),
-      D(this, TX, "f").catch(() => {}),
-      v(this, X0, $, "f"),
-      v(this, fX, X?.logger ?? console, "f"));
+      D(this, vX, "f").catch(() => {}),
+      D(this, kX, "f").catch(() => {}),
+      v(this, n1, $, "f"),
+      v(this, TX, X?.logger ?? console, "f"));
   }
   get response() {
-    return D(this, IJ, "f");
+    return D(this, DJ, "f");
   }
   get request_id() {
-    return D(this, MJ, "f");
+    return D(this, LJ, "f");
   }
   async withResponse() {
     v(this, z1, !0, "f");
-    let $ = await D(this, _X, "f");
+    let $ = await D(this, vX, "f");
     if (!$) throw Error("Could not resolve a `Response` object");
     return { data: this, response: $, request_id: $.headers.get("request-id") };
   }
   static fromReadableStream($) {
-    let X = new hX(null);
+    let X = new yX(null);
     return (X._run(() => X._fromReadableStream($)), X);
   }
   static createMessage($, X, J, { logger: Q } = {}) {
-    let Y = new hX(X, { logger: Q });
+    let Y = new yX(X, { logger: Q });
     for (let z of X.messages) Y._addMessageParam(z);
     return (
-      v(Y, X0, { ...X, stream: !0 }, "f"),
+      v(Y, n1, { ...X, stream: !0 }, "f"),
       Y._run(() =>
         Y._createMessage(
           $,
@@ -9848,7 +9266,7 @@ class hX {
       () => {
         (this._emitFinal(), this._emit("end"));
       },
-      D(this, Pz, "f"),
+      D(this, Iz, "f"),
     );
   }
   _addMessageParam($) {
@@ -9866,46 +9284,46 @@ class hX {
         Q.addEventListener("abort", Y));
     }
     try {
-      D(this, w6, "m", Zz).call(this);
+      D(this, O6, "m", Mz).call(this);
       let { response: z, data: W } = await $.create(
         { ...X, stream: !0 },
         { ...J, signal: this.controller.signal },
       ).withResponse();
       this._connected(z);
-      for await (let G of W) D(this, w6, "m", Ez).call(this, G);
+      for await (let G of W) D(this, O6, "m", Az).call(this, G);
       if (W.controller.signal?.aborted) throw new T$();
-      D(this, w6, "m", Rz).call(this);
+      D(this, O6, "m", bz).call(this);
     } finally {
       if (Q && Y) Q.removeEventListener("abort", Y);
     }
   }
   _connected($) {
     if (this.ended) return;
-    (v(this, IJ, $, "f"),
-      v(this, MJ, $?.headers.get("request-id"), "f"),
-      D(this, DJ, "f").call(this, $),
+    (v(this, DJ, $, "f"),
+      v(this, LJ, $?.headers.get("request-id"), "f"),
+      D(this, OJ, "f").call(this, $),
       this._emit("connect"));
   }
   get ended() {
-    return D(this, gX, "f");
+    return D(this, xX, "f");
   }
   get errored() {
-    return D(this, jJ, "f");
+    return D(this, BJ, "f");
   }
   get aborted() {
-    return D(this, FJ, "f");
+    return D(this, qJ, "f");
   }
   abort() {
     this.controller.abort();
   }
   on($, X) {
     return (
-      (D(this, X4, "f")[$] || (D(this, X4, "f")[$] = [])).push({ listener: X }),
+      (D(this, $4, "f")[$] || (D(this, $4, "f")[$] = [])).push({ listener: X }),
       this
     );
   }
   off($, X) {
-    let J = D(this, X4, "f")[$];
+    let J = D(this, $4, "f")[$];
     if (!J) return this;
     let Q = J.findIndex((Y) => Y.listener === X);
     if (Q >= 0) J.splice(Q, 1);
@@ -9913,7 +9331,7 @@ class hX {
   }
   once($, X) {
     return (
-      (D(this, X4, "f")[$] || (D(this, X4, "f")[$] = [])).push({
+      (D(this, $4, "f")[$] || (D(this, $4, "f")[$] = [])).push({
         listener: X,
         once: !0,
       }),
@@ -9927,43 +9345,43 @@ class hX {
     });
   }
   async done() {
-    (v(this, z1, !0, "f"), await D(this, TX, "f"));
+    (v(this, z1, !0, "f"), await D(this, kX, "f"));
   }
   get currentMessage() {
-    return D(this, Z4, "f");
+    return D(this, b4, "f");
   }
   async finalMessage() {
-    return (await this.done(), D(this, w6, "m", bz).call(this));
+    return (await this.done(), D(this, O6, "m", Fz).call(this));
   }
   async finalText() {
-    return (await this.done(), D(this, w6, "m", QK).call(this));
+    return (await this.done(), D(this, O6, "m", jH).call(this));
   }
   _emit($, ...X) {
-    if (D(this, gX, "f")) return;
-    if ($ === "end") (v(this, gX, !0, "f"), D(this, LJ, "f").call(this));
-    let J = D(this, X4, "f")[$];
+    if (D(this, xX, "f")) return;
+    if ($ === "end") (v(this, xX, !0, "f"), D(this, wJ, "f").call(this));
+    let J = D(this, $4, "f")[$];
     if (J)
-      ((D(this, X4, "f")[$] = J.filter((Q) => !Q.once)),
+      ((D(this, $4, "f")[$] = J.filter((Q) => !Q.once)),
         J.forEach(({ listener: Q }) => Q(...X)));
     if ($ === "abort") {
       let Q = X[0];
       if (!D(this, z1, "f") && !J?.length) Promise.reject(Q);
-      (D(this, xX, "f").call(this, Q),
-        D(this, yX, "f").call(this, Q),
+      (D(this, CX, "f").call(this, Q),
+        D(this, _X, "f").call(this, Q),
         this._emit("end"));
       return;
     }
     if ($ === "error") {
       let Q = X[0];
       if (!D(this, z1, "f") && !J?.length) Promise.reject(Q);
-      (D(this, xX, "f").call(this, Q),
-        D(this, yX, "f").call(this, Q),
+      (D(this, CX, "f").call(this, Q),
+        D(this, _X, "f").call(this, Q),
         this._emit("end"));
     }
   }
   _emitFinal() {
     if (this.receivedMessages.at(-1))
-      this._emit("finalMessage", D(this, w6, "m", bz).call(this));
+      this._emit("finalMessage", D(this, O6, "m", Fz).call(this));
   }
   async _fromReadableStream($, X) {
     let J = X?.signal,
@@ -9974,41 +9392,41 @@ class hX {
         J.addEventListener("abort", Q));
     }
     try {
-      (D(this, w6, "m", Zz).call(this), this._connected(null));
+      (D(this, O6, "m", Mz).call(this), this._connected(null));
       let Y = G6.fromReadableStream($, this.controller);
-      for await (let z of Y) D(this, w6, "m", Ez).call(this, z);
+      for await (let z of Y) D(this, O6, "m", Az).call(this, z);
       if (Y.controller.signal?.aborted) throw new T$();
-      D(this, w6, "m", Rz).call(this);
+      D(this, O6, "m", bz).call(this);
     } finally {
       if (J && Q) J.removeEventListener("abort", Q);
     }
   }
-  [((Z4 = new WeakMap()),
-  (X0 = new WeakMap()),
+  [((b4 = new WeakMap()),
+  (n1 = new WeakMap()),
+  (vX = new WeakMap()),
+  (OJ = new WeakMap()),
+  (CX = new WeakMap()),
+  (kX = new WeakMap()),
+  (wJ = new WeakMap()),
   (_X = new WeakMap()),
-  (DJ = new WeakMap()),
+  ($4 = new WeakMap()),
   (xX = new WeakMap()),
-  (TX = new WeakMap()),
-  (LJ = new WeakMap()),
-  (yX = new WeakMap()),
-  (X4 = new WeakMap()),
-  (gX = new WeakMap()),
-  (jJ = new WeakMap()),
-  (FJ = new WeakMap()),
+  (BJ = new WeakMap()),
+  (qJ = new WeakMap()),
   (z1 = new WeakMap()),
-  (IJ = new WeakMap()),
-  (MJ = new WeakMap()),
-  (fX = new WeakMap()),
-  (Pz = new WeakMap()),
-  (w6 = new WeakSet()),
-  (bz = function () {
+  (DJ = new WeakMap()),
+  (LJ = new WeakMap()),
+  (TX = new WeakMap()),
+  (Iz = new WeakMap()),
+  (O6 = new WeakSet()),
+  (Fz = function () {
     if (this.receivedMessages.length === 0)
       throw new T(
         "stream ended without producing a Message with role=assistant",
       );
     return this.receivedMessages.at(-1);
   }),
-  (QK = function () {
+  (jH = function () {
     if (this.receivedMessages.length === 0)
       throw new T(
         "stream ended without producing a Message with role=assistant",
@@ -10023,13 +9441,13 @@ class hX {
       );
     return X.join(" ");
   }),
-  (Zz = function () {
+  (Mz = function () {
     if (this.ended) return;
-    v(this, Z4, void 0, "f");
+    v(this, b4, void 0, "f");
   }),
-  (Ez = function (X) {
+  (Az = function (X) {
     if (this.ended) return;
-    let J = D(this, w6, "m", zK).call(this, X);
+    let J = D(this, O6, "m", FH).call(this, X);
     switch ((this._emit("streamEvent", X, J), X.type)) {
       case "content_block_delta": {
         let Q = J.content.at(-1);
@@ -10045,7 +9463,7 @@ class hX {
             break;
           }
           case "input_json_delta": {
-            if (GK(Q) && Q.input)
+            if (MH(Q) && Q.input)
               this._emit("inputJson", X.delta.partial_json, Q.input);
             break;
           }
@@ -10059,14 +9477,14 @@ class hX {
             break;
           }
           default:
-            UK(X.delta);
+            AH(X.delta);
         }
         break;
       }
       case "message_stop": {
         (this._addMessageParam(J),
           this._addMessage(
-            Mz(J, D(this, X0, "f"), { logger: D(this, fX, "f") }),
+            Lz(J, D(this, n1, "f"), { logger: D(this, TX, "f") }),
             !0,
           ));
         break;
@@ -10076,7 +9494,7 @@ class hX {
         break;
       }
       case "message_start": {
-        v(this, Z4, J, "f");
+        v(this, b4, J, "f");
         break;
       }
       case "content_block_start":
@@ -10084,17 +9502,17 @@ class hX {
         break;
     }
   }),
-  (Rz = function () {
+  (bz = function () {
     if (this.ended) throw new T("stream has ended, this shouldn't happen");
-    let X = D(this, Z4, "f");
+    let X = D(this, b4, "f");
     if (!X) throw new T("request ended without sending any chunks");
     return (
-      v(this, Z4, void 0, "f"),
-      Mz(X, D(this, X0, "f"), { logger: D(this, fX, "f") })
+      v(this, b4, void 0, "f"),
+      Lz(X, D(this, n1, "f"), { logger: D(this, TX, "f") })
     );
   }),
-  (zK = function (X) {
-    let J = D(this, Z4, "f");
+  (FH = function (X) {
+    let J = D(this, b4, "f");
     if (X.type === "message_start") {
       if (J)
         throw new T(
@@ -10147,19 +9565,19 @@ class hX {
             break;
           }
           case "input_json_delta": {
-            if (Q && GK(Q)) {
-              let Y = Q[WK] || "";
+            if (Q && MH(Q)) {
+              let Y = Q[IH] || "";
               Y += X.delta.partial_json;
               let z = { ...Q };
               if (
-                (Object.defineProperty(z, WK, {
+                (Object.defineProperty(z, IH, {
                   value: Y,
                   enumerable: !1,
                   writable: !0,
                 }),
                 Y)
               )
-                z.input = HJ(Y);
+                z.input = zJ(Y);
               J.content[X.index] = z;
             }
             break;
@@ -10178,7 +9596,7 @@ class hX {
             break;
           }
           default:
-            UK(X.delta);
+            AH(X.delta);
         }
         return J;
       }
@@ -10236,8 +9654,8 @@ class hX {
     ).toReadableStream();
   }
 }
-function UK($) {}
-class uX extends A$ {
+function AH($) {}
+class gX extends A$ {
   create($, X) {
     return this._client.post("/v1/messages/batches", { body: $, ...X });
   }
@@ -10245,7 +9663,7 @@ class uX extends A$ {
     return this._client.get(F$`/v1/messages/batches/${$}`, X);
   }
   list($ = {}, X) {
-    return this._client.getAPIList("/v1/messages/batches", P6, {
+    return this._client.getAPIList("/v1/messages/batches", b6, {
       query: $,
       ...X,
     });
@@ -10269,28 +9687,28 @@ class uX extends A$ {
         stream: !0,
         __binaryResponse: !0,
       })
-      ._thenUnwrap((Q, Y) => s1.fromResponse(Y.response, Y.controller));
+      ._thenUnwrap((Q, Y) => c1.fromResponse(Y.response, Y.controller));
   }
 }
 class W1 extends A$ {
   constructor() {
     super(...arguments);
-    this.batches = new uX(this._client);
+    this.batches = new gX(this._client);
   }
   create($, X) {
-    if ($.model in HK)
-      console.warn(`The model '${$.model}' is deprecated and will reach end-of-life on ${HK[$.model]}
+    if ($.model in bH)
+      console.warn(`The model '${$.model}' is deprecated and will reach end-of-life on ${bH[$.model]}
 Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for more information.`);
-    if ($.model in SF && $.thinking && $.thinking.type === "enabled")
+    if ($.model in Uj && $.thinking && $.thinking.type === "enabled")
       console.warn(
         `Using Claude with ${$.model} and 'thinking.type=enabled' is deprecated. Use 'thinking.type=adaptive' instead which results in better model performance in our testing: https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking`,
       );
     let J = this._client._options.timeout;
     if (!$.stream && J == null) {
-      let Y = UJ[$.model] ?? void 0;
+      let Y = QJ[$.model] ?? void 0;
       J = this._client.calculateNonstreamingTimeout($.max_tokens, Y);
     }
-    let Q = GJ($.tools, $.messages);
+    let Q = YJ($.tools, $.messages);
     return this._client.post("/v1/messages", {
       body: $,
       timeout: J ?? 600000,
@@ -10301,11 +9719,11 @@ Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resour
   }
   parse($, X) {
     return this.create($, X).then((J) =>
-      Az(J, $, { logger: this._client.logger ?? console }),
+      jz(J, $, { logger: this._client.logger ?? console }),
     );
   }
   stream($, X) {
-    return hX.createMessage(this, $, X, {
+    return yX.createMessage(this, $, X, {
       logger: this._client.logger ?? console,
     });
   }
@@ -10313,7 +9731,7 @@ Please migrate to a newer model. Visit https://docs.anthropic.com/en/docs/resour
     return this._client.post("/v1/messages/count_tokens", { body: $, ...X });
   }
 }
-var HK = {
+var bH = {
     "claude-1.3": "November 6th, 2024",
     "claude-1.3-100k": "November 6th, 2024",
     "claude-instant-1.1": "November 6th, 2024",
@@ -10328,9 +9746,9 @@ var HK = {
     "claude-3-5-haiku-latest": "February 19th, 2026",
     "claude-3-5-haiku-20241022": "February 19th, 2026",
   },
-  SF = ["claude-opus-4-6"];
-W1.Batches = uX;
-class J0 extends A$ {
+  Uj = ["claude-opus-4-6"];
+W1.Batches = gX;
+class d1 extends A$ {
   retrieve($, X = {}, J) {
     let { betas: Q } = X ?? {};
     return this._client.get(F$`/v1/models/${$}`, {
@@ -10347,7 +9765,7 @@ class J0 extends A$ {
   }
   list($ = {}, X) {
     let { betas: J, ...Q } = $ ?? {};
-    return this._client.getAPIList("/v1/models", P6, {
+    return this._client.getAPIList("/v1/models", b6, {
       query: Q,
       ...X,
       headers: n([
@@ -10361,34 +9779,34 @@ class J0 extends A$ {
     });
   }
 }
-var mX = ($) => {
+var fX = ($) => {
   if (typeof globalThis.process < "u")
     return globalThis.process.env?.[$]?.trim() ?? void 0;
   if (typeof globalThis.Deno < "u")
     return globalThis.Deno.env?.get?.($)?.trim();
   return;
 };
-var Sz,
-  vz,
-  AJ,
-  KK,
-  NK = "\\n\\nHuman:",
-  VK = "\\n\\nAssistant:";
+var Pz,
+  Zz,
+  jJ,
+  PH,
+  ZH = "\\n\\nHuman:",
+  EH = "\\n\\nAssistant:";
 class P$ {
   constructor({
-    baseURL: $ = mX("ANTHROPIC_BASE_URL"),
-    apiKey: X = mX("ANTHROPIC_API_KEY") ?? null,
-    authToken: J = mX("ANTHROPIC_AUTH_TOKEN") ?? null,
+    baseURL: $ = fX("ANTHROPIC_BASE_URL"),
+    apiKey: X = fX("ANTHROPIC_API_KEY") ?? null,
+    authToken: J = fX("ANTHROPIC_AUTH_TOKEN") ?? null,
     ...Q
   } = {}) {
-    (Sz.add(this), AJ.set(this, void 0));
+    (Pz.add(this), jJ.set(this, void 0));
     let Y = {
       apiKey: X,
       authToken: J,
       ...Q,
       baseURL: $ || "https://api.anthropic.com",
     };
-    if (!Y.dangerouslyAllowBrowser && RH())
+    if (!Y.dangerouslyAllowBrowser && cU())
       throw new T(`It looks like you're running in a browser-like environment.
 
 This is disabled by default, as it risks exposing your secret API credentials to attackers.
@@ -10398,18 +9816,18 @@ you can set the \`dangerouslyAllowBrowser\` option to \`true\`, e.g.,
 new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 `);
     ((this.baseURL = Y.baseURL),
-      (this.timeout = Y.timeout ?? vz.DEFAULT_TIMEOUT),
+      (this.timeout = Y.timeout ?? Zz.DEFAULT_TIMEOUT),
       (this.logger = Y.logger ?? console));
     let z = "warn";
     ((this.logLevel = z),
       (this.logLevel =
-        Gz(Y.logLevel, "ClientOptions.logLevel", this) ??
-        Gz(mX("ANTHROPIC_LOG"), "process.env['ANTHROPIC_LOG']", this) ??
+        Yz(Y.logLevel, "ClientOptions.logLevel", this) ??
+        Yz(fX("ANTHROPIC_LOG"), "process.env['ANTHROPIC_LOG']", this) ??
         z),
       (this.fetchOptions = Y.fetchOptions),
       (this.maxRetries = Y.maxRetries ?? 2),
-      (this.fetch = Y.fetch ?? vH()),
-      v(this, AJ, kH, "f"),
+      (this.fetch = Y.fetch ?? pU()),
+      v(this, jJ, dU, "f"),
       (this._options = Y),
       (this.apiKey = typeof X === "string" ? X : null),
       (this.authToken = J));
@@ -10471,21 +9889,21 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       .join("&");
   }
   getUserAgent() {
-    return `${this.constructor.name}/JS ${I4}`;
+    return `${this.constructor.name}/JS ${j4}`;
   }
   defaultIdempotencyKey() {
-    return `stainless-node-retry-${Jz()}`;
+    return `stainless-node-retry-${s7()}`;
   }
   makeStatusError($, X, J, Q) {
     return v$.generate($, X, J, Q);
   }
   buildURL($, X, J) {
-    let Q = (!D(this, Sz, "m", KK).call(this) && J) || this.baseURL,
-      Y = FH($)
+    let Q = (!D(this, Pz, "m", PH).call(this) && J) || this.baseURL,
+      Y = TU($)
         ? new URL($)
         : new URL(Q + (Q.endsWith("/") && $.startsWith("/") ? $.slice(1) : $)),
       z = this.defaultQuery();
-    if (!IH(z)) X = { ...z, ...X };
+    if (!yU(z)) X = { ...z, ...X };
     if (typeof X === "object" && X && !Array.isArray(X))
       Y.search = this.stringifyQuery(X);
     return Y.toString();
@@ -10542,7 +9960,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
     if (
       (_$(this).debug(
         `[${U}] sending request`,
-        s6({
+        a6({
           retryOfRequestLogID: J,
           method: Q.method,
           url: W,
@@ -10554,13 +9972,13 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
     )
       throw new T$();
     let V = new AbortController(),
-      O = await this.fetchWithTimeout(W, z, G, V).catch($X),
+      O = await this.fetchWithTimeout(W, z, G, V).catch(a0),
       N = Date.now();
     if (O instanceof globalThis.Error) {
       let L = `retrying, ${X} attempts remaining`;
       if (Q.signal?.aborted) throw new T$();
       let j =
-        a6(O) ||
+        t6(O) ||
         /timed? ?out/i.test(String(O) + ("cause" in O ? String(O.cause) : ""));
       if (X)
         return (
@@ -10569,7 +9987,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
           ),
           _$(this).debug(
             `[${U}] connection ${j ? "timed out" : "failed"} (${L})`,
-            s6({
+            a6({
               retryOfRequestLogID: J,
               url: W,
               durationMs: N - K,
@@ -10584,7 +10002,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
         ),
         _$(this).debug(
           `[${U}] connection ${j ? "timed out" : "failed"} (error; no more retries left)`,
-          s6({
+          a6({
             retryOfRequestLogID: J,
             url: W,
             durationMs: N - K,
@@ -10593,7 +10011,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
         ),
         j)
       )
-        throw new XX();
+        throw new s0();
       throw new $1({ cause: O });
     }
     let w = [...O.headers.entries()]
@@ -10606,11 +10024,11 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       if (X && L) {
         let B$ = `retrying, ${X} attempts remaining`;
         return (
-          await CH(O.body),
+          await nU(O.body),
           _$(this).info(`${B} - ${B$}`),
           _$(this).debug(
             `[${U}] response error (${B$})`,
-            s6({
+            a6({
               retryOfRequestLogID: J,
               url: O.url,
               status: O.status,
@@ -10623,13 +10041,13 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       }
       let j = L ? "error; no more retries left" : "error; not retryable";
       _$(this).info(`${B} - ${j}`);
-      let M = await O.text().catch((B$) => $X(B$).message),
-        b = s9(M),
+      let M = await O.text().catch((B$) => a0(B$).message),
+        b = r9(M),
         x = b ? void 0 : M;
       throw (
         _$(this).debug(
           `[${U}] response error (${j})`,
-          s6({
+          a6({
             retryOfRequestLogID: J,
             url: O.url,
             status: O.status,
@@ -10645,7 +10063,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       _$(this).info(B),
       _$(this).debug(
         `[${U}] response start`,
-        s6({
+        a6({
           retryOfRequestLogID: J,
           url: O.url,
           status: O.status,
@@ -10673,7 +10091,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
   }
   requestAPIList($, X) {
     let J = this.makeRequest(X, null, void 0);
-    return new QJ(this, J, $);
+    return new $J(this, J, $);
   }
   async fetchWithTimeout($, X, J, Q) {
     let { signal: Y, method: z, ...W } = X || {},
@@ -10726,7 +10144,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       let G = $.maxRetries ?? this.maxRetries;
       Y = this.calculateDefaultRetryTimeoutMillis(X, G);
     }
-    return (await bH(Y), this.makeRequest($, X - 1, J));
+    return (await hU(Y), this.makeRequest($, X - 1, J));
   }
   calculateDefaultRetryTimeoutMillis($, X) {
     let Y = X - $,
@@ -10745,7 +10163,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
     let J = { ...$ },
       { method: Q, path: Y, query: z, defaultBaseURL: W } = J,
       G = this.buildURL(Y, z, W);
-    if ("timeout" in J) AH("timeout", J.timeout);
+    if ("timeout" in J) fU("timeout", J.timeout);
     J.timeout = J.timeout ?? this.timeout;
     let { bodyHeaders: U, body: H } = this.buildBody({ options: J }),
       K = await this.buildHeaders({
@@ -10784,7 +10202,7 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
         ...($.timeout
           ? { "X-Stainless-Timeout": String(Math.trunc($.timeout / 1000)) }
           : {}),
-        ...SH(),
+        ...iU(),
         ...(this._options.dangerouslyAllowBrowser
           ? { "anthropic-dangerous-direct-browser-access": "true" }
           : void 0),
@@ -10819,48 +10237,48 @@ new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
       (Symbol.asyncIterator in $ ||
         (Symbol.iterator in $ && "next" in $ && typeof $.next === "function"))
     )
-      return { bodyHeaders: void 0, body: e9($) };
-    else return D(this, AJ, "f").call(this, { body: $, headers: J });
+      return { bodyHeaders: void 0, body: o9($) };
+    else return D(this, jJ, "f").call(this, { body: $, headers: J });
   }
 }
-((vz = P$),
-  (AJ = new WeakMap()),
-  (Sz = new WeakSet()),
-  (KK = function () {
+((Zz = P$),
+  (jJ = new WeakMap()),
+  (Pz = new WeakSet()),
+  (PH = function () {
     return this.baseURL !== "https://api.anthropic.com";
   }));
-P$.Anthropic = vz;
-P$.HUMAN_PROMPT = NK;
-P$.AI_PROMPT = VK;
+P$.Anthropic = Zz;
+P$.HUMAN_PROMPT = ZH;
+P$.AI_PROMPT = EH;
 P$.DEFAULT_TIMEOUT = 600000;
 P$.AnthropicError = T;
 P$.APIError = v$;
 P$.APIConnectionError = $1;
-P$.APIConnectionTimeoutError = XX;
+P$.APIConnectionTimeoutError = s0;
 P$.APIUserAbortError = T$;
-P$.NotFoundError = zX;
-P$.ConflictError = WX;
-P$.RateLimitError = UX;
-P$.BadRequestError = JX;
-P$.AuthenticationError = YX;
-P$.InternalServerError = HX;
-P$.PermissionDeniedError = QX;
-P$.UnprocessableEntityError = GX;
-P$.toFile = zJ;
+P$.NotFoundError = JX;
+P$.ConflictError = YX;
+P$.RateLimitError = zX;
+P$.BadRequestError = e0;
+P$.AuthenticationError = $X;
+P$.InternalServerError = WX;
+P$.PermissionDeniedError = XX;
+P$.UnprocessableEntityError = QX;
+P$.toFile = XJ;
 class G1 extends P$ {
   constructor() {
     super(...arguments);
-    ((this.completions = new $0(this)),
+    ((this.completions = new p1(this)),
       (this.messages = new W1(this)),
-      (this.models = new J0(this)),
+      (this.models = new d1(this)),
       (this.beta = new f6(this)));
   }
 }
-G1.Completions = $0;
+G1.Completions = p1;
 G1.Messages = W1;
-G1.Models = J0;
+G1.Models = d1;
 G1.Beta = f6;
-function OK($) {
+function RH($) {
   return $ instanceof Error ? $ : Error(String($));
 }
 function U1($) {
@@ -10868,9 +10286,595 @@ function U1($) {
     return $.code;
   return;
 }
-function wK($) {
+function SH($) {
   return U1($) === "ENOENT";
 }
+import { randomUUID as MF } from "crypto";
+import { appendFile as AF, mkdir as bF } from "fs/promises";
+import { join as GK } from "path";
+var Kj =
+    typeof global == "object" && global && global.Object === Object && global,
+  vH = Kj;
+var Nj = typeof self == "object" && self && self.Object === Object && self,
+  Vj = vH || Nj || Function("return this")(),
+  r1 = Vj;
+var Oj = r1.Symbol,
+  o1 = Oj;
+var CH = Object.prototype,
+  wj = CH.hasOwnProperty,
+  Bj = CH.toString,
+  hX = o1 ? o1.toStringTag : void 0;
+function qj($) {
+  var X = wj.call($, hX),
+    J = $[hX];
+  try {
+    $[hX] = void 0;
+    var Q = !0;
+  } catch (z) {}
+  var Y = Bj.call($);
+  if (Q)
+    if (X) $[hX] = J;
+    else delete $[hX];
+  return Y;
+}
+var kH = qj;
+var Dj = Object.prototype,
+  Lj = Dj.toString;
+function jj($) {
+  return Lj.call($);
+}
+var _H = jj;
+var Fj = "[object Null]",
+  Ij = "[object Undefined]",
+  xH = o1 ? o1.toStringTag : void 0;
+function Mj($) {
+  if ($ == null) return $ === void 0 ? Ij : Fj;
+  return xH && xH in Object($) ? kH($) : _H($);
+}
+var TH = Mj;
+function Aj($) {
+  var X = typeof $;
+  return $ != null && (X == "object" || X == "function");
+}
+var FJ = Aj;
+var bj = "[object AsyncFunction]",
+  Pj = "[object Function]",
+  Zj = "[object GeneratorFunction]",
+  Ej = "[object Proxy]";
+function Rj($) {
+  if (!FJ($)) return !1;
+  var X = TH($);
+  return X == Pj || X == Zj || X == bj || X == Ej;
+}
+var yH = Rj;
+var Sj = r1["__core-js_shared__"],
+  IJ = Sj;
+var gH = (function () {
+  var $ = /[^.]+$/.exec((IJ && IJ.keys && IJ.keys.IE_PROTO) || "");
+  return $ ? "Symbol(src)_1." + $ : "";
+})();
+function vj($) {
+  return !!gH && gH in $;
+}
+var fH = vj;
+var Cj = Function.prototype,
+  kj = Cj.toString;
+function _j($) {
+  if ($ != null) {
+    try {
+      return kj.call($);
+    } catch (X) {}
+    try {
+      return $ + "";
+    } catch (X) {}
+  }
+  return "";
+}
+var hH = _j;
+var xj = /[\\^$.*+?()[\]{}|]/g,
+  Tj = /^\[object .+?Constructor\]$/,
+  yj = Function.prototype,
+  gj = Object.prototype,
+  fj = yj.toString,
+  hj = gj.hasOwnProperty,
+  uj = RegExp(
+    "^" +
+      fj
+        .call(hj)
+        .replace(xj, "\\$&")
+        .replace(
+          /hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g,
+          "$1.*?",
+        ) +
+      "$",
+  );
+function mj($) {
+  if (!FJ($) || fH($)) return !1;
+  var X = yH($) ? uj : Tj;
+  return X.test(hH($));
+}
+var uH = mj;
+function lj($, X) {
+  return $ == null ? void 0 : $[X];
+}
+var mH = lj;
+function cj($, X) {
+  var J = mH($, X);
+  return uH(J) ? J : void 0;
+}
+var MJ = cj;
+var ij = MJ(Object, "create"),
+  X4 = ij;
+function pj() {
+  ((this.__data__ = X4 ? X4(null) : {}), (this.size = 0));
+}
+var lH = pj;
+function nj($) {
+  var X = this.has($) && delete this.__data__[$];
+  return ((this.size -= X ? 1 : 0), X);
+}
+var cH = nj;
+var dj = "__lodash_hash_undefined__",
+  rj = Object.prototype,
+  oj = rj.hasOwnProperty;
+function tj($) {
+  var X = this.__data__;
+  if (X4) {
+    var J = X[$];
+    return J === dj ? void 0 : J;
+  }
+  return oj.call(X, $) ? X[$] : void 0;
+}
+var iH = tj;
+var aj = Object.prototype,
+  sj = aj.hasOwnProperty;
+function ej($) {
+  var X = this.__data__;
+  return X4 ? X[$] !== void 0 : sj.call(X, $);
+}
+var pH = ej;
+var $F = "__lodash_hash_undefined__";
+function XF($, X) {
+  var J = this.__data__;
+  return (
+    (this.size += this.has($) ? 0 : 1),
+    (J[$] = X4 && X === void 0 ? $F : X),
+    this
+  );
+}
+var nH = XF;
+function t1($) {
+  var X = -1,
+    J = $ == null ? 0 : $.length;
+  this.clear();
+  while (++X < J) {
+    var Q = $[X];
+    this.set(Q[0], Q[1]);
+  }
+}
+t1.prototype.clear = lH;
+t1.prototype.delete = cH;
+t1.prototype.get = iH;
+t1.prototype.has = pH;
+t1.prototype.set = nH;
+var Ez = t1;
+function JF() {
+  ((this.__data__ = []), (this.size = 0));
+}
+var dH = JF;
+function YF($, X) {
+  return $ === X || ($ !== $ && X !== X);
+}
+var rH = YF;
+function QF($, X) {
+  var J = $.length;
+  while (J--) if (rH($[J][0], X)) return J;
+  return -1;
+}
+var P4 = QF;
+var zF = Array.prototype,
+  WF = zF.splice;
+function GF($) {
+  var X = this.__data__,
+    J = P4(X, $);
+  if (J < 0) return !1;
+  var Q = X.length - 1;
+  if (J == Q) X.pop();
+  else WF.call(X, J, 1);
+  return (--this.size, !0);
+}
+var oH = GF;
+function UF($) {
+  var X = this.__data__,
+    J = P4(X, $);
+  return J < 0 ? void 0 : X[J][1];
+}
+var tH = UF;
+function HF($) {
+  return P4(this.__data__, $) > -1;
+}
+var aH = HF;
+function KF($, X) {
+  var J = this.__data__,
+    Q = P4(J, $);
+  if (Q < 0) (++this.size, J.push([$, X]));
+  else J[Q][1] = X;
+  return this;
+}
+var sH = KF;
+function a1($) {
+  var X = -1,
+    J = $ == null ? 0 : $.length;
+  this.clear();
+  while (++X < J) {
+    var Q = $[X];
+    this.set(Q[0], Q[1]);
+  }
+}
+a1.prototype.clear = dH;
+a1.prototype.delete = oH;
+a1.prototype.get = tH;
+a1.prototype.has = aH;
+a1.prototype.set = sH;
+var eH = a1;
+var NF = MJ(r1, "Map"),
+  $K = NF;
+function VF() {
+  ((this.size = 0),
+    (this.__data__ = {
+      hash: new Ez(),
+      map: new ($K || eH)(),
+      string: new Ez(),
+    }));
+}
+var XK = VF;
+function OF($) {
+  var X = typeof $;
+  return X == "string" || X == "number" || X == "symbol" || X == "boolean"
+    ? $ !== "__proto__"
+    : $ === null;
+}
+var JK = OF;
+function wF($, X) {
+  var J = $.__data__;
+  return JK(X) ? J[typeof X == "string" ? "string" : "hash"] : J.map;
+}
+var Z4 = wF;
+function BF($) {
+  var X = Z4(this, $).delete($);
+  return ((this.size -= X ? 1 : 0), X);
+}
+var YK = BF;
+function qF($) {
+  return Z4(this, $).get($);
+}
+var QK = qF;
+function DF($) {
+  return Z4(this, $).has($);
+}
+var zK = DF;
+function LF($, X) {
+  var J = Z4(this, $),
+    Q = J.size;
+  return (J.set($, X), (this.size += J.size == Q ? 0 : 1), this);
+}
+var WK = LF;
+function s1($) {
+  var X = -1,
+    J = $ == null ? 0 : $.length;
+  this.clear();
+  while (++X < J) {
+    var Q = $[X];
+    this.set(Q[0], Q[1]);
+  }
+}
+s1.prototype.clear = XK;
+s1.prototype.delete = YK;
+s1.prototype.get = QK;
+s1.prototype.has = zK;
+s1.prototype.set = WK;
+var Rz = s1;
+var jF = "Expected a function";
+function Sz($, X) {
+  if (typeof $ != "function" || (X != null && typeof X != "function"))
+    throw TypeError(jF);
+  var J = function () {
+    var Q = arguments,
+      Y = X ? X.apply(this, Q) : Q[0],
+      z = J.cache;
+    if (z.has(Y)) return z.get(Y);
+    var W = $.apply(this, Q);
+    return ((J.cache = z.set(Y, W) || z), W);
+  };
+  return ((J.cache = new (Sz.Cache || Rz)()), J);
+}
+Sz.Cache = Rz;
+var P6 = Sz;
+import { homedir as FF } from "os";
+import { join as IF } from "path";
+var e1 = P6(
+  () => {
+    return (process.env.CLAUDE_CONFIG_DIR ?? IF(FF(), ".claude")).normalize(
+      "NFC",
+    );
+  },
+  () => process.env.CLAUDE_CONFIG_DIR,
+);
+function uX($) {
+  if (!$) return !1;
+  if (typeof $ === "boolean") return $;
+  let X = $.toLowerCase().trim();
+  return ["1", "true", "yes", "on"].includes(X);
+}
+var X0,
+  $0 = null;
+function PF() {
+  if ($0) return $0;
+  if (!process.env.DEBUG_CLAUDE_AGENT_SDK)
+    return ((X0 = null), ($0 = Promise.resolve()), $0);
+  let $ = GK(e1(), "debug");
+  return (
+    (X0 = GK($, `sdk-${MF()}.txt`)),
+    process.stderr.write(`SDK debug logs: ${X0}
+`),
+    ($0 = bF($, { recursive: !0 })
+      .then(() => {})
+      .catch(() => {})),
+    $0
+  );
+}
+function w6($) {
+  if (X0 === null) return;
+  let J = `${new Date().toISOString()} ${$}
+`;
+  PF().then(() => {
+    if (X0) AF(X0, J).catch(() => {});
+  });
+}
+import { realpathSync as UK } from "fs";
+import { cwd as ZF } from "process";
+import { randomUUID as AJ } from "crypto";
+function EF() {
+  let $ = "";
+  if (
+    typeof process < "u" &&
+    typeof process.cwd === "function" &&
+    typeof UK === "function"
+  ) {
+    let J = ZF();
+    try {
+      $ = UK(J).normalize("NFC");
+    } catch {
+      $ = J.normalize("NFC");
+    }
+  }
+  return {
+    originalCwd: $,
+    projectRoot: $,
+    totalCostUSD: 0,
+    totalAPIDuration: 0,
+    totalAPIDurationWithoutRetries: 0,
+    totalToolDuration: 0,
+    turnHookDurationMs: 0,
+    turnToolDurationMs: 0,
+    turnClassifierDurationMs: 0,
+    turnToolCount: 0,
+    turnHookCount: 0,
+    turnClassifierCount: 0,
+    startTime: Date.now(),
+    lastInteractionTime: Date.now(),
+    totalLinesAdded: 0,
+    totalLinesRemoved: 0,
+    hasUnknownModelCost: !1,
+    cwd: $,
+    modelUsage: {},
+    mainLoopModelOverride: void 0,
+    initialMainLoopModel: null,
+    modelStrings: null,
+    isInteractive: !1,
+    kairosActive: !1,
+    strictToolResultPairing: !1,
+    sdkAgentProgressSummariesEnabled: !1,
+    userMsgOptIn: !1,
+    clientType: "cli",
+    sessionSource: void 0,
+    questionPreviewFormat: void 0,
+    sessionIngressToken: void 0,
+    oauthTokenFromFd: void 0,
+    apiKeyFromFd: void 0,
+    flagSettingsPath: void 0,
+    flagSettingsInline: null,
+    allowedSettingSources: [
+      "userSettings",
+      "projectSettings",
+      "localSettings",
+      "flagSettings",
+      "policySettings",
+    ],
+    meter: null,
+    sessionCounter: null,
+    locCounter: null,
+    prCounter: null,
+    commitCounter: null,
+    costCounter: null,
+    tokenCounter: null,
+    codeEditToolDecisionCounter: null,
+    activeTimeCounter: null,
+    statsStore: null,
+    sessionId: AJ(),
+    parentSessionId: void 0,
+    loggerProvider: null,
+    eventLogger: null,
+    meterProvider: null,
+    tracerProvider: null,
+    agentColorMap: new Map(),
+    agentColorIndex: 0,
+    lastAPIRequest: null,
+    lastAPIRequestMessages: null,
+    lastClassifierRequests: null,
+    cachedClaudeMdContent: null,
+    inMemoryErrorLog: [],
+    inlinePlugins: [],
+    chromeFlagOverride: void 0,
+    useCoworkPlugins: !1,
+    sessionBypassPermissionsMode: !1,
+    scheduledTasksEnabled: !1,
+    sessionCronTasks: [],
+    sessionCreatedTeams: new Set(),
+    sessionTrustAccepted: !1,
+    sessionPersistenceDisabled: !1,
+    hasExitedPlanMode: !1,
+    needsPlanModeExitAttachment: !1,
+    needsAutoModeExitAttachment: !1,
+    lspRecommendationShownThisSession: !1,
+    initJsonSchema: null,
+    registeredHooks: null,
+    planSlugCache: new Map(),
+    teleportedSessionInfo: null,
+    invokedSkills: new Map(),
+    slowOperations: [],
+    sdkBetas: void 0,
+    mainThreadAgentType: void 0,
+    isRemoteMode: !1,
+    ...{},
+    directConnectServerUrl: void 0,
+    systemPromptSectionCache: new Map(),
+    lastEmittedDate: null,
+    additionalDirectoriesForClaudeMd: [],
+    allowedChannels: [],
+    hasDevChannels: !1,
+    sessionProjectDir: null,
+    promptCache1hAllowlist: null,
+    promptCache1hEligible: null,
+    afkModeHeaderLatched: null,
+    fastModeHeaderLatched: null,
+    cacheEditingHeaderLatched: null,
+    thinkingClearLatched: null,
+    promptId: null,
+    lastMainRequestId: void 0,
+    lastApiCompletionTimestamp: null,
+    pendingPostCompaction: !1,
+  };
+}
+var RF = EF();
+function HK() {
+  return RF.sessionId;
+}
+import {
+  appendFile as lF,
+  mkdir as cF,
+  symlink as iF,
+  unlink as pF,
+} from "fs/promises";
+import { dirname as DK, join as LK } from "path";
+function KK({
+  writeFn: $,
+  flushIntervalMs: X = 1000,
+  maxBufferSize: J = 100,
+  maxBufferBytes: Q = 1 / 0,
+  immediateMode: Y = !1,
+}) {
+  let z = [],
+    W = 0,
+    G = null,
+    U = null;
+  function H() {
+    if (G) (clearTimeout(G), (G = null));
+  }
+  function K() {
+    if (U) ($(U.join("")), (U = null));
+    if (z.length === 0) return;
+    ($(z.join("")), (z = []), (W = 0), H());
+  }
+  function V() {
+    if (!G) G = setTimeout(K, X);
+  }
+  function O() {
+    if (U) {
+      (U.push(...z), (z = []), (W = 0), H());
+      return;
+    }
+    let N = z;
+    ((z = []),
+      (W = 0),
+      H(),
+      (U = N),
+      setImmediate(() => {
+        let w = U;
+        if (((U = null), w)) $(w.join(""));
+      }));
+  }
+  return {
+    write(N) {
+      if (Y) {
+        $(N);
+        return;
+      }
+      if ((z.push(N), (W += N.length), V(), z.length >= J || W >= Q)) O();
+    },
+    flush: K,
+    dispose() {
+      K();
+    },
+  };
+}
+var NK = new Set();
+function VK($) {
+  return (NK.add($), () => NK.delete($));
+}
+var OK = P6(($) => {
+  if (!$ || $.trim() === "") return null;
+  let X = $.split(",")
+    .map((z) => z.trim())
+    .filter(Boolean);
+  if (X.length === 0) return null;
+  let J = X.some((z) => z.startsWith("!")),
+    Q = X.some((z) => !z.startsWith("!"));
+  if (J && Q) return null;
+  let Y = X.map((z) => z.replace(/^!/, "").toLowerCase());
+  return { include: J ? [] : Y, exclude: J ? Y : [], isExclusive: J };
+});
+function SF($) {
+  let X = [],
+    J = $.match(/^MCP server ["']([^"']+)["']/);
+  if (J && J[1]) (X.push("mcp"), X.push(J[1].toLowerCase()));
+  else {
+    let z = $.match(/^([^:[]+):/);
+    if (z && z[1]) X.push(z[1].trim().toLowerCase());
+  }
+  let Q = $.match(/^\[([^\]]+)]/);
+  if (Q && Q[1]) X.push(Q[1].trim().toLowerCase());
+  if ($.toLowerCase().includes("1p event:")) X.push("1p");
+  let Y = $.match(/:\s*([^:]+?)(?:\s+(?:type|mode|status|event))?:/);
+  if (Y && Y[1]) {
+    let z = Y[1].trim().toLowerCase();
+    if (z.length < 30 && !z.includes(" ")) X.push(z);
+  }
+  return Array.from(new Set(X));
+}
+function vF($, X) {
+  if (!X) return !0;
+  if ($.length === 0) return !1;
+  if (X.isExclusive) return !$.some((J) => X.exclude.includes(J));
+  else return $.some((J) => X.include.includes(J));
+}
+function wK($, X) {
+  if (!X) return !0;
+  let J = SF($);
+  return vF(J, X);
+}
+import * as r from "fs";
+import {
+  mkdir as CF,
+  open as kF,
+  readdir as _F,
+  readFile as BK,
+  rename as xF,
+  rmdir as TF,
+  rm as yF,
+  stat as gF,
+  unlink as fF,
+} from "fs/promises";
 var hF = {
     cwd() {
       return process.cwd();
@@ -10888,23 +10892,23 @@ var hF = {
       }
     },
     async stat($) {
-      return CF($);
+      return gF($);
     },
     async readdir($) {
-      return kF($, { withFileTypes: !0 });
+      return _F($, { withFileTypes: !0 });
     },
     async unlink($) {
-      return _F($);
+      return fF($);
     },
     async rmdir($) {
-      return xF($);
+      return TF($);
     },
     async rm($, X) {
-      return TF($, X);
+      return yF($, X);
     },
     async mkdir($, X) {
       try {
-        await yF($, { recursive: !0, ...X });
+        await CF($, { recursive: !0, ...X });
       } catch (J) {
         if (U1(J) !== "EEXIST") throw J;
       }
@@ -10913,7 +10917,7 @@ var hF = {
       return BK($, { encoding: X.encoding });
     },
     async rename($, X) {
-      return gF($, X);
+      return xF($, X);
     },
     statSync($) {
       let J = [];
@@ -11175,7 +11179,7 @@ var hF = {
     },
     async readFileBytes($, X) {
       if (X === void 0) return BK($);
-      let J = await fF($, "r");
+      let J = await kF($, "r");
       try {
         let { size: Q } = await J.stat(),
           Y = Math.min(Q, X),
@@ -11193,7 +11197,7 @@ var hF = {
     },
   },
   uF = hF;
-function Cz() {
+function vz() {
   return uF;
 }
 function mF($, X) {
@@ -11203,18 +11207,18 @@ function mF($, X) {
 function qK($) {
   mF(process.stderr, $);
 }
-var _z = { verbose: 0, debug: 1, info: 2, warn: 3, error: 4 },
-  nF = b6(() => {
+var kz = { verbose: 0, debug: 1, info: 2, warn: 3, error: 4 },
+  nF = P6(() => {
     let $ = process.env.CLAUDE_CODE_DEBUG_LOG_LEVEL?.toLowerCase().trim();
-    if ($ && Object.hasOwn(_z, $)) return $;
+    if ($ && Object.hasOwn(kz, $)) return $;
     return "debug";
   }),
   dF = !1,
-  xz = b6(() => {
+  _z = P6(() => {
     return (
       dF ||
-      e0(process.env.DEBUG) ||
-      e0(process.env.DEBUG_SDK) ||
+      uX(process.env.DEBUG) ||
+      uX(process.env.DEBUG_SDK) ||
       process.argv.includes("--debug") ||
       process.argv.includes("-d") ||
       jK() ||
@@ -11222,19 +11226,19 @@ var _z = { verbose: 0, debug: 1, info: 2, warn: 3, error: 4 },
       FK() !== null
     );
   });
-var rF = b6(() => {
+var rF = P6(() => {
     let $ = process.argv.find((J) => J.startsWith("--debug="));
     if (!$) return null;
     let X = $.substring(8);
-    return LH(X);
+    return OK(X);
   }),
-  jK = b6(() => {
+  jK = P6(() => {
     return (
       process.argv.includes("--debug-to-stderr") ||
       process.argv.includes("-d2e")
     );
   }),
-  FK = b6(() => {
+  FK = P6(() => {
     for (let $ = 0; $ < process.argv.length; $++) {
       let X = process.argv[$];
       if (X.startsWith("--debug-file=")) return X.substring(13);
@@ -11244,7 +11248,7 @@ var rF = b6(() => {
     return null;
   });
 function oF($) {
-  if (!xz()) return !1;
+  if (!_z()) return !1;
   if (
     typeof process > "u" ||
     typeof process.versions > "u" ||
@@ -11252,11 +11256,11 @@ function oF($) {
   )
     return !1;
   let X = rF();
-  return jH($, X);
+  return wK($, X);
 }
 var tF = !1;
 var bJ = null,
-  kz = Promise.resolve();
+  Cz = Promise.resolve();
 async function aF($, X, J, Q) {
   if ($) await cF(X, { recursive: !0 }).catch(() => {});
   (await lF(J, Q), MK());
@@ -11265,33 +11269,33 @@ function sF() {}
 function eF() {
   if (!bJ) {
     let $ = null;
-    ((bJ = BH({
+    ((bJ = KK({
       writeFn: (X) => {
         let J = IK(),
           Q = DK(J),
           Y = $ !== Q;
-        if ((($ = Q), xz())) {
+        if ((($ = Q), _z())) {
           if (Y)
             try {
-              Cz().mkdirSync(Q);
+              vz().mkdirSync(Q);
             } catch {}
-          (Cz().appendFileSync(J, X), MK());
+          (vz().appendFileSync(J, X), MK());
           return;
         }
-        kz = kz.then(aF.bind(null, Y, Q, J, X)).catch(sF);
+        Cz = Cz.then(aF.bind(null, Y, Q, J, X)).catch(sF);
       },
       flushIntervalMs: 1000,
       maxBufferSize: 100,
-      immediateMode: xz(),
+      immediateMode: _z(),
     })),
-      DH(async () => {
-        (bJ?.dispose(), await kz);
+      VK(async () => {
+        (bJ?.dispose(), await Cz);
       }));
   }
   return bJ;
 }
 function h6($, { level: X } = { level: "debug" }) {
-  if (_z[X] < _z[nF()]) return;
+  if (kz[X] < kz[nF()]) return;
   if (!oF($)) return;
   if (
     tF &&
@@ -11311,15 +11315,15 @@ function IK() {
   return (
     FK() ??
     process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    LK(i1(), "debug", `${wH()}.txt`)
+    LK(e1(), "debug", `${HK()}.txt`)
   );
 }
-var MK = b6(async () => {
+var MK = P6(async () => {
   try {
     let $ = IK(),
       X = DK($),
       J = LK(X, "latest");
-    (await iF(J).catch(() => {}), await pF($, J));
+    (await pF(J).catch(() => {}), await iF($, J));
   } catch {}
 });
 var _u = (() => {
@@ -11381,7 +11385,7 @@ function AK($, X) {
   return J;
 }
 var zI = 2000;
-class lX {
+class mX {
   options;
   process;
   processStdin;
@@ -11394,10 +11398,10 @@ class lX {
   abortHandler;
   constructor($) {
     this.options = $;
-    ((this.abortController = $.abortController || g1()), this.initialize());
+    ((this.abortController = $.abortController || y1()), this.initialize());
   }
   getDefaultExecutable() {
-    return f1() ? "bun" : "node";
+    return g1() ? "bun" : "node";
   }
   spawnLocalProcess($) {
     let { command: X, args: J, cwd: Q, env: Y, signal: z } = $,
@@ -11412,7 +11416,7 @@ class lX {
     if (Y.DEBUG_CLAUDE_AGENT_SDK || this.options.stderr)
       G.stderr.on("data", (H) => {
         let K = H.toString();
-        if ((V6(K), this.options.stderr)) this.options.stderr(K);
+        if ((w6(K), this.options.stderr)) this.options.stderr(K);
       });
     return {
       stdin: G.stdin,
@@ -11462,7 +11466,7 @@ class lX {
           canUseTool: t4,
           includePartialMessages: k1,
           plugins: o6,
-          sandbox: r0,
+          sandbox: d0,
         } = this.options,
         p = [
           "--output-format",
@@ -11542,38 +11546,38 @@ class lX {
         p.push("--session-id", this.options.sessionId);
       if (this.options.persistSession === !1)
         p.push("--no-session-persistence");
-      let p9 = { ...(W ?? {}) };
-      if (this.options.settings) p9.settings = this.options.settings;
-      let t7 = AK(p9, r0);
+      let i9 = { ...(W ?? {}) };
+      if (this.options.settings) i9.settings = this.options.settings;
+      let t7 = AK(i9, d0);
       for (let [i$, L4] of Object.entries(t7))
         if (L4 === null) p.push(`--${i$}`);
         else p.push(`--${i$}`, L4);
       if (!U.CLAUDE_CODE_ENTRYPOINT) U.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
       if ((delete U.NODE_OPTIONS, U.DEBUG_CLAUDE_AGENT_SDK)) U.DEBUG = "1";
       else delete U.DEBUG;
-      let o0 = WI(G),
-        a4 = o0 ? G : Y,
-        t0 = o0 ? [...z, ...p] : [...z, G, ...p],
+      let r0 = WI(G),
+        a4 = r0 ? G : Y,
+        o0 = r0 ? [...z, ...p] : [...z, G, ...p],
         _1 = {
           command: a4,
-          args: t0,
+          args: o0,
           cwd: Q,
           env: U,
           signal: this.abortController.signal,
         };
       if (this.options.spawnClaudeCodeProcess)
-        (V6(`Spawning Claude Code (custom): ${a4} ${t0.join(" ")}`),
+        (w6(`Spawning Claude Code (custom): ${a4} ${o0.join(" ")}`),
           (this.process = this.options.spawnClaudeCodeProcess(_1)));
       else
-        (V6(`Spawning Claude Code: ${a4} ${t0.join(" ")}`),
+        (w6(`Spawning Claude Code: ${a4} ${o0.join(" ")}`),
           (this.process = this.spawnLocalProcess(_1)));
       ((this.processStdin = this.process.stdin),
         (this.processStdout = this.process.stdout));
-      let n9 = () => {
+      let p9 = () => {
         if (this.process && !this.process.killed) this.process.kill("SIGTERM");
       };
-      ((this.processExitHandler = n9),
-        (this.abortHandler = n9),
+      ((this.processExitHandler = p9),
+        (this.abortHandler = p9),
         process.on("exit", this.processExitHandler),
         this.abortController.signal.addEventListener(
           "abort",
@@ -11582,23 +11586,23 @@ class lX {
         this.process.on("error", (i$) => {
           if (((this.ready = !1), this.abortController.signal.aborted))
             this.exitError = new t$("Claude Code process aborted by user");
-          else if (wK(i$)) {
-            let L4 = o0
+          else if (SH(i$)) {
+            let L4 = r0
               ? `Claude Code native binary not found at ${G}. Please ensure Claude Code is installed via native installer or specify a valid path with options.pathToClaudeCodeExecutable.`
               : `Claude Code executable not found at ${G}. Is options.pathToClaudeCodeExecutable set?`;
-            ((this.exitError = ReferenceError(L4)), V6(this.exitError.message));
+            ((this.exitError = ReferenceError(L4)), w6(this.exitError.message));
           } else
             ((this.exitError = Error(
               `Failed to spawn Claude Code process: ${i$.message}`,
             )),
-              V6(this.exitError.message));
+              w6(this.exitError.message));
         }),
         this.process.on("exit", (i$, L4) => {
           if (((this.ready = !1), this.abortController.signal.aborted))
             this.exitError = new t$("Claude Code process aborted by user");
           else {
             let x1 = this.getProcessExitError(i$, L4);
-            if (x1) ((this.exitError = x1), V6(x1.message));
+            if (x1) ((this.exitError = x1), w6(x1.message));
           }
         }),
         (this.ready = !0));
@@ -11622,10 +11626,10 @@ class lX {
       throw Error(
         `Cannot write to process that exited with error: ${this.exitError.message}`,
       );
-    V6(`[ProcessTransport] Writing to stdin: ${$.substring(0, 100)}`);
+    w6(`[ProcessTransport] Writing to stdin: ${$.substring(0, 100)}`);
     try {
       if (!this.processStdin.write($))
-        V6("[ProcessTransport] Write buffer full, data queued");
+        w6("[ProcessTransport] Write buffer full, data queued");
     } catch (X) {
       throw (
         (this.ready = !1),
@@ -11685,7 +11689,7 @@ class lX {
             yield u6(X);
           } catch (J) {
             throw (
-              V6(`Non-JSON stdout: ${X}`),
+              w6(`Non-JSON stdout: ${X}`),
               Error(
                 `CLI output was not valid JSON. This may indicate an error during startup. Output: ${X.slice(0, 200)}${X.length > 200 ? "..." : ""}`,
               )
@@ -11804,7 +11808,7 @@ class H1 {
     return Promise.resolve({ done: !0, value: void 0 });
   }
 }
-class Tz {
+class xz {
   sendMcpMessage;
   isClosed = !1;
   constructor($) {
@@ -11823,7 +11827,7 @@ class Tz {
     ((this.isClosed = !0), this.onclose?.());
   }
 }
-class cX {
+class lX {
   transport;
   isSingleUserTurn;
   canUseTool;
@@ -11882,14 +11886,13 @@ class cX {
     if (this.cleanupPerformed) return;
     this.cleanupPerformed = !0;
     try {
-      this.transport.close();
+      for (let J of this.cancelControllers.values()) J.abort();
+      (this.cancelControllers.clear(), this.transport.close());
       let X = Error("Query closed before response received");
       for (let { reject: J } of this.pendingControlResponses.values()) J(X);
       this.pendingControlResponses.clear();
       for (let { reject: J } of this.pendingMcpResponses.values()) J(X);
-      (this.pendingMcpResponses.clear(),
-        this.cancelControllers.clear(),
-        this.hookCallbacks.clear());
+      (this.pendingMcpResponses.clear(), this.hookCallbacks.clear());
       for (let J of this.sdkMcpTransports.values())
         try {
           J.close();
@@ -11977,15 +11980,12 @@ class cX {
     let X = new AbortController();
     this.cancelControllers.set($.request_id, X);
     try {
-      let J = await this.processControlRequest($, X.signal),
-        Q = {
-          type: "control_response",
-          response: {
-            subtype: "success",
-            request_id: $.request_id,
-            response: J,
-          },
-        };
+      let J = await this.processControlRequest($, X.signal);
+      if (this.cleanupPerformed) return;
+      let Q = {
+        type: "control_response",
+        response: { subtype: "success", request_id: $.request_id, response: J },
+      };
       await Promise.resolve(
         this.transport.write(
           q$(Q) +
@@ -11994,6 +11994,7 @@ class cX {
         ),
       );
     } catch (J) {
+      if (this.cleanupPerformed) return;
       let Q = {
         type: "control_response",
         response: {
@@ -12164,6 +12165,10 @@ class cX {
       })
     ).response.title;
   }
+  async askSideQuestion($) {
+    return (await this.request({ subtype: "side_question", question: $ }))
+      .response.response;
+  }
   async processPendingPermissionRequests($) {
     for (let X of $)
       if (X.request.subtype === "can_use_tool")
@@ -12255,6 +12260,9 @@ class cX {
   async mcpServerStatus() {
     return (await this.request({ subtype: "mcp_status" })).response.mcpServers;
   }
+  async getContextUsage() {
+    return (await this.request({ subtype: "get_context_usage" })).response;
+  }
   async reloadPlugins() {
     return (await this.request({ subtype: "reload_plugins" })).response;
   }
@@ -12341,7 +12349,7 @@ class cX {
     return Y(X, J, { signal: Q });
   }
   connectSdkMcpServer($, X) {
-    let J = new Tz((Q) => this.sendMcpServerMessageToCli($, Q));
+    let J = new xz((Q) => this.sendMcpServerMessageToCli($, Q));
     (this.sdkMcpTransports.set($, J),
       this.sdkMcpServerInstances.set($, X),
       X.connect(J));
@@ -12362,7 +12370,7 @@ class cX {
     }
     let J = {
       type: "control_request",
-      request_id: t9(),
+      request_id: AJ(),
       request: { subtype: "mcp_message", server_name: $, message: X },
     };
     this.transport.write(
@@ -12399,7 +12407,7 @@ class cX {
 import { join as bK } from "path";
 import { fileURLToPath as GI } from "url";
 var UI = 5000;
-class yz {
+class Tz {
   closed = !1;
   inputStream;
   query;
@@ -12422,12 +12430,12 @@ class yz {
     }
     let J = { ...($.env ?? process.env) };
     if (!J.CLAUDE_CODE_ENTRYPOINT) J.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-    this.abortController = g1();
-    let Q = new lX({
+    this.abortController = y1();
+    let Q = new mX({
       abortController: this.abortController,
       pathToClaudeCodeExecutable: X,
       env: J,
-      executable: $.executable ?? (f1() ? "bun" : "node"),
+      executable: $.executable ?? (g1() ? "bun" : "node"),
       executableArgs: $.executableArgs ?? [],
       extraArgs: {},
       thinkingConfig: void 0,
@@ -12450,7 +12458,7 @@ class yz {
       forkSession: !1,
       resumeSessionAt: void 0,
     });
-    ((this.query = new cX(
+    ((this.query = new lX(
       Q,
       !1,
       $.canUseTool,
@@ -12496,20 +12504,20 @@ class yz {
     this.close();
   }
 }
-function gz($) {
-  return new yz($);
+function yz($) {
+  return new Tz($);
 }
 function PK($, X) {
-  return new yz({ ...X, resume: $ });
+  return new Tz({ ...X, resume: $ });
 }
 import { readFile as SI } from "fs/promises";
 import {
   open as EK,
-  readdir as hz,
+  readdir as fz,
   realpath as VI,
-  stat as fz,
+  stat as gz,
 } from "fs/promises";
-import { join as Y0 } from "path";
+import { join as J0 } from "path";
 import { execFile as HI } from "child_process";
 import { promisify as KI } from "util";
 var NI = KI(HI);
@@ -12673,21 +12681,21 @@ async function SJ($) {
     return null;
   }
 }
-var Q0 = 200;
+var Y0 = 200;
 function qI($) {
   return Math.abs(ZK($)).toString(36);
 }
 function vJ($) {
   let X = $.replace(/[^a-zA-Z0-9]/g, "-");
-  if (X.length <= Q0) return X;
+  if (X.length <= Y0) return X;
   let J = typeof Bun < "u" ? Bun.hash($).toString(36) : qI($);
-  return `${X.slice(0, Q0)}-${J}`;
+  return `${X.slice(0, Y0)}-${J}`;
 }
 function m6() {
-  return Y0(i1(), "projects");
+  return J0(e1(), "projects");
 }
 function DI($) {
-  return Y0(m6(), vJ($));
+  return J0(m6(), vJ($));
 }
 async function V1($) {
   try {
@@ -12699,17 +12707,17 @@ async function V1($) {
 async function B6($) {
   let X = DI($);
   try {
-    return (await hz(X), X);
+    return (await fz(X), X);
   } catch {
     let J = vJ($);
-    if (J.length <= Q0) return;
-    let Q = J.slice(0, Q0),
+    if (J.length <= Y0) return;
+    let Q = J.slice(0, Y0),
       Y = m6();
     try {
-      let W = (await hz(Y, { withFileTypes: !0 })).find(
+      let W = (await fz(Y, { withFileTypes: !0 })).find(
         (G) => G.isDirectory() && G.name.startsWith(Q + "-"),
       );
-      return W ? Y0(Y, W.name) : void 0;
+      return W ? J0(Y, W.name) : void 0;
     } catch {
       return;
     }
@@ -12721,9 +12729,9 @@ async function CJ($, X) {
     let z = await V1(X),
       W = await B6(z);
     if (W) {
-      let U = Y0(W, J);
+      let U = J0(W, J);
       try {
-        let H = await fz(U);
+        let H = await gz(U);
         if (H.size > 0)
           return { filePath: U, projectPath: z, fileSize: H.size };
       } catch {}
@@ -12738,9 +12746,9 @@ async function CJ($, X) {
       if (U === z) continue;
       let H = await B6(U);
       if (!H) continue;
-      let K = Y0(H, J);
+      let K = J0(H, J);
       try {
-        let V = await fz(K);
+        let V = await gz(K);
         if (V.size > 0)
           return { filePath: K, projectPath: U, fileSize: V.size };
       } catch {}
@@ -12750,14 +12758,14 @@ async function CJ($, X) {
   let Q = m6(),
     Y;
   try {
-    Y = await hz(Q);
+    Y = await fz(Q);
   } catch {
     return;
   }
   for (let z of Y) {
-    let W = Y0(Q, z, J);
+    let W = J0(Q, z, J);
     try {
-      let G = await fz(W);
+      let G = await gz(W);
       if (G.size > 0)
         return { filePath: W, projectPath: void 0, fileSize: G.size };
     } catch {}
@@ -12797,8 +12805,8 @@ function PJ($, X, J, Q) {
 }
 var ZJ = Buffer.from('{"type":"attribution-snapshot"'),
   II = Buffer.from('{"type":"system"'),
-  iX = 10,
-  MI = Buffer.from([iX]),
+  cX = 10,
+  MI = Buffer.from([cX]),
   AI = 256;
 function bI($, X, J) {
   if (
@@ -12808,7 +12816,7 @@ function bI($, X, J) {
   )
     return 0;
   let Q = $.carryBuf,
-    Y = X.indexOf(iX);
+    Y = X.indexOf(cX);
   if (Y === -1 || Y >= J) return 0;
   let z = Y + 1;
   if (PJ(Q, ZJ, 0, $.carryLen))
@@ -12838,7 +12846,7 @@ function PI($, X, J) {
     z = 0,
     W = -1,
     G = -1,
-    U = X.indexOf(iX);
+    U = X.indexOf(cX);
   while (U !== -1) {
     let H = U + 1;
     if (Q !== -1 && Q < z) Q = X.indexOf(J, z);
@@ -12856,7 +12864,7 @@ function PI($, X, J) {
           (Y = z));
       Q = X.indexOf(J, Q + J.length);
     }
-    ((z = H), (U = X.indexOf(iX, z)));
+    ((z = H), (U = X.indexOf(cX, z)));
   }
   return (
     N1($.out, X, Y, z),
@@ -12897,7 +12905,7 @@ function RI($) {
     else N1($.out, X, 0, $.carryLen);
   }
   if ($.lastSnapSrc) {
-    if ($.out.len > 0 && $.out.buf[$.out.len - 1] !== iX) N1($.out, MI, 0, 1);
+    if ($.out.len > 0 && $.out.buf[$.out.len - 1] !== cX) N1($.out, MI, 0, 1);
     N1($.out, $.lastSnapSrc, 0, $.lastSnapLen);
   }
 }
@@ -12954,7 +12962,7 @@ async function CK($, X) {
 }
 async function vI($, X) {
   try {
-    if (X > SK && !e0(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP))
+    if (X > SK && !uX(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP))
       return (await CK($, X)).postBoundaryBuf;
     return await SI($);
   } catch {
@@ -13058,7 +13066,7 @@ function kI($) {
   }
   return (K.reverse(), xI(X, K, V));
 }
-function uz($) {
+function hz($) {
   if ($.type !== "assistant") return;
   let X = $.message;
   if (typeof X !== "object" || X === null) return;
@@ -13080,13 +13088,13 @@ function xI($, X, J) {
   if (Q.length === 0) return X;
   let Y = new Map();
   for (let V of Q) {
-    let O = uz(V);
+    let O = hz(V);
     if (O) Y.set(O, V);
   }
   let z = new Map(),
     W = new Map();
   for (let V of $.values()) {
-    let O = uz(V);
+    let O = hz(V);
     if (O) {
       let N = z.get(O);
       if (N) N.push(V);
@@ -13102,7 +13110,7 @@ function xI($, X, J) {
     U = new Map(),
     H = 0;
   for (let V of Q) {
-    let O = uz(V);
+    let O = hz(V);
     if (!O || G.has(O)) continue;
     G.add(O);
     let N = z.get(O) ?? [V],
@@ -13160,9 +13168,9 @@ async function kK($, X) {
   if (U > 0) return G.slice(U);
   return G;
 }
-import { basename as gI, join as mz } from "path";
-import { readdir as lz, stat as fI } from "fs/promises";
-function cz($, X, J) {
+import { readdir as uz, stat as gI } from "fs/promises";
+import { basename as fI, join as mz } from "path";
+function lz($, X, J) {
   let { head: Q, tail: Y, mtime: z, size: W } = X,
     G = Q.indexOf(`
 `),
@@ -13204,10 +13212,10 @@ function cz($, X, J) {
     createdAt: O,
   };
 }
-async function pX($, X, J) {
+async function iX($, X, J) {
   let Q;
   try {
-    Q = await lz($);
+    Q = await uz($);
   } catch {
     return [];
   }
@@ -13220,7 +13228,7 @@ async function pX($, X, J) {
         let G = mz($, z);
         if (!X) return { sessionId: W, filePath: G, mtime: 0, projectPath: J };
         try {
-          let U = await fI(G);
+          let U = await gI(G);
           return {
             sessionId: W,
             filePath: G,
@@ -13237,7 +13245,7 @@ async function pX($, X, J) {
 async function _K($) {
   let X = await SJ($.filePath);
   if (!X) return null;
-  let J = cz($.sessionId, X, $.projectPath);
+  let J = lz($.sessionId, X, $.projectPath);
   if (!J) return null;
   if ($.mtime) J.lastModified = $.mtime;
   return J;
@@ -13306,7 +13314,7 @@ async function cI($, X, J) {
   if (Y.length <= 1) {
     let O = await B6(Q);
     if (!O) return [];
-    return pX(O, J, Q);
+    return iX(O, J, Q);
   }
   let z = m6(),
     W = process.platform === "win32",
@@ -13317,26 +13325,26 @@ async function cI($, X, J) {
   G.sort((O, N) => N.prefix.length - O.prefix.length);
   let U;
   try {
-    U = await lz(z, { withFileTypes: !0 });
+    U = await uz(z, { withFileTypes: !0 });
   } catch {
     let O = await B6(Q);
     if (!O) return [];
-    return pX(O, J, Q);
+    return iX(O, J, Q);
   }
   let H = [],
     K = new Set(),
     V = await B6(Q);
   if (V) {
-    let O = gI(V);
-    (K.add(W ? O.toLowerCase() : O), H.push(...(await pX(V, J, Q))));
+    let O = fI(V);
+    (K.add(W ? O.toLowerCase() : O), H.push(...(await iX(V, J, Q))));
   }
   for (let O of U) {
     if (!O.isDirectory()) continue;
     let N = W ? O.name.toLowerCase() : O.name;
     if (K.has(N)) continue;
     for (let { path: w, prefix: B } of G)
-      if (N === B || (B.length >= Q0 && N.startsWith(B + "-"))) {
-        (K.add(N), H.push(...(await pX(mz(z, O.name), J, w))));
+      if (N === B || (B.length >= Y0 && N.startsWith(B + "-"))) {
+        (K.add(N), H.push(...(await iX(mz(z, O.name), J, w))));
         break;
       }
   }
@@ -13346,13 +13354,13 @@ async function iI($) {
   let X = m6(),
     J;
   try {
-    J = await lz(X, { withFileTypes: !0 });
+    J = await uz(X, { withFileTypes: !0 });
   } catch {
     return [];
   }
   return (
     await Promise.all(
-      J.filter((Y) => Y.isDirectory()).map((Y) => pX(mz(X, Y.name), $)),
+      J.filter((Y) => Y.isDirectory()).map((Y) => iX(mz(X, Y.name), $)),
     )
   ).flat();
 }
@@ -13371,11 +13379,11 @@ async function TK($, X = {}) {
   if (!Q) return;
   let Y = await SJ(Q.filePath);
   if (!Y) return;
-  return cz(J, Y, Q.projectPath) ?? void 0;
+  return lz(J, Y, Q.projectPath) ?? void 0;
 }
 import { constants as yK } from "fs";
-import { readdir as nI, open as dI } from "fs/promises";
-import { join as iz } from "path";
+import { open as nI, readdir as dI } from "fs/promises";
+import { join as cz } from "path";
 function pI($) {
   let X = $,
     J = "",
@@ -13397,12 +13405,12 @@ function pI($) {
     );
   return X;
 }
-function nX($) {
+function pX($) {
   if (typeof $ === "string") return pI($);
-  if (Array.isArray($)) return $.map(nX);
+  if (Array.isArray($)) return $.map(pX);
   if ($ !== null && typeof $ === "object") {
     let X = {};
-    for (let [J, Q] of Object.entries($)) X[nX(J)] = nX(Q);
+    for (let [J, Q] of Object.entries($)) X[pX(J)] = pX(Q);
     return X;
   }
   return $;
@@ -13419,7 +13427,7 @@ async function gK($, X, J = {}) {
 async function fK($, X, J = {}) {
   if (!q6($)) throw Error(`Invalid sessionId: ${$}`);
   if (X !== null) {
-    let Y = nX(X).trim();
+    let Y = pX(X).trim();
     if (!Y) throw Error("tag must be non-empty (use null to clear)");
     X = Y;
   }
@@ -13435,7 +13443,7 @@ async function hK($, X, J) {
     let W = await V1(J.dir),
       G = await B6(W);
     if (G) {
-      if (await pz(iz(G, Q), X)) return;
+      if (await iz(cz(G, Q), X)) return;
     }
     let U;
     try {
@@ -13447,7 +13455,7 @@ async function hK($, X, J) {
       if (H === W) continue;
       let K = await B6(H);
       if (K) {
-        if (await pz(iz(K, Q), X)) return;
+        if (await iz(cz(K, Q), X)) return;
       }
     }
     throw Error(`Session ${$} not found in project directory for ${J.dir}`);
@@ -13455,17 +13463,17 @@ async function hK($, X, J) {
   let Y = m6(),
     z;
   try {
-    z = await nI(Y);
+    z = await dI(Y);
   } catch {
     throw Error(`Session ${$} not found (no projects directory)`);
   }
-  for (let W of z) if (await pz(iz(Y, W, Q), X)) return;
+  for (let W of z) if (await iz(cz(Y, W, Q), X)) return;
   throw Error(`Session ${$} not found in any project directory`);
 }
-async function pz($, X) {
+async function iz($, X) {
   let J;
   try {
-    J = await dI($, yK.O_WRONLY | yK.O_APPEND);
+    J = await nI($, yK.O_WRONLY | yK.O_APPEND);
   } catch (Q) {
     let Y = U1(Q);
     if (Y === "ENOENT" || Y === "ENOTDIR") return !1;
@@ -13480,14 +13488,14 @@ async function pz($, X) {
     await J.close();
   }
 }
-import { readFile as rI, writeFile as oI, readdir as tI } from "fs/promises";
-import { join as nz } from "path";
 import { randomUUID as uK } from "crypto";
+import { readdir as rI, readFile as oI, writeFile as tI } from "fs/promises";
+import { join as pz } from "path";
 async function aI($, X) {
   let J = `${$}.jsonl`;
   async function Q(W) {
     try {
-      let G = await rI(nz(W, J));
+      let G = await oI(pz(W, J));
       if (G.length === 0) return null;
       return { buf: G, projectDir: W };
     } catch {
@@ -13520,12 +13528,12 @@ async function aI($, X) {
   let Y = m6(),
     z;
   try {
-    z = await tI(Y);
+    z = await rI(Y);
   } catch {
     return null;
   }
   for (let W of z) {
-    let G = await Q(nz(Y, W));
+    let G = await Q(pz(Y, W));
     if (G) return G;
   }
   return null;
@@ -13638,8 +13646,8 @@ async function mK($, X = {}) {
   }
   return (
     K.push(q$({ type: "custom-title", sessionId: U, customTitle: V })),
-    await oI(
-      nz(J.projectDir, `${U}.jsonl`),
+    await tI(
+      pz(J.projectDir, `${U}.jsonl`),
       K.join(`
 `) +
         `
@@ -13948,7 +13956,7 @@ var $M = ($, X) => {
   },
   R4 = $M;
 var XM = R4;
-function dX() {
+function nX() {
   return XM;
 }
 var kJ = ($) => {
@@ -13964,7 +13972,7 @@ var kJ = ($) => {
   return { ...Y, path: z, message: G };
 };
 function C($, X) {
-  let J = dX(),
+  let J = nX(),
     Q = kJ({
       issueData: X,
       data: $.data,
@@ -14021,12 +14029,12 @@ class u$ {
   }
 }
 var l = Object.freeze({ status: "aborted" }),
-  z0 = ($) => ({ status: "dirty", value: $ }),
+  Q0 = ($) => ({ status: "dirty", value: $ }),
   p$ = ($) => ({ status: "valid", value: $ }),
-  dz = ($) => $.status === "aborted",
-  rz = ($) => $.status === "dirty",
+  nz = ($) => $.status === "aborted",
+  dz = ($) => $.status === "dirty",
   O1 = ($) => $.status === "valid",
-  rX = ($) => typeof Promise < "u" && $ instanceof Promise;
+  dX = ($) => typeof Promise < "u" && $ instanceof Promise;
 var y;
 (function ($) {
   (($.errToObj = (X) => (typeof X === "string" ? { message: X } : X || {})),
@@ -14122,7 +14130,7 @@ class e {
   }
   _parseSync($) {
     let X = this._parse($);
-    if (rX(X)) throw Error("Synchronous parse encountered promise.");
+    if (dX(X)) throw Error("Synchronous parse encountered promise.");
     return X;
   }
   _parseAsync($) {
@@ -14187,7 +14195,7 @@ class e {
         parsedType: J4($),
       },
       Q = this._parse({ data: $, path: J.path, parent: J }),
-      Y = await (rX(Q) ? Q : Promise.resolve(Q));
+      Y = await (dX(Q) ? Q : Promise.resolve(Q));
     return cK(J, Y);
   }
   refine($, X) {
@@ -14270,13 +14278,13 @@ class e {
     return l6.create(this);
   }
   promise() {
-    return K0.create(this, this._def);
+    return H0.create(this, this._def);
   }
   or($) {
-    return eX.create([this, $], this._def);
+    return sX.create([this, $], this._def);
   }
   and($) {
-    return $8.create(this, $, this._def);
+    return eX.create(this, $, this._def);
   }
   transform($) {
     return new c6({
@@ -14288,7 +14296,7 @@ class e {
   }
   default($) {
     let X = typeof $ === "function" ? $ : () => $;
-    return new Q8({
+    return new Y8({
       ...o(this._def),
       innerType: this,
       defaultValue: X,
@@ -14296,11 +14304,11 @@ class e {
     });
   }
   brand() {
-    return new sz({ typeName: P.ZodBranded, type: this, ...o(this._def) });
+    return new az({ typeName: P.ZodBranded, type: this, ...o(this._def) });
   }
   catch($) {
     let X = typeof $ === "function" ? $ : () => $;
-    return new z8({
+    return new Q8({
       ...o(this._def),
       innerType: this,
       catchValue: X,
@@ -14314,7 +14322,7 @@ class e {
     return uJ.create(this, $);
   }
   readonly() {
-    return W8.create(this);
+    return z8.create(this);
   }
   isOptional() {
     return this.safeParse(void 0).success;
@@ -14335,7 +14343,7 @@ var JM = /^c[^\s-]{8,}$/i,
   HM =
     /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
   KM = "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$",
-  oz,
+  rz,
   NM =
     /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
   VM =
@@ -14468,8 +14476,8 @@ class Q4 extends e {
             }),
             J.dirty());
       } else if (Y.kind === "emoji") {
-        if (!oz) oz = new RegExp(KM, "u");
-        if (!oz.test($.data))
+        if (!rz) rz = new RegExp(KM, "u");
+        if (!rz.test($.data))
           ((Q = this._getOrReturnCtx($, Q)),
             C(Q, {
               validation: "emoji",
@@ -14866,7 +14874,7 @@ function AM($, X) {
     W = Number.parseInt(X.toFixed(Y).replace(".", ""));
   return (z % W) / 10 ** Y;
 }
-class G0 extends e {
+class W0 extends e {
   constructor() {
     super(...arguments);
     ((this.min = this.gte),
@@ -14953,7 +14961,7 @@ class G0 extends e {
     return this.setLimit("max", $, !1, y.toString(X));
   }
   setLimit($, X, J, Q) {
-    return new G0({
+    return new W0({
       ...this._def,
       checks: [
         ...this._def.checks,
@@ -14962,7 +14970,7 @@ class G0 extends e {
     });
   }
   _addCheck($) {
-    return new G0({ ...this._def, checks: [...this._def.checks, $] });
+    return new W0({ ...this._def, checks: [...this._def.checks, $] });
   }
   int($) {
     return this._addCheck({ kind: "int", message: y.toString($) });
@@ -15058,15 +15066,15 @@ class G0 extends e {
     return Number.isFinite(X) && Number.isFinite($);
   }
 }
-G0.create = ($) => {
-  return new G0({
+W0.create = ($) => {
+  return new W0({
     checks: [],
     typeName: P.ZodNumber,
     coerce: $?.coerce || !1,
     ...o($),
   });
 };
-class U0 extends e {
+class G0 extends e {
   constructor() {
     super(...arguments);
     ((this.min = this.gte), (this.max = this.lte));
@@ -15140,7 +15148,7 @@ class U0 extends e {
     return this.setLimit("max", $, !1, y.toString(X));
   }
   setLimit($, X, J, Q) {
-    return new U0({
+    return new G0({
       ...this._def,
       checks: [
         ...this._def.checks,
@@ -15149,7 +15157,7 @@ class U0 extends e {
     });
   }
   _addCheck($) {
-    return new U0({ ...this._def, checks: [...this._def.checks, $] });
+    return new G0({ ...this._def, checks: [...this._def.checks, $] });
   }
   positive($) {
     return this._addCheck({
@@ -15207,8 +15215,8 @@ class U0 extends e {
     return $;
   }
 }
-U0.create = ($) => {
-  return new U0({
+G0.create = ($) => {
+  return new G0({
     checks: [],
     typeName: P.ZodBigInt,
     coerce: $?.coerce ?? !1,
@@ -15235,7 +15243,7 @@ class _J extends e {
 _J.create = ($) => {
   return new _J({ typeName: P.ZodBoolean, coerce: $?.coerce || !1, ...o($) });
 };
-class tX extends e {
+class oX extends e {
   _parse($) {
     if (this._def.coerce) $.data = new Date($.data);
     if (this._getType($) !== R.date) {
@@ -15284,7 +15292,7 @@ class tX extends e {
     return { status: J.value, value: new Date($.data.getTime()) };
   }
   _addCheck($) {
-    return new tX({ ...this._def, checks: [...this._def.checks, $] });
+    return new oX({ ...this._def, checks: [...this._def.checks, $] });
   }
   min($, X) {
     return this._addCheck({
@@ -15317,8 +15325,8 @@ class tX extends e {
     return $ != null ? new Date($) : null;
   }
 }
-tX.create = ($) => {
-  return new tX({
+oX.create = ($) => {
+  return new oX({
     checks: [],
     coerce: $?.coerce || !1,
     typeName: P.ZodDate,
@@ -15344,7 +15352,7 @@ class xJ extends e {
 xJ.create = ($) => {
   return new xJ({ typeName: P.ZodSymbol, ...o($) });
 };
-class aX extends e {
+class tX extends e {
   _parse($) {
     if (this._getType($) !== R.undefined) {
       let J = this._getOrReturnCtx($);
@@ -15360,10 +15368,10 @@ class aX extends e {
     return p$($.data);
   }
 }
-aX.create = ($) => {
-  return new aX({ typeName: P.ZodUndefined, ...o($) });
+tX.create = ($) => {
+  return new tX({ typeName: P.ZodUndefined, ...o($) });
 };
-class sX extends e {
+class aX extends e {
   _parse($) {
     if (this._getType($) !== R.null) {
       let J = this._getOrReturnCtx($);
@@ -15379,8 +15387,8 @@ class sX extends e {
     return p$($.data);
   }
 }
-sX.create = ($) => {
-  return new sX({ typeName: P.ZodNull, ...o($) });
+aX.create = ($) => {
+  return new aX({ typeName: P.ZodNull, ...o($) });
 };
 class TJ extends e {
   constructor() {
@@ -15537,18 +15545,18 @@ l6.create = ($, X) => {
     ...o(X),
   });
 };
-function W0($) {
+function z0($) {
   if ($ instanceof Z$) {
     let X = {};
     for (let J in $.shape) {
       let Q = $.shape[J];
-      X[J] = D6.create(W0(Q));
+      X[J] = D6.create(z0(Q));
     }
     return new Z$({ ...$._def, shape: () => X });
-  } else if ($ instanceof l6) return new l6({ ...$._def, type: W0($.element) });
-  else if ($ instanceof D6) return D6.create(W0($.unwrap()));
-  else if ($ instanceof S4) return S4.create(W0($.unwrap()));
-  else if ($ instanceof W4) return W4.create($.items.map((X) => W0(X)));
+  } else if ($ instanceof l6) return new l6({ ...$._def, type: z0($.element) });
+  else if ($ instanceof D6) return D6.create(z0($.unwrap()));
+  else if ($ instanceof S4) return S4.create(z0($.unwrap()));
+  else if ($ instanceof W4) return W4.create($.items.map((X) => z0(X)));
   else return $;
 }
 class Z$ extends e {
@@ -15694,7 +15702,7 @@ class Z$ extends e {
     return new Z$({ ...this._def, shape: () => X });
   }
   deepPartial() {
-    return W0(this);
+    return z0(this);
   }
   partial($) {
     let X = {};
@@ -15747,7 +15755,7 @@ Z$.lazycreate = ($, X) => {
     ...o(X),
   });
 };
-class eX extends e {
+class sX extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($),
       J = this._def.options;
@@ -15792,26 +15800,26 @@ class eX extends e {
     return this._def.options;
   }
 }
-eX.create = ($, X) => {
-  return new eX({ options: $, typeName: P.ZodUnion, ...o(X) });
+sX.create = ($, X) => {
+  return new sX({ options: $, typeName: P.ZodUnion, ...o(X) });
 };
 var Y4 = ($) => {
-  if ($ instanceof X8) return Y4($.schema);
+  if ($ instanceof $8) return Y4($.schema);
   else if ($ instanceof c6) return Y4($.innerType());
-  else if ($ instanceof J8) return [$.value];
+  else if ($ instanceof X8) return [$.value];
   else if ($ instanceof B1) return $.options;
-  else if ($ instanceof Y8) return X$.objectValues($.enum);
-  else if ($ instanceof Q8) return Y4($._def.innerType);
-  else if ($ instanceof aX) return [void 0];
-  else if ($ instanceof sX) return [null];
+  else if ($ instanceof J8) return X$.objectValues($.enum);
+  else if ($ instanceof Y8) return Y4($._def.innerType);
+  else if ($ instanceof tX) return [void 0];
+  else if ($ instanceof aX) return [null];
   else if ($ instanceof D6) return [void 0, ...Y4($.unwrap())];
   else if ($ instanceof S4) return [null, ...Y4($.unwrap())];
-  else if ($ instanceof sz) return Y4($.unwrap());
-  else if ($ instanceof W8) return Y4($.unwrap());
-  else if ($ instanceof z8) return Y4($._def.innerType);
+  else if ($ instanceof az) return Y4($.unwrap());
+  else if ($ instanceof z8) return Y4($.unwrap());
+  else if ($ instanceof Q8) return Y4($._def.innerType);
   else return [];
 };
-class az extends e {
+class tz extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($);
     if (X.parsedType !== R.object)
@@ -15864,7 +15872,7 @@ class az extends e {
         Q.set(W, Y);
       }
     }
-    return new az({
+    return new tz({
       typeName: P.ZodDiscriminatedUnion,
       discriminator: $,
       options: X,
@@ -15873,7 +15881,7 @@ class az extends e {
     });
   }
 }
-function tz($, X) {
+function oz($, X) {
   let J = J4($),
     Q = J4(X);
   if ($ === X) return { valid: !0, data: $ };
@@ -15882,7 +15890,7 @@ function tz($, X) {
       z = X$.objectKeys($).filter((G) => Y.indexOf(G) !== -1),
       W = { ...$, ...X };
     for (let G of z) {
-      let U = tz($[G], X[G]);
+      let U = oz($[G], X[G]);
       if (!U.valid) return { valid: !1 };
       W[G] = U.data;
     }
@@ -15893,7 +15901,7 @@ function tz($, X) {
     for (let z = 0; z < $.length; z++) {
       let W = $[z],
         G = X[z],
-        U = tz(W, G);
+        U = oz(W, G);
       if (!U.valid) return { valid: !1 };
       Y.push(U.data);
     }
@@ -15902,14 +15910,14 @@ function tz($, X) {
     return { valid: !0, data: $ };
   else return { valid: !1 };
 }
-class $8 extends e {
+class eX extends e {
   _parse($) {
     let { status: X, ctx: J } = this._processInputParams($),
       Q = (Y, z) => {
-        if (dz(Y) || dz(z)) return l;
-        let W = tz(Y.value, z.value);
+        if (nz(Y) || nz(z)) return l;
+        let W = oz(Y.value, z.value);
         if (!W.valid) return (C(J, { code: A.invalid_intersection_types }), l);
-        if (rz(Y) || rz(z)) X.dirty();
+        if (dz(Y) || dz(z)) X.dirty();
         return { status: X.value, value: W.data };
       };
     if (J.common.async)
@@ -15924,8 +15932,8 @@ class $8 extends e {
       );
   }
 }
-$8.create = ($, X, J) => {
-  return new $8({ left: $, right: X, typeName: P.ZodIntersection, ...o(J) });
+eX.create = ($, X, J) => {
+  return new eX({ left: $, right: X, typeName: P.ZodIntersection, ...o(J) });
 };
 class W4 extends e {
   _parse($) {
@@ -16082,7 +16090,7 @@ class fJ extends e {
 fJ.create = ($, X, J) => {
   return new fJ({ valueType: X, keyType: $, typeName: P.ZodMap, ...o(J) });
 };
-class H0 extends e {
+class U0 extends e {
   _parse($) {
     let { status: X, ctx: J } = this._processInputParams($);
     if (J.parsedType !== R.set)
@@ -16132,13 +16140,13 @@ class H0 extends e {
     else return z(W);
   }
   min($, X) {
-    return new H0({
+    return new U0({
       ...this._def,
       minSize: { value: $, message: y.toString(X) },
     });
   }
   max($, X) {
-    return new H0({
+    return new U0({
       ...this._def,
       maxSize: { value: $, message: y.toString(X) },
     });
@@ -16150,8 +16158,8 @@ class H0 extends e {
     return this.min(1, $);
   }
 }
-H0.create = ($, X) => {
-  return new H0({
+U0.create = ($, X) => {
+  return new U0({
     valueType: $,
     minSize: null,
     maxSize: null,
@@ -16159,7 +16167,7 @@ H0.create = ($, X) => {
     ...o(X),
   });
 };
-class oX extends e {
+class rX extends e {
   constructor() {
     super(...arguments);
     this.validate = this.implement;
@@ -16182,7 +16190,7 @@ class oX extends e {
         errorMaps: [
           X.common.contextualErrorMap,
           X.schemaErrorMap,
-          dX(),
+          nX(),
           R4,
         ].filter((U) => !!U),
         issueData: { code: A.invalid_arguments, argumentsError: G },
@@ -16195,7 +16203,7 @@ class oX extends e {
         errorMaps: [
           X.common.contextualErrorMap,
           X.schemaErrorMap,
-          dX(),
+          nX(),
           R4,
         ].filter((U) => !!U),
         issueData: { code: A.invalid_return_type, returnTypeError: G },
@@ -16203,7 +16211,7 @@ class oX extends e {
     }
     let Y = { errorMap: X.common.contextualErrorMap },
       z = X.data;
-    if (this._def.returns instanceof K0) {
+    if (this._def.returns instanceof H0) {
       let W = this;
       return p$(async function (...G) {
         let U = new H6([]),
@@ -16234,10 +16242,10 @@ class oX extends e {
     return this._def.returns;
   }
   args(...$) {
-    return new oX({ ...this._def, args: W4.create($).rest(w1.create()) });
+    return new rX({ ...this._def, args: W4.create($).rest(w1.create()) });
   }
   returns($) {
-    return new oX({ ...this._def, returns: $ });
+    return new rX({ ...this._def, returns: $ });
   }
   implement($) {
     return this.parse($);
@@ -16246,7 +16254,7 @@ class oX extends e {
     return this.parse($);
   }
   static create($, X, J) {
-    return new oX({
+    return new rX({
       args: $ ? $ : W4.create([]).rest(w1.create()),
       returns: X || w1.create(),
       typeName: P.ZodFunction,
@@ -16254,7 +16262,7 @@ class oX extends e {
     });
   }
 }
-class X8 extends e {
+class $8 extends e {
   get schema() {
     return this._def.getter();
   }
@@ -16263,10 +16271,10 @@ class X8 extends e {
     return this._def.getter()._parse({ data: X.data, path: X.path, parent: X });
   }
 }
-X8.create = ($, X) => {
-  return new X8({ getter: $, typeName: P.ZodLazy, ...o(X) });
+$8.create = ($, X) => {
+  return new $8({ getter: $, typeName: P.ZodLazy, ...o(X) });
 };
-class J8 extends e {
+class X8 extends e {
   _parse($) {
     if ($.data !== this._def.value) {
       let X = this._getOrReturnCtx($);
@@ -16285,8 +16293,8 @@ class J8 extends e {
     return this._def.value;
   }
 }
-J8.create = ($, X) => {
-  return new J8({ value: $, typeName: P.ZodLiteral, ...o(X) });
+X8.create = ($, X) => {
+  return new X8({ value: $, typeName: P.ZodLiteral, ...o(X) });
 };
 function nK($, X) {
   return new B1({ values: $, typeName: P.ZodEnum, ...o(X) });
@@ -16345,7 +16353,7 @@ class B1 extends e {
   }
 }
 B1.create = nK;
-class Y8 extends e {
+class J8 extends e {
   _parse($) {
     let X = X$.getValidEnumValues(this._def.values),
       J = this._getOrReturnCtx($);
@@ -16375,10 +16383,10 @@ class Y8 extends e {
     return this._def.values;
   }
 }
-Y8.create = ($, X) => {
-  return new Y8({ values: $, typeName: P.ZodNativeEnum, ...o(X) });
+J8.create = ($, X) => {
+  return new J8({ values: $, typeName: P.ZodNativeEnum, ...o(X) });
 };
-class K0 extends e {
+class H0 extends e {
   unwrap() {
     return this._def.type;
   }
@@ -16404,8 +16412,8 @@ class K0 extends e {
     );
   }
 }
-K0.create = ($, X) => {
-  return new K0({ type: $, typeName: P.ZodPromise, ...o(X) });
+H0.create = ($, X) => {
+  return new H0({ type: $, typeName: P.ZodPromise, ...o(X) });
 };
 class c6 extends e {
   innerType() {
@@ -16439,8 +16447,8 @@ class c6 extends e {
             parent: J,
           });
           if (G.status === "aborted") return l;
-          if (G.status === "dirty") return z0(G.value);
-          if (X.value === "dirty") return z0(G.value);
+          if (G.status === "dirty") return Q0(G.value);
+          if (X.value === "dirty") return Q0(G.value);
           return G;
         });
       else {
@@ -16451,8 +16459,8 @@ class c6 extends e {
           parent: J,
         });
         if (W.status === "aborted") return l;
-        if (W.status === "dirty") return z0(W.value);
-        if (X.value === "dirty") return z0(W.value);
+        if (W.status === "dirty") return Q0(W.value);
+        if (X.value === "dirty") return Q0(W.value);
         return W;
       }
     }
@@ -16548,7 +16556,7 @@ class S4 extends e {
 S4.create = ($, X) => {
   return new S4({ innerType: $, typeName: P.ZodNullable, ...o(X) });
 };
-class Q8 extends e {
+class Y8 extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($),
       J = X.data;
@@ -16559,15 +16567,15 @@ class Q8 extends e {
     return this._def.innerType;
   }
 }
-Q8.create = ($, X) => {
-  return new Q8({
+Y8.create = ($, X) => {
+  return new Y8({
     innerType: $,
     typeName: P.ZodDefault,
     defaultValue: typeof X.default === "function" ? X.default : () => X.default,
     ...o(X),
   });
 };
-class z8 extends e {
+class Q8 extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($),
       J = { ...X, common: { ...X.common, issues: [] } },
@@ -16576,7 +16584,7 @@ class z8 extends e {
         path: J.path,
         parent: { ...J },
       });
-    if (rX(Q))
+    if (dX(Q))
       return Q.then((Y) => {
         return {
           status: "valid",
@@ -16609,8 +16617,8 @@ class z8 extends e {
     return this._def.innerType;
   }
 }
-z8.create = ($, X) => {
-  return new z8({
+Q8.create = ($, X) => {
+  return new Q8({
     innerType: $,
     typeName: P.ZodCatch,
     catchValue: typeof X.catch === "function" ? X.catch : () => X.catch,
@@ -16633,7 +16641,7 @@ hJ.create = ($) => {
   return new hJ({ typeName: P.ZodNaN, ...o($) });
 };
 var wl = Symbol("zod_brand");
-class sz extends e {
+class az extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($),
       J = X.data;
@@ -16654,7 +16662,7 @@ class uJ extends e {
           parent: J,
         });
         if (Y.status === "aborted") return l;
-        if (Y.status === "dirty") return (X.dirty(), z0(Y.value));
+        if (Y.status === "dirty") return (X.dirty(), Q0(Y.value));
         else
           return this._def.out._parseAsync({
             data: Y.value,
@@ -16683,21 +16691,21 @@ class uJ extends e {
     return new uJ({ in: $, out: X, typeName: P.ZodPipeline });
   }
 }
-class W8 extends e {
+class z8 extends e {
   _parse($) {
     let X = this._def.innerType._parse($),
       J = (Q) => {
         if (O1(Q)) Q.value = Object.freeze(Q.value);
         return Q;
       };
-    return rX(X) ? X.then((Q) => J(Q)) : J(X);
+    return dX(X) ? X.then((Q) => J(Q)) : J(X);
   }
   unwrap() {
     return this._def.innerType;
   }
 }
-W8.create = ($, X) => {
-  return new W8({ innerType: $, typeName: P.ZodReadonly, ...o(X) });
+z8.create = ($, X) => {
+  return new z8({ innerType: $, typeName: P.ZodReadonly, ...o(X) });
 };
 var Bl = { object: Z$.lazycreate },
   P;
@@ -16740,14 +16748,14 @@ var Bl = { object: Z$.lazycreate },
     ($.ZodReadonly = "ZodReadonly"));
 })(P || (P = {}));
 var ql = Q4.create,
-  Dl = G0.create,
+  Dl = W0.create,
   Ll = hJ.create,
-  jl = U0.create,
+  jl = G0.create,
   Fl = _J.create,
-  Il = tX.create,
+  Il = oX.create,
   Ml = xJ.create,
-  Al = aX.create,
-  bl = sX.create,
+  Al = tX.create,
+  bl = aX.create,
   Pl = TJ.create,
   Zl = w1.create,
   El = z4.create,
@@ -16755,19 +16763,19 @@ var ql = Q4.create,
   Sl = l6.create,
   dK = Z$.create,
   vl = Z$.strictCreate,
-  Cl = eX.create,
-  kl = az.create,
-  _l = $8.create,
+  Cl = sX.create,
+  kl = tz.create,
+  _l = eX.create,
   xl = W4.create,
   Tl = gJ.create,
   yl = fJ.create,
-  gl = H0.create,
-  fl = oX.create,
-  hl = X8.create,
-  ul = J8.create,
+  gl = U0.create,
+  fl = rX.create,
+  hl = $8.create,
+  ul = X8.create,
   ml = B1.create,
-  ll = Y8.create,
-  cl = K0.create,
+  ll = J8.create,
+  cl = H0.create,
   il = c6.create,
   pl = D6.create,
   nl = S4.create,
@@ -16775,66 +16783,66 @@ var ql = Q4.create,
   rl = uJ.create;
 var R6 = {};
 e4(R6, {
-  version: () => JW,
+  version: () => XW,
   util: () => E,
   treeifyError: () => iJ,
-  toJSONSchema: () => Z0,
+  toJSONSchema: () => P0,
   toDotPath: () => tK,
   safeParseAsync: () => k4,
   safeParse: () => C4,
-  registry: () => M8,
+  registry: () => I8,
   regexes: () => _4,
   prettifyError: () => pJ,
   parseAsync: () => j1,
   parse: () => L1,
-  locales: () => I0,
+  locales: () => F0,
   isValidJWT: () => wN,
   isValidBase64URL: () => ON,
-  isValidBase64: () => UW,
+  isValidBase64: () => GW,
   globalRegistry: () => E6,
-  globalConfig: () => G8,
+  globalConfig: () => W8,
   function: () => PQ,
-  formatError: () => B0,
-  flattenError: () => w0,
+  formatError: () => w0,
+  flattenError: () => O0,
   config: () => E$,
   clone: () => m$,
-  _xid: () => x8,
+  _xid: () => _8,
   _void: () => DQ,
-  _uuidv7: () => E8,
-  _uuidv6: () => Z8,
-  _uuidv4: () => P8,
-  _uuid: () => b8,
-  _url: () => R8,
-  _uppercase: () => d8,
+  _uuidv7: () => Z8,
+  _uuidv6: () => P8,
+  _uuidv4: () => b8,
+  _uuid: () => A8,
+  _url: () => E8,
+  _uppercase: () => n8,
   _unknown: () => M1,
   _union: () => mA,
   _undefined: () => OQ,
-  _ulid: () => _8,
+  _ulid: () => k8,
   _uint64: () => NQ,
   _uint32: () => GQ,
-  _tuple: () => GG,
-  _trim: () => e8,
+  _tuple: () => WG,
+  _trim: () => s8,
   _transform: () => tA,
-  _toUpperCase: () => X9,
-  _toLowerCase: () => $9,
+  _toUpperCase: () => $9,
+  _toLowerCase: () => e8,
   _templateLiteral: () => z2,
   _symbol: () => VQ,
   _success: () => X2,
   _stringbool: () => AQ,
   _stringFormat: () => bQ,
   _string: () => $Q,
-  _startsWith: () => o8,
-  _size: () => i8,
+  _startsWith: () => r8,
+  _size: () => c8,
   _set: () => nA,
   _safeParseAsync: () => oJ,
   _safeParse: () => rJ,
-  _regex: () => p8,
+  _regex: () => i8,
   _refine: () => MQ,
   _record: () => iA,
   _readonly: () => Q2,
-  _property: () => WG,
+  _property: () => zG,
   _promise: () => G2,
-  _positive: () => JG,
+  _positive: () => XG,
   _pipe: () => Y2,
   _parseAsync: () => dJ,
   _parse: () => nJ,
@@ -16843,73 +16851,73 @@ e4(R6, {
   _number: () => JQ,
   _nullable: () => sA,
   _null: () => wQ,
-  _normalize: () => s8,
-  _nonpositive: () => QG,
+  _normalize: () => a8,
+  _nonpositive: () => YG,
   _nonoptional: () => $2,
-  _nonnegative: () => zG,
+  _nonnegative: () => QG,
   _never: () => qQ,
-  _negative: () => YG,
+  _negative: () => JG,
   _nativeEnum: () => rA,
-  _nanoid: () => v8,
+  _nanoid: () => S8,
   _nan: () => jQ,
   _multipleOf: () => A1,
   _minSize: () => b1,
   _minLength: () => y4,
   _min: () => e$,
-  _mime: () => a8,
-  _maxSize: () => A0,
-  _maxLength: () => b0,
+  _mime: () => t8,
+  _maxSize: () => M0,
+  _maxLength: () => A0,
   _max: () => L6,
   _map: () => pA,
   _lte: () => L6,
   _lt: () => H4,
-  _lowercase: () => n8,
+  _lowercase: () => p8,
   _literal: () => oA,
-  _length: () => P0,
+  _length: () => b0,
   _lazy: () => W2,
-  _ksuid: () => T8,
-  _jwt: () => c8,
-  _isoTime: () => tW,
-  _isoDuration: () => aW,
-  _isoDateTime: () => rW,
-  _isoDate: () => oW,
-  _ipv6: () => g8,
-  _ipv4: () => y8,
+  _ksuid: () => x8,
+  _jwt: () => l8,
+  _isoTime: () => oW,
+  _isoDuration: () => tW,
+  _isoDateTime: () => dW,
+  _isoDate: () => rW,
+  _ipv6: () => y8,
+  _ipv4: () => T8,
   _intersection: () => cA,
   _int64: () => KQ,
   _int32: () => WQ,
   _int: () => YQ,
-  _includes: () => r8,
-  _guid: () => M0,
+  _includes: () => d8,
+  _guid: () => I0,
   _gte: () => e$,
   _gt: () => K4,
   _float64: () => zQ,
   _float32: () => QQ,
   _file: () => FQ,
   _enum: () => dA,
-  _endsWith: () => t8,
-  _emoji: () => S8,
-  _email: () => A8,
-  _e164: () => l8,
+  _endsWith: () => o8,
+  _emoji: () => R8,
+  _email: () => M8,
+  _e164: () => m8,
   _discriminatedUnion: () => lA,
   _default: () => eA,
   _date: () => LQ,
   _custom: () => IQ,
-  _cuid2: () => k8,
-  _cuid: () => C8,
-  _coercedString: () => dW,
-  _coercedNumber: () => sW,
-  _coercedDate: () => XG,
-  _coercedBoolean: () => eW,
-  _coercedBigint: () => $G,
-  _cidrv6: () => h8,
-  _cidrv4: () => f8,
+  _cuid2: () => C8,
+  _cuid: () => v8,
+  _coercedString: () => nW,
+  _coercedNumber: () => aW,
+  _coercedDate: () => $G,
+  _coercedBoolean: () => sW,
+  _coercedBigint: () => eW,
+  _cidrv6: () => f8,
+  _cidrv4: () => g8,
   _catch: () => J2,
   _boolean: () => UQ,
   _bigint: () => HQ,
-  _base64url: () => m8,
-  _base64: () => u8,
-  _array: () => J9,
+  _base64url: () => u8,
+  _base64: () => h8,
+  _array: () => X9,
   _any: () => BQ,
   TimePrecision: () => XQ,
   NEVER: () => mJ,
@@ -16923,31 +16931,31 @@ e4(R6, {
   $ZodXID: () => NY,
   $ZodVoid: () => SY,
   $ZodUnknown: () => I1,
-  $ZodUnion: () => j8,
+  $ZodUnion: () => L8,
   $ZodUndefined: () => PY,
   $ZodUUID: () => YY,
   $ZodURL: () => zY,
   $ZodULID: () => KY,
   $ZodType: () => i,
   $ZodTuple: () => T4,
-  $ZodTransform: () => j0,
+  $ZodTransform: () => L0,
   $ZodTemplateLiteral: () => rY,
   $ZodSymbol: () => bY,
   $ZodSuccess: () => iY,
   $ZodStringFormat: () => H$,
   $ZodString: () => x4,
   $ZodSet: () => TY,
-  $ZodRegistry: () => I8,
+  $ZodRegistry: () => F8,
   $ZodRecord: () => _Y,
-  $ZodRealError: () => O0,
+  $ZodRealError: () => V0,
   $ZodReadonly: () => dY,
   $ZodPromise: () => oY,
   $ZodPrefault: () => lY,
-  $ZodPipe: () => F0,
+  $ZodPipe: () => j0,
   $ZodOptional: () => hY,
-  $ZodObject: () => L8,
+  $ZodObject: () => D8,
   $ZodNumberFormat: () => MY,
-  $ZodNumber: () => q8,
+  $ZodNumber: () => B8,
   $ZodNullable: () => uY,
   $ZodNull: () => ZY,
   $ZodNonOptional: () => cY,
@@ -16960,16 +16968,16 @@ e4(R6, {
   $ZodKSUID: () => VY,
   $ZodJWT: () => FY,
   $ZodIntersection: () => kY,
-  $ZodISOTime: () => WW,
-  $ZodISODuration: () => GW,
-  $ZodISODateTime: () => QW,
-  $ZodISODate: () => zW,
+  $ZodISOTime: () => zW,
+  $ZodISODuration: () => WW,
+  $ZodISODateTime: () => YW,
+  $ZodISODate: () => QW,
   $ZodIPv6: () => wY,
   $ZodIPv4: () => OY,
   $ZodGUID: () => JY,
-  $ZodFunction: () => UG,
+  $ZodFunction: () => GG,
   $ZodFile: () => fY,
-  $ZodError: () => B8,
+  $ZodError: () => w8,
   $ZodEnum: () => yY,
   $ZodEmoji: () => WY,
   $ZodEmail: () => QY,
@@ -16979,40 +16987,40 @@ e4(R6, {
   $ZodDate: () => vY,
   $ZodCustomStringFormat: () => IY,
   $ZodCustom: () => aY,
-  $ZodCheckUpperCase: () => o5,
-  $ZodCheckStringFormat: () => q0,
-  $ZodCheckStartsWith: () => a5,
-  $ZodCheckSizeEquals: () => c5,
-  $ZodCheckRegex: () => d5,
-  $ZodCheckProperty: () => e5,
-  $ZodCheckOverwrite: () => XW,
-  $ZodCheckNumberFormat: () => h5,
-  $ZodCheckMultipleOf: () => f5,
-  $ZodCheckMinSize: () => l5,
-  $ZodCheckMinLength: () => p5,
-  $ZodCheckMimeType: () => $W,
-  $ZodCheckMaxSize: () => m5,
-  $ZodCheckMaxLength: () => i5,
-  $ZodCheckLowerCase: () => r5,
+  $ZodCheckUpperCase: () => r5,
+  $ZodCheckStringFormat: () => B0,
+  $ZodCheckStartsWith: () => t5,
+  $ZodCheckSizeEquals: () => l5,
+  $ZodCheckRegex: () => n5,
+  $ZodCheckProperty: () => s5,
+  $ZodCheckOverwrite: () => $W,
+  $ZodCheckNumberFormat: () => f5,
+  $ZodCheckMultipleOf: () => g5,
+  $ZodCheckMinSize: () => m5,
+  $ZodCheckMinLength: () => i5,
+  $ZodCheckMimeType: () => e5,
+  $ZodCheckMaxSize: () => u5,
+  $ZodCheckMaxLength: () => c5,
+  $ZodCheckLowerCase: () => d5,
   $ZodCheckLessThan: () => aJ,
-  $ZodCheckLengthEquals: () => n5,
-  $ZodCheckIncludes: () => t5,
+  $ZodCheckLengthEquals: () => p5,
+  $ZodCheckIncludes: () => o5,
   $ZodCheckGreaterThan: () => sJ,
-  $ZodCheckEndsWith: () => s5,
-  $ZodCheckBigIntFormat: () => u5,
+  $ZodCheckEndsWith: () => a5,
+  $ZodCheckBigIntFormat: () => h5,
   $ZodCheck: () => I$,
   $ZodCatch: () => pY,
   $ZodCUID2: () => HY,
   $ZodCUID: () => UY,
   $ZodCIDRv6: () => qY,
   $ZodCIDRv4: () => BY,
-  $ZodBoolean: () => D0,
+  $ZodBoolean: () => q0,
   $ZodBigIntFormat: () => AY,
-  $ZodBigInt: () => D8,
+  $ZodBigInt: () => q8,
   $ZodBase64URL: () => LY,
   $ZodBase64: () => DY,
   $ZodAsyncError: () => G4,
-  $ZodArray: () => L0,
+  $ZodArray: () => D0,
   $ZodAny: () => EY,
 });
 var mJ = Object.freeze({ status: "aborted" });
@@ -17058,40 +17066,40 @@ class G4 extends Error {
     );
   }
 }
-var G8 = {};
+var W8 = {};
 function E$($) {
-  if ($) Object.assign(G8, $);
-  return G8;
+  if ($) Object.assign(W8, $);
+  return W8;
 }
 var E = {};
 e4(E, {
-  unwrapMessage: () => U8,
+  unwrapMessage: () => G8,
   stringifyPrimitive: () => S,
   required: () => uM,
   randomString: () => CM,
-  propertyKeyTypes: () => V8,
+  propertyKeyTypes: () => N8,
   promiseAllObject: () => vM,
-  primitiveTypes: () => Q5,
+  primitiveTypes: () => Y5,
   prefixIssues: () => s$,
   pick: () => TM,
   partial: () => hM,
-  optionalKeys: () => z5,
+  optionalKeys: () => Q5,
   omit: () => yM,
   numKeys: () => kM,
   nullish: () => v4,
   normalizeParams: () => Z,
   merge: () => fM,
-  jsonStringifyReplacer: () => $5,
+  jsonStringifyReplacer: () => ez,
   joinValues: () => I,
-  issue: () => U5,
-  isPlainObject: () => V0,
-  isObject: () => N0,
-  getSizableOrigin: () => O8,
+  issue: () => G5,
+  isPlainObject: () => N0,
+  isObject: () => K0,
+  getSizableOrigin: () => V8,
   getParsedType: () => _M,
-  getLengthableOrigin: () => w8,
-  getEnumValues: () => H8,
+  getLengthableOrigin: () => O8,
+  getEnumValues: () => U8,
   getElementAtPath: () => SM,
-  floatSafeRemainder: () => X5,
+  floatSafeRemainder: () => $5,
   finalizeIssue: () => K6,
   extend: () => gM,
   escapeRegex: () => U4,
@@ -17099,21 +17107,21 @@ e4(E, {
   defineLazy: () => W$,
   createTransparentProxy: () => xM,
   clone: () => m$,
-  cleanRegex: () => N8,
+  cleanRegex: () => K8,
   cleanEnum: () => mM,
   captureStackTrace: () => cJ,
-  cached: () => K8,
-  assignProp: () => J5,
+  cached: () => H8,
+  assignProp: () => X5,
   assertNotEqual: () => PM,
   assertNever: () => EM,
   assertIs: () => ZM,
   assertEqual: () => bM,
   assert: () => RM,
-  allowsEval: () => Y5,
+  allowsEval: () => J5,
   aborted: () => D1,
-  NUMBER_FORMAT_RANGES: () => W5,
+  NUMBER_FORMAT_RANGES: () => z5,
   Class: () => rK,
-  BIGINT_FORMAT_RANGES: () => G5,
+  BIGINT_FORMAT_RANGES: () => W5,
 });
 function bM($) {
   return $;
@@ -17126,7 +17134,7 @@ function EM($) {
   throw Error();
 }
 function RM($) {}
-function H8($) {
+function U8($) {
   let X = Object.values($).filter((Q) => typeof Q === "number");
   return Object.entries($)
     .filter(([Q, Y]) => X.indexOf(+Q) === -1)
@@ -17135,11 +17143,11 @@ function H8($) {
 function I($, X = "|") {
   return $.map((J) => S(J)).join(X);
 }
-function $5($, X) {
+function ez($, X) {
   if (typeof X === "bigint") return X.toString();
   return X;
 }
-function K8($) {
+function H8($) {
   return {
     get value() {
       {
@@ -17153,12 +17161,12 @@ function K8($) {
 function v4($) {
   return $ === null || $ === void 0;
 }
-function N8($) {
+function K8($) {
   let X = $.startsWith("^") ? 1 : 0,
     J = $.endsWith("$") ? $.length - 1 : $.length;
   return $.slice(X, J);
 }
-function X5($, X) {
+function $5($, X) {
   let J = ($.toString().split(".")[1] || "").length,
     Q = (X.toString().split(".")[1] || "").length,
     Y = J > Q ? J : Q,
@@ -17181,7 +17189,7 @@ function W$($, X, J) {
     configurable: !0,
   });
 }
-function J5($, X, J) {
+function X5($, X, J) {
   Object.defineProperty($, X, {
     value: J,
     writable: !0,
@@ -17212,10 +17220,10 @@ function q1($) {
   return JSON.stringify($);
 }
 var cJ = Error.captureStackTrace ? Error.captureStackTrace : (...$) => {};
-function N0($) {
+function K0($) {
   return typeof $ === "object" && $ !== null && !Array.isArray($);
 }
-var Y5 = K8(() => {
+var J5 = H8(() => {
   if (typeof navigator < "u" && navigator?.userAgent?.includes("Cloudflare"))
     return !1;
   try {
@@ -17224,12 +17232,12 @@ var Y5 = K8(() => {
     return !1;
   }
 });
-function V0($) {
-  if (N0($) === !1) return !1;
+function N0($) {
+  if (K0($) === !1) return !1;
   let X = $.constructor;
   if (X === void 0) return !0;
   let J = X.prototype;
-  if (N0(J) === !1) return !1;
+  if (K0(J) === !1) return !1;
   if (Object.prototype.hasOwnProperty.call(J, "isPrototypeOf") === !1)
     return !1;
   return !0;
@@ -17275,8 +17283,8 @@ var _M = ($) => {
         throw Error(`Unknown data type: ${X}`);
     }
   },
-  V8 = new Set(["string", "number", "symbol"]),
-  Q5 = new Set([
+  N8 = new Set(["string", "number", "symbol"]),
+  Y5 = new Set([
     "string",
     "number",
     "bigint",
@@ -17339,12 +17347,12 @@ function S($) {
   if (typeof $ === "string") return `"${$}"`;
   return `${$}`;
 }
-function z5($) {
+function Q5($) {
   return Object.keys($).filter((X) => {
     return $[X]._zod.optin === "optional" && $[X]._zod.optout === "optional";
   });
 }
-var W5 = {
+var z5 = {
     safeint: [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
     int32: [-2147483648, 2147483647],
     uint32: [0, 4294967295],
@@ -17354,7 +17362,7 @@ var W5 = {
     ],
     float64: [-Number.MAX_VALUE, Number.MAX_VALUE],
   },
-  G5 = {
+  W5 = {
     int64: [BigInt("-9223372036854775808"), BigInt("9223372036854775807")],
     uint64: [BigInt(0), BigInt("18446744073709551615")],
   };
@@ -17379,12 +17387,12 @@ function yM($, X) {
   return m$($, { ...$._zod.def, shape: J, checks: [] });
 }
 function gM($, X) {
-  if (!V0(X)) throw Error("Invalid input to extend: expected a plain object");
+  if (!N0(X)) throw Error("Invalid input to extend: expected a plain object");
   let J = {
     ...$._zod.def,
     get shape() {
       let Q = { ...$._zod.def.shape, ...X };
-      return (J5(this, "shape", Q), Q);
+      return (X5(this, "shape", Q), Q);
     },
     checks: [],
   };
@@ -17395,7 +17403,7 @@ function fM($, X) {
     ...$._zod.def,
     get shape() {
       let J = { ...$._zod.def.shape, ...X._zod.def.shape };
-      return (J5(this, "shape", J), J);
+      return (X5(this, "shape", J), J);
     },
     catchall: X._zod.def.catchall,
     checks: [],
@@ -17438,35 +17446,35 @@ function s$($, X) {
     return ((Q = J).path ?? (Q.path = []), J.path.unshift($), J);
   });
 }
-function U8($) {
+function G8($) {
   return typeof $ === "string" ? $ : $?.message;
 }
 function K6($, X, J) {
   let Q = { ...$, path: $.path ?? [] };
   if (!$.message) {
     let Y =
-      U8($.inst?._zod.def?.error?.($)) ??
-      U8(X?.error?.($)) ??
-      U8(J.customError?.($)) ??
-      U8(J.localeError?.($)) ??
+      G8($.inst?._zod.def?.error?.($)) ??
+      G8(X?.error?.($)) ??
+      G8(J.customError?.($)) ??
+      G8(J.localeError?.($)) ??
       "Invalid input";
     Q.message = Y;
   }
   if ((delete Q.inst, delete Q.continue, !X?.reportInput)) delete Q.input;
   return Q;
 }
-function O8($) {
+function V8($) {
   if ($ instanceof Set) return "set";
   if ($ instanceof Map) return "map";
   if ($ instanceof File) return "file";
   return "unknown";
 }
-function w8($) {
+function O8($) {
   if (Array.isArray($)) return "array";
   if (typeof $ === "string") return "string";
   return "unknown";
 }
-function U5(...$) {
+function G5(...$) {
   let [X, J, Q] = $;
   if (typeof X === "string")
     return { message: X, code: "custom", input: J, inst: Q };
@@ -17488,14 +17496,14 @@ var oK = ($, X) => {
       Object.defineProperty($, "issues", { value: X, enumerable: !1 }),
       Object.defineProperty($, "message", {
         get() {
-          return JSON.stringify(X, $5, 2);
+          return JSON.stringify(X, ez, 2);
         },
         enumerable: !0,
       }));
   },
-  B8 = q("$ZodError", oK),
-  O0 = q("$ZodError", oK, { Parent: Error });
-function w0($, X = (J) => J.message) {
+  w8 = q("$ZodError", oK),
+  V0 = q("$ZodError", oK, { Parent: Error });
+function O0($, X = (J) => J.message) {
   let J = {},
     Q = [];
   for (let Y of $.issues)
@@ -17504,7 +17512,7 @@ function w0($, X = (J) => J.message) {
     else Q.push(X(Y));
   return { formErrors: Q, fieldErrors: J };
 }
-function B0($, X) {
+function w0($, X) {
   let J =
       X ||
       function (z) {
@@ -17602,7 +17610,7 @@ var nJ = ($) => (X, J, Q, Y) => {
     }
     return W.value;
   },
-  L1 = nJ(O0),
+  L1 = nJ(V0),
   dJ = ($) => async (X, J, Q, Y) => {
     let z = Q ? Object.assign(Q, { async: !0 }) : { async: !0 },
       W = X._zod.run({ value: J, issues: [] }, z);
@@ -17613,7 +17621,7 @@ var nJ = ($) => (X, J, Q, Y) => {
     }
     return W.value;
   },
-  j1 = dJ(O0),
+  j1 = dJ(V0),
   rJ = ($) => (X, J, Q) => {
     let Y = Q ? { ...Q, async: !1 } : { async: !1 },
       z = X._zod.run({ value: J, issues: [] }, Y);
@@ -17621,11 +17629,11 @@ var nJ = ($) => (X, J, Q, Y) => {
     return z.issues.length
       ? {
           success: !1,
-          error: new ($ ?? B8)(z.issues.map((W) => K6(W, Y, E$()))),
+          error: new ($ ?? w8)(z.issues.map((W) => K6(W, Y, E$()))),
         }
       : { success: !0, data: z.value };
   },
-  C4 = rJ(O0),
+  C4 = rJ(V0),
   oJ = ($) => async (X, J, Q) => {
     let Y = Q ? Object.assign(Q, { async: !0 }) : { async: !0 },
       z = X._zod.run({ value: J, issues: [] }, Y);
@@ -17634,62 +17642,62 @@ var nJ = ($) => (X, J, Q, Y) => {
       ? { success: !1, error: new $(z.issues.map((W) => K6(W, Y, E$()))) }
       : { success: !0, data: z.value };
   },
-  k4 = oJ(O0);
+  k4 = oJ(V0);
 var _4 = {};
 e4(_4, {
-  xid: () => V5,
+  xid: () => N5,
   uuid7: () => nM,
   uuid6: () => pM,
   uuid4: () => iM,
   uuid: () => F1,
-  uppercase: () => g5,
+  uppercase: () => y5,
   unicodeEmail: () => oM,
-  undefined: () => T5,
-  ulid: () => N5,
-  time: () => E5,
-  string: () => S5,
+  undefined: () => x5,
+  ulid: () => K5,
+  time: () => Z5,
+  string: () => R5,
   rfc5322Email: () => rM,
-  number: () => k5,
-  null: () => x5,
-  nanoid: () => w5,
-  lowercase: () => y5,
-  ksuid: () => O5,
-  ipv6: () => F5,
-  ipv4: () => j5,
-  integer: () => C5,
+  number: () => C5,
+  null: () => _5,
+  nanoid: () => O5,
+  lowercase: () => T5,
+  ksuid: () => V5,
+  ipv6: () => j5,
+  ipv4: () => L5,
+  integer: () => v5,
   html5Email: () => dM,
-  hostname: () => b5,
-  guid: () => q5,
+  hostname: () => A5,
+  guid: () => B5,
   extendedDuration: () => cM,
-  emoji: () => L5,
-  email: () => D5,
-  e164: () => P5,
-  duration: () => B5,
+  emoji: () => D5,
+  email: () => q5,
+  e164: () => b5,
+  duration: () => w5,
   domain: () => sM,
-  datetime: () => R5,
-  date: () => Z5,
-  cuid2: () => K5,
-  cuid: () => H5,
-  cidrv6: () => M5,
-  cidrv4: () => I5,
+  datetime: () => E5,
+  date: () => P5,
+  cuid2: () => H5,
+  cuid: () => U5,
+  cidrv6: () => I5,
+  cidrv4: () => F5,
   browserEmail: () => tM,
-  boolean: () => _5,
-  bigint: () => v5,
+  boolean: () => k5,
+  bigint: () => S5,
   base64url: () => tJ,
-  base64: () => A5,
+  base64: () => M5,
   _emoji: () => aM,
 });
-var H5 = /^[cC][^\s-]{8,}$/,
-  K5 = /^[0-9a-z]+$/,
-  N5 = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/,
-  V5 = /^[0-9a-vA-V]{20}$/,
-  O5 = /^[A-Za-z0-9]{27}$/,
-  w5 = /^[a-zA-Z0-9_-]{21}$/,
-  B5 =
+var U5 = /^[cC][^\s-]{8,}$/,
+  H5 = /^[0-9a-z]+$/,
+  K5 = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/,
+  N5 = /^[0-9a-vA-V]{20}$/,
+  V5 = /^[A-Za-z0-9]{27}$/,
+  O5 = /^[a-zA-Z0-9_-]{21}$/,
+  w5 =
     /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/,
   cM =
     /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/,
-  q5 =
+  B5 =
     /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/,
   F1 = ($) => {
     if (!$)
@@ -17701,7 +17709,7 @@ var H5 = /^[cC][^\s-]{8,}$/,
   iM = F1(4),
   pM = F1(6),
   nM = F1(7),
-  D5 =
+  q5 =
     /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/,
   dM =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
@@ -17711,29 +17719,29 @@ var H5 = /^[cC][^\s-]{8,}$/,
   tM =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
   aM = "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$";
-function L5() {
+function D5() {
   return new RegExp(
     "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$",
     "u",
   );
 }
-var j5 =
+var L5 =
     /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
-  F5 =
+  j5 =
     /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})$/,
-  I5 =
+  F5 =
     /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/,
-  M5 =
+  I5 =
     /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/,
-  A5 =
+  M5 =
     /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/,
   tJ = /^[A-Za-z0-9_-]*$/,
-  b5 = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+$/,
+  A5 = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+$/,
   sM = /^([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
-  P5 = /^\+(?:[0-9]){6,14}[0-9]$/,
+  b5 = /^\+(?:[0-9]){6,14}[0-9]$/,
   aK =
     "(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))",
-  Z5 = new RegExp(`^${aK}$`);
+  P5 = new RegExp(`^${aK}$`);
 function sK($) {
   return typeof $.precision === "number"
     ? $.precision === -1
@@ -17743,10 +17751,10 @@ function sK($) {
         : `(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{${$.precision}}`
     : "(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?";
 }
-function E5($) {
+function Z5($) {
   return new RegExp(`^${sK($)}$`);
 }
-function R5($) {
+function E5($) {
   let X = sK({ precision: $.precision }),
     J = ["Z"];
   if ($.local) J.push("");
@@ -17754,20 +17762,20 @@ function R5($) {
   let Q = `${X}(?:${J.join("|")})`;
   return new RegExp(`^${aK}T(?:${Q})$`);
 }
-var S5 = ($) => {
+var R5 = ($) => {
     let X = $
       ? `[\\s\\S]{${$?.minimum ?? 0},${$?.maximum ?? ""}}`
       : "[\\s\\S]*";
     return new RegExp(`^${X}$`);
   },
-  v5 = /^\d+n?$/,
-  C5 = /^\d+$/,
-  k5 = /^-?\d+(?:\.\d+)?/i,
-  _5 = /true|false/i,
-  x5 = /null/i;
-var T5 = /undefined/i;
-var y5 = /^[^A-Z]*$/,
-  g5 = /^[^a-z]*$/;
+  S5 = /^\d+n?$/,
+  v5 = /^\d+$/,
+  C5 = /^-?\d+(?:\.\d+)?/i,
+  k5 = /true|false/i,
+  _5 = /null/i;
+var x5 = /undefined/i;
+var T5 = /^[^A-Z]*$/,
+  y5 = /^[^a-z]*$/;
 var I$ = q("$ZodCheck", ($, X) => {
     var J;
     ($._zod ?? ($._zod = {}),
@@ -17825,7 +17833,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  f5 = q("$ZodCheckMultipleOf", ($, X) => {
+  g5 = q("$ZodCheckMultipleOf", ($, X) => {
     (I$.init($, X),
       $._zod.onattach.push((J) => {
         var Q;
@@ -17837,7 +17845,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         if (
           typeof J.value === "bigint"
             ? J.value % X.value === BigInt(0)
-            : X5(J.value, X.value) === 0
+            : $5(J.value, X.value) === 0
         )
           return;
         J.issues.push({
@@ -17850,15 +17858,15 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  h5 = q("$ZodCheckNumberFormat", ($, X) => {
+  f5 = q("$ZodCheckNumberFormat", ($, X) => {
     (I$.init($, X), (X.format = X.format || "float64"));
     let J = X.format?.includes("int"),
       Q = J ? "int" : "number",
-      [Y, z] = W5[X.format];
+      [Y, z] = z5[X.format];
     ($._zod.onattach.push((W) => {
       let G = W._zod.bag;
       if (((G.format = X.format), (G.minimum = Y), (G.maximum = z), J))
-        G.pattern = C5;
+        G.pattern = v5;
     }),
       ($._zod.check = (W) => {
         let G = W.value;
@@ -17917,9 +17925,9 @@ var I$ = q("$ZodCheck", ($, X) => {
           });
       }));
   }),
-  u5 = q("$ZodCheckBigIntFormat", ($, X) => {
+  h5 = q("$ZodCheckBigIntFormat", ($, X) => {
     I$.init($, X);
-    let [J, Q] = G5[X.format];
+    let [J, Q] = W5[X.format];
     ($._zod.onattach.push((Y) => {
       let z = Y._zod.bag;
       ((z.format = X.format), (z.minimum = J), (z.maximum = Q));
@@ -17946,7 +17954,7 @@ var I$ = q("$ZodCheck", ($, X) => {
           });
       }));
   }),
-  m5 = q("$ZodCheckMaxSize", ($, X) => {
+  u5 = q("$ZodCheckMaxSize", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -17960,7 +17968,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         let Q = J.value;
         if (Q.size <= X.maximum) return;
         J.issues.push({
-          origin: O8(Q),
+          origin: V8(Q),
           code: "too_big",
           maximum: X.maximum,
           input: Q,
@@ -17969,7 +17977,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  l5 = q("$ZodCheckMinSize", ($, X) => {
+  m5 = q("$ZodCheckMinSize", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -17983,7 +17991,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         let Q = J.value;
         if (Q.size >= X.minimum) return;
         J.issues.push({
-          origin: O8(Q),
+          origin: V8(Q),
           code: "too_small",
           minimum: X.minimum,
           input: Q,
@@ -17992,7 +18000,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  c5 = q("$ZodCheckSizeEquals", ($, X) => {
+  l5 = q("$ZodCheckSizeEquals", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -18008,7 +18016,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         if (Y === X.size) return;
         let z = Y > X.size;
         J.issues.push({
-          origin: O8(Q),
+          origin: V8(Q),
           ...(z
             ? { code: "too_big", maximum: X.size }
             : { code: "too_small", minimum: X.size }),
@@ -18020,7 +18028,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  i5 = q("$ZodCheckMaxLength", ($, X) => {
+  c5 = q("$ZodCheckMaxLength", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -18033,7 +18041,7 @@ var I$ = q("$ZodCheck", ($, X) => {
       ($._zod.check = (J) => {
         let Q = J.value;
         if (Q.length <= X.maximum) return;
-        let z = w8(Q);
+        let z = O8(Q);
         J.issues.push({
           origin: z,
           code: "too_big",
@@ -18045,7 +18053,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  p5 = q("$ZodCheckMinLength", ($, X) => {
+  i5 = q("$ZodCheckMinLength", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -18058,7 +18066,7 @@ var I$ = q("$ZodCheck", ($, X) => {
       ($._zod.check = (J) => {
         let Q = J.value;
         if (Q.length >= X.minimum) return;
-        let z = w8(Q);
+        let z = O8(Q);
         J.issues.push({
           origin: z,
           code: "too_small",
@@ -18070,7 +18078,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  n5 = q("$ZodCheckLengthEquals", ($, X) => {
+  p5 = q("$ZodCheckLengthEquals", ($, X) => {
     (I$.init($, X),
       ($._zod.when = (J) => {
         let Q = J.value;
@@ -18084,7 +18092,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         let Q = J.value,
           Y = Q.length;
         if (Y === X.length) return;
-        let z = w8(Q),
+        let z = O8(Q),
           W = Y > X.length;
         J.issues.push({
           origin: z,
@@ -18099,7 +18107,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  q0 = q("$ZodCheckStringFormat", ($, X) => {
+  B0 = q("$ZodCheckStringFormat", ($, X) => {
     var J, Q;
     if (
       (I$.init($, X),
@@ -18125,8 +18133,8 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
     else (Q = $._zod).check ?? (Q.check = () => {});
   }),
-  d5 = q("$ZodCheckRegex", ($, X) => {
-    (q0.init($, X),
+  n5 = q("$ZodCheckRegex", ($, X) => {
+    (B0.init($, X),
       ($._zod.check = (J) => {
         if (((X.pattern.lastIndex = 0), X.pattern.test(J.value))) return;
         J.issues.push({
@@ -18140,13 +18148,13 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  r5 = q("$ZodCheckLowerCase", ($, X) => {
-    (X.pattern ?? (X.pattern = y5), q0.init($, X));
+  d5 = q("$ZodCheckLowerCase", ($, X) => {
+    (X.pattern ?? (X.pattern = T5), B0.init($, X));
   }),
-  o5 = q("$ZodCheckUpperCase", ($, X) => {
-    (X.pattern ?? (X.pattern = g5), q0.init($, X));
+  r5 = q("$ZodCheckUpperCase", ($, X) => {
+    (X.pattern ?? (X.pattern = y5), B0.init($, X));
   }),
-  t5 = q("$ZodCheckIncludes", ($, X) => {
+  o5 = q("$ZodCheckIncludes", ($, X) => {
     I$.init($, X);
     let J = U4(X.includes),
       Q = new RegExp(
@@ -18170,7 +18178,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  a5 = q("$ZodCheckStartsWith", ($, X) => {
+  t5 = q("$ZodCheckStartsWith", ($, X) => {
     I$.init($, X);
     let J = new RegExp(`^${U4(X.prefix)}.*`);
     (X.pattern ?? (X.pattern = J),
@@ -18191,7 +18199,7 @@ var I$ = q("$ZodCheck", ($, X) => {
         });
       }));
   }),
-  s5 = q("$ZodCheckEndsWith", ($, X) => {
+  a5 = q("$ZodCheckEndsWith", ($, X) => {
     I$.init($, X);
     let J = new RegExp(`.*${U4(X.suffix)}$`);
     (X.pattern ?? (X.pattern = J),
@@ -18215,7 +18223,7 @@ var I$ = q("$ZodCheck", ($, X) => {
 function eK($, X, J) {
   if ($.issues.length) X.issues.push(...s$(J, $.issues));
 }
-var e5 = q("$ZodCheckProperty", ($, X) => {
+var s5 = q("$ZodCheckProperty", ($, X) => {
     (I$.init($, X),
       ($._zod.check = (J) => {
         let Q = X.schema._zod.run(
@@ -18227,7 +18235,7 @@ var e5 = q("$ZodCheckProperty", ($, X) => {
         return;
       }));
   }),
-  $W = q("$ZodCheckMimeType", ($, X) => {
+  e5 = q("$ZodCheckMimeType", ($, X) => {
     I$.init($, X);
     let J = new Set(X.mime);
     ($._zod.onattach.push((Q) => {
@@ -18243,7 +18251,7 @@ var e5 = q("$ZodCheckProperty", ($, X) => {
         });
       }));
   }),
-  XW = q("$ZodCheckOverwrite", ($, X) => {
+  $W = q("$ZodCheckOverwrite", ($, X) => {
     (I$.init($, X),
       ($._zod.check = (J) => {
         J.value = X.tx(J.value);
@@ -18280,13 +18288,13 @@ class eJ {
     );
   }
 }
-var JW = { major: 4, minor: 0, patch: 0 };
+var XW = { major: 4, minor: 0, patch: 0 };
 var i = q("$ZodType", ($, X) => {
     var J;
     ($ ?? ($ = {}),
       ($._zod.def = X),
       ($._zod.bag = $._zod.bag || {}),
-      ($._zod.version = JW));
+      ($._zod.version = XW));
     let Q = [...($._zod.def.checks ?? [])];
     if ($._zod.traits.has("$ZodCheck")) Q.unshift($);
     for (let Y of Q) for (let z of Y._zod.onattach) z($);
@@ -18349,7 +18357,7 @@ var i = q("$ZodType", ($, X) => {
   x4 = q("$ZodString", ($, X) => {
     (i.init($, X),
       ($._zod.pattern =
-        [...($?._zod.bag?.patterns ?? [])].pop() ?? S5($._zod.bag)),
+        [...($?._zod.bag?.patterns ?? [])].pop() ?? R5($._zod.bag)),
       ($._zod.parse = (J, Q) => {
         if (X.coerce)
           try {
@@ -18368,10 +18376,10 @@ var i = q("$ZodType", ($, X) => {
       }));
   }),
   H$ = q("$ZodStringFormat", ($, X) => {
-    (q0.init($, X), x4.init($, X));
+    (B0.init($, X), x4.init($, X));
   }),
   JY = q("$ZodGUID", ($, X) => {
-    (X.pattern ?? (X.pattern = q5), H$.init($, X));
+    (X.pattern ?? (X.pattern = B5), H$.init($, X));
   }),
   YY = q("$ZodUUID", ($, X) => {
     if (X.version) {
@@ -18384,7 +18392,7 @@ var i = q("$ZodType", ($, X) => {
     H$.init($, X);
   }),
   QY = q("$ZodEmail", ($, X) => {
-    (X.pattern ?? (X.pattern = D5), H$.init($, X));
+    (X.pattern ?? (X.pattern = q5), H$.init($, X));
   }),
   zY = q("$ZodURL", ($, X) => {
     (H$.init($, X),
@@ -18399,7 +18407,7 @@ var i = q("$ZodType", ($, X) => {
                 code: "invalid_format",
                 format: "url",
                 note: "Invalid hostname",
-                pattern: b5.source,
+                pattern: A5.source,
                 input: J.value,
                 inst: $,
                 continue: !X.abort,
@@ -18437,40 +18445,40 @@ var i = q("$ZodType", ($, X) => {
       }));
   }),
   WY = q("$ZodEmoji", ($, X) => {
-    (X.pattern ?? (X.pattern = L5()), H$.init($, X));
+    (X.pattern ?? (X.pattern = D5()), H$.init($, X));
   }),
   GY = q("$ZodNanoID", ($, X) => {
-    (X.pattern ?? (X.pattern = w5), H$.init($, X));
-  }),
-  UY = q("$ZodCUID", ($, X) => {
-    (X.pattern ?? (X.pattern = H5), H$.init($, X));
-  }),
-  HY = q("$ZodCUID2", ($, X) => {
-    (X.pattern ?? (X.pattern = K5), H$.init($, X));
-  }),
-  KY = q("$ZodULID", ($, X) => {
-    (X.pattern ?? (X.pattern = N5), H$.init($, X));
-  }),
-  NY = q("$ZodXID", ($, X) => {
-    (X.pattern ?? (X.pattern = V5), H$.init($, X));
-  }),
-  VY = q("$ZodKSUID", ($, X) => {
     (X.pattern ?? (X.pattern = O5), H$.init($, X));
   }),
-  QW = q("$ZodISODateTime", ($, X) => {
-    (X.pattern ?? (X.pattern = R5(X)), H$.init($, X));
+  UY = q("$ZodCUID", ($, X) => {
+    (X.pattern ?? (X.pattern = U5), H$.init($, X));
   }),
-  zW = q("$ZodISODate", ($, X) => {
-    (X.pattern ?? (X.pattern = Z5), H$.init($, X));
+  HY = q("$ZodCUID2", ($, X) => {
+    (X.pattern ?? (X.pattern = H5), H$.init($, X));
   }),
-  WW = q("$ZodISOTime", ($, X) => {
+  KY = q("$ZodULID", ($, X) => {
+    (X.pattern ?? (X.pattern = K5), H$.init($, X));
+  }),
+  NY = q("$ZodXID", ($, X) => {
+    (X.pattern ?? (X.pattern = N5), H$.init($, X));
+  }),
+  VY = q("$ZodKSUID", ($, X) => {
+    (X.pattern ?? (X.pattern = V5), H$.init($, X));
+  }),
+  YW = q("$ZodISODateTime", ($, X) => {
     (X.pattern ?? (X.pattern = E5(X)), H$.init($, X));
   }),
-  GW = q("$ZodISODuration", ($, X) => {
-    (X.pattern ?? (X.pattern = B5), H$.init($, X));
+  QW = q("$ZodISODate", ($, X) => {
+    (X.pattern ?? (X.pattern = P5), H$.init($, X));
+  }),
+  zW = q("$ZodISOTime", ($, X) => {
+    (X.pattern ?? (X.pattern = Z5(X)), H$.init($, X));
+  }),
+  WW = q("$ZodISODuration", ($, X) => {
+    (X.pattern ?? (X.pattern = w5), H$.init($, X));
   }),
   OY = q("$ZodIPv4", ($, X) => {
-    (X.pattern ?? (X.pattern = j5),
+    (X.pattern ?? (X.pattern = L5),
       H$.init($, X),
       $._zod.onattach.push((J) => {
         let Q = J._zod.bag;
@@ -18478,7 +18486,7 @@ var i = q("$ZodType", ($, X) => {
       }));
   }),
   wY = q("$ZodIPv6", ($, X) => {
-    (X.pattern ?? (X.pattern = F5),
+    (X.pattern ?? (X.pattern = j5),
       H$.init($, X),
       $._zod.onattach.push((J) => {
         let Q = J._zod.bag;
@@ -18499,10 +18507,10 @@ var i = q("$ZodType", ($, X) => {
       }));
   }),
   BY = q("$ZodCIDRv4", ($, X) => {
-    (X.pattern ?? (X.pattern = I5), H$.init($, X));
+    (X.pattern ?? (X.pattern = F5), H$.init($, X));
   }),
   qY = q("$ZodCIDRv6", ($, X) => {
-    (X.pattern ?? (X.pattern = M5),
+    (X.pattern ?? (X.pattern = I5),
       H$.init($, X),
       ($._zod.check = (J) => {
         let [Q, Y] = J.value.split("/");
@@ -18523,7 +18531,7 @@ var i = q("$ZodType", ($, X) => {
         }
       }));
   });
-function UW($) {
+function GW($) {
   if ($ === "") return !0;
   if ($.length % 4 !== 0) return !1;
   try {
@@ -18533,13 +18541,13 @@ function UW($) {
   }
 }
 var DY = q("$ZodBase64", ($, X) => {
-  (X.pattern ?? (X.pattern = A5),
+  (X.pattern ?? (X.pattern = M5),
     H$.init($, X),
     $._zod.onattach.push((J) => {
       J._zod.bag.contentEncoding = "base64";
     }),
     ($._zod.check = (J) => {
-      if (UW(J.value)) return;
+      if (GW(J.value)) return;
       J.issues.push({
         code: "invalid_format",
         format: "base64",
@@ -18553,7 +18561,7 @@ function ON($) {
   if (!tJ.test($)) return !1;
   let X = $.replace(/[-_]/g, (Q) => (Q === "-" ? "+" : "/")),
     J = X.padEnd(Math.ceil(X.length / 4) * 4, "=");
-  return UW(J);
+  return GW(J);
 }
 var LY = q("$ZodBase64URL", ($, X) => {
     (X.pattern ?? (X.pattern = tJ),
@@ -18573,7 +18581,7 @@ var LY = q("$ZodBase64URL", ($, X) => {
       }));
   }),
   jY = q("$ZodE164", ($, X) => {
-    (X.pattern ?? (X.pattern = P5), H$.init($, X));
+    (X.pattern ?? (X.pattern = b5), H$.init($, X));
   });
 function wN($, X = null) {
   try {
@@ -18616,9 +18624,9 @@ var FY = q("$ZodJWT", ($, X) => {
         });
       }));
   }),
-  q8 = q("$ZodNumber", ($, X) => {
+  B8 = q("$ZodNumber", ($, X) => {
     (i.init($, X),
-      ($._zod.pattern = $._zod.bag.pattern ?? k5),
+      ($._zod.pattern = $._zod.bag.pattern ?? C5),
       ($._zod.parse = (J, Q) => {
         if (X.coerce)
           try {
@@ -18648,11 +18656,11 @@ var FY = q("$ZodJWT", ($, X) => {
       }));
   }),
   MY = q("$ZodNumber", ($, X) => {
-    (h5.init($, X), q8.init($, X));
+    (f5.init($, X), B8.init($, X));
   }),
-  D0 = q("$ZodBoolean", ($, X) => {
+  q0 = q("$ZodBoolean", ($, X) => {
     (i.init($, X),
-      ($._zod.pattern = _5),
+      ($._zod.pattern = k5),
       ($._zod.parse = (J, Q) => {
         if (X.coerce)
           try {
@@ -18671,9 +18679,9 @@ var FY = q("$ZodJWT", ($, X) => {
         );
       }));
   }),
-  D8 = q("$ZodBigInt", ($, X) => {
+  q8 = q("$ZodBigInt", ($, X) => {
     (i.init($, X),
-      ($._zod.pattern = v5),
+      ($._zod.pattern = S5),
       ($._zod.parse = (J, Q) => {
         if (X.coerce)
           try {
@@ -18692,7 +18700,7 @@ var FY = q("$ZodJWT", ($, X) => {
       }));
   }),
   AY = q("$ZodBigInt", ($, X) => {
-    (u5.init($, X), D8.init($, X));
+    (h5.init($, X), q8.init($, X));
   }),
   bY = q("$ZodSymbol", ($, X) => {
     (i.init($, X),
@@ -18712,7 +18720,7 @@ var FY = q("$ZodJWT", ($, X) => {
   }),
   PY = q("$ZodUndefined", ($, X) => {
     (i.init($, X),
-      ($._zod.pattern = T5),
+      ($._zod.pattern = x5),
       ($._zod.values = new Set([void 0])),
       ($._zod.optin = "optional"),
       ($._zod.optout = "optional"),
@@ -18732,7 +18740,7 @@ var FY = q("$ZodJWT", ($, X) => {
   }),
   ZY = q("$ZodNull", ($, X) => {
     (i.init($, X),
-      ($._zod.pattern = x5),
+      ($._zod.pattern = _5),
       ($._zod.values = new Set([null])),
       ($._zod.parse = (J, Q) => {
         let Y = J.value;
@@ -18810,7 +18818,7 @@ function JN($, X, J) {
   if ($.issues.length) X.issues.push(...s$(J, $.issues));
   X.value[J] = $.value;
 }
-var L0 = q("$ZodArray", ($, X) => {
+var D0 = q("$ZodArray", ($, X) => {
   (i.init($, X),
     ($._zod.parse = (J, Q) => {
       let Y = J.value;
@@ -18850,14 +18858,14 @@ function YN($, X, J, Q) {
     if (J in Q) X.value[J] = void 0;
   } else X.value[J] = $.value;
 }
-var L8 = q("$ZodObject", ($, X) => {
+var D8 = q("$ZodObject", ($, X) => {
   i.init($, X);
-  let J = K8(() => {
+  let J = H8(() => {
     let V = Object.keys(X.shape);
     for (let N of V)
       if (!(X.shape[N] instanceof i))
         throw Error(`Invalid element at key "${N}": expected a Zod schema`);
-    let O = z5(X.shape);
+    let O = Q5(X.shape);
     return {
       shape: X.shape,
       keys: V,
@@ -18930,9 +18938,9 @@ var L8 = q("$ZodObject", ($, X) => {
       return (M, b) => j(V, M, b);
     },
     Y,
-    z = N0,
-    W = !G8.jitless,
-    U = W && Y5.value,
+    z = K0,
+    W = !W8.jitless,
+    U = W && J5.value,
     H = X.catchall,
     K;
   $._zod.parse = (V, O) => {
@@ -19000,7 +19008,7 @@ function QN($, X, J, Q) {
     X
   );
 }
-var j8 = q("$ZodUnion", ($, X) => {
+var L8 = q("$ZodUnion", ($, X) => {
     (i.init($, X),
       W$($._zod, "optin", () =>
         X.options.some((J) => J._zod.optin === "optional")
@@ -19020,7 +19028,7 @@ var j8 = q("$ZodUnion", ($, X) => {
       W$($._zod, "pattern", () => {
         if (X.options.every((J) => J._zod.pattern)) {
           let J = X.options.map((Q) => Q._zod.pattern);
-          return new RegExp(`^(${J.map((Q) => N8(Q.source)).join("|")})$`);
+          return new RegExp(`^(${J.map((Q) => K8(Q.source)).join("|")})$`);
         }
         return;
       }),
@@ -19042,7 +19050,7 @@ var j8 = q("$ZodUnion", ($, X) => {
       }));
   }),
   CY = q("$ZodDiscriminatedUnion", ($, X) => {
-    j8.init($, X);
+    L8.init($, X);
     let J = $._zod.parse;
     W$($._zod, "propValues", () => {
       let Y = {};
@@ -19059,7 +19067,7 @@ var j8 = q("$ZodUnion", ($, X) => {
       }
       return Y;
     });
-    let Q = K8(() => {
+    let Q = H8(() => {
       let Y = X.options,
         z = new Map();
       for (let W of Y) {
@@ -19078,7 +19086,7 @@ var j8 = q("$ZodUnion", ($, X) => {
     });
     $._zod.parse = (Y, z) => {
       let W = Y.value;
-      if (!N0(W))
+      if (!K0(W))
         return (
           Y.issues.push({
             code: "invalid_type",
@@ -19117,16 +19125,16 @@ var j8 = q("$ZodUnion", ($, X) => {
         return zN(J, z, W);
       }));
   });
-function YW($, X) {
+function JW($, X) {
   if ($ === X) return { valid: !0, data: $ };
   if ($ instanceof Date && X instanceof Date && +$ === +X)
     return { valid: !0, data: $ };
-  if (V0($) && V0(X)) {
+  if (N0($) && N0(X)) {
     let J = Object.keys(X),
       Q = Object.keys($).filter((z) => J.indexOf(z) !== -1),
       Y = { ...$, ...X };
     for (let z of Q) {
-      let W = YW($[z], X[z]);
+      let W = JW($[z], X[z]);
       if (!W.valid)
         return { valid: !1, mergeErrorPath: [z, ...W.mergeErrorPath] };
       Y[z] = W.data;
@@ -19139,7 +19147,7 @@ function YW($, X) {
     for (let Q = 0; Q < $.length; Q++) {
       let Y = $[Q],
         z = X[Q],
-        W = YW(Y, z);
+        W = JW(Y, z);
       if (!W.valid)
         return { valid: !1, mergeErrorPath: [Q, ...W.mergeErrorPath] };
       J.push(W.data);
@@ -19152,7 +19160,7 @@ function zN($, X, J) {
   if (X.issues.length) $.issues.push(...X.issues);
   if (J.issues.length) $.issues.push(...J.issues);
   if (D1($)) return $;
-  let Q = YW(X.value, J.value);
+  let Q = JW(X.value, J.value);
   if (!Q.valid)
     throw Error(
       `Unmergable intersection. Error path: ${JSON.stringify(Q.mergeErrorPath)}`,
@@ -19224,7 +19232,7 @@ var _Y = q("$ZodRecord", ($, X) => {
     (i.init($, X),
       ($._zod.parse = (J, Q) => {
         let Y = J.value;
-        if (!V0(Y))
+        if (!N0(Y))
           return (
             J.issues.push({
               expected: "record",
@@ -19338,7 +19346,7 @@ var _Y = q("$ZodRecord", ($, X) => {
   });
 function WN($, X, J, Q, Y, z, W) {
   if ($.issues.length)
-    if (V8.has(typeof Q)) J.issues.push(...s$(Q, $.issues));
+    if (N8.has(typeof Q)) J.issues.push(...s$(Q, $.issues));
     else
       J.issues.push({
         origin: "map",
@@ -19348,7 +19356,7 @@ function WN($, X, J, Q, Y, z, W) {
         issues: $.issues.map((G) => K6(G, W, E$())),
       });
   if (X.issues.length)
-    if (V8.has(typeof Q)) J.issues.push(...s$(Q, X.issues));
+    if (N8.has(typeof Q)) J.issues.push(...s$(Q, X.issues));
     else
       J.issues.push({
         origin: "map",
@@ -19391,10 +19399,10 @@ function GN($, X) {
 }
 var yY = q("$ZodEnum", ($, X) => {
     i.init($, X);
-    let J = H8(X.entries);
+    let J = U8(X.entries);
     (($._zod.values = new Set(J)),
       ($._zod.pattern = new RegExp(
-        `^(${J.filter((Q) => V8.has(typeof Q))
+        `^(${J.filter((Q) => N8.has(typeof Q))
           .map((Q) => (typeof Q === "string" ? U4(Q) : Q.toString()))
           .join("|")})$`,
       )),
@@ -19448,7 +19456,7 @@ var yY = q("$ZodEnum", ($, X) => {
         );
       }));
   }),
-  j0 = q("$ZodTransform", ($, X) => {
+  L0 = q("$ZodTransform", ($, X) => {
     (i.init($, X),
       ($._zod.parse = (J, Q) => {
         let Y = X.transform(J.value, J);
@@ -19471,7 +19479,7 @@ var yY = q("$ZodEnum", ($, X) => {
       }),
       W$($._zod, "pattern", () => {
         let J = X.innerType._zod.pattern;
-        return J ? new RegExp(`^(${N8(J.source)})?$`) : void 0;
+        return J ? new RegExp(`^(${K8(J.source)})?$`) : void 0;
       }),
       ($._zod.parse = (J, Q) => {
         if (X.innerType._zod.optin === "optional")
@@ -19486,7 +19494,7 @@ var yY = q("$ZodEnum", ($, X) => {
       W$($._zod, "optout", () => X.innerType._zod.optout),
       W$($._zod, "pattern", () => {
         let J = X.innerType._zod.pattern;
-        return J ? new RegExp(`^(${N8(J.source)}|null)$`) : void 0;
+        return J ? new RegExp(`^(${K8(J.source)}|null)$`) : void 0;
       }),
       W$($._zod, "values", () => {
         return X.innerType._zod.values
@@ -19599,7 +19607,7 @@ var iY = q("$ZodSuccess", ($, X) => {
         return J;
       }));
   }),
-  F0 = q("$ZodPipe", ($, X) => {
+  j0 = q("$ZodPipe", ($, X) => {
     (i.init($, X),
       W$($._zod, "values", () => X.in._zod.values),
       W$($._zod, "optin", () => X.in._zod.optin),
@@ -19646,7 +19654,7 @@ var rY = q("$ZodTemplateLiteral", ($, X) => {
         let z = Y.startsWith("^") ? 1 : 0,
           W = Y.endsWith("$") ? Y.length - 1 : Y.length;
         J.push(Y.slice(z, W));
-      } else if (Q === null || Q5.has(typeof Q)) J.push(U4(`${Q}`));
+      } else if (Q === null || Y5.has(typeof Q)) J.push(U4(`${Q}`));
       else throw Error(`Invalid template literal part: ${Q}`);
     (($._zod.pattern = new RegExp(`^${J.join("")}$`)),
       ($._zod.parse = (Q, Y) => {
@@ -19717,50 +19725,50 @@ function VN($, X, J, Q) {
       continue: !Q._zod.def.abort,
     };
     if (Q._zod.def.params) Y.params = Q._zod.def.params;
-    X.issues.push(U5(Y));
+    X.issues.push(G5(Y));
   }
 }
-var I0 = {};
-e4(I0, {
-  zhTW: () => nW,
-  zhCN: () => pW,
-  vi: () => iW,
-  ur: () => cW,
-  ua: () => lW,
-  tr: () => mW,
-  th: () => uW,
-  ta: () => hW,
-  sv: () => fW,
-  sl: () => gW,
-  ru: () => yW,
-  pt: () => TW,
-  ps: () => _W,
-  pl: () => xW,
-  ota: () => kW,
-  no: () => CW,
-  nl: () => vW,
-  ms: () => SW,
-  mk: () => RW,
-  ko: () => EW,
-  kh: () => ZW,
-  ja: () => PW,
-  it: () => bW,
-  id: () => AW,
-  hu: () => MW,
-  he: () => IW,
-  frCA: () => FW,
-  fr: () => jW,
-  fi: () => LW,
-  fa: () => DW,
-  es: () => qW,
-  eo: () => BW,
-  en: () => F8,
-  de: () => wW,
-  cs: () => OW,
-  ca: () => VW,
-  be: () => NW,
-  az: () => KW,
-  ar: () => HW,
+var F0 = {};
+e4(F0, {
+  zhTW: () => pW,
+  zhCN: () => iW,
+  vi: () => cW,
+  ur: () => lW,
+  ua: () => mW,
+  tr: () => uW,
+  th: () => hW,
+  ta: () => fW,
+  sv: () => gW,
+  sl: () => yW,
+  ru: () => TW,
+  pt: () => xW,
+  ps: () => kW,
+  pl: () => _W,
+  ota: () => CW,
+  no: () => vW,
+  nl: () => SW,
+  ms: () => RW,
+  mk: () => EW,
+  ko: () => ZW,
+  kh: () => PW,
+  ja: () => bW,
+  it: () => AW,
+  id: () => MW,
+  hu: () => IW,
+  he: () => FW,
+  frCA: () => jW,
+  fr: () => LW,
+  fi: () => DW,
+  fa: () => qW,
+  es: () => BW,
+  eo: () => wW,
+  en: () => j8,
+  de: () => OW,
+  cs: () => VW,
+  ca: () => NW,
+  be: () => KW,
+  az: () => HW,
+  ar: () => UW,
 });
 var eM = () => {
   let $ = {
@@ -19865,7 +19873,7 @@ var eM = () => {
     }
   };
 };
-function HW() {
+function UW() {
   return { localeError: eM() };
 }
 var $A = () => {
@@ -19971,7 +19979,7 @@ var $A = () => {
     }
   };
 };
-function KW() {
+function HW() {
   return { localeError: $A() };
 }
 function qN($, X, J, Q) {
@@ -20101,7 +20109,7 @@ var XA = () => {
     }
   };
 };
-function NW() {
+function KW() {
   return { localeError: XA() };
 }
 var JA = () => {
@@ -20207,7 +20215,7 @@ var JA = () => {
     }
   };
 };
-function VW() {
+function NW() {
   return { localeError: JA() };
 }
 var YA = () => {
@@ -20325,7 +20333,7 @@ var YA = () => {
     }
   };
 };
-function OW() {
+function VW() {
   return { localeError: YA() };
 }
 var QA = () => {
@@ -20431,7 +20439,7 @@ var QA = () => {
     }
   };
 };
-function wW() {
+function OW() {
   return { localeError: QA() };
 }
 var zA = ($) => {
@@ -20537,7 +20545,7 @@ var zA = ($) => {
       }
     };
   };
-function F8() {
+function j8() {
   return { localeError: WA() };
 }
 var GA = ($) => {
@@ -20643,7 +20651,7 @@ var GA = ($) => {
       }
     };
   };
-function BW() {
+function wW() {
   return { localeError: UA() };
 }
 var HA = () => {
@@ -20749,7 +20757,7 @@ var HA = () => {
     }
   };
 };
-function qW() {
+function BW() {
   return { localeError: HA() };
 }
 var KA = () => {
@@ -20855,7 +20863,7 @@ var KA = () => {
     }
   };
 };
-function DW() {
+function qW() {
   return { localeError: KA() };
 }
 var NA = () => {
@@ -20965,7 +20973,7 @@ var NA = () => {
     }
   };
 };
-function LW() {
+function DW() {
   return { localeError: NA() };
 }
 var VA = () => {
@@ -21071,7 +21079,7 @@ var VA = () => {
     }
   };
 };
-function jW() {
+function LW() {
   return { localeError: VA() };
 }
 var OA = () => {
@@ -21177,7 +21185,7 @@ var OA = () => {
     }
   };
 };
-function FW() {
+function jW() {
   return { localeError: OA() };
 }
 var wA = () => {
@@ -21282,7 +21290,7 @@ var wA = () => {
     }
   };
 };
-function IW() {
+function FW() {
   return { localeError: wA() };
 }
 var BA = () => {
@@ -21388,7 +21396,7 @@ var BA = () => {
     }
   };
 };
-function MW() {
+function IW() {
   return { localeError: BA() };
 }
 var qA = () => {
@@ -21494,7 +21502,7 @@ var qA = () => {
     }
   };
 };
-function AW() {
+function MW() {
   return { localeError: qA() };
 }
 var DA = () => {
@@ -21600,7 +21608,7 @@ var DA = () => {
     }
   };
 };
-function bW() {
+function AW() {
   return { localeError: DA() };
 }
 var LA = () => {
@@ -21706,7 +21714,7 @@ var LA = () => {
     }
   };
 };
-function PW() {
+function bW() {
   return { localeError: LA() };
 }
 var jA = () => {
@@ -21812,7 +21820,7 @@ var jA = () => {
     }
   };
 };
-function ZW() {
+function PW() {
   return { localeError: jA() };
 }
 var FA = () => {
@@ -21922,7 +21930,7 @@ var FA = () => {
     }
   };
 };
-function EW() {
+function ZW() {
   return { localeError: FA() };
 }
 var IA = () => {
@@ -22028,7 +22036,7 @@ var IA = () => {
     }
   };
 };
-function RW() {
+function EW() {
   return { localeError: IA() };
 }
 var MA = () => {
@@ -22134,7 +22142,7 @@ var MA = () => {
     }
   };
 };
-function SW() {
+function RW() {
   return { localeError: MA() };
 }
 var AA = () => {
@@ -22240,7 +22248,7 @@ var AA = () => {
     }
   };
 };
-function vW() {
+function SW() {
   return { localeError: AA() };
 }
 var bA = () => {
@@ -22346,7 +22354,7 @@ var bA = () => {
     }
   };
 };
-function CW() {
+function vW() {
   return { localeError: bA() };
 }
 var PA = () => {
@@ -22452,7 +22460,7 @@ var PA = () => {
     }
   };
 };
-function kW() {
+function CW() {
   return { localeError: PA() };
 }
 var ZA = () => {
@@ -22558,7 +22566,7 @@ var ZA = () => {
     }
   };
 };
-function _W() {
+function kW() {
   return { localeError: ZA() };
 }
 var EA = () => {
@@ -22664,7 +22672,7 @@ var EA = () => {
     }
   };
 };
-function xW() {
+function _W() {
   return { localeError: EA() };
 }
 var RA = () => {
@@ -22770,7 +22778,7 @@ var RA = () => {
     }
   };
 };
-function TW() {
+function xW() {
   return { localeError: RA() };
 }
 function DN($, X, J, Q) {
@@ -22900,7 +22908,7 @@ var SA = () => {
     }
   };
 };
-function yW() {
+function TW() {
   return { localeError: SA() };
 }
 var vA = () => {
@@ -23006,7 +23014,7 @@ var vA = () => {
     }
   };
 };
-function gW() {
+function yW() {
   return { localeError: vA() };
 }
 var CA = () => {
@@ -23112,7 +23120,7 @@ var CA = () => {
     }
   };
 };
-function fW() {
+function gW() {
   return { localeError: CA() };
 }
 var kA = () => {
@@ -23218,7 +23226,7 @@ var kA = () => {
     }
   };
 };
-function hW() {
+function fW() {
   return { localeError: kA() };
 }
 var _A = () => {
@@ -23324,7 +23332,7 @@ var _A = () => {
     }
   };
 };
-function uW() {
+function hW() {
   return { localeError: _A() };
 }
 var xA = ($) => {
@@ -23430,7 +23438,7 @@ var xA = ($) => {
       }
     };
   };
-function mW() {
+function uW() {
   return { localeError: TA() };
 }
 var yA = () => {
@@ -23536,7 +23544,7 @@ var yA = () => {
     }
   };
 };
-function lW() {
+function mW() {
   return { localeError: yA() };
 }
 var gA = () => {
@@ -23642,7 +23650,7 @@ var gA = () => {
     }
   };
 };
-function cW() {
+function lW() {
   return { localeError: gA() };
 }
 var fA = () => {
@@ -23748,7 +23756,7 @@ var fA = () => {
     }
   };
 };
-function iW() {
+function cW() {
   return { localeError: fA() };
 }
 var hA = () => {
@@ -23853,7 +23861,7 @@ var hA = () => {
     }
   };
 };
-function pW() {
+function iW() {
   return { localeError: hA() };
 }
 var uA = () => {
@@ -23959,12 +23967,12 @@ var uA = () => {
     }
   };
 };
-function nW() {
+function pW() {
   return { localeError: uA() };
 }
 var sY = Symbol("ZodOutput"),
   eY = Symbol("ZodInput");
-class I8 {
+class F8 {
   constructor() {
     ((this._map = new WeakMap()), (this._idmap = new Map()));
   }
@@ -23992,17 +24000,17 @@ class I8 {
     return this._map.has($);
   }
 }
-function M8() {
-  return new I8();
+function I8() {
+  return new F8();
 }
-var E6 = M8();
+var E6 = I8();
 function $Q($, X) {
   return new $({ type: "string", ...Z(X) });
 }
-function dW($, X) {
+function nW($, X) {
   return new $({ type: "string", coerce: !0, ...Z(X) });
 }
-function A8($, X) {
+function M8($, X) {
   return new $({
     type: "string",
     format: "email",
@@ -24011,10 +24019,19 @@ function A8($, X) {
     ...Z(X),
   });
 }
-function M0($, X) {
+function I0($, X) {
   return new $({
     type: "string",
     format: "guid",
+    check: "string_format",
+    abort: !1,
+    ...Z(X),
+  });
+}
+function A8($, X) {
+  return new $({
+    type: "string",
+    format: "uuid",
     check: "string_format",
     abort: !1,
     ...Z(X),
@@ -24026,6 +24043,7 @@ function b8($, X) {
     format: "uuid",
     check: "string_format",
     abort: !1,
+    version: "v4",
     ...Z(X),
   });
 }
@@ -24035,7 +24053,7 @@ function P8($, X) {
     format: "uuid",
     check: "string_format",
     abort: !1,
-    version: "v4",
+    version: "v6",
     ...Z(X),
   });
 }
@@ -24045,21 +24063,11 @@ function Z8($, X) {
     format: "uuid",
     check: "string_format",
     abort: !1,
-    version: "v6",
-    ...Z(X),
-  });
-}
-function E8($, X) {
-  return new $({
-    type: "string",
-    format: "uuid",
-    check: "string_format",
-    abort: !1,
     version: "v7",
     ...Z(X),
   });
 }
-function R8($, X) {
+function E8($, X) {
   return new $({
     type: "string",
     format: "url",
@@ -24068,7 +24076,7 @@ function R8($, X) {
     ...Z(X),
   });
 }
-function S8($, X) {
+function R8($, X) {
   return new $({
     type: "string",
     format: "emoji",
@@ -24077,7 +24085,7 @@ function S8($, X) {
     ...Z(X),
   });
 }
-function v8($, X) {
+function S8($, X) {
   return new $({
     type: "string",
     format: "nanoid",
@@ -24086,7 +24094,7 @@ function v8($, X) {
     ...Z(X),
   });
 }
-function C8($, X) {
+function v8($, X) {
   return new $({
     type: "string",
     format: "cuid",
@@ -24095,7 +24103,7 @@ function C8($, X) {
     ...Z(X),
   });
 }
-function k8($, X) {
+function C8($, X) {
   return new $({
     type: "string",
     format: "cuid2",
@@ -24104,7 +24112,7 @@ function k8($, X) {
     ...Z(X),
   });
 }
-function _8($, X) {
+function k8($, X) {
   return new $({
     type: "string",
     format: "ulid",
@@ -24113,7 +24121,7 @@ function _8($, X) {
     ...Z(X),
   });
 }
-function x8($, X) {
+function _8($, X) {
   return new $({
     type: "string",
     format: "xid",
@@ -24122,7 +24130,7 @@ function x8($, X) {
     ...Z(X),
   });
 }
-function T8($, X) {
+function x8($, X) {
   return new $({
     type: "string",
     format: "ksuid",
@@ -24131,7 +24139,7 @@ function T8($, X) {
     ...Z(X),
   });
 }
-function y8($, X) {
+function T8($, X) {
   return new $({
     type: "string",
     format: "ipv4",
@@ -24140,7 +24148,7 @@ function y8($, X) {
     ...Z(X),
   });
 }
-function g8($, X) {
+function y8($, X) {
   return new $({
     type: "string",
     format: "ipv6",
@@ -24149,7 +24157,7 @@ function g8($, X) {
     ...Z(X),
   });
 }
-function f8($, X) {
+function g8($, X) {
   return new $({
     type: "string",
     format: "cidrv4",
@@ -24158,7 +24166,7 @@ function f8($, X) {
     ...Z(X),
   });
 }
-function h8($, X) {
+function f8($, X) {
   return new $({
     type: "string",
     format: "cidrv6",
@@ -24167,7 +24175,7 @@ function h8($, X) {
     ...Z(X),
   });
 }
-function u8($, X) {
+function h8($, X) {
   return new $({
     type: "string",
     format: "base64",
@@ -24176,7 +24184,7 @@ function u8($, X) {
     ...Z(X),
   });
 }
-function m8($, X) {
+function u8($, X) {
   return new $({
     type: "string",
     format: "base64url",
@@ -24185,7 +24193,7 @@ function m8($, X) {
     ...Z(X),
   });
 }
-function l8($, X) {
+function m8($, X) {
   return new $({
     type: "string",
     format: "e164",
@@ -24194,7 +24202,7 @@ function l8($, X) {
     ...Z(X),
   });
 }
-function c8($, X) {
+function l8($, X) {
   return new $({
     type: "string",
     format: "jwt",
@@ -24204,7 +24212,7 @@ function c8($, X) {
   });
 }
 var XQ = { Any: null, Minute: -1, Second: 0, Millisecond: 3, Microsecond: 6 };
-function rW($, X) {
+function dW($, X) {
   return new $({
     type: "string",
     format: "datetime",
@@ -24215,7 +24223,7 @@ function rW($, X) {
     ...Z(X),
   });
 }
-function oW($, X) {
+function rW($, X) {
   return new $({
     type: "string",
     format: "date",
@@ -24223,7 +24231,7 @@ function oW($, X) {
     ...Z(X),
   });
 }
-function tW($, X) {
+function oW($, X) {
   return new $({
     type: "string",
     format: "time",
@@ -24232,7 +24240,7 @@ function tW($, X) {
     ...Z(X),
   });
 }
-function aW($, X) {
+function tW($, X) {
   return new $({
     type: "string",
     format: "duration",
@@ -24243,7 +24251,7 @@ function aW($, X) {
 function JQ($, X) {
   return new $({ type: "number", checks: [], ...Z(X) });
 }
-function sW($, X) {
+function aW($, X) {
   return new $({ type: "number", coerce: !0, checks: [], ...Z(X) });
 }
 function YQ($, X) {
@@ -24294,13 +24302,13 @@ function GQ($, X) {
 function UQ($, X) {
   return new $({ type: "boolean", ...Z(X) });
 }
-function eW($, X) {
+function sW($, X) {
   return new $({ type: "boolean", coerce: !0, ...Z(X) });
 }
 function HQ($, X) {
   return new $({ type: "bigint", ...Z(X) });
 }
-function $G($, X) {
+function eW($, X) {
   return new $({ type: "bigint", coerce: !0, ...Z(X) });
 }
 function KQ($, X) {
@@ -24345,7 +24353,7 @@ function DQ($, X) {
 function LQ($, X) {
   return new $({ type: "date", ...Z(X) });
 }
-function XG($, X) {
+function $G($, X) {
   return new $({ type: "date", coerce: !0, ...Z(X) });
 }
 function jQ($, X) {
@@ -24363,99 +24371,99 @@ function K4($, X) {
 function e$($, X) {
   return new sJ({ check: "greater_than", ...Z(X), value: $, inclusive: !0 });
 }
-function JG($) {
+function XG($) {
   return K4(0, $);
 }
-function YG($) {
+function JG($) {
   return H4(0, $);
 }
-function QG($) {
+function YG($) {
   return L6(0, $);
 }
-function zG($) {
+function QG($) {
   return e$(0, $);
 }
 function A1($, X) {
-  return new f5({ check: "multiple_of", ...Z(X), value: $ });
+  return new g5({ check: "multiple_of", ...Z(X), value: $ });
 }
-function A0($, X) {
-  return new m5({ check: "max_size", ...Z(X), maximum: $ });
+function M0($, X) {
+  return new u5({ check: "max_size", ...Z(X), maximum: $ });
 }
 function b1($, X) {
-  return new l5({ check: "min_size", ...Z(X), minimum: $ });
+  return new m5({ check: "min_size", ...Z(X), minimum: $ });
 }
-function i8($, X) {
-  return new c5({ check: "size_equals", ...Z(X), size: $ });
+function c8($, X) {
+  return new l5({ check: "size_equals", ...Z(X), size: $ });
 }
-function b0($, X) {
-  return new i5({ check: "max_length", ...Z(X), maximum: $ });
+function A0($, X) {
+  return new c5({ check: "max_length", ...Z(X), maximum: $ });
 }
 function y4($, X) {
-  return new p5({ check: "min_length", ...Z(X), minimum: $ });
+  return new i5({ check: "min_length", ...Z(X), minimum: $ });
 }
-function P0($, X) {
-  return new n5({ check: "length_equals", ...Z(X), length: $ });
+function b0($, X) {
+  return new p5({ check: "length_equals", ...Z(X), length: $ });
 }
-function p8($, X) {
-  return new d5({
+function i8($, X) {
+  return new n5({
     check: "string_format",
     format: "regex",
     ...Z(X),
     pattern: $,
   });
 }
+function p8($) {
+  return new d5({ check: "string_format", format: "lowercase", ...Z($) });
+}
 function n8($) {
-  return new r5({ check: "string_format", format: "lowercase", ...Z($) });
+  return new r5({ check: "string_format", format: "uppercase", ...Z($) });
 }
-function d8($) {
-  return new o5({ check: "string_format", format: "uppercase", ...Z($) });
-}
-function r8($, X) {
-  return new t5({
+function d8($, X) {
+  return new o5({
     check: "string_format",
     format: "includes",
     ...Z(X),
     includes: $,
   });
 }
-function o8($, X) {
-  return new a5({
+function r8($, X) {
+  return new t5({
     check: "string_format",
     format: "starts_with",
     ...Z(X),
     prefix: $,
   });
 }
-function t8($, X) {
-  return new s5({
+function o8($, X) {
+  return new a5({
     check: "string_format",
     format: "ends_with",
     ...Z(X),
     suffix: $,
   });
 }
-function WG($, X, J) {
-  return new e5({ check: "property", property: $, schema: X, ...Z(J) });
+function zG($, X, J) {
+  return new s5({ check: "property", property: $, schema: X, ...Z(J) });
 }
-function a8($, X) {
-  return new $W({ check: "mime_type", mime: $, ...Z(X) });
+function t8($, X) {
+  return new e5({ check: "mime_type", mime: $, ...Z(X) });
 }
 function N4($) {
-  return new XW({ check: "overwrite", tx: $ });
+  return new $W({ check: "overwrite", tx: $ });
 }
-function s8($) {
+function a8($) {
   return N4((X) => X.normalize($));
 }
-function e8() {
+function s8() {
   return N4(($) => $.trim());
 }
-function $9() {
+function e8() {
   return N4(($) => $.toLowerCase());
 }
-function X9() {
+function $9() {
   return N4(($) => $.toUpperCase());
 }
-function J9($, X, J) {
+function X9($, X, J) {
   return new $({ type: "array", element: X, ...Z(J) });
 }
 function mA($, X, J) {
@@ -24467,7 +24475,7 @@ function lA($, X, J, Q) {
 function cA($, X, J) {
   return new $({ type: "intersection", left: X, right: J });
 }
-function GG($, X, J, Q) {
+function WG($, X, J, Q) {
   let Y = J instanceof i;
   return new $({
     type: "tuple",
@@ -24567,10 +24575,10 @@ function AQ($, X) {
       (Y = Y.map((w) => (typeof w === "string" ? w.toLowerCase() : w))));
   let z = new Set(Q),
     W = new Set(Y),
-    G = $.Pipe ?? F0,
-    U = $.Boolean ?? D0,
+    G = $.Pipe ?? j0,
+    U = $.Boolean ?? q0,
     H = $.String ?? x4,
-    V = new ($.Transform ?? j0)({
+    V = new ($.Transform ?? L0)({
       type: "transform",
       transform: (w, B) => {
         let L = w;
@@ -24617,7 +24625,7 @@ function bQ($, X, J, Q = {}) {
   if (J instanceof RegExp) z.pattern = J;
   return new $(z);
 }
-class UG {
+class GG {
   constructor($) {
     ((this._def = $), (this.def = $));
   }
@@ -24672,11 +24680,11 @@ class UG {
   }
 }
 function PQ($) {
-  return new UG({
+  return new GG({
     type: "function",
     input: Array.isArray($?.input)
-      ? GG(T4, $?.input)
-      : ($?.input ?? J9(L0, M1(I1))),
+      ? WG(T4, $?.input)
+      : ($?.input ?? X9(D0, M1(I1))),
     output: $?.output ?? M1(I1),
   });
 }
@@ -24922,7 +24930,7 @@ class ZQ {
           }
           case "enum": {
             let N = O,
-              w = H8(Q.entries);
+              w = U8(Q.entries);
             if (w.every((B) => typeof B === "number")) N.type = "number";
             if (w.every((B) => typeof B === "string")) N.type = "string";
             N.enum = w;
@@ -25187,8 +25195,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
     }
   }
 }
-function Z0($, X) {
-  if ($ instanceof I8) {
+function P0($, X) {
+  if ($ instanceof F8) {
     let Q = new ZQ(X),
       Y = {};
     for (let G of $._idmap.entries()) {
@@ -25312,9 +25320,9 @@ var H2 = q("ZodMiniType", ($, X) => {
     }));
 });
 var K2 = q("ZodMiniObject", ($, X) => {
-  (L8.init($, X), H2.init($, X), E.defineLazy($, "shape", () => X.shape));
+  (D8.init($, X), H2.init($, X), E.defineLazy($, "shape", () => X.shape));
 });
-function HG($, X) {
+function UG($, X) {
   let J = {
     type: "object",
     get shape() {
@@ -25329,10 +25337,10 @@ function j6($) {
 }
 function P1($) {
   let X = Object.values($);
-  if (X.length === 0) return HG({});
+  if (X.length === 0) return UG({});
   let J = X.every(j6),
     Q = X.every((Y) => !j6(Y));
-  if (J) return HG($);
+  if (J) return UG($);
   if (Q) return dK($);
   throw Error("Mixed Zod versions detected in object shape.");
 }
@@ -25358,7 +25366,7 @@ function f4($) {
     }
   return X;
 }
-function E0($) {
+function Z0($) {
   if (!$) return;
   if (typeof $ === "object") {
     let X = $,
@@ -25436,7 +25444,7 @@ e4(h4, {
   uuidv4: () => L2,
   uuid: () => D2,
   url: () => I2,
-  uppercase: () => d8,
+  uppercase: () => n8,
   unknown: () => D$,
   union: () => U$,
   undefined: () => n2,
@@ -25444,12 +25452,12 @@ e4(h4, {
   uint64: () => i2,
   uint32: () => m2,
   tuple: () => s2,
-  trim: () => e8,
+  trim: () => s8,
   treeifyError: () => iJ,
-  transform: () => mG,
-  toUpperCase: () => X9,
-  toLowerCase: () => $9,
-  toJSONSchema: () => Z0,
+  transform: () => uG,
+  toUpperCase: () => $9,
+  toLowerCase: () => e8,
+  toJSONSchema: () => P0,
   templateLiteral: () => Gb,
   symbol: () => p2,
   superRefine: () => YV,
@@ -25458,96 +25466,96 @@ e4(h4, {
   stringFormat: () => g2,
   string: () => F,
   strictObject: () => a2,
-  startsWith: () => o8,
-  size: () => i8,
+  startsWith: () => r8,
+  size: () => c8,
   setErrorMap: () => Ob,
   set: () => Xb,
-  safeParseAsync: () => DG,
-  safeParse: () => qG,
-  registry: () => M8,
+  safeParseAsync: () => qG,
+  safeParse: () => BG,
+  registry: () => I8,
   regexes: () => _4,
-  regex: () => p8,
+  regex: () => i8,
   refine: () => JV,
   record: () => w$,
   readonly: () => tN,
-  property: () => WG,
+  property: () => zG,
   promise: () => Ub,
   prettifyError: () => pJ,
   preprocess: () => lQ,
   prefault: () => cN,
-  positive: () => JG,
+  positive: () => XG,
   pipe: () => yQ,
   partialRecord: () => e2,
-  parseAsync: () => BG,
-  parse: () => wG,
+  parseAsync: () => wG,
+  parse: () => OG,
   overwrite: () => N4,
   optional: () => L$,
   object: () => _,
   number: () => G$,
   nullish: () => Qb,
   nullable: () => TQ,
-  null: () => U9,
-  normalize: () => s8,
-  nonpositive: () => QG,
+  null: () => G9,
+  normalize: () => a8,
+  nonpositive: () => YG,
   nonoptional: () => iN,
-  nonnegative: () => zG,
+  nonnegative: () => QG,
   never: () => gQ,
-  negative: () => YG,
+  negative: () => JG,
   nativeEnum: () => Jb,
   nanoid: () => A2,
   nan: () => Wb,
   multipleOf: () => A1,
   minSize: () => b1,
   minLength: () => y4,
-  mime: () => a8,
-  maxSize: () => A0,
-  maxLength: () => b0,
+  mime: () => t8,
+  maxSize: () => M0,
+  maxLength: () => A0,
   map: () => $b,
   lte: () => L6,
   lt: () => H4,
-  lowercase: () => n8,
+  lowercase: () => p8,
   looseObject: () => l$,
-  locales: () => I0,
+  locales: () => F0,
   literal: () => g,
-  length: () => P0,
+  length: () => b0,
   lazy: () => eN,
   ksuid: () => R2,
   keyof: () => t2,
   jwt: () => y2,
   json: () => Nb,
-  iso: () => R0,
+  iso: () => E0,
   ipv6: () => v2,
   ipv4: () => S2,
-  intersection: () => H9,
+  intersection: () => U9,
   int64: () => c2,
   int32: () => u2,
-  int: () => LG,
+  int: () => DG,
   instanceof: () => Hb,
-  includes: () => r8,
+  includes: () => d8,
   guid: () => q2,
   gte: () => e$,
   gt: () => K4,
   globalRegistry: () => E6,
   getErrorMap: () => wb,
   function: () => PQ,
-  formatError: () => B0,
+  formatError: () => w0,
   float64: () => h2,
   float32: () => f2,
-  flattenError: () => w0,
+  flattenError: () => O0,
   file: () => Yb,
   enum: () => n$,
-  endsWith: () => t8,
+  endsWith: () => o8,
   emoji: () => M2,
   email: () => B2,
   e164: () => T2,
   discriminatedUnion: () => uQ,
   date: () => o2,
-  custom: () => pG,
+  custom: () => iG,
   cuid2: () => P2,
   cuid: () => b2,
   core: () => R6,
   config: () => E$,
-  coerce: () => nG,
+  coerce: () => pG,
   clone: () => m$,
   cidrv6: () => k2,
   cidrv4: () => C2,
@@ -25560,75 +25568,75 @@ e4(h4, {
   array: () => $$,
   any: () => d2,
   _default: () => mN,
-  _ZodString: () => jG,
-  ZodXID: () => EG,
+  _ZodString: () => LG,
+  ZodXID: () => ZG,
   ZodVoid: () => vN,
   ZodUnknown: () => RN,
-  ZodUnion: () => fG,
+  ZodUnion: () => gG,
   ZodUndefined: () => PN,
   ZodUUID: () => V4,
-  ZodURL: () => IG,
-  ZodULID: () => ZG,
+  ZodURL: () => FG,
+  ZodULID: () => PG,
   ZodType: () => s,
   ZodTuple: () => xN,
-  ZodTransform: () => uG,
+  ZodTransform: () => hG,
   ZodTemplateLiteral: () => aN,
   ZodSymbol: () => bN,
   ZodSuccess: () => pN,
   ZodStringFormat: () => O$,
-  ZodString: () => Q9,
+  ZodString: () => Y9,
   ZodSet: () => yN,
-  ZodRecord: () => hG,
-  ZodRealError: () => S0,
+  ZodRecord: () => fG,
+  ZodRealError: () => R0,
   ZodReadonly: () => oN,
   ZodPromise: () => $V,
   ZodPrefault: () => lN,
-  ZodPipe: () => iG,
-  ZodOptional: () => lG,
+  ZodPipe: () => cG,
+  ZodOptional: () => mG,
   ZodObject: () => hQ,
-  ZodNumberFormat: () => v0,
-  ZodNumber: () => z9,
+  ZodNumberFormat: () => S0,
+  ZodNumber: () => Q9,
   ZodNullable: () => hN,
   ZodNull: () => ZN,
-  ZodNonOptional: () => cG,
+  ZodNonOptional: () => lG,
   ZodNever: () => SN,
-  ZodNanoID: () => AG,
+  ZodNanoID: () => MG,
   ZodNaN: () => rN,
   ZodMap: () => TN,
   ZodLiteral: () => gN,
   ZodLazy: () => sN,
-  ZodKSUID: () => RG,
-  ZodJWT: () => yG,
+  ZodKSUID: () => EG,
+  ZodJWT: () => TG,
   ZodIssueCode: () => Vb,
   ZodIntersection: () => _N,
   ZodISOTime: () => kQ,
   ZodISODuration: () => _Q,
   ZodISODateTime: () => vQ,
   ZodISODate: () => CQ,
-  ZodIPv6: () => vG,
-  ZodIPv4: () => SG,
+  ZodIPv6: () => SG,
+  ZodIPv4: () => RG,
   ZodGUID: () => xQ,
   ZodFile: () => fN,
   ZodError: () => O2,
-  ZodEnum: () => Y9,
-  ZodEmoji: () => MG,
-  ZodEmail: () => FG,
-  ZodE164: () => TG,
+  ZodEnum: () => J9,
+  ZodEmoji: () => IG,
+  ZodEmail: () => jG,
+  ZodE164: () => xG,
   ZodDiscriminatedUnion: () => kN,
   ZodDefault: () => uN,
   ZodDate: () => fQ,
   ZodCustomStringFormat: () => AN,
   ZodCustom: () => mQ,
   ZodCatch: () => nN,
-  ZodCUID2: () => PG,
-  ZodCUID: () => bG,
-  ZodCIDRv6: () => kG,
-  ZodCIDRv4: () => CG,
-  ZodBoolean: () => W9,
-  ZodBigIntFormat: () => gG,
-  ZodBigInt: () => G9,
-  ZodBase64URL: () => xG,
-  ZodBase64: () => _G,
+  ZodCUID2: () => bG,
+  ZodCUID: () => AG,
+  ZodCIDRv6: () => CG,
+  ZodCIDRv4: () => vG,
+  ZodBoolean: () => z9,
+  ZodBigIntFormat: () => yG,
+  ZodBigInt: () => W9,
+  ZodBase64URL: () => _G,
+  ZodBase64: () => kG,
   ZodArray: () => CN,
   ZodAny: () => EN,
   TimePrecision: () => XQ,
@@ -25637,47 +25645,47 @@ e4(h4, {
   $input: () => eY,
   $brand: () => lJ,
 });
-var R0 = {};
-e4(R0, {
-  time: () => VG,
-  duration: () => OG,
-  datetime: () => KG,
-  date: () => NG,
+var E0 = {};
+e4(E0, {
+  time: () => NG,
+  duration: () => VG,
+  datetime: () => HG,
+  date: () => KG,
   ZodISOTime: () => kQ,
   ZodISODuration: () => _Q,
   ZodISODateTime: () => vQ,
   ZodISODate: () => CQ,
 });
 var vQ = q("ZodISODateTime", ($, X) => {
+  (YW.init($, X), O$.init($, X));
+});
+function HG($) {
+  return dW(vQ, $);
+}
+var CQ = q("ZodISODate", ($, X) => {
   (QW.init($, X), O$.init($, X));
 });
 function KG($) {
-  return rW(vQ, $);
+  return rW(CQ, $);
 }
-var CQ = q("ZodISODate", ($, X) => {
+var kQ = q("ZodISOTime", ($, X) => {
   (zW.init($, X), O$.init($, X));
 });
 function NG($) {
-  return oW(CQ, $);
+  return oW(kQ, $);
 }
-var kQ = q("ZodISOTime", ($, X) => {
+var _Q = q("ZodISODuration", ($, X) => {
   (WW.init($, X), O$.init($, X));
 });
 function VG($) {
-  return tW(kQ, $);
-}
-var _Q = q("ZodISODuration", ($, X) => {
-  (GW.init($, X), O$.init($, X));
-});
-function OG($) {
-  return aW(_Q, $);
+  return tW(_Q, $);
 }
 var MN = ($, X) => {
-    (B8.init($, X),
+    (w8.init($, X),
       ($.name = "ZodError"),
       Object.defineProperties($, {
-        format: { value: (J) => B0($, J) },
-        flatten: { value: (J) => w0($, J) },
+        format: { value: (J) => w0($, J) },
+        flatten: { value: (J) => O0($, J) },
         addIssue: { value: (J) => $.issues.push(J) },
         addIssues: { value: (J) => $.issues.push(...J) },
         isEmpty: {
@@ -25688,11 +25696,11 @@ var MN = ($, X) => {
       }));
   },
   O2 = q("ZodError", MN),
-  S0 = q("ZodError", MN, { Parent: Error });
-var wG = nJ(S0),
-  BG = dJ(S0),
-  qG = rJ(S0),
-  DG = oJ(S0);
+  R0 = q("ZodError", MN, { Parent: Error });
+var OG = nJ(R0),
+  wG = dJ(R0),
+  BG = rJ(R0),
+  qG = oJ(R0);
 var s = q("ZodType", ($, X) => {
     return (
       i.init($, X),
@@ -25716,10 +25724,10 @@ var s = q("ZodType", ($, X) => {
       ($.register = (J, Q) => {
         return (J.add($, Q), $);
       }),
-      ($.parse = (J, Q) => wG($, J, Q, { callee: $.parse })),
-      ($.safeParse = (J, Q) => qG($, J, Q)),
-      ($.parseAsync = async (J, Q) => BG($, J, Q, { callee: $.parseAsync })),
-      ($.safeParseAsync = async (J, Q) => DG($, J, Q)),
+      ($.parse = (J, Q) => OG($, J, Q, { callee: $.parse })),
+      ($.safeParse = (J, Q) => BG($, J, Q)),
+      ($.parseAsync = async (J, Q) => wG($, J, Q, { callee: $.parseAsync })),
+      ($.safeParseAsync = async (J, Q) => qG($, J, Q)),
       ($.spa = $.safeParseAsync),
       ($.refine = (J, Q) => $.check(JV(J, Q))),
       ($.superRefine = (J) => $.check(YV(J))),
@@ -25730,8 +25738,8 @@ var s = q("ZodType", ($, X) => {
       ($.nonoptional = (J) => iN($, J)),
       ($.array = () => $$($)),
       ($.or = (J) => U$([$, J])),
-      ($.and = (J) => H9($, J)),
-      ($.transform = (J) => yQ($, mG(J))),
+      ($.and = (J) => U9($, J)),
+      ($.transform = (J) => yQ($, uG(J))),
       ($.default = (J) => mN($, J)),
       ($.prefault = (J) => cN($, J)),
       ($.catch = (J) => dN($, J)),
@@ -25757,186 +25765,186 @@ var s = q("ZodType", ($, X) => {
       $
     );
   }),
-  jG = q("_ZodString", ($, X) => {
+  LG = q("_ZodString", ($, X) => {
     (x4.init($, X), s.init($, X));
     let J = $._zod.bag;
     (($.format = J.format ?? null),
       ($.minLength = J.minimum ?? null),
       ($.maxLength = J.maximum ?? null),
-      ($.regex = (...Q) => $.check(p8(...Q))),
-      ($.includes = (...Q) => $.check(r8(...Q))),
-      ($.startsWith = (...Q) => $.check(o8(...Q))),
-      ($.endsWith = (...Q) => $.check(t8(...Q))),
+      ($.regex = (...Q) => $.check(i8(...Q))),
+      ($.includes = (...Q) => $.check(d8(...Q))),
+      ($.startsWith = (...Q) => $.check(r8(...Q))),
+      ($.endsWith = (...Q) => $.check(o8(...Q))),
       ($.min = (...Q) => $.check(y4(...Q))),
-      ($.max = (...Q) => $.check(b0(...Q))),
-      ($.length = (...Q) => $.check(P0(...Q))),
+      ($.max = (...Q) => $.check(A0(...Q))),
+      ($.length = (...Q) => $.check(b0(...Q))),
       ($.nonempty = (...Q) => $.check(y4(1, ...Q))),
-      ($.lowercase = (Q) => $.check(n8(Q))),
-      ($.uppercase = (Q) => $.check(d8(Q))),
-      ($.trim = () => $.check(e8())),
-      ($.normalize = (...Q) => $.check(s8(...Q))),
-      ($.toLowerCase = () => $.check($9())),
-      ($.toUpperCase = () => $.check(X9())));
+      ($.lowercase = (Q) => $.check(p8(Q))),
+      ($.uppercase = (Q) => $.check(n8(Q))),
+      ($.trim = () => $.check(s8())),
+      ($.normalize = (...Q) => $.check(a8(...Q))),
+      ($.toLowerCase = () => $.check(e8())),
+      ($.toUpperCase = () => $.check($9())));
   }),
-  Q9 = q("ZodString", ($, X) => {
+  Y9 = q("ZodString", ($, X) => {
     (x4.init($, X),
-      jG.init($, X),
-      ($.email = (J) => $.check(A8(FG, J))),
-      ($.url = (J) => $.check(R8(IG, J))),
-      ($.jwt = (J) => $.check(c8(yG, J))),
-      ($.emoji = (J) => $.check(S8(MG, J))),
-      ($.guid = (J) => $.check(M0(xQ, J))),
-      ($.uuid = (J) => $.check(b8(V4, J))),
-      ($.uuidv4 = (J) => $.check(P8(V4, J))),
-      ($.uuidv6 = (J) => $.check(Z8(V4, J))),
-      ($.uuidv7 = (J) => $.check(E8(V4, J))),
-      ($.nanoid = (J) => $.check(v8(AG, J))),
-      ($.guid = (J) => $.check(M0(xQ, J))),
-      ($.cuid = (J) => $.check(C8(bG, J))),
-      ($.cuid2 = (J) => $.check(k8(PG, J))),
-      ($.ulid = (J) => $.check(_8(ZG, J))),
-      ($.base64 = (J) => $.check(u8(_G, J))),
-      ($.base64url = (J) => $.check(m8(xG, J))),
-      ($.xid = (J) => $.check(x8(EG, J))),
-      ($.ksuid = (J) => $.check(T8(RG, J))),
-      ($.ipv4 = (J) => $.check(y8(SG, J))),
-      ($.ipv6 = (J) => $.check(g8(vG, J))),
-      ($.cidrv4 = (J) => $.check(f8(CG, J))),
-      ($.cidrv6 = (J) => $.check(h8(kG, J))),
-      ($.e164 = (J) => $.check(l8(TG, J))),
-      ($.datetime = (J) => $.check(KG(J))),
-      ($.date = (J) => $.check(NG(J))),
-      ($.time = (J) => $.check(VG(J))),
-      ($.duration = (J) => $.check(OG(J))));
+      LG.init($, X),
+      ($.email = (J) => $.check(M8(jG, J))),
+      ($.url = (J) => $.check(E8(FG, J))),
+      ($.jwt = (J) => $.check(l8(TG, J))),
+      ($.emoji = (J) => $.check(R8(IG, J))),
+      ($.guid = (J) => $.check(I0(xQ, J))),
+      ($.uuid = (J) => $.check(A8(V4, J))),
+      ($.uuidv4 = (J) => $.check(b8(V4, J))),
+      ($.uuidv6 = (J) => $.check(P8(V4, J))),
+      ($.uuidv7 = (J) => $.check(Z8(V4, J))),
+      ($.nanoid = (J) => $.check(S8(MG, J))),
+      ($.guid = (J) => $.check(I0(xQ, J))),
+      ($.cuid = (J) => $.check(v8(AG, J))),
+      ($.cuid2 = (J) => $.check(C8(bG, J))),
+      ($.ulid = (J) => $.check(k8(PG, J))),
+      ($.base64 = (J) => $.check(h8(kG, J))),
+      ($.base64url = (J) => $.check(u8(_G, J))),
+      ($.xid = (J) => $.check(_8(ZG, J))),
+      ($.ksuid = (J) => $.check(x8(EG, J))),
+      ($.ipv4 = (J) => $.check(T8(RG, J))),
+      ($.ipv6 = (J) => $.check(y8(SG, J))),
+      ($.cidrv4 = (J) => $.check(g8(vG, J))),
+      ($.cidrv6 = (J) => $.check(f8(CG, J))),
+      ($.e164 = (J) => $.check(m8(xG, J))),
+      ($.datetime = (J) => $.check(HG(J))),
+      ($.date = (J) => $.check(KG(J))),
+      ($.time = (J) => $.check(NG(J))),
+      ($.duration = (J) => $.check(VG(J))));
   });
 function F($) {
-  return $Q(Q9, $);
+  return $Q(Y9, $);
 }
 var O$ = q("ZodStringFormat", ($, X) => {
-    (H$.init($, X), jG.init($, X));
+    (H$.init($, X), LG.init($, X));
   }),
-  FG = q("ZodEmail", ($, X) => {
+  jG = q("ZodEmail", ($, X) => {
     (QY.init($, X), O$.init($, X));
   });
 function B2($) {
-  return A8(FG, $);
+  return M8(jG, $);
 }
 var xQ = q("ZodGUID", ($, X) => {
   (JY.init($, X), O$.init($, X));
 });
 function q2($) {
-  return M0(xQ, $);
+  return I0(xQ, $);
 }
 var V4 = q("ZodUUID", ($, X) => {
   (YY.init($, X), O$.init($, X));
 });
 function D2($) {
-  return b8(V4, $);
+  return A8(V4, $);
 }
 function L2($) {
-  return P8(V4, $);
+  return b8(V4, $);
 }
 function j2($) {
-  return Z8(V4, $);
+  return P8(V4, $);
 }
 function F2($) {
-  return E8(V4, $);
+  return Z8(V4, $);
 }
-var IG = q("ZodURL", ($, X) => {
+var FG = q("ZodURL", ($, X) => {
   (zY.init($, X), O$.init($, X));
 });
 function I2($) {
-  return R8(IG, $);
+  return E8(FG, $);
 }
-var MG = q("ZodEmoji", ($, X) => {
+var IG = q("ZodEmoji", ($, X) => {
   (WY.init($, X), O$.init($, X));
 });
 function M2($) {
-  return S8(MG, $);
+  return R8(IG, $);
 }
-var AG = q("ZodNanoID", ($, X) => {
+var MG = q("ZodNanoID", ($, X) => {
   (GY.init($, X), O$.init($, X));
 });
 function A2($) {
-  return v8(AG, $);
+  return S8(MG, $);
 }
-var bG = q("ZodCUID", ($, X) => {
+var AG = q("ZodCUID", ($, X) => {
   (UY.init($, X), O$.init($, X));
 });
 function b2($) {
-  return C8(bG, $);
+  return v8(AG, $);
 }
-var PG = q("ZodCUID2", ($, X) => {
+var bG = q("ZodCUID2", ($, X) => {
   (HY.init($, X), O$.init($, X));
 });
 function P2($) {
-  return k8(PG, $);
+  return C8(bG, $);
 }
-var ZG = q("ZodULID", ($, X) => {
+var PG = q("ZodULID", ($, X) => {
   (KY.init($, X), O$.init($, X));
 });
 function Z2($) {
-  return _8(ZG, $);
+  return k8(PG, $);
 }
-var EG = q("ZodXID", ($, X) => {
+var ZG = q("ZodXID", ($, X) => {
   (NY.init($, X), O$.init($, X));
 });
 function E2($) {
-  return x8(EG, $);
+  return _8(ZG, $);
 }
-var RG = q("ZodKSUID", ($, X) => {
+var EG = q("ZodKSUID", ($, X) => {
   (VY.init($, X), O$.init($, X));
 });
 function R2($) {
-  return T8(RG, $);
+  return x8(EG, $);
 }
-var SG = q("ZodIPv4", ($, X) => {
+var RG = q("ZodIPv4", ($, X) => {
   (OY.init($, X), O$.init($, X));
 });
 function S2($) {
-  return y8(SG, $);
+  return T8(RG, $);
 }
-var vG = q("ZodIPv6", ($, X) => {
+var SG = q("ZodIPv6", ($, X) => {
   (wY.init($, X), O$.init($, X));
 });
 function v2($) {
-  return g8(vG, $);
+  return y8(SG, $);
 }
-var CG = q("ZodCIDRv4", ($, X) => {
+var vG = q("ZodCIDRv4", ($, X) => {
   (BY.init($, X), O$.init($, X));
 });
 function C2($) {
-  return f8(CG, $);
+  return g8(vG, $);
 }
-var kG = q("ZodCIDRv6", ($, X) => {
+var CG = q("ZodCIDRv6", ($, X) => {
   (qY.init($, X), O$.init($, X));
 });
 function k2($) {
-  return h8(kG, $);
+  return f8(CG, $);
 }
-var _G = q("ZodBase64", ($, X) => {
+var kG = q("ZodBase64", ($, X) => {
   (DY.init($, X), O$.init($, X));
 });
 function _2($) {
-  return u8(_G, $);
+  return h8(kG, $);
 }
-var xG = q("ZodBase64URL", ($, X) => {
+var _G = q("ZodBase64URL", ($, X) => {
   (LY.init($, X), O$.init($, X));
 });
 function x2($) {
-  return m8(xG, $);
+  return u8(_G, $);
 }
-var TG = q("ZodE164", ($, X) => {
+var xG = q("ZodE164", ($, X) => {
   (jY.init($, X), O$.init($, X));
 });
 function T2($) {
-  return l8(TG, $);
+  return m8(xG, $);
 }
-var yG = q("ZodJWT", ($, X) => {
+var TG = q("ZodJWT", ($, X) => {
   (FY.init($, X), O$.init($, X));
 });
 function y2($) {
-  return c8(yG, $);
+  return l8(TG, $);
 }
 var AN = q("ZodCustomStringFormat", ($, X) => {
   (IY.init($, X), O$.init($, X));
@@ -25944,8 +25952,8 @@ var AN = q("ZodCustomStringFormat", ($, X) => {
 function g2($, X, J = {}) {
   return bQ(AN, $, X, J);
 }
-var z9 = q("ZodNumber", ($, X) => {
-  (q8.init($, X),
+var Q9 = q("ZodNumber", ($, X) => {
+  (B8.init($, X),
     s.init($, X),
     ($.gt = (Q, Y) => $.check(K4(Q, Y))),
     ($.gte = (Q, Y) => $.check(e$(Q, Y))),
@@ -25953,8 +25961,8 @@ var z9 = q("ZodNumber", ($, X) => {
     ($.lt = (Q, Y) => $.check(H4(Q, Y))),
     ($.lte = (Q, Y) => $.check(L6(Q, Y))),
     ($.max = (Q, Y) => $.check(L6(Q, Y))),
-    ($.int = (Q) => $.check(LG(Q))),
-    ($.safe = (Q) => $.check(LG(Q))),
+    ($.int = (Q) => $.check(DG(Q))),
+    ($.safe = (Q) => $.check(DG(Q))),
     ($.positive = (Q) => $.check(K4(0, Q))),
     ($.nonnegative = (Q) => $.check(e$(0, Q))),
     ($.negative = (Q) => $.check(H4(0, Q))),
@@ -25980,34 +25988,34 @@ var z9 = q("ZodNumber", ($, X) => {
     ($.format = J.format ?? null));
 });
 function G$($) {
-  return JQ(z9, $);
+  return JQ(Q9, $);
 }
-var v0 = q("ZodNumberFormat", ($, X) => {
-  (MY.init($, X), z9.init($, X));
+var S0 = q("ZodNumberFormat", ($, X) => {
+  (MY.init($, X), Q9.init($, X));
 });
-function LG($) {
-  return YQ(v0, $);
+function DG($) {
+  return YQ(S0, $);
 }
 function f2($) {
-  return QQ(v0, $);
+  return QQ(S0, $);
 }
 function h2($) {
-  return zQ(v0, $);
+  return zQ(S0, $);
 }
 function u2($) {
-  return WQ(v0, $);
+  return WQ(S0, $);
 }
 function m2($) {
-  return GQ(v0, $);
+  return GQ(S0, $);
 }
-var W9 = q("ZodBoolean", ($, X) => {
-  (D0.init($, X), s.init($, X));
+var z9 = q("ZodBoolean", ($, X) => {
+  (q0.init($, X), s.init($, X));
 });
 function S$($) {
-  return UQ(W9, $);
+  return UQ(z9, $);
 }
-var G9 = q("ZodBigInt", ($, X) => {
-  (D8.init($, X),
+var W9 = q("ZodBigInt", ($, X) => {
+  (q8.init($, X),
     s.init($, X),
     ($.gte = (Q, Y) => $.check(e$(Q, Y))),
     ($.min = (Q, Y) => $.check(e$(Q, Y))),
@@ -26028,16 +26036,16 @@ var G9 = q("ZodBigInt", ($, X) => {
     ($.format = J.format ?? null));
 });
 function l2($) {
-  return HQ(G9, $);
+  return HQ(W9, $);
 }
-var gG = q("ZodBigIntFormat", ($, X) => {
-  (AY.init($, X), G9.init($, X));
+var yG = q("ZodBigIntFormat", ($, X) => {
+  (AY.init($, X), W9.init($, X));
 });
 function c2($) {
-  return KQ(gG, $);
+  return KQ(yG, $);
 }
 function i2($) {
-  return NQ(gG, $);
+  return NQ(yG, $);
 }
 var bN = q("ZodSymbol", ($, X) => {
   (bY.init($, X), s.init($, X));
@@ -26054,7 +26062,7 @@ function n2($) {
 var ZN = q("ZodNull", ($, X) => {
   (ZY.init($, X), s.init($, X));
 });
-function U9($) {
+function G9($) {
   return wQ(ZN, $);
 }
 var EN = q("ZodAny", ($, X) => {
@@ -26094,24 +26102,24 @@ function o2($) {
   return LQ(fQ, $);
 }
 var CN = q("ZodArray", ($, X) => {
-  (L0.init($, X),
+  (D0.init($, X),
     s.init($, X),
     ($.element = X.element),
     ($.min = (J, Q) => $.check(y4(J, Q))),
     ($.nonempty = (J) => $.check(y4(1, J))),
-    ($.max = (J, Q) => $.check(b0(J, Q))),
-    ($.length = (J, Q) => $.check(P0(J, Q))),
+    ($.max = (J, Q) => $.check(A0(J, Q))),
+    ($.length = (J, Q) => $.check(b0(J, Q))),
     ($.unwrap = () => $.element));
 });
 function $$($, X) {
-  return J9(CN, $, X);
+  return X9(CN, $, X);
 }
 function t2($) {
   let X = $._zod.def.shape;
   return g(Object.keys(X));
 }
 var hQ = q("ZodObject", ($, X) => {
-  (L8.init($, X),
+  (D8.init($, X),
     s.init($, X),
     E.defineLazy($, "shape", () => X.shape),
     ($.keyof = () => n$(Object.keys($._zod.def.shape))),
@@ -26126,8 +26134,8 @@ var hQ = q("ZodObject", ($, X) => {
     ($.merge = (J) => E.merge($, J)),
     ($.pick = (J) => E.pick($, J)),
     ($.omit = (J) => E.omit($, J)),
-    ($.partial = (...J) => E.partial(lG, $, J[0])),
-    ($.required = (...J) => E.required(cG, $, J[0])));
+    ($.partial = (...J) => E.partial(mG, $, J[0])),
+    ($.required = (...J) => E.required(lG, $, J[0])));
 });
 function _($, X) {
   let J = {
@@ -26159,14 +26167,14 @@ function l$($, X) {
     ...E.normalizeParams(X),
   });
 }
-var fG = q("ZodUnion", ($, X) => {
-  (j8.init($, X), s.init($, X), ($.options = X.options));
+var gG = q("ZodUnion", ($, X) => {
+  (L8.init($, X), s.init($, X), ($.options = X.options));
 });
 function U$($, X) {
-  return new fG({ type: "union", options: $, ...E.normalizeParams(X) });
+  return new gG({ type: "union", options: $, ...E.normalizeParams(X) });
 }
 var kN = q("ZodDiscriminatedUnion", ($, X) => {
-  (fG.init($, X), CY.init($, X));
+  (gG.init($, X), CY.init($, X));
 });
 function uQ($, X, J) {
   return new kN({
@@ -26179,7 +26187,7 @@ function uQ($, X, J) {
 var _N = q("ZodIntersection", ($, X) => {
   (kY.init($, X), s.init($, X));
 });
-function H9($, X) {
+function U9($, X) {
   return new _N({ type: "intersection", left: $, right: X });
 }
 var xN = q("ZodTuple", ($, X) => {
@@ -26197,14 +26205,14 @@ function s2($, X, J) {
     ...E.normalizeParams(Y),
   });
 }
-var hG = q("ZodRecord", ($, X) => {
+var fG = q("ZodRecord", ($, X) => {
   (_Y.init($, X),
     s.init($, X),
     ($.keyType = X.keyType),
     ($.valueType = X.valueType));
 });
 function w$($, X, J) {
-  return new hG({
+  return new fG({
     type: "record",
     keyType: $,
     valueType: X,
@@ -26212,7 +26220,7 @@ function w$($, X, J) {
   });
 }
 function e2($, X, J) {
-  return new hG({
+  return new fG({
     type: "record",
     keyType: U$([$, gQ()]),
     valueType: X,
@@ -26238,13 +26246,13 @@ var yN = q("ZodSet", ($, X) => {
     s.init($, X),
     ($.min = (...J) => $.check(b1(...J))),
     ($.nonempty = (J) => $.check(b1(1, J))),
-    ($.max = (...J) => $.check(A0(...J))),
-    ($.size = (...J) => $.check(i8(...J))));
+    ($.max = (...J) => $.check(M0(...J))),
+    ($.size = (...J) => $.check(c8(...J))));
 });
 function Xb($, X) {
   return new yN({ type: "set", valueType: $, ...E.normalizeParams(X) });
 }
-var Y9 = q("ZodEnum", ($, X) => {
+var J9 = q("ZodEnum", ($, X) => {
   (yY.init($, X),
     s.init($, X),
     ($.enum = X.entries),
@@ -26255,22 +26263,22 @@ var Y9 = q("ZodEnum", ($, X) => {
     for (let W of Q)
       if (J.has(W)) z[W] = X.entries[W];
       else throw Error(`Key ${W} not found in enum`);
-    return new Y9({ ...X, checks: [], ...E.normalizeParams(Y), entries: z });
+    return new J9({ ...X, checks: [], ...E.normalizeParams(Y), entries: z });
   }),
     ($.exclude = (Q, Y) => {
       let z = { ...X.entries };
       for (let W of Q)
         if (J.has(W)) delete z[W];
         else throw Error(`Key ${W} not found in enum`);
-      return new Y9({ ...X, checks: [], ...E.normalizeParams(Y), entries: z });
+      return new J9({ ...X, checks: [], ...E.normalizeParams(Y), entries: z });
     }));
 });
 function n$($, X) {
   let J = Array.isArray($) ? Object.fromEntries($.map((Q) => [Q, Q])) : $;
-  return new Y9({ type: "enum", entries: J, ...E.normalizeParams(X) });
+  return new J9({ type: "enum", entries: J, ...E.normalizeParams(X) });
 }
 function Jb($, X) {
-  return new Y9({ type: "enum", entries: $, ...E.normalizeParams(X) });
+  return new J9({ type: "enum", entries: $, ...E.normalizeParams(X) });
 }
 var gN = q("ZodLiteral", ($, X) => {
   (gY.init($, X),
@@ -26297,14 +26305,14 @@ var fN = q("ZodFile", ($, X) => {
   (fY.init($, X),
     s.init($, X),
     ($.min = (J, Q) => $.check(b1(J, Q))),
-    ($.max = (J, Q) => $.check(A0(J, Q))),
-    ($.mime = (J, Q) => $.check(a8(Array.isArray(J) ? J : [J], Q))));
+    ($.max = (J, Q) => $.check(M0(J, Q))),
+    ($.mime = (J, Q) => $.check(t8(Array.isArray(J) ? J : [J], Q))));
 });
 function Yb($) {
   return FQ(fN, $);
 }
-var uG = q("ZodTransform", ($, X) => {
-  (j0.init($, X),
+var hG = q("ZodTransform", ($, X) => {
+  (L0.init($, X),
     s.init($, X),
     ($._zod.parse = (J, Q) => {
       J.addIssue = (z) => {
@@ -26327,14 +26335,14 @@ var uG = q("ZodTransform", ($, X) => {
       return ((J.value = Y), J);
     }));
 });
-function mG($) {
-  return new uG({ type: "transform", transform: $ });
+function uG($) {
+  return new hG({ type: "transform", transform: $ });
 }
-var lG = q("ZodOptional", ($, X) => {
+var mG = q("ZodOptional", ($, X) => {
   (hY.init($, X), s.init($, X), ($.unwrap = () => $._zod.def.innerType));
 });
 function L$($) {
-  return new lG({ type: "optional", innerType: $ });
+  return new mG({ type: "optional", innerType: $ });
 }
 var hN = q("ZodNullable", ($, X) => {
   (uY.init($, X), s.init($, X), ($.unwrap = () => $._zod.def.innerType));
@@ -26372,11 +26380,11 @@ function cN($, X) {
     },
   });
 }
-var cG = q("ZodNonOptional", ($, X) => {
+var lG = q("ZodNonOptional", ($, X) => {
   (cY.init($, X), s.init($, X), ($.unwrap = () => $._zod.def.innerType));
 });
 function iN($, X) {
-  return new cG({ type: "nonoptional", innerType: $, ...E.normalizeParams(X) });
+  return new lG({ type: "nonoptional", innerType: $, ...E.normalizeParams(X) });
 }
 var pN = q("ZodSuccess", ($, X) => {
   (iY.init($, X), s.init($, X), ($.unwrap = () => $._zod.def.innerType));
@@ -26403,11 +26411,11 @@ var rN = q("ZodNaN", ($, X) => {
 function Wb($) {
   return jQ(rN, $);
 }
-var iG = q("ZodPipe", ($, X) => {
-  (F0.init($, X), s.init($, X), ($.in = X.in), ($.out = X.out));
+var cG = q("ZodPipe", ($, X) => {
+  (j0.init($, X), s.init($, X), ($.in = X.in), ($.out = X.out));
 });
 function yQ($, X) {
-  return new iG({ type: "pipe", in: $, out: X });
+  return new cG({ type: "pipe", in: $, out: X });
 }
 var oN = q("ZodReadonly", ($, X) => {
   (dY.init($, X), s.init($, X));
@@ -26444,7 +26452,7 @@ function XV($, X) {
   let J = new I$({ check: "custom", ...E.normalizeParams(X) });
   return ((J._zod.check = $), J);
 }
-function pG($, X) {
+function iG($, X) {
   return IQ(mQ, $ ?? (() => !0), X);
 }
 function JV($, X = {}) {
@@ -26482,15 +26490,15 @@ function Hb($, X = { error: `Input not instance of ${$.name}` }) {
   return ((J._zod.bag.Class = $), J);
 }
 var Kb = (...$) =>
-  AQ({ Pipe: iG, Boolean: W9, String: Q9, Transform: uG }, ...$);
+  AQ({ Pipe: cG, Boolean: z9, String: Y9, Transform: hG }, ...$);
 function Nb($) {
   let X = eN(() => {
-    return U$([F($), G$(), S$(), U9(), $$(X), w$(F(), X)]);
+    return U$([F($), G$(), S$(), G9(), $$(X), w$(F(), X)]);
   });
   return X;
 }
 function lQ($, X) {
-  return yQ(mG($), X);
+  return yQ(uG($), X);
 }
 var Vb = {
   invalid_type: "invalid_type",
@@ -26511,8 +26519,8 @@ function Ob($) {
 function wb() {
   return E$().customError;
 }
-var nG = {};
-e4(nG, {
+var pG = {};
+e4(pG, {
   string: () => Bb,
   number: () => qb,
   date: () => jb,
@@ -26520,48 +26528,48 @@ e4(nG, {
   bigint: () => Lb,
 });
 function Bb($) {
-  return dW(Q9, $);
+  return nW(Y9, $);
 }
 function qb($) {
-  return sW(z9, $);
+  return aW(Q9, $);
 }
 function Db($) {
-  return eW(W9, $);
+  return sW(z9, $);
 }
 function Lb($) {
-  return $G(G9, $);
+  return eW(W9, $);
 }
 function jb($) {
-  return XG(fQ, $);
+  return $G(fQ, $);
 }
-E$(F8());
-var dG = "2025-11-25";
-var QV = [dG, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"],
+E$(j8());
+var nG = "2025-11-25";
+var QV = [nG, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"],
   u4 = "io.modelcontextprotocol/related-task",
   iQ = "2.0",
-  y$ = pG(
+  y$ = iG(
     ($) => $ !== null && (typeof $ === "object" || typeof $ === "function"),
   ),
   zV = U$([F(), G$().int()]),
   WV = F(),
-  bp = l$({ ttl: U$([G$(), U9()]).optional(), pollInterval: G$().optional() }),
+  bp = l$({ ttl: U$([G$(), G9()]).optional(), pollInterval: G$().optional() }),
   Fb = _({ ttl: G$().optional() }),
   Ib = _({ taskId: F() }),
-  rG = l$({ progressToken: zV.optional(), [u4]: Ib.optional() }),
-  N6 = _({ _meta: rG.optional() }),
-  K9 = N6.extend({ task: Fb.optional() }),
-  GV = ($) => K9.safeParse($).success,
+  dG = l$({ progressToken: zV.optional(), [u4]: Ib.optional() }),
+  N6 = _({ _meta: dG.optional() }),
+  H9 = N6.extend({ task: Fb.optional() }),
+  GV = ($) => H9.safeParse($).success,
   g$ = _({ method: F(), params: N6.loose().optional() }),
-  F6 = _({ _meta: rG.optional() }),
+  F6 = _({ _meta: dG.optional() }),
   I6 = _({ method: F(), params: F6.loose().optional() }),
-  f$ = l$({ _meta: rG.optional() }),
+  f$ = l$({ _meta: dG.optional() }),
   pQ = U$([F(), G$().int()]),
   UV = _({ jsonrpc: g(iQ), id: pQ, ...g$.shape }).strict(),
-  oG = ($) => UV.safeParse($).success,
+  rG = ($) => UV.safeParse($).success,
   HV = _({ jsonrpc: g(iQ), ...I6.shape }).strict(),
   KV = ($) => HV.safeParse($).success,
-  tG = _({ jsonrpc: g(iQ), id: pQ, result: f$ }).strict(),
-  N9 = ($) => tG.safeParse($).success;
+  oG = _({ jsonrpc: g(iQ), id: pQ, result: f$ }).strict(),
+  K9 = ($) => oG.safeParse($).success;
 var m;
 (function ($) {
   (($[($.ConnectionClosed = -32000)] = "ConnectionClosed"),
@@ -26573,14 +26581,14 @@ var m;
     ($[($.InternalError = -32603)] = "InternalError"),
     ($[($.UrlElicitationRequired = -32042)] = "UrlElicitationRequired"));
 })(m || (m = {}));
-var aG = _({
+var tG = _({
   jsonrpc: g(iQ),
   id: pQ.optional(),
   error: _({ code: G$().int(), message: F(), data: D$().optional() }),
 }).strict();
-var NV = ($) => aG.safeParse($).success;
-var Pp = U$([UV, HV, tG, aG]),
-  Zp = U$([tG, aG]),
+var NV = ($) => tG.safeParse($).success;
+var Pp = U$([UV, HV, oG, tG]),
+  Zp = U$([oG, tG]),
   nQ = f$.strict(),
   Mb = F6.extend({ requestId: pQ.optional(), reason: F().optional() }),
   dQ = I6.extend({ method: g("notifications/cancelled"), params: Mb }),
@@ -26590,16 +26598,16 @@ var Pp = U$([UV, HV, tG, aG]),
     sizes: $$(F()).optional(),
     theme: n$(["light", "dark"]).optional(),
   }),
-  V9 = _({ icons: $$(Ab).optional() }),
-  C0 = _({ name: F(), title: F().optional() }),
-  VV = C0.extend({
-    ...C0.shape,
-    ...V9.shape,
+  N9 = _({ icons: $$(Ab).optional() }),
+  v0 = _({ name: F(), title: F().optional() }),
+  VV = v0.extend({
+    ...v0.shape,
+    ...N9.shape,
     version: F(),
     websiteUrl: F().optional(),
     description: F().optional(),
   }),
-  bb = H9(_({ applyDefaults: S$().optional() }), w$(F(), D$())),
+  bb = U9(_({ applyDefaults: S$().optional() }), w$(F(), D$())),
   Pb = lQ(
     ($) => {
       if ($ && typeof $ === "object" && !Array.isArray($)) {
@@ -26607,7 +26615,7 @@ var Pp = U$([UV, HV, tG, aG]),
       }
       return $;
     },
-    H9(
+    U9(
       _({ form: bb.optional(), url: y$.optional() }),
       w$(F(), D$()).optional(),
     ),
@@ -26633,7 +26641,7 @@ var Pp = U$([UV, HV, tG, aG]),
     tasks: Zb.optional(),
   }),
   Sb = N6.extend({ protocolVersion: F(), capabilities: Rb, clientInfo: VV }),
-  sG = g$.extend({ method: g("initialize"), params: Sb });
+  aG = g$.extend({ method: g("initialize"), params: Sb });
 var vb = _({
     experimental: w$(F(), y$).optional(),
     logging: y$.optional(),
@@ -26652,7 +26660,7 @@ var vb = _({
     serverInfo: VV,
     instructions: F().optional(),
   }),
-  eG = I6.extend({
+  sG = I6.extend({
     method: g("notifications/initialized"),
     params: F6.optional(),
   });
@@ -26661,41 +26669,41 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
   _b = _({ ...F6.shape, ...kb.shape, progressToken: zV }),
   oQ = I6.extend({ method: g("notifications/progress"), params: _b }),
   xb = N6.extend({ cursor: WV.optional() }),
-  O9 = g$.extend({ params: xb.optional() }),
-  w9 = f$.extend({ nextCursor: WV.optional() }),
+  V9 = g$.extend({ params: xb.optional() }),
+  O9 = f$.extend({ nextCursor: WV.optional() }),
   Tb = n$(["working", "input_required", "completed", "failed", "cancelled"]),
-  B9 = _({
+  w9 = _({
     taskId: F(),
     status: Tb,
-    ttl: U$([G$(), U9()]),
+    ttl: U$([G$(), G9()]),
     createdAt: F(),
     lastUpdatedAt: F(),
     pollInterval: L$(G$()),
     statusMessage: L$(F()),
   }),
-  k0 = f$.extend({ task: B9 }),
-  yb = F6.merge(B9),
-  q9 = I6.extend({ method: g("notifications/tasks/status"), params: yb }),
+  C0 = f$.extend({ task: w9 }),
+  yb = F6.merge(w9),
+  B9 = I6.extend({ method: g("notifications/tasks/status"), params: yb }),
   tQ = g$.extend({
     method: g("tasks/get"),
     params: N6.extend({ taskId: F() }),
   }),
-  aQ = f$.merge(B9),
+  aQ = f$.merge(w9),
   sQ = g$.extend({
     method: g("tasks/result"),
     params: N6.extend({ taskId: F() }),
   }),
   Ep = f$.loose(),
-  eQ = O9.extend({ method: g("tasks/list") }),
-  $7 = w9.extend({ tasks: $$(B9) }),
+  eQ = V9.extend({ method: g("tasks/list") }),
+  $7 = O9.extend({ tasks: $$(w9) }),
   X7 = g$.extend({
     method: g("tasks/cancel"),
     params: N6.extend({ taskId: F() }),
   }),
-  OV = f$.merge(B9),
+  OV = f$.merge(w9),
   wV = _({ uri: F(), mimeType: L$(F()), _meta: w$(F(), D$()).optional() }),
   BV = wV.extend({ text: F() }),
-  $3 = F().refine(
+  eG = F().refine(
     ($) => {
       try {
         return (atob($), !0);
@@ -26705,79 +26713,79 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     },
     { message: "Invalid Base64 string" },
   ),
-  qV = wV.extend({ blob: $3 }),
-  D9 = n$(["user", "assistant"]),
-  _0 = _({
-    audience: $$(D9).optional(),
+  qV = wV.extend({ blob: eG }),
+  q9 = n$(["user", "assistant"]),
+  k0 = _({
+    audience: $$(q9).optional(),
     priority: G$().min(0).max(1).optional(),
-    lastModified: R0.datetime({ offset: !0 }).optional(),
+    lastModified: E0.datetime({ offset: !0 }).optional(),
   }),
   DV = _({
-    ...C0.shape,
-    ...V9.shape,
+    ...v0.shape,
+    ...N9.shape,
     uri: F(),
     description: L$(F()),
     mimeType: L$(F()),
-    annotations: _0.optional(),
+    annotations: k0.optional(),
     _meta: L$(l$({})),
   }),
   gb = _({
-    ...C0.shape,
-    ...V9.shape,
+    ...v0.shape,
+    ...N9.shape,
     uriTemplate: F(),
     description: L$(F()),
     mimeType: L$(F()),
-    annotations: _0.optional(),
+    annotations: k0.optional(),
     _meta: L$(l$({})),
   }),
-  J7 = O9.extend({ method: g("resources/list") }),
-  fb = w9.extend({ resources: $$(DV) }),
-  Y7 = O9.extend({ method: g("resources/templates/list") }),
-  hb = w9.extend({ resourceTemplates: $$(gb) }),
-  X3 = N6.extend({ uri: F() }),
-  ub = X3,
+  J7 = V9.extend({ method: g("resources/list") }),
+  fb = O9.extend({ resources: $$(DV) }),
+  Y7 = V9.extend({ method: g("resources/templates/list") }),
+  hb = O9.extend({ resourceTemplates: $$(gb) }),
+  $3 = N6.extend({ uri: F() }),
+  ub = $3,
   Q7 = g$.extend({ method: g("resources/read"), params: ub }),
   mb = f$.extend({ contents: $$(U$([BV, qV])) }),
   lb = I6.extend({
     method: g("notifications/resources/list_changed"),
     params: F6.optional(),
   }),
-  cb = X3,
+  cb = $3,
   ib = g$.extend({ method: g("resources/subscribe"), params: cb }),
-  pb = X3,
+  pb = $3,
   nb = g$.extend({ method: g("resources/unsubscribe"), params: pb }),
   db = F6.extend({ uri: F() }),
   rb = I6.extend({ method: g("notifications/resources/updated"), params: db }),
   ob = _({ name: F(), description: L$(F()), required: L$(S$()) }),
   tb = _({
-    ...C0.shape,
-    ...V9.shape,
+    ...v0.shape,
+    ...N9.shape,
     description: L$(F()),
     arguments: L$($$(ob)),
     _meta: L$(l$({})),
   }),
-  z7 = O9.extend({ method: g("prompts/list") }),
-  ab = w9.extend({ prompts: $$(tb) }),
+  z7 = V9.extend({ method: g("prompts/list") }),
+  ab = O9.extend({ prompts: $$(tb) }),
   sb = N6.extend({ name: F(), arguments: w$(F(), F()).optional() }),
   W7 = g$.extend({ method: g("prompts/get"), params: sb }),
-  J3 = _({
+  X3 = _({
     type: g("text"),
     text: F(),
-    annotations: _0.optional(),
+    annotations: k0.optional(),
+    _meta: w$(F(), D$()).optional(),
+  }),
+  J3 = _({
+    type: g("image"),
+    data: eG,
+    mimeType: F(),
+    annotations: k0.optional(),
     _meta: w$(F(), D$()).optional(),
   }),
   Y3 = _({
-    type: g("image"),
-    data: $3,
-    mimeType: F(),
-    annotations: _0.optional(),
-    _meta: w$(F(), D$()).optional(),
-  }),
-  Q3 = _({
     type: g("audio"),
-    data: $3,
+    data: eG,
     mimeType: F(),
-    annotations: _0.optional(),
+    annotations: k0.optional(),
     _meta: w$(F(), D$()).optional(),
   }),
   eb = _({
@@ -26790,12 +26798,12 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
   $P = _({
     type: g("resource"),
     resource: U$([BV, qV]),
-    annotations: _0.optional(),
+    annotations: k0.optional(),
     _meta: w$(F(), D$()).optional(),
   }),
   XP = DV.extend({ type: g("resource_link") }),
-  z3 = U$([J3, Y3, Q3, XP, $P]),
-  JP = _({ role: D9, content: z3 }),
+  Q3 = U$([X3, J3, Y3, XP, $P]),
+  JP = _({ role: q9, content: Q3 }),
   YP = f$.extend({ description: F().optional(), messages: $$(JP) }),
   QP = I6.extend({
     method: g("notifications/prompts/list_changed"),
@@ -26810,8 +26818,8 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
   }),
   WP = _({ taskSupport: n$(["required", "optional", "forbidden"]).optional() }),
   LV = _({
-    ...C0.shape,
-    ...V9.shape,
+    ...v0.shape,
+    ...N9.shape,
     description: F().optional(),
     inputSchema: _({
       type: g("object"),
@@ -26829,16 +26837,16 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     execution: WP.optional(),
     _meta: w$(F(), D$()).optional(),
   }),
-  G7 = O9.extend({ method: g("tools/list") }),
-  GP = w9.extend({ tools: $$(LV) }),
+  G7 = V9.extend({ method: g("tools/list") }),
+  GP = O9.extend({ tools: $$(LV) }),
   U7 = f$.extend({
-    content: $$(z3).default([]),
+    content: $$(Q3).default([]),
     structuredContent: w$(F(), D$()).optional(),
     isError: S$().optional(),
   }),
   Rp = U7.or(f$.extend({ toolResult: D$() })),
-  UP = K9.extend({ name: F(), arguments: w$(F(), D$()).optional() }),
-  x0 = g$.extend({ method: g("tools/call"), params: UP }),
+  UP = H9.extend({ name: F(), arguments: w$(F(), D$()).optional() }),
+  _0 = g$.extend({ method: g("tools/call"), params: UP }),
   HP = I6.extend({
     method: g("notifications/tools/list_changed"),
     params: F6.optional(),
@@ -26847,7 +26855,7 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     autoRefresh: S$().default(!0),
     debounceMs: G$().int().nonnegative().default(300),
   }),
-  L9 = n$([
+  D9 = n$([
     "debug",
     "info",
     "notice",
@@ -26857,9 +26865,9 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     "alert",
     "emergency",
   ]),
-  KP = N6.extend({ level: L9 }),
-  W3 = g$.extend({ method: g("logging/setLevel"), params: KP }),
-  NP = F6.extend({ level: L9, logger: F().optional(), data: D$() }),
+  KP = N6.extend({ level: D9 }),
+  z3 = g$.extend({ method: g("logging/setLevel"), params: KP }),
+  NP = F6.extend({ level: D9, logger: F().optional(), data: D$() }),
   VP = I6.extend({ method: g("notifications/message"), params: NP }),
   OP = _({ name: F().optional() }),
   wP = _({
@@ -26874,19 +26882,19 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     toolUseId: F().describe(
       "The unique identifier for the corresponding tool call.",
     ),
-    content: $$(z3).default([]),
+    content: $$(Q3).default([]),
     structuredContent: _({}).loose().optional(),
     isError: S$().optional(),
     _meta: w$(F(), D$()).optional(),
   }),
-  DP = uQ("type", [J3, Y3, Q3]),
-  cQ = uQ("type", [J3, Y3, Q3, eb, qP]),
+  DP = uQ("type", [X3, J3, Y3]),
+  cQ = uQ("type", [X3, J3, Y3, eb, qP]),
   LP = _({
-    role: D9,
+    role: q9,
     content: U$([cQ, $$(cQ)]),
     _meta: w$(F(), D$()).optional(),
   }),
-  jP = K9.extend({
+  jP = H9.extend({
     messages: $$(LP),
     modelPreferences: wP.optional(),
     systemPrompt: F().optional(),
@@ -26899,18 +26907,18 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     toolChoice: BP.optional(),
   }),
   FP = g$.extend({ method: g("sampling/createMessage"), params: jP }),
-  j9 = f$.extend({
+  L9 = f$.extend({
     model: F(),
     stopReason: L$(n$(["endTurn", "stopSequence", "maxTokens"]).or(F())),
-    role: D9,
+    role: q9,
     content: DP,
   }),
-  G3 = f$.extend({
+  W3 = f$.extend({
     model: F(),
     stopReason: L$(
       n$(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(F()),
     ),
-    role: D9,
+    role: q9,
     content: U$([cQ, $$(cQ)]),
   }),
   IP = _({
@@ -26980,7 +26988,7 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
   vP = U$([RP, SP]),
   CP = U$([ZP, EP, vP]),
   kP = U$([CP, IP, MP, AP]),
-  _P = K9.extend({
+  _P = H9.extend({
     mode: g("form").optional(),
     message: F(),
     requestedSchema: _({
@@ -26989,7 +26997,7 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
       required: $$(F()).optional(),
     }),
   }),
-  xP = K9.extend({
+  xP = H9.extend({
     mode: g("url"),
     message: F(),
     elicitationId: F(),
@@ -27002,7 +27010,7 @@ var rQ = g$.extend({ method: g("ping"), params: N6.optional() }),
     method: g("notifications/elicitation/complete"),
     params: gP,
   }),
-  T0 = f$.extend({
+  x0 = f$.extend({
     action: n$(["accept", "decline", "cancel"]),
     content: lQ(
       ($) => ($ === null ? void 0 : $),
@@ -27042,17 +27050,17 @@ var lP = f$.extend({
     _meta: w$(F(), D$()).optional(),
   }),
   iP = g$.extend({ method: g("roots/list"), params: N6.optional() }),
-  U3 = f$.extend({ roots: $$(cP) }),
+  G3 = f$.extend({ roots: $$(cP) }),
   pP = I6.extend({
     method: g("notifications/roots/list_changed"),
     params: F6.optional(),
   }),
-  vp = U$([rQ, sG, H7, W3, W7, z7, J7, Y7, Q7, ib, nb, x0, G7, tQ, sQ, eQ, X7]),
-  Cp = U$([dQ, oQ, eG, pP, q9]),
-  kp = U$([nQ, j9, G3, T0, U3, aQ, $7, k0]),
+  vp = U$([rQ, aG, H7, z3, W7, z7, J7, Y7, Q7, ib, nb, _0, G7, tQ, sQ, eQ, X7]),
+  Cp = U$([dQ, oQ, sG, pP, B9]),
+  kp = U$([nQ, L9, W3, x0, G3, aQ, $7, C0]),
   _p = U$([rQ, FP, yP, iP, tQ, sQ, eQ, X7]),
-  xp = U$([dQ, oQ, VP, rb, lb, HP, QP, q9, fP]),
-  Tp = U$([nQ, Cb, lP, YP, ab, fb, hb, mb, U7, GP, aQ, $7, k0]);
+  xp = U$([dQ, oQ, VP, rb, lb, HP, QP, B9, fP]),
+  Tp = U$([nQ, Cb, lP, YP, ab, fb, hb, mb, U7, GP, aQ, $7, C0]);
 class f extends Error {
   constructor($, X, J) {
     super(`MCP error ${$}: ${X}`);
@@ -27126,12 +27134,12 @@ var PV = ($) => {
     ),
   };
 };
-function H3($, X, J, Q) {
+function U3($, X, J, Q) {
   if (!Q?.errorMessages) return;
   if (J) $.errorMessage = { ...$.errorMessage, [X]: J };
 }
 function J$($, X, J, Q, Y) {
-  (($[X] = J), H3($, X, Q, Y));
+  (($[X] = J), U3($, X, Q, Y));
 }
 var K7 = ($, X) => {
   let J = 0;
@@ -27198,9 +27206,9 @@ function N7($, X) {
 var SV = ($, X) => {
   return c($.innerType._def, X);
 };
-function K3($, X, J) {
+function H3($, X, J) {
   let Q = J ?? X.dateStrategy;
-  if (Array.isArray(Q)) return { anyOf: Q.map((Y, z) => K3($, X, Y)) };
+  if (Array.isArray(Q)) return { anyOf: Q.map((Y, z) => H3($, X, Y)) };
   switch (Q) {
     case "string":
     case "format:date-time":
@@ -27271,7 +27279,7 @@ function xV($, X) {
     return { type: J === "bigint" ? "integer" : J, enum: [$.value] };
   return { type: J === "bigint" ? "integer" : J, const: $.value };
 }
-var N3 = void 0,
+var K3 = void 0,
   S6 = {
     cuid: /^[cC][^\s-]{8,}$/,
     cuid2: /^[0-9a-z]+$/,
@@ -27279,12 +27287,12 @@ var N3 = void 0,
     email:
       /^(?!\.)(?!.*\.\.)([a-zA-Z0-9_'+\-\.]*)[a-zA-Z0-9_+-]@([a-zA-Z0-9][a-zA-Z0-9\-]*\.)+[a-zA-Z]{2,}$/,
     emoji: () => {
-      if (N3 === void 0)
-        N3 = RegExp(
+      if (K3 === void 0)
+        K3 = RegExp(
           "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$",
           "u",
         );
-      return N3;
+      return K3;
     },
     uuid: /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
     ipv4: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
@@ -27355,10 +27363,10 @@ function V7($, X) {
           d$(J, S6.cuid2, Q.message, X);
           break;
         case "startsWith":
-          d$(J, RegExp(`^${V3(Q.value, X)}`), Q.message, X);
+          d$(J, RegExp(`^${N3(Q.value, X)}`), Q.message, X);
           break;
         case "endsWith":
-          d$(J, RegExp(`${V3(Q.value, X)}$`), Q.message, X);
+          d$(J, RegExp(`${N3(Q.value, X)}$`), Q.message, X);
           break;
         case "datetime":
           v6(J, "date-time", Q.message, X);
@@ -27393,7 +27401,7 @@ function V7($, X) {
             ));
           break;
         case "includes": {
-          d$(J, RegExp(V3(Q.value, X)), Q.message, X);
+          d$(J, RegExp(N3(Q.value, X)), Q.message, X);
           break;
         }
         case "ip": {
@@ -27447,7 +27455,7 @@ function V7($, X) {
       }
   return J;
 }
-function V3($, X) {
+function N3($, X) {
   return X.patternStrategy === "escape" ? oP($) : $;
 }
 var rP = new Set(
@@ -27679,7 +27687,7 @@ function hV($) {
     ? { enum: ["null"], nullable: !0 }
     : { type: "null" };
 }
-var F9 = {
+var j9 = {
   ZodString: "string",
   ZodNumber: "number",
   ZodBigInt: "integer",
@@ -27691,11 +27699,11 @@ function mV($, X) {
   let J = $.options instanceof Map ? Array.from($.options.values()) : $.options;
   if (
     J.every(
-      (Q) => Q._def.typeName in F9 && (!Q._def.checks || !Q._def.checks.length),
+      (Q) => Q._def.typeName in j9 && (!Q._def.checks || !Q._def.checks.length),
     )
   ) {
     let Q = J.reduce((Y, z) => {
-      let W = F9[z._def.typeName];
+      let W = j9[z._def.typeName];
       return W && !Y.includes(W) ? [...Y, W] : Y;
     }, []);
     return { type: Q.length > 1 ? Q : Q[0] };
@@ -27762,8 +27770,8 @@ function lV($, X) {
     (!$.innerType._def.checks || !$.innerType._def.checks.length)
   ) {
     if (X.target === "openApi3")
-      return { type: F9[$.innerType._def.typeName], nullable: !0 };
-    return { type: [F9[$.innerType._def.typeName], "null"] };
+      return { type: j9[$.innerType._def.typeName], nullable: !0 };
+    return { type: [j9[$.innerType._def.typeName], "null"] };
   }
   if (X.target === "openApi3") {
     let Q = c($.innerType._def, { ...X, currentPath: [...X.currentPath] });
@@ -27782,7 +27790,7 @@ function cV($, X) {
   for (let Q of $.checks)
     switch (Q.kind) {
       case "int":
-        ((J.type = "integer"), H3(J, "type", Q.message, X));
+        ((J.type = "integer"), U3(J, "type", Q.message, X));
         break;
       case "min":
         if (X.target === "jsonSchema7")
@@ -27943,7 +27951,7 @@ var eV = ($, X, J) => {
     case P.ZodBoolean:
       return RV();
     case P.ZodDate:
-      return K3($, J);
+      return H3($, J);
     case P.ZodUndefined:
       return tV(J);
     case P.ZodNull:
@@ -28056,7 +28064,7 @@ var sP = ($, X) => {
     }
     return J;
   };
-var O3 = ($, X) => {
+var V3 = ($, X) => {
   let J = PV(X),
     Q =
       typeof X === "object" && X.definitions
@@ -28143,15 +28151,15 @@ function $Z($) {
     return "draft-2020-12";
   return "draft-7";
 }
-function w3($, X) {
+function O3($, X) {
   if (j6($))
-    return Z0($, { target: $Z(X?.target), io: X?.pipeStrategy ?? "input" });
-  return O3($, {
+    return P0($, { target: $Z(X?.target), io: X?.pipeStrategy ?? "input" });
+  return V3($, {
     strictUnions: X?.strictUnions ?? !0,
     pipeStrategy: X?.pipeStrategy ?? "input",
   });
 }
-function B3($) {
+function w3($) {
   let J = f4($)?.method;
   if (!J) throw Error("Schema is missing a method literal");
   let Q = SQ(J);
@@ -28159,13 +28167,13 @@ function B3($) {
     throw Error("Schema method literal must be a string");
   return Q;
 }
-function q3($, X) {
+function B3($, X) {
   let J = g4($, X);
   if (!J.success) throw J.error;
   return J.data;
 }
 var XZ = 60000;
-class D3 {
+class q3 {
   constructor($) {
     if (
       ((this._options = $),
@@ -28353,8 +28361,8 @@ class D3 {
     };
     let Q = this._transport?.onmessage;
     ((this._transport.onmessage = (Y, z) => {
-      if ((Q?.(Y, z), N9(Y) || NV(Y))) this._onresponse(Y);
-      else if (oG(Y)) this._onrequest(Y, z);
+      if ((Q?.(Y, z), K9(Y) || NV(Y))) this._onresponse(Y);
+      else if (rG(Y)) this._onrequest(Y, z);
       else if (KV(Y)) this._onnotification(Y);
       else this._onerror(Error(`Unknown message type: ${JSON.stringify(Y)}`));
     }),
@@ -28514,7 +28522,7 @@ class D3 {
     let X = Number($.id),
       J = this._requestResolvers.get(X);
     if (J) {
-      if ((this._requestResolvers.delete(X), N9($))) J($);
+      if ((this._requestResolvers.delete(X), K9($))) J($);
       else {
         let z = new f($.error.code, $.error.message, $.error.data);
         J(z);
@@ -28532,7 +28540,7 @@ class D3 {
     }
     (this._responseHandlers.delete(X), this._cleanupTimeout(X));
     let Y = !1;
-    if (N9($) && $.result && typeof $.result === "object") {
+    if (K9($) && $.result && typeof $.result === "object") {
       let z = $.result;
       if (z.task && typeof z.task === "object") {
         let W = z.task;
@@ -28541,7 +28549,7 @@ class D3 {
       }
     }
     if (!Y) this._progressHandlers.delete(X);
-    if (N9($)) Q($);
+    if (K9($)) Q($);
     else {
       let z = f.fromError($.error.code, $.error.message, $.error.data);
       Q(z);
@@ -28568,7 +28576,7 @@ class D3 {
     }
     let Y;
     try {
-      let z = await this.request($, k0, J);
+      let z = await this.request($, C0, J);
       if (z.task)
         ((Y = z.task.taskId), yield { type: "taskCreated", task: z.task });
       else throw new f(m.InternalError, "Task creation did not return a task");
@@ -28794,10 +28802,10 @@ class D3 {
     await this._transport.send(z, X);
   }
   setRequestHandler($, X) {
-    let J = B3($);
+    let J = w3($);
     (this.assertRequestHandlerCapability(J),
       this._requestHandlers.set(J, (Q, Y) => {
-        let z = q3($, Q);
+        let z = B3($, Q);
         return Promise.resolve(X(z, Y));
       }));
   }
@@ -28811,9 +28819,9 @@ class D3 {
       );
   }
   setNotificationHandler($, X) {
-    let J = B3($);
+    let J = w3($);
     this._notificationHandlers.set(J, (Q) => {
-      let Y = q3($, Q);
+      let Y = B3($, Q);
       return Promise.resolve(X(Y));
     });
   }
@@ -28837,7 +28845,7 @@ class D3 {
     if (this._taskMessageQueue) {
       let J = await this._taskMessageQueue.dequeueAll($, X);
       for (let Q of J)
-        if (Q.type === "request" && oG(Q.message)) {
+        if (Q.type === "request" && rG(Q.message)) {
           let Y = Q.message.id,
             z = this._requestResolvers.get(Y);
           if (z)
@@ -28899,7 +28907,7 @@ class D3 {
         await J.storeTaskResult(Q, Y, z, X);
         let W = await J.getTask(Q, X);
         if (W) {
-          let G = q9.parse({ method: "notifications/tasks/status", params: W });
+          let G = B9.parse({ method: "notifications/tasks/status", params: W });
           if ((await this.notification(G), m4(W.status)))
             this._cleanupTaskProgressHandler(Q);
         }
@@ -28922,7 +28930,7 @@ class D3 {
         await J.updateTaskStatus(Q, Y, z, X);
         let G = await J.getTask(Q, X);
         if (G) {
-          let U = q9.parse({ method: "notifications/tasks/status", params: G });
+          let U = B9.parse({ method: "notifications/tasks/status", params: G });
           if ((await this.notification(U), m4(G.status)))
             this._cleanupTaskProgressHandler(Q);
         }
@@ -28948,7 +28956,7 @@ function XO($, X) {
   }
   return J;
 }
-var fD = xU(KU(), 1),
+var fD = xU(HU(), 1),
   hD = xU(gD(), 1);
 function Kx() {
   let $ = new fD.default({
@@ -28959,7 +28967,7 @@ function Kx() {
   });
   return (hD.default($), $);
 }
-class FU {
+class jU {
   constructor($) {
     this._ajv = $ ?? Kx();
   }
@@ -28979,7 +28987,7 @@ class FU {
     };
   }
 }
-class IU {
+class FU {
   constructor($) {
     this._server = $;
   }
@@ -29022,7 +29030,7 @@ class IU {
     }
     return this.requestStream(
       { method: "sampling/createMessage", params: $ },
-      j9,
+      L9,
       X,
     );
   }
@@ -29044,7 +29052,7 @@ class IU {
     let Y = Q === "form" && $.mode === void 0 ? { ...$, mode: "form" } : $;
     return this.requestStream(
       { method: "elicitation/create", params: Y },
-      T0,
+      x0,
       X,
     );
   }
@@ -29095,13 +29103,13 @@ function mD($, X, J) {
       break;
   }
 }
-class MU extends D3 {
+class IU extends q3 {
   constructor($, X) {
     super(X);
     if (
       ((this._serverInfo = $),
       (this._loggingLevels = new Map()),
-      (this.LOG_LEVEL_SEVERITY = new Map(L9.options.map((J, Q) => [J, Q]))),
+      (this.LOG_LEVEL_SEVERITY = new Map(D9.options.map((J, Q) => [J, Q]))),
       (this.isMessageIgnored = (J, Q) => {
         let Y = this._loggingLevels.get(Q);
         return Y
@@ -29110,22 +29118,22 @@ class MU extends D3 {
       }),
       (this._capabilities = X?.capabilities ?? {}),
       (this._instructions = X?.instructions),
-      (this._jsonSchemaValidator = X?.jsonSchemaValidator ?? new FU()),
-      this.setRequestHandler(sG, (J) => this._oninitialize(J)),
-      this.setNotificationHandler(eG, () => this.oninitialized?.()),
+      (this._jsonSchemaValidator = X?.jsonSchemaValidator ?? new jU()),
+      this.setRequestHandler(aG, (J) => this._oninitialize(J)),
+      this.setNotificationHandler(sG, () => this.oninitialized?.()),
       this._capabilities.logging)
     )
-      this.setRequestHandler(W3, async (J, Q) => {
+      this.setRequestHandler(z3, async (J, Q) => {
         let Y =
             Q.sessionId || Q.requestInfo?.headers["mcp-session-id"] || void 0,
           { level: z } = J.params,
-          W = L9.safeParse(z);
+          W = D9.safeParse(z);
         if (W.success) this._loggingLevels.set(Y, W.data);
         return {};
       });
   }
   get experimental() {
-    if (!this._experimental) this._experimental = { tasks: new IU(this) };
+    if (!this._experimental) this._experimental = { tasks: new FU(this) };
     return this._experimental;
   }
   registerCapabilities($) {
@@ -29148,7 +29156,7 @@ class MU extends D3 {
       throw Error("Schema method literal must be a string");
     if (Y === "tools/call") {
       let W = async (G, U) => {
-        let H = g4(x0, G);
+        let H = g4(_0, G);
         if (!H.success) {
           let N = H.error instanceof Error ? H.error.message : String(H.error);
           throw new f(m.InvalidParams, `Invalid tools/call request: ${N}`);
@@ -29156,7 +29164,7 @@ class MU extends D3 {
         let { params: K } = H.data,
           V = await Promise.resolve(X(G, U));
         if (K.task) {
-          let N = g4(k0, V);
+          let N = g4(C0, V);
           if (!N.success) {
             let w =
               N.error instanceof Error ? N.error.message : String(N.error);
@@ -29290,7 +29298,7 @@ class MU extends D3 {
       (this._clientCapabilities = $.params.capabilities),
       (this._clientVersion = $.params.clientInfo),
       {
-        protocolVersion: QV.includes(X) ? X : dG,
+        protocolVersion: QV.includes(X) ? X : nG,
         capabilities: this.getCapabilities(),
         serverInfo: this._serverInfo,
         ...(this._instructions && { instructions: this._instructions }),
@@ -29347,10 +29355,10 @@ class MU extends D3 {
     if ($.tools)
       return this.request(
         { method: "sampling/createMessage", params: $ },
-        G3,
+        W3,
         X,
       );
-    return this.request({ method: "sampling/createMessage", params: $ }, j9, X);
+    return this.request({ method: "sampling/createMessage", params: $ }, L9, X);
   }
   async elicitInput($, X) {
     switch ($.mode ?? "form") {
@@ -29358,7 +29366,7 @@ class MU extends D3 {
         if (!this._clientCapabilities?.elicitation?.url)
           throw Error("Client does not support url elicitation.");
         let Q = $;
-        return this.request({ method: "elicitation/create", params: Q }, T0, X);
+        return this.request({ method: "elicitation/create", params: Q }, x0, X);
       }
       case "form": {
         if (!this._clientCapabilities?.elicitation?.form)
@@ -29366,7 +29374,7 @@ class MU extends D3 {
         let Q = $.mode === "form" ? $ : { ...$, mode: "form" },
           Y = await this.request(
             { method: "elicitation/create", params: Q },
-            T0,
+            x0,
             X,
           );
         if (Y.action === "accept" && Y.content && Q.requestedSchema)
@@ -29405,7 +29413,7 @@ class MU extends D3 {
       );
   }
   async listRoots($, X) {
-    return this.request({ method: "roots/list", params: $ }, U3, X);
+    return this.request({ method: "roots/list", params: $ }, G3, X);
   }
   async sendLoggingMessage($, X) {
     if (this._capabilities.logging) {
@@ -29435,7 +29443,7 @@ class MU extends D3 {
   }
 }
 var cD = Symbol.for("mcp.completable");
-function AU($) {
+function MU($) {
   return !!$ && typeof $ === "object" && cD in $;
 }
 function iD($) {
@@ -29498,11 +29506,11 @@ function Ox($, X) {
       ));
   }
 }
-function bU($) {
+function AU($) {
   let X = Vx($);
   return (Ox($, X.warnings), X.isValid);
 }
-class PU {
+class bU {
   constructor($) {
     this._mcpServer = $;
   }
@@ -29525,7 +29533,7 @@ class PU {
     );
   }
 }
-class EU {
+class ZU {
   constructor($, X) {
     ((this._registeredResources = {}),
       (this._registeredResourceTemplates = {}),
@@ -29535,10 +29543,10 @@ class EU {
       (this._completionHandlerInitialized = !1),
       (this._resourceHandlersInitialized = !1),
       (this._promptHandlersInitialized = !1),
-      (this.server = new MU($, X)));
+      (this.server = new IU($, X)));
   }
   get experimental() {
-    if (!this._experimental) this._experimental = { tasks: new PU(this) };
+    if (!this._experimental) this._experimental = { tasks: new bU(this) };
     return this._experimental;
   }
   async connect($) {
@@ -29550,7 +29558,7 @@ class EU {
   setToolRequestHandlers() {
     if (this._toolHandlersInitialized) return;
     (this.server.assertCanSetRequestHandler(o4(G7)),
-      this.server.assertCanSetRequestHandler(o4(x0)),
+      this.server.assertCanSetRequestHandler(o4(_0)),
       this.server.registerCapabilities({ tools: { listChanged: !0 } }),
       this.server.setRequestHandler(G7, () => ({
         tools: Object.entries(this._registeredTools)
@@ -29561,9 +29569,9 @@ class EU {
               title: X.title,
               description: X.description,
               inputSchema: (() => {
-                let Q = E0(X.inputSchema);
+                let Q = Z0(X.inputSchema);
                 return Q
-                  ? w3(Q, { strictUnions: !0, pipeStrategy: "input" })
+                  ? O3(Q, { strictUnions: !0, pipeStrategy: "input" })
                   : wx;
               })(),
               annotations: X.annotations,
@@ -29571,9 +29579,9 @@ class EU {
               _meta: X._meta,
             };
             if (X.outputSchema) {
-              let Q = E0(X.outputSchema);
+              let Q = Z0(X.outputSchema);
               if (Q)
-                J.outputSchema = w3(Q, {
+                J.outputSchema = O3(Q, {
                   strictUnions: !0,
                   pipeStrategy: "output",
                 });
@@ -29581,7 +29589,7 @@ class EU {
             return J;
           }),
       })),
-      this.server.setRequestHandler(x0, async ($, X) => {
+      this.server.setRequestHandler(_0, async ($, X) => {
         try {
           let J = this._registeredTools[$.params.name];
           if (!J)
@@ -29627,7 +29635,7 @@ class EU {
   }
   async validateToolInput($, X, J) {
     if (!$.inputSchema) return;
-    let Y = E0($.inputSchema) ?? $.inputSchema,
+    let Y = Z0($.inputSchema) ?? $.inputSchema,
       z = await EQ(Y, X);
     if (!z.success) {
       let W = "error" in z ? z.error : "Unknown error",
@@ -29648,7 +29656,7 @@ class EU {
         m.InvalidParams,
         `Output validation error: Tool ${J} has an output schema but no structured content was provided`,
       );
-    let Q = E0($.outputSchema),
+    let Q = Z0($.outputSchema),
       Y = await EQ(Q, X.structuredContent);
     if (!Y.success) {
       let z = "error" in Y ? Y.error : "Unknown error",
@@ -29718,11 +29726,11 @@ class EU {
     let J = this._registeredPrompts[X.name];
     if (!J) throw new f(m.InvalidParams, `Prompt ${X.name} not found`);
     if (!J.enabled) throw new f(m.InvalidParams, `Prompt ${X.name} disabled`);
-    if (!J.argsSchema) return i9;
+    if (!J.argsSchema) return c9;
     let Y = f4(J.argsSchema)?.[$.params.argument.name];
-    if (!AU(Y)) return i9;
+    if (!MU(Y)) return c9;
     let z = iD(Y);
-    if (!z) return i9;
+    if (!z) return c9;
     let W = await z($.params.argument.value, $.params.context);
     return nD(W);
   }
@@ -29731,14 +29739,14 @@ class EU {
       (z) => z.resourceTemplate.uriTemplate.toString() === X.uri,
     );
     if (!J) {
-      if (this._registeredResources[X.uri]) return i9;
+      if (this._registeredResources[X.uri]) return c9;
       throw new f(
         m.InvalidParams,
         `Resource template ${$.params.ref.uri} not found`,
       );
     }
     let Q = J.resourceTemplate.completeCallback($.params.argument.name);
-    if (!Q) return i9;
+    if (!Q) return c9;
     let Y = await Q($.params.argument.value, $.params.context);
     return nD(Y);
   }
@@ -29811,7 +29819,7 @@ class EU {
         if (!J.enabled)
           throw new f(m.InvalidParams, `Prompt ${$.params.name} disabled`);
         if (J.argsSchema) {
-          let Q = E0(J.argsSchema),
+          let Q = Z0(J.argsSchema),
             Y = await EQ(Q, $.params.arguments);
           if (!Y.success) {
             let G = "error" in Y ? Y.error : "Unknown error",
@@ -29957,7 +29965,7 @@ class EU {
       if (
         Object.values(Q).some((G) => {
           let U = G instanceof D6 ? G._def?.innerType : G;
-          return AU(U);
+          return MU(U);
         })
       )
         this.setCompletionRequestHandler();
@@ -29965,7 +29973,7 @@ class EU {
     return z;
   }
   _createRegisteredTool($, X, J, Q, Y, z, W, G, U) {
-    bU($);
+    AU($);
     let H = {
       title: X,
       description: J,
@@ -29981,7 +29989,7 @@ class EU {
       remove: () => H.update({ name: null }),
       update: (K) => {
         if (typeof K.name < "u" && K.name !== $) {
-          if (typeof K.name === "string") bU(K.name);
+          if (typeof K.name === "string") AU(K.name);
           if ((delete this._registeredTools[$], K.name))
             this._registeredTools[K.name] = H;
         }
@@ -30010,13 +30018,13 @@ class EU {
     if (typeof X[0] === "string") J = X.shift();
     if (X.length > 1) {
       let G = X[0];
-      if (ZU(G)) {
+      if (PU(G)) {
         if (
           ((Q = X.shift()),
           X.length > 1 &&
             typeof X[0] === "object" &&
             X[0] !== null &&
-            !ZU(X[0]))
+            !PU(X[0]))
         )
           z = X.shift();
       } else if (typeof G === "object" && G !== null) z = X.shift();
@@ -30105,7 +30113,7 @@ function dD($) {
 function Bx($) {
   return "_def" in $ || "_zod" in $ || dD($);
 }
-function ZU($) {
+function PU($) {
   if (typeof $ !== "object" || $ === null) return !1;
   if (Bx($)) return !1;
   if (Object.keys($).length === 0) return !0;
@@ -30113,7 +30121,7 @@ function ZU($) {
 }
 function pD($) {
   if (!$) return;
-  if (ZU($)) return P1($);
+  if (PU($)) return P1($);
   return $;
 }
 function qx($) {
@@ -30141,19 +30149,22 @@ function nD($) {
     },
   };
 }
-var i9 = { completion: { values: [], hasMore: !1 } };
+var c9 = { completion: { values: [], hasMore: !1 } };
 function Dx($, X, J, Q, Y) {
+  let z = {};
+  if (Y?.searchHint) z["anthropic/searchHint"] = Y.searchHint;
+  if (Y?.alwaysLoad) z["anthropic/alwaysLoad"] = !0;
   return {
     name: $,
     description: X,
     inputSchema: J,
     handler: Q,
     annotations: Y?.annotations,
-    _meta: Y?.searchHint ? { "anthropic/searchHint": Y.searchHint } : void 0,
+    _meta: Object.keys(z).length > 0 ? z : void 0,
   };
 }
 function Lx($) {
-  let X = new EU(
+  let X = new ZU(
     { name: $.name, version: $.version ?? "1.0.0" },
     { capabilities: { tools: $.tools ? {} : void 0 } },
   );
@@ -30240,7 +30251,7 @@ class aD {
         (this.workDir = Y.workDir),
         ($ = Y.wsUrl));
     } catch (Y) {
-      this.failInit(OK(Y));
+      this.failInit(RH(Y));
       return;
     }
     if (this.closed) {
@@ -30268,7 +30279,7 @@ class aD {
     (J.addEventListener("open", () => {
       (clearTimeout(Q),
         (this.readyState = !0),
-        V6(
+        w6(
           `[DirectConnectTransport] Connected to ${this.options.serverUrl}, session=${this.sessionId}`,
         ),
         this.readyResolve?.());
@@ -30414,13 +30425,13 @@ function Aa({ prompt: $, options: X }) {
   else if (J.type === "preset") U = J.append;
   let H = W.pathToClaudeCodeExecutable;
   if (!H) {
-    let T1 = Mx(import.meta.url),
-      y1 = sD(T1, "..");
-    H = sD(y1, "cli.js");
+    let n9 = Mx(import.meta.url),
+      T1 = sD(n9, "..");
+    H = sD(T1, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.85";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.86";
   let {
-      abortController: K = g1(),
+      abortController: K = y1(),
       additionalDirectories: V = [],
       agent: O,
       agents: N,
@@ -30434,38 +30445,38 @@ function Aa({ prompt: $, options: X }) {
       disallowedTools: h = [],
       tools: B$,
       env: x$,
-      executable: Q6 = f1() ? "bun" : "node",
+      executable: Q6 = g1() ? "bun" : "node",
       executableArgs: r6 = [],
       extraArgs: g6 = {},
       fallbackModel: t4,
       enableFileCheckpointing: k1,
       toolConfig: o6,
-      forkSession: r0,
+      forkSession: d0,
       hooks: p,
-      includePartialMessages: p9,
+      includePartialMessages: i9,
       onElicitation: t7,
-      persistSession: o0,
+      persistSession: r0,
       thinking: a4,
-      effort: t0,
+      effort: o0,
       maxThinkingTokens: _1,
-      maxTurns: n9,
+      maxTurns: p9,
       maxBudgetUsd: i$,
       taskBudget: L4,
       mcpServers: x1,
       model: eD,
-      outputFormat: RU,
+      outputFormat: EU,
       permissionMode: $L = "default",
       allowDangerouslySkipPermissions: XL = !1,
       permissionPromptToolName: JL,
       plugins: YL,
-      workload: SU,
+      workload: RU,
       resume: QL,
       resumeSessionAt: zL,
       sessionId: WL,
       stderr: GL,
       strictMcpConfig: UL,
     } = W,
-    vU = RU?.type === "json_schema" ? RU.schema : void 0,
+    SU = EU?.type === "json_schema" ? EU.schema : void 0,
     s4 = x$;
   if (!s4) s4 = { ...process.env };
   if (!s4.CLAUDE_CODE_ENTRYPOINT) s4.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
@@ -30473,31 +30484,30 @@ function Aa({ prompt: $, options: X }) {
   if (o6?.askUserQuestion?.previewFormat)
     s4.CLAUDE_CODE_QUESTION_PREVIEW_FORMAT = o6.askUserQuestion.previewFormat;
   if (!H) throw Error("pathToClaudeCodeExecutable is required");
-  let a7 = {},
+  let vU = {},
     CU = new Map();
   if (x1)
-    for (let [T1, y1] of Object.entries(x1))
-      if (y1.type === "sdk" && "instance" in y1)
-        (CU.set(T1, y1.instance), (a7[T1] = { type: "sdk", name: T1 }));
-      else a7[T1] = y1;
+    for (let [n9, T1] of Object.entries(x1))
+      if (T1.type === "sdk" && "instance" in T1) CU.set(n9, T1.instance);
+      else vU[n9] = T1;
   let HL = typeof $ === "string",
-    a0;
+    t0;
   if (a4)
     switch (a4.type) {
       case "adaptive":
-        a0 = { type: "adaptive" };
+        t0 = { type: "adaptive" };
         break;
       case "enabled":
-        a0 = { type: "enabled", budgetTokens: a4.budgetTokens };
+        t0 = { type: "enabled", budgetTokens: a4.budgetTokens };
         break;
       case "disabled":
-        a0 = { type: "disabled" };
+        t0 = { type: "disabled" };
         break;
     }
   else if (_1 !== void 0)
-    a0 =
+    t0 =
       _1 === 0 ? { type: "disabled" } : { type: "enabled", budgetTokens: _1 };
-  let kU = new lX({
+  let kU = new mX({
       abortController: K,
       additionalDirectories: V,
       agent: O,
@@ -30507,19 +30517,19 @@ function Aa({ prompt: $, options: X }) {
       debugFile: x,
       executable: Q6,
       executableArgs: r6,
-      extraArgs: SU ? { ...g6, workload: SU } : g6,
+      extraArgs: RU ? { ...g6, workload: RU } : g6,
       pathToClaudeCodeExecutable: H,
       env: s4,
-      forkSession: r0,
+      forkSession: d0,
       stderr: GL,
-      thinkingConfig: a0,
-      effort: t0,
-      maxTurns: n9,
+      thinkingConfig: t0,
+      effort: o0,
+      maxTurns: p9,
       maxBudgetUsd: i$,
       taskBudget: L4,
       model: eD,
       fallbackModel: t4,
-      jsonSchema: vU,
+      jsonSchema: SU,
       permissionMode: $L,
       allowDangerouslySkipPermissions: XL,
       permissionPromptToolName: JL,
@@ -30532,12 +30542,12 @@ function Aa({ prompt: $, options: X }) {
       allowedTools: w,
       disallowedTools: h,
       tools: B$,
-      mcpServers: a7,
+      mcpServers: vU,
       strictMcpConfig: UL,
       canUseTool: !!L,
       hooks: !!p,
-      includePartialMessages: p9,
-      persistSession: o0,
+      includePartialMessages: i9,
+      persistSession: r0,
       plugins: YL,
       sandbox: z,
       spawnClaudeCodeProcess: W.spawnClaudeCodeProcess,
@@ -30549,7 +30559,7 @@ function Aa({ prompt: $, options: X }) {
       promptSuggestions: W.promptSuggestions,
       agentProgressSummaries: W.agentProgressSummaries,
     },
-    _U = new cX(kU, HL, L, p, K, CU, vU, KL, t7);
+    _U = new lX(kU, HL, L, p, K, CU, SU, KL, t7);
   if (typeof $ === "string")
     kU.write(
       q$({
@@ -30565,7 +30575,7 @@ function Aa({ prompt: $, options: X }) {
   return _U;
 }
 function ba($) {
-  return gz($);
+  return yz($);
 }
 function Pa($, X) {
   return PK($, X);
@@ -30573,7 +30583,7 @@ function Pa($, X) {
 async function Za($, X) {
   let Q = [];
   try {
-    const J = N$(Q, gz(X), 1);
+    const J = N$(Q, yz(X), 1);
     await J.send($);
     for await (let U of J.stream()) if (U.type === "result") return U;
     throw Error("Session ended without result message");
