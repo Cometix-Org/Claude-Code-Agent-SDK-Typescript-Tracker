@@ -72,6 +72,22 @@ export declare type AgentDefinition = {
    * Maximum number of agentic turns (API round-trips) before stopping
    */
   maxTurns?: number;
+  /**
+   * Run this agent as a background task (non-blocking, fire-and-forget) when invoked
+   */
+  background?: boolean;
+  /**
+   * Scope for auto-loading agent memory files. 'user' - ~/.claude/agent-memory/<agentType>/, 'project' - .claude/agent-memory/<agentType>/, 'local' - .claude/agent-memory-local/<agentType>/
+   */
+  memory?: "user" | "project" | "local";
+  /**
+   * Reasoning effort level for this agent. Either a named level or an integer
+   */
+  effort?: ("low" | "medium" | "high" | "max") | number;
+  /**
+   * Permission mode controlling how tool executions are handled
+   */
+  permissionMode?: PermissionMode;
 };
 
 /**
@@ -261,6 +277,8 @@ declare namespace coreTypes {
     OutputFormatType,
     PermissionBehavior,
     PermissionDecisionClassification,
+    PermissionDeniedHookInput,
+    PermissionDeniedHookSpecificOutput,
     PermissionMode,
     PermissionRequestHookInput,
     PermissionRequestHookSpecificOutput,
@@ -545,11 +563,12 @@ export declare type GetSessionInfoOptions = {
  * Reads a session's conversation messages from its JSONL transcript file.
  *
  * Parses the transcript, builds the conversation chain via parentUuid links,
- * and returns user/assistant messages in chronological order.
+ * and returns user/assistant messages in chronological order. Set
+ * `includeSystemMessages: true` in options to also include system messages.
  *
  * @param sessionId - UUID of the session to read
- * @param options - Optional dir, limit, and offset
- * @returns Array of user/assistant messages, or empty array if session not found
+ * @param options - Optional dir, limit, offset, and includeSystemMessages
+ * @returns Array of messages, or empty array if session not found
  */
 export declare function getSessionMessages(
   _sessionId: string,
@@ -566,6 +585,12 @@ export declare type GetSessionMessagesOptions = {
   limit?: number;
   /** Number of messages to skip from the start. */
   offset?: number;
+  /**
+   * When true, include system messages (e.g., compact boundaries, informational
+   * notices) in the returned list alongside user/assistant messages.
+   * Defaults to false for backwards compatibility.
+   */
+  includeSystemMessages?: boolean;
 };
 
 export declare const HOOK_EVENTS: readonly [
@@ -583,6 +608,7 @@ export declare const HOOK_EVENTS: readonly [
   "PreCompact",
   "PostCompact",
   "PermissionRequest",
+  "PermissionDenied",
   "Setup",
   "TeammateIdle",
   "TaskCreated",
@@ -633,6 +659,7 @@ export declare type HookEvent =
   | "PreCompact"
   | "PostCompact"
   | "PermissionRequest"
+  | "PermissionDenied"
   | "Setup"
   | "TeammateIdle"
   | "TaskCreated"
@@ -650,6 +677,7 @@ export declare type HookInput =
   | PreToolUseHookInput
   | PostToolUseHookInput
   | PostToolUseFailureHookInput
+  | PermissionDeniedHookInput
   | NotificationHookInput
   | UserPromptSubmitHookInput
   | SessionStartHookInput
@@ -1145,6 +1173,16 @@ export declare type Options = {
    */
   persistSession?: boolean;
   /**
+   * Include hook lifecycle events in the output stream.
+   * When true, `hook_started`, `hook_progress`, and `hook_response` system
+   * messages will be emitted for all hook event types (PreToolUse, PostToolUse,
+   * Stop, etc.). SessionStart and Setup hook events are always emitted
+   * regardless of this setting.
+   *
+   * @default false
+   */
+  includeHookEvents?: boolean;
+  /**
    * Include partial/streaming message events in the output.
    * When true, `SDKPartialAssistantMessage` events will be emitted during streaming.
    */
@@ -1459,6 +1497,19 @@ export declare type PermissionDecisionClassification =
   | "user_temporary"
   | "user_permanent"
   | "user_reject";
+
+export declare type PermissionDeniedHookInput = BaseHookInput & {
+  hook_event_name: "PermissionDenied";
+  tool_name: string;
+  tool_input: unknown;
+  tool_use_id: string;
+  reason: string;
+};
+
+export declare type PermissionDeniedHookSpecificOutput = {
+  hookEventName: "PermissionDenied";
+  retry?: boolean;
+};
 
 /**
  * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved.
@@ -2960,11 +3011,11 @@ export declare type SessionEndHookInput = BaseHookInput & {
 };
 
 /**
- * A user or assistant message from a session transcript.
+ * A message from a session transcript.
  * Returned by `getSessionMessages` for reading historical session data.
  */
 export declare type SessionMessage = {
-  type: "user" | "assistant";
+  type: "user" | "assistant" | "system";
   uuid: string;
   session_id: string;
   message: unknown;
@@ -4469,6 +4520,7 @@ export declare type SyncHookJSONOutput = {
     | SubagentStartHookSpecificOutput
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
+    | PermissionDeniedHookSpecificOutput
     | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput
     | ElicitationHookSpecificOutput
