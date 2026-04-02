@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.89
+// Version: 0.2.90
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -10696,6 +10696,7 @@ function fF() {
     isInteractive: !1,
     kairosActive: !1,
     strictToolResultPairing: !1,
+    memoryToggledOff: !1,
     sdkAgentProgressSummariesEnabled: !1,
     userMsgOptIn: !1,
     clientType: "cli",
@@ -10758,7 +10759,7 @@ function fF() {
     sdkBetas: void 0,
     mainThreadAgentType: void 0,
     isRemoteMode: !1,
-    ...{},
+    ...!1,
     directConnectServerUrl: void 0,
     systemPromptSectionCache: new Map(),
     lastEmittedDate: null,
@@ -10767,7 +10768,6 @@ function fF() {
     hasDevChannels: !1,
     sessionProjectDir: null,
     promptCache1hAllowlist: null,
-    promptCache1hEligible: null,
     afkModeHeaderLatched: null,
     fastModeHeaderLatched: null,
     cacheEditingHeaderLatched: null,
@@ -11964,11 +11964,6 @@ class pX {
           this.handleControlCancelRequest($);
           continue;
         } else if ($.type === "keep_alive") continue;
-        if (
-          $.type === "streamlined_text" ||
-          $.type === "streamlined_tool_use_summary"
-        )
-          continue;
         if ($.type === "system" && $.subtype === "post_turn_summary") continue;
         if ($.type === "result") {
           if (
@@ -30356,7 +30351,7 @@ class WL {
   readyResolve;
   readyReject;
   abortHandler;
-  partialLine = "";
+  partialChunks = [];
   constructor($) {
     this.options = $;
     ((this.abortController = $.abortController ?? new AbortController()),
@@ -30425,22 +30420,32 @@ class WL {
         this.readyResolve?.());
     }),
       J.addEventListener("message", (Y) => {
-        let z = typeof Y.data === "string" ? Y.data : "",
-          G = (this.partialLine + z).split(`
-`);
-        this.partialLine = G.pop() ?? "";
-        for (let U of G) {
-          if (!U) continue;
-          let H;
+        let z = typeof Y.data === "string" ? Y.data : "";
+        if (
+          z.indexOf(`
+`) === -1
+        ) {
+          if (z) this.partialChunks.push(z);
+          return;
+        }
+        let W = this.partialChunks.join("") + z;
+        this.partialChunks.length = 0;
+        let G = W.split(`
+`),
+          U = G.pop() ?? "";
+        if (U) this.partialChunks.push(U);
+        for (let H of G) {
+          if (!H) continue;
+          let K;
           try {
-            H = L6(U);
-          } catch (K) {
+            K = L6(H);
+          } catch (V) {
             s$(
-              `DirectConnect: dropped malformed JSON line (${U.length} bytes): ${K}`,
+              `DirectConnect: dropped malformed JSON line (${H.length} bytes): ${V}`,
             );
             continue;
           }
-          this.messages.enqueue(H);
+          this.messages.enqueue(K);
         }
       }),
       J.addEventListener("error", () => {
@@ -30572,7 +30577,7 @@ function UL($, X) {
       T1 = GL(r9, "..");
     H = GL(T1, "cli.js");
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.89";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.90";
   let {
       abortController: K = y1(),
       additionalDirectories: V = [],

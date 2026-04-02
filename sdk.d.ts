@@ -28,7 +28,12 @@ export declare type AccountInfo = {
   /**
    * Active API backend. Anthropic OAuth login only applies when "firstParty"; for 3P providers the other fields are absent and auth is external (AWS creds, gcloud ADC, etc.).
    */
-  apiProvider?: "firstParty" | "bedrock" | "vertex" | "foundry";
+  apiProvider?:
+    | "firstParty"
+    | "bedrock"
+    | "vertex"
+    | "foundry"
+    | "anthropicAws";
 };
 
 /**
@@ -4525,8 +4530,6 @@ export declare interface SpawnOptions {
 
 declare type StdoutMessage =
   | coreTypes.SDKMessage
-  | coreTypes.SDKStreamlinedTextMessage
-  | coreTypes.SDKStreamlinedToolUseSummaryMessage
   | coreTypes.SDKPostTurnSummaryMessage
   | SDKControlResponse
   | SDKControlRequest
