@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.2.91",
+  "version": "0.2.92",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -84,5 +84,5 @@
     "vendor/ripgrep/",
     "vendor/audio-capture/"
   ],
-  "claudeCodeVersion": "2.1.91"
+  "claudeCodeVersion": "2.1.92"
 }
