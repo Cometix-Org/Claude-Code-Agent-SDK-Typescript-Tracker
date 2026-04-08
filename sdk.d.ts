@@ -33,7 +33,8 @@ export declare type AccountInfo = {
     | "bedrock"
     | "vertex"
     | "foundry"
-    | "anthropicAws";
+    | "anthropicAws"
+    | "mantle";
 };
 
 /**
@@ -218,6 +219,58 @@ export declare type ConfigChangeHookInput = BaseHookInput & {
  */
 export declare type ConfigScope = "local" | "user" | "project";
 
+/**
+ * Structured failure from connectRemoteControl.
+ * @alpha
+ */
+export declare type ConnectRemoteControlError = {
+  kind: "conflict" | "auth" | "network" | "unknown";
+  detail: string;
+};
+
+/**
+ * Options for connectRemoteControl.
+ * @alpha
+ */
+export declare type ConnectRemoteControlOptions = {
+  dir: string;
+  /** Override directory sent to backend for env registration. */
+  registrationDir?: string;
+  name?: string;
+  workerType?: string;
+  branch?: string;
+  gitRepoUrl?: string | null;
+  getAccessToken: () => string | undefined;
+  baseUrl: string;
+  orgUUID: string;
+  model: string;
+  /** Reuse env+session across restarts (reads bridge-pointer.json). */
+  perpetual?: boolean;
+  /** SSE high-water mark so reconnect sends from_sequence_num. */
+  initialSSESequenceNum?: number;
+  /** Called on 401; return true after refreshing token to retry. */
+  onAuth401?: (staleAccessToken: string) => Promise<boolean>;
+  /** Called on 409 conflict; return 'takeover' to deregister + retry. */
+  onConflict?: (detail: {
+    machineName: string;
+    message: string;
+  }) => Promise<"takeover" | "abort">;
+};
+
+/**
+ * Discriminated result from connectRemoteControl.
+ * @alpha
+ */
+export declare type ConnectRemoteControlResult =
+  | {
+      ok: true;
+      handle: RemoteControlHandle;
+    }
+  | {
+      ok: false;
+      error: ConnectRemoteControlError;
+    };
+
 declare type ControlErrorResponse = {
   subtype: "error";
   request_id: string;
@@ -327,6 +380,7 @@ declare namespace coreTypes {
     SDKResultSuccess,
     SDKSessionInfo,
     SDKSessionStateChangedMessage,
+    SDKSettingsParseError,
     SDKStatusMessage,
     SDKStatus,
     SDKSystemMessage,
@@ -443,6 +497,12 @@ export declare type ElicitationRequest = {
   elicitationId?: string;
   /** JSON Schema for the requested input (only for 'form' mode) */
   requestedSchema?: Record<string, unknown>;
+  /** Permission-display title from MCP `_meta['anthropic/permissionDisplay']` — header for elicitation-driven permission prompts */
+  title?: string;
+  /** Short tool/server label from MCP `_meta['anthropic/permissionDisplay'].displayName` */
+  displayName?: string;
+  /** Permission-display subtitle from MCP `_meta['anthropic/permissionDisplay'].description` */
+  description?: string;
 };
 
 /**
@@ -742,6 +802,15 @@ export declare type HookInput =
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
 export declare type HookPermissionDecision = "allow" | "deny" | "ask" | "defer";
+
+/**
+ * A user message typed on claude.ai, extracted from the bridge WS.
+ * @alpha
+ */
+export declare type InboundPrompt = {
+  content: string | unknown[];
+  uuid?: string;
+};
 
 export declare type InferShape<T extends AnyZodRawShape> = {
   [K in keyof T]: T[K] extends {
@@ -2197,6 +2266,18 @@ declare type SDKControlElicitationRequest = {
   url?: string;
   elicitation_id?: string;
   requested_schema?: Record<string, unknown>;
+  /**
+   * Permission-display title from the MCP server's _meta['anthropic/permissionDisplay']. Mirrors can_use_tool.title so SDK consumers can render elicitation-driven permission prompts with structured headers instead of parsing `message`.
+   */
+  title?: string;
+  /**
+   * Short tool/server label from _meta['anthropic/permissionDisplay'].displayName. Mirrors can_use_tool.display_name.
+   */
+  display_name?: string;
+  /**
+   * Permission-display subtitle from _meta['anthropic/permissionDisplay'].description. Mirrors can_use_tool.description.
+   */
+  description?: string;
 };
 
 /**
@@ -2481,7 +2562,7 @@ declare type SDKControlRewindFilesRequest = {
 };
 
 /**
- * Seeds the readFileState cache with a path+mtime entry. Use when a prior Read was removed from context (e.g. by snip) so Edit validation would fail despite the client having observed the Read. The mtime lets the CLI detect if the file changed since the seeded Read — same staleness check as the normal path.
+ * Seeds the readFileState cache with a path+mtime entry. Use when a prior Read was removed from context so Edit validation would fail despite the client having observed the Read. The mtime lets the CLI detect if the file changed since the seeded Read — same staleness check as the normal path.
  */
 declare type SDKControlSeedReadStateRequest = {
   subtype: "seed_read_state";
@@ -2939,6 +3020,24 @@ export declare type SDKSessionStateChangedMessage = {
   state: "idle" | "running" | "requires_action";
   uuid: UUID;
   session_id: string;
+};
+
+/**
+ * A settings file parse or validation error. When a settings.json file fails to parse (invalid JSON, JSON comments, schema mismatch), the file is skipped and any rules it contained — including permission allow/deny lists — are not applied.
+ */
+export declare type SDKSettingsParseError = {
+  /**
+   * Path to the settings file that failed to parse or validate.
+   */
+  file?: string;
+  /**
+   * Dot-notation path to the field with the error, or empty string for whole-file errors.
+   */
+  path: string;
+  /**
+   * Human-readable error message.
+   */
+  message: string;
 };
 
 export declare type SDKStatus = "compacting" | null;
@@ -4688,6 +4787,7 @@ export declare type TerminalReason =
  */
 export declare type ThinkingAdaptive = {
   type: "adaptive";
+  display?: "summarized" | "omitted";
 };
 
 /**
@@ -4711,6 +4811,7 @@ export declare type ThinkingDisabled = {
 export declare type ThinkingEnabled = {
   type: "enabled";
   budgetTokens?: number;
+  display?: "summarized" | "omitted";
 };
 
 export declare function tool<Schema extends AnyZodRawShape>(
@@ -4817,11 +4918,13 @@ export declare function unstable_v2_resumeSession(
 export declare type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
   prompt: string;
+  session_title?: string;
 };
 
 export declare type UserPromptSubmitHookSpecificOutput = {
   hookEventName: "UserPromptSubmit";
   additionalContext?: string;
+  sessionTitle?: string;
 };
 
 export declare type WorktreeCreateHookInput = BaseHookInput & {

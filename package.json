@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.2.92",
+  "version": "0.2.94",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -19,6 +19,10 @@
     "./bridge": {
       "types": "./bridge.d.ts",
       "default": "./bridge.mjs"
+    },
+    "./assistant": {
+      "types": "./assistant.d.ts",
+      "default": "./assistant.mjs"
     },
     "./sdk-tools": {
       "types": "./sdk-tools.d.ts"
@@ -73,6 +77,8 @@
     "agentSdkTypes.d.ts",
     "bridge.mjs",
     "bridge.d.ts",
+    "assistant.mjs",
+    "assistant.d.ts",
     "browser-sdk.js",
     "browser-sdk.d.ts",
     "embed.js",
@@ -84,5 +90,5 @@
     "vendor/ripgrep/",
     "vendor/audio-capture/"
   ],
-  "claudeCodeVersion": "2.1.92"
+  "claudeCodeVersion": "2.1.94"
 }
