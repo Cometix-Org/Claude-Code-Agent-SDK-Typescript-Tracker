@@ -1580,6 +1580,19 @@ export declare type Options = {
    * - `string` - Use a custom system prompt
    * - `{ type: 'preset', preset: 'claude_code' }` - Use Claude Code's default system prompt
    * - `{ type: 'preset', preset: 'claude_code', append: '...' }` - Use default prompt with appended instructions
+   * - `{ type: 'preset', preset: 'claude_code', excludeDynamicSections: true }` -
+   *   Strip per-user dynamic sections (working directory, auto-memory, git
+   *   status) from the system prompt so it stays static and cacheable across
+   *   users. The stripped content is re-injected as the first user message so
+   *   the model still has access to it.
+   *
+   *   Use this when many users in your fleet share the same system prompt and
+   *   you want the prompt-caching prefix to hit cross-user. Tradeoffs:
+   *   - The working-directory, memory-path, and git-status context is
+   *     marginally less authoritative for steering the model (it appears in
+   *     a user message instead of the system prompt).
+   *   - The first user message becomes slightly larger.
+   *   - Has no effect when `systemPrompt` is a string (custom prompt).
    *
    * @example Custom prompt
    * ```typescript
@@ -1594,6 +1607,15 @@ export declare type Options = {
    *   append: 'Always explain your reasoning.'
    * }
    * ```
+   *
+   * @example Cacheable prompt for multi-user fleets
+   * ```typescript
+   * systemPrompt: {
+   *   type: 'preset',
+   *   preset: 'claude_code',
+   *   excludeDynamicSections: true,
+   * }
+   * ```
    */
   systemPrompt?:
     | string
@@ -1601,6 +1623,7 @@ export declare type Options = {
         type: "preset";
         preset: "claude_code";
         append?: string;
+        excludeDynamicSections?: boolean;
       };
   /**
    * Custom function to spawn the Claude Code process.
@@ -2103,6 +2126,7 @@ declare const SandboxNetworkConfigSchema: () => z.ZodOptional<
       allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
       allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
       allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
+      allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
       httpProxyPort: z.ZodOptional<z.ZodNumber>;
       socksProxyPort: z.ZodOptional<z.ZodNumber>;
     },
@@ -2131,6 +2155,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
           allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
           allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
           allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
+          allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
           httpProxyPort: z.ZodOptional<z.ZodNumber>;
           socksProxyPort: z.ZodOptional<z.ZodNumber>;
         },
@@ -2362,6 +2387,7 @@ export declare type SDKControlGetContextUsageResponse = {
     attachmentTokens: number;
     assistantMessageTokens: number;
     userMessageTokens: number;
+    redirectedContextTokens: number;
     toolCallsByType: {
       name: string;
       callTokens: number;
@@ -2397,6 +2423,10 @@ declare type SDKControlInitializeRequest = {
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string;
   appendSystemPrompt?: string;
+  /**
+   * When true, omit per-user dynamic sections (working directory, auto-memory path) from the cached system prompt and re-inject them as the first user message. Lets cross-user prompt caching hit on a static system prompt prefix. Tradeoff: the model sees this context slightly later in the prompt, so steering on the working directory and memory location is marginally less authoritative. Has no effect when a custom (non-preset) system prompt is in use.
+   */
+  excludeDynamicSections?: boolean;
   agents?: Record<string, coreTypes.AgentDefinition>;
   promptSuggestions?: boolean;
   agentProgressSummaries?: boolean;
@@ -3605,6 +3635,10 @@ export declare interface Settings {
     type: "command";
     command: string;
     padding?: number;
+    /**
+     * Re-run the status line command every N seconds in addition to event-driven updates
+     */
+    refreshInterval?: number;
   };
   /**
    * Enabled plugins using plugin-id\@marketplace-id format. Example: { "formatter\@anthropic-tools": true }. Also supports extended format with version constraints.
@@ -4276,6 +4310,10 @@ export declare interface Settings {
    */
   outputStyle?: string;
   /**
+   * Default transcript view mode on startup
+   */
+  viewMode?: "default" | "verbose" | "focus";
+  /**
    * Preferred language for Claude responses and voice dictation (e.g., "japanese", "spanish")
    */
   language?: string;
@@ -4309,6 +4347,10 @@ export declare interface Settings {
        */
       allowAllUnixSockets?: boolean;
       allowLocalBinding?: boolean;
+      /**
+       * macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., "com.apple.coresimulator.*"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright.
+       */
+      allowMachLookup?: string[];
       httpProxyPort?: number;
       socksProxyPort?: number;
     };
@@ -4659,6 +4701,7 @@ export declare interface SpawnOptions {
 declare type StdoutMessage =
   | coreTypes.SDKMessage
   | coreTypes.SDKPostTurnSummaryMessage
+  | coreTypes.SDKTranscriptMirrorMessage
   | SDKControlResponse
   | SDKControlRequest
   | SDKControlCancelRequest
