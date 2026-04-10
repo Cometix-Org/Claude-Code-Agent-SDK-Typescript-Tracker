@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.97
+// Version: 0.2.98
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -12253,9 +12253,14 @@ class iX {
   async seedReadState($, X) {
     await this.request({ subtype: "seed_read_state", path: $, mtime: X });
   }
-  async enableRemoteControl($) {
-    return (await this.request({ subtype: "remote_control", enabled: $ }))
-      .response;
+  async enableRemoteControl($, X) {
+    return (
+      await this.request({
+        subtype: "remote_control",
+        enabled: $,
+        ...(X !== void 0 && { name: X }),
+      })
+    ).response;
   }
   async setProactive($) {
     await this.request({ subtype: "set_proactive", enabled: $ });
@@ -30677,7 +30682,7 @@ function HL($, X) {
         );
       }
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.97";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.98";
   let {
       abortController: O = y1(),
       additionalDirectories: V = [],
