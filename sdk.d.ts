@@ -387,6 +387,7 @@ declare namespace coreTypes {
     SDKTaskNotificationMessage,
     SDKTaskProgressMessage,
     SDKTaskStartedMessage,
+    SDKTaskUpdatedMessage,
     SDKToolProgressMessage,
     SDKToolUseSummaryMessage,
     SDKUserMessageReplay,
@@ -883,6 +884,10 @@ export declare type ListSessionsOptions = {
   /**
    * When `dir` is provided and the directory is inside a git repository,
    * include sessions from all git worktree paths. Defaults to `true`.
+   *
+   * Only applies to the local-filesystem path. Ignored when `sessionStore`
+   * is provided — worktree enumeration requires inspecting `.git/worktrees`
+   * on disk, which a SessionStore (keyed by projectKey) has no view of.
    */
   includeWorktrees?: boolean;
 };
@@ -1303,6 +1308,7 @@ export declare type Options = {
    * @default true
    */
   persistSession?: boolean;
+
   /**
    * Include hook lifecycle events in the output stream.
    * When true, `hook_started`, `hook_progress`, and `hook_response` system
@@ -2388,6 +2394,7 @@ export declare type SDKControlGetContextUsageResponse = {
     assistantMessageTokens: number;
     userMessageTokens: number;
     redirectedContextTokens: number;
+    unattributedTokens: number;
     toolCallsByType: {
       name: string;
       callTokens: number;
@@ -2572,10 +2579,28 @@ declare type SDKControlRequestInner =
   | SDKControlSetProactiveRequest
   | SDKControlGenerateSessionTitleRequest
   | SDKControlSideQuestionRequest
+  | SDKControlOAuthTokenRefreshRequest
   | SDKControlStopTaskRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
-  | SDKControlElicitationRequest;
+  | SDKControlElicitationRequest
+  | SDKControlRequestUserDialogRequest;
+
+/**
+ * Requests the SDK consumer to render a tool-driven blocking dialog and return the user choice. Used by tools that previously rendered Ink JSX via setToolJSX with an onDone callback.
+ */
+declare type SDKControlRequestUserDialogRequest = {
+  subtype: "request_user_dialog";
+  /**
+   * Identifier for the dialog the host should render. Open string union — known kinds include "it2_setup" and "computer_use_approval"; new kinds may be added without bumping the protocol.
+   */
+  dialog_kind: string;
+  /**
+   * Dialog-specific data passed to the host renderer. Shape is defined per dialog_kind; the protocol transports it opaquely.
+   */
+  payload: Record<string, unknown>;
+  tool_use_id?: string;
+};
 
 export declare type SDKControlResponse = {
   type: "control_response";
@@ -2781,6 +2806,7 @@ export declare type SDKMessage =
   | SDKAuthStatusMessage
   | SDKTaskNotificationMessage
   | SDKTaskStartedMessage
+  | SDKTaskUpdatedMessage
   | SDKTaskProgressMessage
   | SDKSessionStateChangedMessage
   | SDKFilesPersistedEvent
@@ -3162,6 +3188,25 @@ export declare type SDKTaskStartedMessage = {
   session_id: string;
 };
 
+export declare type SDKTaskUpdatedMessage = {
+  type: "system";
+  subtype: "task_updated";
+  task_id: string;
+  /**
+   * Wire-safe subset of TaskState fields that changed. Excludes abortController, unregisterCleanup, messages, result. Clients merge into their local task map.
+   */
+  patch: {
+    status?: "pending" | "running" | "completed" | "failed" | "killed";
+    description?: string;
+    end_time?: number;
+    total_paused_ms?: number;
+    error?: string;
+    is_backgrounded?: boolean;
+  };
+  uuid: UUID;
+  session_id: string;
+};
+
 export declare type SDKToolProgressMessage = {
   type: "tool_progress";
   tool_use_id: string;
@@ -3477,6 +3522,10 @@ export declare interface Settings {
              * If true, hook runs in background and wakes the model on exit code 2 (blocking error). Implies async.
              */
             asyncRewake?: boolean;
+            /**
+             * Custom prefix for the system-reminder shown to the model when an asyncRewake hook exits with code 2. The hook output is appended after this prefix.
+             */
+            rewakeMessage?: string;
           }
         | {
             /**

@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.2.98",
+  "version": "0.2.101",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -52,8 +52,8 @@
     "code-generation"
   ],
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
-    "@modelcontextprotocol/sdk": "^1.27.1"
+    "@anthropic-ai/sdk": "^0.81.0",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "peerDependencies": {
     "zod": "^4.0.0"
@@ -90,5 +90,5 @@
     "vendor/ripgrep/",
     "vendor/audio-capture/"
   ],
-  "claudeCodeVersion": "2.1.98"
+  "claudeCodeVersion": "2.1.101"
 }
