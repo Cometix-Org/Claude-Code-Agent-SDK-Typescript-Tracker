@@ -369,7 +369,9 @@ declare namespace coreTypes {
     SDKHookResponseMessage,
     SDKHookStartedMessage,
     SDKLocalCommandOutputMessage,
+    SDKMemoryRecallMessage,
     SDKMessage,
+    SDKNotificationMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
     SDKPromptSuggestionMessage,
@@ -2249,6 +2251,8 @@ export declare type SDKCompactBoundaryMessage = {
   compact_metadata: {
     trigger: "manual" | "auto";
     pre_tokens: number;
+    post_tokens?: number;
+    duration_ms?: number;
     /**
      * Relink info for messagesToKeep. Loaders splice the preserved segment at anchor_uuid (summary for suffix-preserving, boundary for prefix-preserving partial compact) so resume includes preserved content. Unset when compaction summarizes everything (no messagesToKeep).
      */
@@ -2576,7 +2580,6 @@ declare type SDKControlRequestInner =
   | SDKControlClaudeOAuthCallbackRequest
   | SDKControlClaudeOAuthWaitForCompletionRequest
   | SDKControlRemoteControlRequest
-  | SDKControlSetProactiveRequest
   | SDKControlGenerateSessionTitleRequest
   | SDKControlSideQuestionRequest
   | SDKControlOAuthTokenRefreshRequest
@@ -2788,6 +2791,31 @@ export declare type SdkMcpToolDefinition<
   ) => Promise<CallToolResult>;
 };
 
+/**
+ * Emitted when the memory recall supervisor surfaces relevant memories into the turn. Mirrors the CLI relevant_memories attachment so SDK renderers can show "Recalled from memory" inline.
+ */
+export declare type SDKMemoryRecallMessage = {
+  type: "system";
+  subtype: "memory_recall";
+  /**
+   * How memories were surfaced: 'select' returns full file bodies chosen by the parallel selector; 'synthesize' returns a Sonnet-authored paragraph distilled from many tiny memories.
+   */
+  mode: "select" | "synthesize";
+  memories: {
+    /**
+     * Absolute path to the memory file, or a synthesis sentinel of the form `<synthesis:DIR>` when mode is 'synthesize'.
+     */
+    path: string;
+    scope: "personal" | "team";
+    /**
+     * Synthesis paragraph. Only present when mode is 'synthesize'; always absent for 'select' (renderers lazy-load from path).
+     */
+    content?: string;
+  }[];
+  uuid: UUID;
+  session_id: string;
+};
+
 export declare type SDKMessage =
   | SDKAssistantMessage
   | SDKUserMessage
@@ -2809,11 +2837,28 @@ export declare type SDKMessage =
   | SDKTaskUpdatedMessage
   | SDKTaskProgressMessage
   | SDKSessionStateChangedMessage
+  | SDKNotificationMessage
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
+  | SDKMemoryRecallMessage
   | SDKRateLimitEvent
   | SDKElicitationCompleteMessage
   | SDKPromptSuggestionMessage;
+
+/**
+ * Loop-side text notification. Mirrors the interactive REPL notification queue (key/priority/timeout). JSX notifications are not emitted on this channel.
+ */
+export declare type SDKNotificationMessage = {
+  type: "system";
+  subtype: "notification";
+  key: string;
+  text: string;
+  priority: "low" | "medium" | "high" | "immediate";
+  color?: string;
+  timeout_ms?: number;
+  uuid: UUID;
+  session_id: string;
+};
 
 export declare type SDKPartialAssistantMessage = {
   type: "stream_event";
@@ -3103,6 +3148,8 @@ export declare type SDKStatusMessage = {
   subtype: "status";
   status: SDKStatus;
   permissionMode?: PermissionMode;
+  compact_result?: "success" | "failed";
+  compact_error?: string;
   uuid: UUID;
   session_id: string;
 };
@@ -3133,6 +3180,7 @@ export declare type SDKSystemMessage = {
     path: string;
   }[];
   fast_mode_state?: FastModeState;
+
   uuid: UUID;
   session_id: string;
 };
@@ -3150,6 +3198,7 @@ export declare type SDKTaskNotificationMessage = {
     tool_uses: number;
     duration_ms: number;
   };
+  skip_transcript?: boolean;
   uuid: UUID;
   session_id: string;
 };
@@ -3184,6 +3233,10 @@ export declare type SDKTaskStartedMessage = {
    */
   workflow_name?: string;
   prompt?: string;
+  /**
+   * Ambient/housekeeping task. Consumers should hide this from the inline transcript; it may still appear in a tasks panel.
+   */
+  skip_transcript?: boolean;
   uuid: UUID;
   session_id: string;
 };
@@ -3346,6 +3399,14 @@ export declare interface Settings {
    */
   cleanupPeriodDays?: number;
   /**
+   * Per-skill description character cap in the skill listing sent to Claude (default: 1536). Descriptions longer than this are truncated. Raise to opt in to higher per-turn context cost.
+   */
+  skillListingMaxDescChars?: number;
+  /**
+   * Fraction of the context window (in characters) reserved for the skill listing sent to Claude (default: 0.01 = 1%). When the listing exceeds this, descriptions are shortened to fit. Raise to opt in to higher per-turn context cost.
+   */
+  skillListingBudgetFraction?: number;
+  /**
    * Environment variables to set for Claude Code sessions
    */
   env?: {
@@ -3434,6 +3495,12 @@ export declare interface Settings {
    * List of rejected MCP servers from .mcp.json
    */
   disabledMcpjsonServers?: string[];
+  /**
+   * Per-skill listing overrides keyed by skill name. "name-only" lists the skill without its description; "user-invocable-only" hides it from the model but keeps /name; "off" hides it from both. Absent = on.
+   */
+  skillOverrides?: {
+    [k: string]: "on" | "name-only" | "user-invocable-only" | "off";
+  };
   /**
    * Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied.
    */
@@ -3688,6 +3755,13 @@ export declare interface Settings {
      * Re-run the status line command every N seconds in addition to event-driven updates
      */
     refreshInterval?: number;
+  };
+  /**
+   * Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin
+   */
+  subagentStatusLine?: {
+    type: "command";
+    command: string;
   };
   /**
    * Enabled plugins using plugin-id\@marketplace-id format. Example: { "formatter\@anthropic-tools": true }. Also supports extended format with version constraints.
@@ -4501,6 +4575,7 @@ export declare interface Settings {
    * When false, prompt suggestions are disabled. When absent or true, prompt suggestions are enabled.
    */
   promptSuggestionEnabled?: boolean;
+
   /**
    * When true, the plan-approval dialog offers a "clear context" option. Defaults to false.
    */
@@ -4555,15 +4630,6 @@ export declare interface Settings {
    * Custom directory for plan files, relative to project root. If not set, defaults to ~/.claude/plans/
    */
   plansDirectory?: string;
-  /**
-   * Autonomous background operation configuration
-   */
-  proactive?: {
-    /**
-     * When true, autonomous background operation is activated automatically at launch (if entitled). When false or null, the user must opt in via the /proactive command or --proactive flag. Existing entitlement gates (GrowthBook flag, ZDR, managed-settings) still apply.
-     */
-    autoEnable?: boolean | null;
-  };
 
   /**
    * Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.
