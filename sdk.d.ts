@@ -374,6 +374,7 @@ declare namespace coreTypes {
     SDKNotificationMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
+    SDKPluginInstallMessage,
     SDKPromptSuggestionMessage,
     SDKRateLimitEvent,
     SDKRateLimitInfo,
@@ -2830,6 +2831,7 @@ export declare type SDKMessage =
   | SDKHookStartedMessage
   | SDKHookProgressMessage
   | SDKHookResponseMessage
+  | SDKPluginInstallMessage
   | SDKToolProgressMessage
   | SDKAuthStatusMessage
   | SDKTaskNotificationMessage
@@ -2866,6 +2868,7 @@ export declare type SDKPartialAssistantMessage = {
   parent_tool_use_id: string | null;
   uuid: UUID;
   session_id: string;
+  ttft_ms?: number;
 };
 
 export declare type SDKPermissionDenial = {
@@ -2886,6 +2889,19 @@ export declare type SdkPluginConfig = {
    * Absolute or relative path to the plugin directory
    */
   path: string;
+};
+
+/**
+ * Headless plugin installation progress (CLAUDE_CODE_SYNC_PLUGIN_INSTALL). started/completed bracket the whole install; installed/failed carry a per-marketplace name.
+ */
+export declare type SDKPluginInstallMessage = {
+  type: "system";
+  subtype: "plugin_install";
+  status: "started" | "installed" | "failed" | "completed";
+  name?: string;
+  error?: string;
+  uuid: UUID;
+  session_id: string;
 };
 
 /**
@@ -3141,7 +3157,7 @@ export declare type SDKSettingsParseError = {
   message: string;
 };
 
-export declare type SDKStatus = "compacting" | null;
+export declare type SDKStatus = "compacting" | "requesting" | null;
 
 export declare type SDKStatusMessage = {
   type: "system";
@@ -3589,10 +3605,6 @@ export declare interface Settings {
              * If true, hook runs in background and wakes the model on exit code 2 (blocking error). Implies async.
              */
             asyncRewake?: boolean;
-            /**
-             * Custom prefix for the system-reminder shown to the model when an asyncRewake hook exits with code 2. The hook output is appended after this prefix.
-             */
-            rewakeMessage?: string;
           }
         | {
             /**
@@ -5035,6 +5047,13 @@ export declare interface Transport {
    * End the input stream
    */
   endInput(): void;
+  /**
+   * Optional Disposable support. All built-in transports implement this
+   * (delegating to close()), so `using transport = new ProcessTransport(...)`
+   * works. Kept optional on the interface to avoid a breaking change for
+   * external `implements Transport` consumers.
+   */
+  [Symbol.dispose]?(): void;
 }
 
 /**
