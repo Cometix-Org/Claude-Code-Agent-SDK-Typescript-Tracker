@@ -293,6 +293,7 @@ declare namespace coreTypes {
     NonNullableUsage,
     HOOK_EVENTS,
     EXIT_REASONS,
+    SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
     AccountInfo,
     AgentDefinition,
     AgentInfo,
@@ -370,6 +371,7 @@ declare namespace coreTypes {
     SDKHookStartedMessage,
     SDKLocalCommandOutputMessage,
     SDKMemoryRecallMessage,
+    SDKMessageOrigin,
     SDKMessage,
     SDKNotificationMessage,
     SDKPartialAssistantMessage,
@@ -1587,6 +1589,11 @@ export declare type Options = {
   /**
    * System prompt configuration.
    * - `string` - Use a custom system prompt
+   * - `string[]` - Use a custom system prompt as an array of blocks; include
+   *   `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` as a standalone element to mark the
+   *   split between the static (globally-cacheable) prefix and the dynamic
+   *   (session-specific) suffix. Blocks before the marker are eligible for
+   *   cross-session prompt caching; blocks after it are not.
    * - `{ type: 'preset', preset: 'claude_code' }` - Use Claude Code's default system prompt
    * - `{ type: 'preset', preset: 'claude_code', append: '...' }` - Use default prompt with appended instructions
    * - `{ type: 'preset', preset: 'claude_code', excludeDynamicSections: true }` -
@@ -1606,6 +1613,16 @@ export declare type Options = {
    * @example Custom prompt
    * ```typescript
    * systemPrompt: 'You are a helpful coding assistant.'
+   * ```
+   *
+   * @example Custom prompt with cache boundary
+   * ```typescript
+   * import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from '@anthropic-ai/claude-code'
+   * systemPrompt: [
+   *   staticInstructions,
+   *   SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
+   *   sessionContext,
+   * ]
    * ```
    *
    * @example Default with additions
@@ -1628,6 +1645,7 @@ export declare type Options = {
    */
   systemPrompt?:
     | string
+    | string[]
     | {
         type: "preset";
         preset: "claude_code";
@@ -2433,7 +2451,7 @@ declare type SDKControlInitializeRequest = {
   hooks?: Partial<Record<coreTypes.HookEvent, SDKHookCallbackMatcher[]>>;
   sdkMcpServers?: string[];
   jsonSchema?: Record<string, unknown>;
-  systemPrompt?: string;
+  systemPrompt?: string[];
   appendSystemPrompt?: string;
   /**
    * When true, omit per-user dynamic sections (working directory, auto-memory path) from the cached system prompt and re-inject them as the first user message. Lets cross-user prompt caching hit on a static system prompt prefix. Tradeoff: the model sees this context slightly later in the prompt, so steering on the working directory and memory location is marginally less authoritative. Has no effect when a custom (non-preset) system prompt is in use.
@@ -2548,6 +2566,14 @@ export declare type SDKControlReloadPluginsResponse = {
   error_count: number;
 };
 
+/**
+ * Sets the user-facing title for the current session.
+ */
+declare type SDKControlRenameSessionRequest = {
+  subtype: "rename_session";
+  title: string;
+};
+
 export declare type SDKControlRequest = {
   type: "control_request";
   request_id: string;
@@ -2561,6 +2587,7 @@ declare type SDKControlRequestInner =
   | SDKControlSetPermissionModeRequest
   | SDKControlSetModelRequest
   | SDKControlSetMaxThinkingTokensRequest
+  | SDKControlRenameSessionRequest
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
   | SDKHookCallbackRequest
@@ -2848,6 +2875,29 @@ export declare type SDKMessage =
   | SDKPromptSuggestionMessage;
 
 /**
+ * Provenance of a user-role message (peer session, team lead, channel). Absent or `human` means keyboard input from the user.
+ */
+export declare type SDKMessageOrigin =
+  | {
+      kind: "human";
+    }
+  | {
+      kind: "channel";
+      server: string;
+    }
+  | {
+      kind: "peer";
+      from: string;
+      name?: string;
+    }
+  | {
+      kind: "task-notification";
+    }
+  | {
+      kind: "coordinator";
+    };
+
+/**
  * Loop-side text notification. Mirrors the interactive REPL notification queue (key/priority/timeout). JSX notifications are not emitted on this channel.
  */
 export declare type SDKNotificationMessage = {
@@ -2991,6 +3041,7 @@ export declare type SDKResultSuccess = {
   duration_ms: number;
   duration_api_ms: number;
   is_error: boolean;
+  api_error_status?: number | null;
   num_turns: number;
   result: string;
   stop_reason: string | null;
@@ -3100,6 +3151,21 @@ export declare type SDKSessionOptions = {
     [envVar: string]: string | undefined;
   };
   /**
+   * Working directory for the Claude Code process. Defaults to the current
+   * process's working directory.
+   */
+  cwd?: string;
+  /**
+   * Which settings sources to load (CLAUDE.md, `.claude/settings.json`).
+   * Defaults to `[]` — no project/user settings are loaded unless specified.
+   */
+  settingSources?: SettingSource[];
+  /**
+   * Must be set to `true` when using `permissionMode: 'bypassPermissions'`.
+   * This is a safety measure to ensure intentional bypassing of permissions.
+   */
+  allowDangerouslySkipPermissions?: boolean;
+  /**
    * List of tool names that are auto-allowed without prompting for permission.
    * These tools will execute automatically without asking the user for approval.
    */
@@ -3122,6 +3188,7 @@ export declare type SDKSessionOptions = {
    * Permission mode for the session.
    * - `'default'` - Standard permission behavior, prompts for dangerous operations
    * - `'acceptEdits'` - Auto-accept file edit operations
+   * - `'bypassPermissions'` - Bypass all permission checks (requires `allowDangerouslySkipPermissions`)
    * - `'plan'` - Planning mode, no execution of tools
    * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
    */
@@ -3302,6 +3369,11 @@ export declare type SDKUserMessage = {
   isSynthetic?: boolean;
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
+  origin?: SDKMessageOrigin;
+  /**
+   * When false, the message is appended to the transcript without triggering an assistant turn. It will be merged into the next user message that does query.
+   */
+  shouldQuery?: boolean;
   /**
    * ISO timestamp when the message was created on the originating process. Older emitters omit it; consumers should fall back to receive time.
    */
@@ -3317,6 +3389,11 @@ export declare type SDKUserMessageReplay = {
   isSynthetic?: boolean;
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
+  origin?: SDKMessageOrigin;
+  /**
+   * When false, the message is appended to the transcript without triggering an assistant turn. It will be merged into the next user message that does query.
+   */
+  shouldQuery?: boolean;
   /**
    * ISO timestamp when the message was created on the originating process. Older emitters omit it; consumers should fall back to receive time.
    */
@@ -4642,6 +4719,10 @@ export declare interface Settings {
    * Custom directory for plan files, relative to project root. If not set, defaults to ~/.claude/plans/
    */
   plansDirectory?: string;
+  /**
+   * Terminal UI renderer. "fullscreen" uses the flicker-free alt-screen renderer with virtualized scrollback (equivalent to CLAUDE_CODE_NO_FLICKER=1). "default" uses the classic main-screen renderer.
+   */
+  tui?: "default" | "fullscreen";
 
   /**
    * Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.
@@ -4898,6 +4979,17 @@ export declare type SyncHookJSONOutput = {
     | FileChangedHookSpecificOutput
     | WorktreeCreateHookSpecificOutput;
 };
+
+/**
+ * Marker string that splits a custom `systemPrompt` into a static prefix
+ * (eligible for cross-session prompt caching) and a dynamic suffix
+ * (session-specific, not globally cached). Include this literal as a
+ * standalone element of a `string[]` `systemPrompt` to opt in; blocks
+ * before it get global cache scope, blocks after do not. See
+ * `splitSysPromptPrefix` in `src/utils/api.ts`.
+ */
+export declare const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
+  "__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__";
 
 /**
  * Tag a session. Pass null to clear the tag.
