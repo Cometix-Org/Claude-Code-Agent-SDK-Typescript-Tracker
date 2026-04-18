@@ -221565,18 +221565,16 @@ function C$4(q) {
                   return Xk.createElement(
                     T,
                     { key: N },
-                    k.text
-                      .split("")
-                      .map((R, h) =>
-                        Xk.createElement(CE6, {
-                          key: h,
-                          char: R,
-                          index: k.start + h,
-                          glimmerIndex: D,
-                          messageColor: k.highlight.color,
-                          shimmerColor: k.highlight.shimmerColor,
-                        }),
-                      ),
+                    k.text.split("").map((R, h) =>
+                      Xk.createElement(CE6, {
+                        key: h,
+                        char: R,
+                        index: k.start + h,
+                        glimmerIndex: D,
+                        messageColor: k.highlight.color,
+                        shimmerColor: k.highlight.shimmerColor,
+                      }),
+                    ),
                   );
                 return Xk.createElement(
                   T,
@@ -371135,12 +371133,10 @@ var WqK = p((MqK) => {
       let _ = await this.filterStack.sendMetadata(Promise.resolve(q)),
         z;
       try {
-        z = await this.subchannel
-          .getCallCredentials()
-          .generateMetadata({
-            method_name: this.method,
-            service_url: this.serviceUrl,
-          });
+        z = await this.subchannel.getCallCredentials().generateMetadata({
+          method_name: this.method,
+          service_url: this.serviceUrl,
+        });
       } catch (A) {
         let O = A,
           { code: w, details: $ } = (0, kUz.restrictControlPlaneStatusCode)(
@@ -608309,18 +608305,16 @@ function _KA() {
     [K, _] = hF8("responding", h45, !1),
     z;
   if (q[0] !== _)
-    ((z = h45
-      .split("")
-      .map((O, w) =>
-        Bj.default.createElement(CE6, {
-          key: w,
-          char: O,
-          index: w,
-          glimmerIndex: _,
-          messageColor: "inactive",
-          shimmerColor: "text",
-        }),
-      )),
+    ((z = h45.split("").map((O, w) =>
+      Bj.default.createElement(CE6, {
+        key: w,
+        char: O,
+        index: w,
+        glimmerIndex: _,
+        messageColor: "inactive",
+        shimmerColor: "text",
+      }),
+    )),
       (q[0] = _),
       (q[1] = z));
   else z = q[1];
