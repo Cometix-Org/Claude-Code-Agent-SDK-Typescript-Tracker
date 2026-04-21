@@ -422,6 +422,8 @@ declare namespace coreTypes {
     ThinkingConfig,
     ThinkingDisabled,
     ThinkingEnabled,
+    UserPromptExpansionHookInput,
+    UserPromptExpansionHookSpecificOutput,
     UserPromptSubmitHookInput,
     UserPromptSubmitHookSpecificOutput,
     WorktreeCreateHookInput,
@@ -742,6 +744,7 @@ export declare const HOOK_EVENTS: readonly [
   "PostToolUseFailure",
   "Notification",
   "UserPromptSubmit",
+  "UserPromptExpansion",
   "SessionStart",
   "SessionEnd",
   "Stop",
@@ -793,6 +796,7 @@ export declare type HookEvent =
   | "PostToolUseFailure"
   | "Notification"
   | "UserPromptSubmit"
+  | "UserPromptExpansion"
   | "SessionStart"
   | "SessionEnd"
   | "Stop"
@@ -823,6 +827,7 @@ export declare type HookInput =
   | PermissionDeniedHookInput
   | NotificationHookInput
   | UserPromptSubmitHookInput
+  | UserPromptExpansionHookInput
   | SessionStartHookInput
   | SessionEndHookInput
   | StopHookInput
@@ -2157,6 +2162,21 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   getContextUsage(): Promise<SDKControlGetContextUsageResponse>;
   /**
+   * Read a file from the session's filesystem for the remote sidebar
+   * viewer. Path is resolved against cwd and gated by the same
+   * read-permission rules as the Read tool. Returns null on permission
+   * denial, missing file, or transport error.
+   *
+   * @param path - File path (relative to cwd or absolute)
+   * @param options - Optional maxBytes cap (default 1MB)
+   */
+  readFile(
+    path: string,
+    options?: {
+      maxBytes?: number;
+    },
+  ): Promise<SDKControlReadFileResponse | null>;
+  /**
    * Reload plugins from disk and return the refreshed commands, agents,
    * plugins, and MCP server status.
    *
@@ -2639,6 +2659,10 @@ declare type SDKControlInitializeRequest = {
    * Custom session title. When provided, the session uses this title and skips automatic title generation. Has no effect on the persisted title when resuming an existing session.
    */
   title?: string;
+  /**
+   * When provided, only skills whose names match an entry are loaded into the main session system prompt, using the same rules as AgentDefinition.skills: exact name, plugin-qualified name, or ":name" suffix. Omit to load every discovered skill. Applies to the main session only; subagents use AgentDefinition.skills.
+   */
+  skills?: string[];
   promptSuggestions?: boolean;
   agentProgressSummaries?: boolean;
 };
@@ -2665,6 +2689,18 @@ export declare type SDKControlInitializeResponse = {
  */
 declare type SDKControlInterruptRequest = {
   subtype: "interrupt";
+};
+
+/**
+ * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call.
+ */
+declare type SDKControlMcpCallRequest = {
+  subtype: "mcp_call";
+  /**
+   * Fully-qualified MCP tool name, e.g. mcp__server__tool_name.
+   */
+  tool: string;
+  arguments?: Record<string, unknown>;
 };
 
 /**
@@ -2718,11 +2754,48 @@ declare type SDKControlPermissionRequest = {
   permission_suggestions?: coreTypes.PermissionUpdate[];
   blocked_path?: string;
   decision_reason?: string;
+  /**
+   * Structured discriminator for why auto-mode escalated. Lets SDK hosts make policy (e.g. auto-deny safetyCheck) without parsing decision_reason text. For compound bash commands this is "subcommandResults" even when a safetyCheck is nested inside — check classifier_approvable for that case.
+   */
+  decision_reason_type?:
+    | "rule"
+    | "mode"
+    | "subcommandResults"
+    | "permissionPromptTool"
+    | "hook"
+    | "asyncAgent"
+    | "sandboxOverride"
+    | "workingDir"
+    | "safetyCheck"
+    | "classifier"
+    | "other";
+  /**
+   * Set when a safetyCheck is present anywhere in the decision reason (including nested inside subcommandResults for compound bash). false = at least one safety check requires manual approval (e.g. Windows path bypass, dangerous rm); true = all safety checks MAY be classifier-approved (e.g. sensitive-file paths). Absent when no safetyCheck is involved.
+   */
+  classifier_approvable?: boolean;
   title?: string;
   display_name?: string;
   tool_use_id: string;
   agent_id?: string;
   description?: string;
+};
+
+/**
+ * Read a file from the session filesystem for the remote sidebar viewer. Path is resolved against cwd and gated by the same read-permission rules as the Read tool.
+ */
+declare type SDKControlReadFileRequest = {
+  subtype: "read_file";
+  path: string;
+  max_bytes?: number;
+};
+
+/**
+ * File contents for the remote sidebar viewer.
+ */
+export declare type SDKControlReadFileResponse = {
+  contents: string;
+  absPath: string;
+  truncated?: boolean;
 };
 
 /**
@@ -2771,11 +2844,13 @@ declare type SDKControlRequestInner =
   | SDKControlRenameSessionRequest
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
+  | SDKControlMcpCallRequest
   | SDKControlFileSuggestionsRequest
   | SDKHookCallbackRequest
   | SDKControlMcpMessageRequest
   | SDKControlRewindFilesRequest
   | SDKControlCancelAsyncMessageRequest
+  | SDKControlReadFileRequest
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
   | SDKControlReloadPluginsRequest
@@ -2793,6 +2868,7 @@ declare type SDKControlRequestInner =
   | SDKControlGenerateSessionTitleRequest
   | SDKControlSideQuestionRequest
   | SDKControlUltrareviewLaunchRequest
+  | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
   | SDKControlStopTaskRequest
   | SDKControlApplyFlagSettingsRequest
@@ -4856,7 +4932,7 @@ export declare interface Settings {
   sandbox?: {
     enabled?: boolean;
     /**
-     * Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies, unsupported platform, or platform not in enabledPlatforms). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate.
+     * Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate.
      */
     failIfUnavailable?: boolean;
     autoAllowBashIfSandboxed?: boolean;
@@ -5047,7 +5123,20 @@ export declare interface Settings {
    * Terminal UI renderer. "fullscreen" uses the flicker-free alt-screen renderer with virtualized scrollback (equivalent to CLAUDE_CODE_NO_FLICKER=1). "default" uses the classic main-screen renderer.
    */
   tui?: "default" | "fullscreen";
-
+  /**
+   * Voice mode settings (hold-to-talk / tap-to-toggle dictation)
+   */
+  voice?: {
+    enabled?: boolean;
+    /**
+     * 'hold' (default): hold to talk. 'tap': tap to start, tap to stop+submit.
+     */
+    mode?: "hold" | "tap";
+    /**
+     * Submit the prompt when hold-to-talk is released (hold mode only)
+     */
+    autoSubmit?: boolean;
+  };
   /**
    * Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.
    */
@@ -5298,6 +5387,7 @@ export declare type SyncHookJSONOutput = {
   hookSpecificOutput?:
     | PreToolUseHookSpecificOutput
     | UserPromptSubmitHookSpecificOutput
+    | UserPromptExpansionHookSpecificOutput
     | SessionStartHookSpecificOutput
     | SetupHookSpecificOutput
     | SubagentStartHookSpecificOutput
@@ -5516,6 +5606,20 @@ export declare function unstable_v2_resumeSession(
   _sessionId: string,
   _options: SDKSessionOptions,
 ): SDKSession;
+
+export declare type UserPromptExpansionHookInput = BaseHookInput & {
+  hook_event_name: "UserPromptExpansion";
+  expansion_type: "slash_command" | "mcp_prompt";
+  command_name: string;
+  command_args: string;
+  command_source?: string;
+  prompt: string;
+};
+
+export declare type UserPromptExpansionHookSpecificOutput = {
+  hookEventName: "UserPromptExpansion";
+  additionalContext?: string;
+};
 
 export declare type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
