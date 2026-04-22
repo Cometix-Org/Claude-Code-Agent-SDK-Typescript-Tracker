@@ -3647,6 +3647,7 @@ export declare type SDKUserMessage = {
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
   origin?: SDKMessageOrigin;
+
   /**
    * When false, the message is appended to the transcript without triggering an assistant turn. It will be merged into the next user message that does query.
    */
@@ -3667,6 +3668,7 @@ export declare type SDKUserMessageReplay = {
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
   origin?: SDKMessageOrigin;
+
   /**
    * When false, the message is appended to the transcript without triggering an assistant turn. It will be merged into the next user message that does query.
    */
