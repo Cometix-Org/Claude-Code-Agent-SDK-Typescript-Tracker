@@ -27,7 +27,6 @@ export type ToolInputSchemas =
   | WebFetchInput
   | WebSearchInput
   | AskUserQuestionInput
-  | ConfigInput
   | EnterWorktreeInput
   | ExitWorktreeInput
   | ToolOutputSchemas;
@@ -49,7 +48,6 @@ export type ToolOutputSchemas =
   | WebFetchOutput
   | WebSearchOutput
   | AskUserQuestionOutput
-  | ConfigOutput
   | EnterWorktreeOutput
   | ExitWorktreeOutput;
 export type AgentOutput =
@@ -2146,16 +2144,6 @@ export interface AskUserQuestionInput {
     source?: string;
   };
 }
-export interface ConfigInput {
-  /**
-   * The setting key (e.g., "theme", "model", "permissions.defaultMode")
-   */
-  setting: string;
-  /**
-   * The new value. Omit to get current value.
-   */
-  value?: string | boolean | number;
-}
 export interface EnterWorktreeInput {
   /**
    * Optional name for a new worktree. Each "/"-separated segment may contain only letters, digits, dots, underscores, and dashes; max 64 chars total. A random name is generated if not provided. Mutually exclusive with `path`.
@@ -2723,15 +2711,6 @@ export interface AskUserQuestionOutput {
       notes?: string;
     };
   };
-}
-export interface ConfigOutput {
-  success: boolean;
-  operation?: "get" | "set";
-  setting?: string;
-  value?: unknown;
-  previousValue?: unknown;
-  newValue?: unknown;
-  error?: string;
 }
 export interface EnterWorktreeOutput {
   worktreePath: string;

@@ -348,6 +348,9 @@ declare namespace coreTypes {
     PermissionUpdateDestination,
     PermissionUpdate,
     PostCompactHookInput,
+    PostToolBatchHookInput,
+    PostToolBatchHookSpecificOutput,
+    PostToolBatchToolCall,
     PostToolUseFailureHookInput,
     PostToolUseFailureHookSpecificOutput,
     PostToolUseHookInput,
@@ -596,6 +599,34 @@ export declare type FileChangedHookSpecificOutput = {
 };
 
 /**
+ * Fold a batch of appended entries into the running summary for `key`.
+ *
+ * Stores call this from inside `append()` to keep a {@link SessionSummaryEntry}
+ * sidecar up to date without re-reading the transcript. `prev` is the previous
+ * summary for the same key (or `undefined` for the first append). The returned
+ * `data` blob is opaque to the store — persist it verbatim.
+ *
+ * Set-once fields (`isSidechain`, `createdAt`, `cwd`, `firstPrompt`) freeze on
+ * first sight; last-wins fields (`customTitle`, `aiTitle`, `lastPrompt`,
+ * `summaryHint`, `gitBranch`, `tag`) overwrite on every appearance.
+ *
+ * `mtime` is NOT derived from entry timestamps — the adapter MUST stamp it at
+ * persist time using the same clock it uses for `listSessions().mtime`. Pass
+ * it via `options.mtime`; when omitted, the previous summary's `mtime` is
+ * preserved (use this only when re-folding the same sidecar without a new
+ * persist). See {@link SessionSummaryEntry.mtime} for the contract.
+ * @alpha
+ */
+export declare function foldSessionSummary(
+  prev: SessionSummaryEntry | undefined,
+  key: SessionKey,
+  entries: SessionStoreEntry[],
+  options?: {
+    mtime?: number;
+  },
+): SessionSummaryEntry;
+
+/**
  * Fork a session into a new branch with fresh UUIDs.
  *
  * Copies transcript messages from the source session into a new session file,
@@ -742,6 +773,7 @@ export declare const HOOK_EVENTS: readonly [
   "PreToolUse",
   "PostToolUse",
   "PostToolUseFailure",
+  "PostToolBatch",
   "Notification",
   "UserPromptSubmit",
   "UserPromptExpansion",
@@ -794,6 +826,7 @@ export declare type HookEvent =
   | "PreToolUse"
   | "PostToolUse"
   | "PostToolUseFailure"
+  | "PostToolBatch"
   | "Notification"
   | "UserPromptSubmit"
   | "UserPromptExpansion"
@@ -824,6 +857,7 @@ export declare type HookInput =
   | PreToolUseHookInput
   | PostToolUseHookInput
   | PostToolUseFailureHookInput
+  | PostToolBatchHookInput
   | PermissionDeniedHookInput
   | NotificationHookInput
   | UserPromptSubmitHookInput
@@ -923,6 +957,8 @@ export declare type InferShape<T extends AnyZodRawShape> = {
 export declare class InMemorySessionStore implements SessionStore {
   private store;
   private mtimes;
+  private summaries;
+  private lastMtime;
   private keyToString;
   append(key: SessionKey, entries: SessionStoreEntry[]): Promise<void>;
   load(key: SessionKey): Promise<SessionStoreEntry[] | null>;
@@ -932,6 +968,7 @@ export declare class InMemorySessionStore implements SessionStore {
       mtime: number;
     }>
   >;
+  listSessionSummaries(projectKey: string): Promise<SessionSummaryEntry[]>;
   delete(key: SessionKey): Promise<void>;
   listSubkeys(key: {
     projectKey: string;
@@ -1591,6 +1628,13 @@ export declare type Options = {
    */
   permissionMode?: PermissionMode;
   /**
+   * Custom workflow instructions for plan mode. When `permissionMode` is
+   * `'plan'`, this string replaces the default code-implementation workflow
+   * body in the plan-mode system reminder. The CLI still wraps it with the
+   * read-only enforcement preamble and the ExitPlanMode protocol footer.
+   */
+  planModeInstructions?: string;
+  /**
    * Must be set to `true` when using `permissionMode: 'bypassPermissions'`.
    * This is a safety measure to ensure intentional bypassing of permissions.
    */
@@ -1714,6 +1758,28 @@ export declare type Options = {
    * ```
    */
   settings?: string | Settings;
+  /**
+   * Policy-tier settings supplied by the spawning parent process. Merged into
+   * the managed-settings layer below IT-controlled sources (server / MDM /
+   * managed-settings.json) but above HKCU. Honors policy-only keys such as
+   * `sandbox.network.allowManagedDomainsOnly`.
+   *
+   * Intended for embedding applications (e.g. desktop apps) that derive
+   * lockdown settings from their own enterprise configuration and need to
+   * enforce them on the spawned subprocess without writing root-owned files.
+   *
+   * Unlike `settings`, this option is loaded into the managed (policy) layer
+   * rather than the user-controlled flag layer, so user/project settings
+   * cannot widen restrictions set here.
+   *
+   * @example
+   * ```typescript
+   * managedSettings: {
+   *   sandbox: { network: { allowManagedDomainsOnly: true } }
+   * }
+   * ```
+   */
+  managedSettings?: Settings;
   /**
    * Control which filesystem settings to load.
    * - `'user'` - Global user settings (`~/.claude/settings.json`)
@@ -1972,6 +2038,26 @@ export declare type PostCompactHookInput = BaseHookInput & {
    * The conversation summary produced by compaction
    */
   compact_summary: string;
+};
+
+/**
+ * Hook input for the PostToolBatch event. Fired once after every tool call in a batch has resolved, before the next model request. PostToolUse fires per-tool and may run concurrently for parallel tool calls; PostToolBatch fires exactly once with the full batch.
+ */
+export declare type PostToolBatchHookInput = BaseHookInput & {
+  hook_event_name: "PostToolBatch";
+  tool_calls: PostToolBatchToolCall[];
+};
+
+export declare type PostToolBatchHookSpecificOutput = {
+  hookEventName: "PostToolBatch";
+  additionalContext?: string;
+};
+
+export declare type PostToolBatchToolCall = {
+  tool_name: string;
+  tool_input: unknown;
+  tool_use_id: string;
+  tool_response?: unknown;
 };
 
 export declare type PostToolUseFailureHookInput = BaseHookInput & {
@@ -2633,6 +2719,13 @@ export declare type SDKControlGetContextUsageResponse = {
 };
 
 /**
+ * Requests the formatted session cost summary (the same text /usage prints in non-interactive mode). Used by the thin-client /usage dialog to show the remote container cost instead of the local $0.00.
+ */
+declare type SDKControlGetSessionCostRequest = {
+  subtype: "get_session_cost";
+};
+
+/**
  * Returns the effective merged settings and the raw per-source settings.
  */
 declare type SDKControlGetSettingsRequest = {
@@ -2649,6 +2742,10 @@ declare type SDKControlInitializeRequest = {
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string[];
   appendSystemPrompt?: string;
+  /**
+   * Custom workflow body for the plan-mode system reminder. Replaces the default code-implementation phases; the CLI still wraps it with the read-only enforcement preamble and the ExitPlanMode protocol footer.
+   */
+  planModeInstructions?: string;
 
   /**
    * When true, omit per-user dynamic sections (working directory, auto-memory path) from the cached system prompt and re-inject them as the first user message. Lets cross-user prompt caching hit on a static system prompt prefix. Tradeoff: the model sees this context slightly later in the prompt, so steering on the working directory and memory location is marginally less authoritative. Has no effect when a custom (non-preset) system prompt is in use.
@@ -2842,8 +2939,10 @@ declare type SDKControlRequestInner =
   | SDKControlSetModelRequest
   | SDKControlSetMaxThinkingTokensRequest
   | SDKControlRenameSessionRequest
+  | SDKControlSetColorRequest
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
+  | SDKControlGetSessionCostRequest
   | SDKControlMcpCallRequest
   | SDKControlFileSuggestionsRequest
   | SDKHookCallbackRequest
@@ -2913,6 +3012,14 @@ declare type SDKControlSeedReadStateRequest = {
   subtype: "seed_read_state";
   path: string;
   mtime: number;
+};
+
+/**
+ * Sets the session accent color. Accepts an agent color name or "default" to reset.
+ */
+declare type SDKControlSetColorRequest = {
+  subtype: "set_color";
+  color: string;
 };
 
 /**
@@ -3049,7 +3156,7 @@ declare type SDKKeepAliveMessage = {
 };
 
 /**
- * Output from a local slash command (e.g. /voice, /cost). Displayed as assistant-style text in the transcript.
+ * Output from a local slash command (e.g. /voice, /usage). Displayed as assistant-style text in the transcript.
  */
 export declare type SDKLocalCommandOutputMessage = {
   type: "system";
@@ -3469,6 +3576,13 @@ export declare type SDKSessionOptions = {
    * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
    */
   permissionMode?: PermissionMode;
+  /**
+   * Custom workflow instructions for plan mode. When `permissionMode` is
+   * `'plan'`, this string replaces the default code-implementation workflow
+   * body in the plan-mode system reminder. The CLI still wraps it with the
+   * read-only enforcement preamble and the ExitPlanMode protocol footer.
+   */
+  planModeInstructions?: string;
 };
 
 /**
@@ -3806,6 +3920,22 @@ export declare type SessionStore = {
     }>
   >;
   /**
+   * Return incrementally-maintained summaries for all sessions in one call.
+   *
+   * Stores should maintain these via {@link foldSessionSummary} inside
+   * `append()`. When implemented, `listSessions({ sessionStore })` reads
+   * all summary metadata in a single round-trip; when undefined, it falls
+   * back to `listSessions()` + per-session `load()`.
+   *
+   * @remarks
+   * Stores that maintain summaries inside `append()` MUST serialize sidecar
+   * writes if `append()` calls can race for the same session — e.g., wrap the
+   * read-fold-write in a transaction/CAS or hold a per-session lock.
+   * `foldSessionSummary` is pure; concurrency control is the store's responsibility.
+   * @alpha
+   */
+  listSessionSummaries?(projectKey: string): Promise<SessionSummaryEntry[]>;
+  /**
    * Delete a session. Optional — if undefined, deletion is a no-op
    * (appropriate for WORM/append-only backends like S3).
    */
@@ -3839,6 +3969,31 @@ export declare type SessionStoreEntry = {
   uuid?: string;
   timestamp?: string;
   [k: string]: unknown;
+};
+
+/**
+ * Incrementally-maintained session summary.
+ *
+ * Stores update this on {@link SessionStore.append} via
+ * {@link foldSessionSummary} and return the full set from
+ * {@link SessionStore.listSessionSummaries}. Adapters never re-read
+ * previously appended entries.
+ * @alpha
+ */
+export declare type SessionSummaryEntry = {
+  sessionId: string;
+  /**
+   * Storage write time of the sidecar on the adapter. Must share a clock
+   * source with the `mtime` returned by `listSessions()` for this session —
+   * typically file mtime, S3 LastModified, Postgres `updated_at`, or whatever
+   * native timestamp the adapter surfaces. Do not derive from entry ISO
+   * timestamps — entry timestamps and storage write times can differ by
+   * batching and network latency, and conflating them defeats the staleness
+   * check.
+   */
+  mtime: number;
+  /** Opaque SDK-owned state. Stores MUST persist verbatim and MUST NOT interpret. */
+  data: Record<string, unknown>;
 };
 
 /**
@@ -3897,6 +4052,10 @@ export declare interface Settings {
    * Fraction of the context window (in characters) reserved for the skill listing sent to Claude (default: 0.01 = 1%). When the listing exceeds this, descriptions are shortened to fit. Raise to opt in to higher per-turn context cost.
    */
   skillListingBudgetFraction?: number;
+  /**
+   * When set to true in either admin-only Windows source — the HKLM SOFTWARE/Policies/ClaudeCode registry key or C:/Program Files/ClaudeCode/managed-settings.json — WSL reads managed settings from the full Windows policy chain (HKLM, C:/Program Files/ClaudeCode via DrvFs, HKCU) in addition to /etc/claude-code. Windows sources take priority. The flag is also required in HKCU itself for HKCU policy to apply on WSL (double opt-in: admin enables the chain, user confirms HKCU). On native Windows the flag has no effect.
+   */
+  wslInheritsWindowsSettings?: boolean;
   /**
    * Environment variables to set for Claude Code sessions
    */
@@ -4177,6 +4336,42 @@ export declare interface Settings {
              */
             once?: boolean;
           }
+        | {
+            /**
+             * MCP tool hook type
+             */
+            type: "mcp_tool";
+            /**
+             * Name of an already-configured MCP server to invoke
+             */
+            server: string;
+            /**
+             * Name of the tool on that server to call
+             */
+            tool: string;
+            /**
+             * Arguments passed to the MCP tool. String values support ${path} interpolation from the hook input JSON (e.g. "${tool_input.file_path}").
+             */
+            input?: {
+              [k: string]: unknown;
+            };
+            /**
+             * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
+             */
+            if?: string;
+            /**
+             * Timeout in seconds for this specific tool call
+             */
+            timeout?: number;
+            /**
+             * Custom status message to display in spinner while hook runs
+             */
+            statusMessage?: string;
+            /**
+             * If true, hook runs once and is removed after execution
+             */
+            once?: boolean;
+          }
       )[];
     }[];
   };
@@ -4391,21 +4586,6 @@ export declare interface Settings {
                     registry?: string;
                   }
                 | {
-                    source: "pip";
-                    /**
-                     * Python package name as it appears on PyPI
-                     */
-                    package: string;
-                    /**
-                     * Version specifier (e.g., ==1.0.0, >=2.0.0, <3.0.0)
-                     */
-                    version?: string;
-                    /**
-                     * Custom PyPI registry URL (defaults to using system default, likely pypi.org)
-                     */
-                    registry?: string;
-                  }
-                | {
                     source: "url";
                     /**
                      * Full git repository URL (https:// or git\@)
@@ -4608,21 +4788,6 @@ export declare interface Settings {
                 registry?: string;
               }
             | {
-                source: "pip";
-                /**
-                 * Python package name as it appears on PyPI
-                 */
-                package: string;
-                /**
-                 * Version specifier (e.g., ==1.0.0, >=2.0.0, <3.0.0)
-                 */
-                version?: string;
-                /**
-                 * Custom PyPI registry URL (defaults to using system default, likely pypi.org)
-                 */
-                registry?: string;
-              }
-            | {
                 source: "url";
                 /**
                  * Full git repository URL (https:// or git\@)
@@ -4812,21 +4977,6 @@ export declare interface Settings {
                 version?: string;
                 /**
                  * Custom NPM registry URL (defaults to using system default, likely npmjs.org)
-                 */
-                registry?: string;
-              }
-            | {
-                source: "pip";
-                /**
-                 * Python package name as it appears on PyPI
-                 */
-                package: string;
-                /**
-                 * Version specifier (e.g., ==1.0.0, >=2.0.0, <3.0.0)
-                 */
-                version?: string;
-                /**
-                 * Custom PyPI registry URL (defaults to using system default, likely pypi.org)
                  */
                 registry?: string;
               }
@@ -5395,6 +5545,7 @@ export declare type SyncHookJSONOutput = {
     | SubagentStartHookSpecificOutput
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
+    | PostToolBatchHookSpecificOutput
     | PermissionDeniedHookSpecificOutput
     | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput
