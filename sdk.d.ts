@@ -1526,6 +1526,7 @@ export declare type Options = {
    * When true, `SDKPartialAssistantMessage` events will be emitted during streaming.
    */
   includePartialMessages?: boolean;
+
   /**
    * Controls Claude's thinking/reasoning behavior.
    *
@@ -1786,7 +1787,8 @@ export declare type Options = {
    * - `'project'` - Project settings (`.claude/settings.json`)
    * - `'local'` - Local settings (`.claude/settings.local.json`)
    *
-   * When omitted or empty, no filesystem settings are loaded (SDK isolation mode).
+   * When omitted, all sources are loaded (matches CLI defaults).
+   * Pass `[]` to disable filesystem settings (SDK isolation mode).
    * Must include `'project'` to load CLAUDE.md files.
    */
   settingSources?: SettingSource[];
@@ -2067,6 +2069,10 @@ export declare type PostToolUseFailureHookInput = BaseHookInput & {
   tool_use_id: string;
   error: string;
   is_interrupt?: boolean;
+  /**
+   * Tool execution time in milliseconds. Excludes permission-prompt and hook time.
+   */
+  duration_ms?: number;
 };
 
 export declare type PostToolUseFailureHookSpecificOutput = {
@@ -2080,6 +2086,10 @@ export declare type PostToolUseHookInput = BaseHookInput & {
   tool_input: unknown;
   tool_response: unknown;
   tool_use_id: string;
+  /**
+   * Tool execution time in milliseconds. Excludes permission-prompt and hook time.
+   */
+  duration_ms?: number;
 };
 
 export declare type PostToolUseHookSpecificOutput = {
@@ -2617,6 +2627,13 @@ declare type SDKControlFileSuggestionsRequest = {
 };
 
 /**
+ * Requests the responder's CLI binary version. Used by /version in --remote mode so the thin client can show both its own and the remote container's version.
+ */
+declare type SDKControlGetBinaryVersionRequest = {
+  subtype: "get_binary_version";
+};
+
+/**
  * Requests a breakdown of current context window usage by category.
  */
 declare type SDKControlGetContextUsageRequest = {
@@ -2762,6 +2779,7 @@ declare type SDKControlInitializeRequest = {
   skills?: string[];
   promptSuggestions?: boolean;
   agentProgressSummaries?: boolean;
+  forwardSubagentText?: boolean;
 };
 
 /**
@@ -2943,6 +2961,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
   | SDKControlGetSessionCostRequest
+  | SDKControlGetBinaryVersionRequest
   | SDKControlMcpCallRequest
   | SDKControlFileSuggestionsRequest
   | SDKHookCallbackRequest
@@ -3265,7 +3284,7 @@ export declare type SDKMessageOrigin =
     };
 
 /**
- * Emitted when SessionStore.append() rejects or times out for a transcript-mirror batch. The batch is dropped (at-most-once delivery); this surfaces the failure so consumers are not silent on data loss.
+ * Emitted when SessionStore.append() rejects or times out for a transcript-mirror batch after bounded retry (3 attempts with short backoff; timeouts are not retried). The batch is then dropped; this surfaces the failure so consumers are not silent on data loss.
  */
 export declare type SDKMirrorErrorMessage = {
   type: "system";
@@ -3386,8 +3405,8 @@ export declare type SDKRateLimitInfo = {
     | "group_zero_credit_limit"
     | "member_zero_credit_limit"
     | "org_service_level_disabled"
-    | "org_service_zero_credit_limit"
     | "no_limits_configured"
+    | "fetch_error"
     | "unknown";
   isUsingOverage?: boolean;
   surpassedThreshold?: number;
@@ -3540,7 +3559,9 @@ export declare type SDKSessionOptions = {
   cwd?: string;
   /**
    * Which settings sources to load (CLAUDE.md, `.claude/settings.json`).
-   * Defaults to `[]` — no project/user settings are loaded unless specified.
+   * Defaults to `[]`: no project/user settings are loaded unless specified.
+   * Note that `query()` has the opposite default and loads all sources when
+   * this is omitted.
    */
   settingSources?: SettingSource[];
   /**
@@ -3889,8 +3910,16 @@ export declare type SessionStore = {
    * Within a single process, persist entries in append-call order; across
    * concurrent processes, order is by storage commit time, not call time.
    *
-   * Rejection is logged; the subprocess continues unaffected.
-   * At-most-once delivery — failed batches are not retried.
+   * Most entries carry a stable `uuid`. Adapters SHOULD treat `uuid` as an
+   * idempotency key (upsert / ignore-duplicate) so that retries and
+   * `importSessionToStore()` replays do not create duplicate rows. Entries
+   * without a `uuid` (e.g. titles, tags, mode markers) should be appended
+   * without dedup.
+   *
+   * Rejection is retried (3 attempts total) with short backoff; timeouts
+   * (60s) are not retried since the in-flight call may still land. After
+   * the final failure the batch is dropped and a `mirror_error` system
+   * message is emitted. The subprocess continues unaffected.
    */
   append(key: SessionKey, entries: SessionStoreEntry[]): Promise<void>;
   /**
@@ -4438,6 +4467,10 @@ export declare interface Settings {
      */
     refreshInterval?: number;
   };
+  /**
+   * URL template for PR links in the footer badge and inline messages. Placeholders: {host} {owner} {repo} {number} {url}. Example: "https://reviews.example.com/{owner}/{repo}/pull/{number}"
+   */
+  prUrlTemplate?: string;
   /**
    * Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin
    */
@@ -5365,6 +5398,87 @@ export declare interface Settings {
    * Custom message to append to the plugin trust warning shown before installation. Only read from policy settings (managed-settings.json / MDM). Useful for enterprise administrators to add organization-specific context (e.g., "All plugins from our internal marketplace are vetted and approved.").
    */
   pluginTrustMessage?: string;
+  /**
+   * Color theme for the UI
+   */
+  theme?:
+    | (
+        | "auto"
+        | "dark"
+        | "light"
+        | "light-daltonized"
+        | "dark-daltonized"
+        | "light-ansi"
+        | "dark-ansi"
+      )
+    | string;
+  /**
+   * Key binding mode for the prompt input
+   */
+  editorMode?: "normal" | "vim";
+  /**
+   * Show full tool output instead of truncated summaries
+   */
+  verbose?: boolean;
+  /**
+   * Preferred OS notification channel
+   */
+  preferredNotifChannel?:
+    | "auto"
+    | "iterm2"
+    | "iterm2_with_bell"
+    | "terminal_bell"
+    | "kitty"
+    | "ghostty"
+    | "notifications_disabled";
+  /**
+   * Automatically compact conversation when context fills
+   */
+  autoCompactEnabled?: boolean;
+  /**
+   * Auto-scroll the conversation view to bottom (fullscreen mode only)
+   */
+  autoScrollEnabled?: boolean;
+  /**
+   * Snapshot files before edits so /rewind can restore them
+   */
+  fileCheckpointingEnabled?: boolean;
+  /**
+   * Show "Cooked for Nm Ns" after each assistant turn
+   */
+  showTurnDuration?: boolean;
+  /**
+   * Stamp each assistant message with its arrival time
+   */
+  showMessageTimestamps?: boolean;
+  /**
+   * Emit OSC 9;4 progress sequences during long operations
+   */
+  terminalProgressBarEnabled?: boolean;
+  /**
+   * Enable the todo / task tracking panel
+   */
+  todoFeatureEnabled?: boolean;
+  /**
+   * How spawned teammates execute (tmux, in-process, auto)
+   */
+  teammateMode?: "auto" | "tmux" | "in-process";
+  /**
+   * Start Remote Control bridge automatically each session
+   */
+  remoteControlAtStartup?: boolean;
+  /**
+   * Mirror local sessions to claude.ai as view-only (no remote control)
+   */
+  autoUploadSessions?: boolean;
+  /**
+   * Push to mobile when a permission prompt or question is waiting
+   */
+  inputNeededNotifEnabled?: boolean;
+  /**
+   * Allow Claude to push proactive mobile notifications
+   */
+  agentPushNotifEnabled?: boolean;
   [k: string]: unknown;
 }
 
@@ -5399,6 +5513,10 @@ export declare type SlashCommand = {
    * Hint for skill arguments (e.g., "<file>")
    */
   argumentHint: string;
+  /**
+   * Alternate names that resolve to this command (e.g., /cost and /stats both resolve to /usage)
+   */
+  aliases?: string[];
 };
 
 /**
@@ -5483,6 +5601,7 @@ export declare function startup(_params?: {
 declare type StdoutMessage =
   | coreTypes.SDKMessage
   | coreTypes.SDKPostTurnSummaryMessage
+  | coreTypes.SDKTaskSummaryMessage
   | coreTypes.SDKTranscriptMirrorMessage
   | SDKControlResponse
   | SDKControlRequest
