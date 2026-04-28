@@ -449,6 +449,14 @@ declare type CreateSdkMcpServerOptions = {
   name: string;
   version?: string;
   tools?: Array<SdkMcpToolDefinition<any>>;
+  /**
+   * When true, all tools from this server are always included in the prompt
+   * and never deferred behind tool search. Applied via
+   * `_meta['anthropic/alwaysLoad']` on each tool. Equivalent to
+   * `defer_loading: false` on the API. Per-tool `tool({ alwaysLoad })` still
+   * works and is OR'd with this.
+   */
+  alwaysLoad?: boolean;
 };
 
 export declare type CwdChangedHookInput = BaseHookInput & {
@@ -1097,6 +1105,10 @@ export declare type McpHttpServerConfig = {
   url: string;
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
+  /**
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   */
+  alwaysLoad?: boolean;
 };
 
 export declare type McpSdkServerConfig = {
@@ -1207,6 +1219,10 @@ export declare type McpSSEServerConfig = {
   url: string;
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
+  /**
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   */
+  alwaysLoad?: boolean;
 };
 
 export declare type McpStdioServerConfig = {
@@ -1214,6 +1230,10 @@ export declare type McpStdioServerConfig = {
   command: string;
   args?: string[];
   env?: Record<string, string>;
+  /**
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   */
+  alwaysLoad?: boolean;
 };
 
 /**
@@ -1526,7 +1546,13 @@ export declare type Options = {
    * When true, `SDKPartialAssistantMessage` events will be emitted during streaming.
    */
   includePartialMessages?: boolean;
-
+  /**
+   * Forward subagent text and thinking blocks as assistant/user messages with
+   * `parent_tool_use_id` set. By default, only tool_use/tool_result blocks from
+   * subagents are emitted (enough for a heartbeat counter). When true, the full
+   * subagent conversation is forwarded so consumers can render a nested transcript.
+   */
+  forwardSubagentText?: boolean;
   /**
    * Controls Claude's thinking/reasoning behavior.
    *
@@ -1792,6 +1818,29 @@ export declare type Options = {
    * Must include `'project'` to load CLAUDE.md files.
    */
   settingSources?: SettingSource[];
+  /**
+   * Skills to enable for the main session. This is the single place to turn
+   * skills on; you do not need to add `'Skill'` to `allowedTools` yourself
+   * when using this option.
+   *
+   * - omitted (default): no SDK auto-configuration. The CLI's own defaults
+   *   still apply, so this is **not** "skills off."
+   * - `'all'`: enable every discovered skill.
+   * - `string[]`: enable only the listed skills. Names match the SKILL.md
+   *   `name` / directory name, or `plugin:skill` for plugin-qualified skills.
+   *
+   * This is a context filter, not a sandbox: unlisted skills are hidden from
+   * the model's listing and rejected by the Skill tool, but their files
+   * remain on disk and are reachable via Read/Bash. Do not store secrets in
+   * skill files.
+   *
+   * @example
+   * ```typescript
+   * skills: 'all'
+   * skills: ['pdf', 'docx']
+   * ```
+   */
+  skills?: string[] | "all";
   /**
    * Enable debug mode for the Claude Code process.
    * When true, enables verbose debug logging (equivalent to `--debug` CLI flag).
@@ -2095,6 +2144,13 @@ export declare type PostToolUseHookInput = BaseHookInput & {
 export declare type PostToolUseHookSpecificOutput = {
   hookEventName: "PostToolUse";
   additionalContext?: string;
+  /**
+   * Replaces the tool output before it is sent to the model
+   */
+  updatedToolOutput?: unknown;
+  /**
+   * Replaces the output for MCP tools only. Prefer updatedToolOutput, which works for all tools
+   */
   updatedMCPToolOutput?: unknown;
 };
 
@@ -2264,12 +2320,14 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * denial, missing file, or transport error.
    *
    * @param path - File path (relative to cwd or absolute)
-   * @param options - Optional maxBytes cap (default 1MB)
+   * @param options - Optional maxBytes cap (default 1MB) and encoding
+   *   (default utf-8; pass 'base64' for binary files like images)
    */
   readFile(
     path: string,
     options?: {
       maxBytes?: number;
+      encoding?: "utf-8" | "base64";
     },
   ): Promise<SDKControlReadFileResponse | null>;
   /**
@@ -2902,6 +2960,10 @@ declare type SDKControlReadFileRequest = {
   subtype: "read_file";
   path: string;
   max_bytes?: number;
+  /**
+   * How to encode the bytes in `contents`. Defaults to utf-8 (lossy for binary); pass 'base64' to read images.
+   */
+  encoding?: "utf-8" | "base64";
 };
 
 /**
@@ -2911,6 +2973,10 @@ export declare type SDKControlReadFileResponse = {
   contents: string;
   absPath: string;
   truncated?: boolean;
+  /**
+   * Set when the request asked for base64. Absent means utf-8 — including when an older CLI ignored the request's encoding field.
+   */
+  encoding?: "base64";
 };
 
 /**
@@ -2992,7 +3058,8 @@ declare type SDKControlRequestInner =
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
   | SDKControlElicitationRequest
-  | SDKControlRequestUserDialogRequest;
+  | SDKControlRequestUserDialogRequest
+  | SDKControlSubmitFeedbackRequest;
 
 /**
  * Requests the SDK consumer to render a tool-driven blocking dialog and return the user choice. Used by tools that previously rendered Ink JSX via setToolJSX with an onDone callback.
@@ -3741,7 +3808,7 @@ export declare type SDKTaskUpdatedMessage = {
   subtype: "task_updated";
   task_id: string;
   /**
-   * Wire-safe subset of TaskState fields that changed. Excludes abortController, unregisterCleanup, messages, result. Clients merge into their local task map.
+   * Wire-safe subset of TaskState fields that changed. Excludes abortController, messages, result. Clients merge into their local task map.
    */
   patch: {
     status?: "pending" | "running" | "completed" | "failed" | "killed";
@@ -4245,7 +4312,7 @@ export declare interface Settings {
              */
             if?: string;
             /**
-             * Shell interpreter. 'bash' uses your $SHELL (bash/zsh/sh); 'powershell' uses pwsh. Defaults to bash.
+             * Shell interpreter. 'bash' uses your $SHELL (bash/zsh/sh); 'powershell' uses pwsh. Defaults to bash (powershell on Windows without Git Bash).
              */
             shell?: "bash" | "powershell";
             /**
@@ -4422,6 +4489,10 @@ export declare interface Settings {
    */
   disableAllHooks?: boolean;
   /**
+   * Disable the background-agents fleet (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENTS_FLEET=1.
+   */
+  disableBackgroundAgents?: boolean;
+  /**
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
   disableSkillShellExecution?: boolean;
@@ -4466,6 +4537,10 @@ export declare interface Settings {
      * Re-run the status line command every N seconds in addition to event-driven updates
      */
     refreshInterval?: number;
+    /**
+     * Hide the built-in `-- INSERT --` / `-- VISUAL --` indicator below the prompt. Use this when your status line script renders `vim.mode` itself.
+     */
+    hideVimModeIndicator?: boolean;
   };
   /**
    * URL template for PR links in the footer badge and inline messages. Placeholders: {host} {owner} {repo} {number} {url}. Example: "https://reviews.example.com/{owner}/{repo}/pull/{number}"
@@ -4666,6 +4741,9 @@ export declare interface Settings {
                      * Specific commit SHA to use
                      */
                     sha?: string;
+                  }
+                | {
+                    source: "unsupported";
                   };
               description?: string;
               version?: string;
@@ -4868,6 +4946,9 @@ export declare interface Settings {
                  * Specific commit SHA to use
                  */
                 sha?: string;
+              }
+            | {
+                source: "unsupported";
               };
           description?: string;
           version?: string;
@@ -5061,6 +5142,9 @@ export declare interface Settings {
                  * Specific commit SHA to use
                  */
                 sha?: string;
+              }
+            | {
+                source: "unsupported";
               };
           description?: string;
           version?: string;
@@ -5468,6 +5552,10 @@ export declare interface Settings {
    */
   remoteControlAtStartup?: boolean;
   /**
+   * When no background service is running: 'transient' spawns one for this login session; 'ask' offers to install it persistently
+   */
+  daemonColdStart?: "transient" | "ask";
+  /**
    * Mirror local sessions to claude.ai as view-only (no remote control)
    */
   autoUploadSessions?: boolean;
@@ -5479,6 +5567,10 @@ export declare interface Settings {
    * Allow Claude to push proactive mobile notifications
    */
   agentPushNotifEnabled?: boolean;
+  /**
+   * Prevent claude-cli:// protocol handler registration with the OS
+   */
+  disableDeepLinkRegistration?: "disable";
   [k: string]: unknown;
 }
 
