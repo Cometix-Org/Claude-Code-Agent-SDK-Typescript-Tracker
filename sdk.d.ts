@@ -2835,6 +2835,7 @@ declare type SDKControlInitializeRequest = {
    * When provided, only skills whose names match an entry are loaded into the main session system prompt, using the same rules as AgentDefinition.skills: exact name, plugin-qualified name, or ":name" suffix. Omit to load every discovered skill. Applies to the main session only; subagents use AgentDefinition.skills.
    */
   skills?: string[];
+
   promptSuggestions?: boolean;
   agentProgressSummaries?: boolean;
   forwardSubagentText?: boolean;
