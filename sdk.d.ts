@@ -2588,6 +2588,7 @@ export declare type SDKAssistantMessage = {
 
 export declare type SDKAssistantMessageError =
   | "authentication_failed"
+  | "oauth_org_not_allowed"
   | "billing_error"
   | "rate_limit"
   | "invalid_request"
@@ -3499,6 +3500,7 @@ export declare type SDKResultError = {
   errors: string[];
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
+  origin?: SDKMessageOrigin;
   uuid: UUID;
   session_id: string;
 };
@@ -3523,6 +3525,7 @@ export declare type SDKResultSuccess = {
   deferred_tool_use?: SDKDeferredToolUse;
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
+  origin?: SDKMessageOrigin;
   uuid: UUID;
   session_id: string;
 };
@@ -5422,6 +5425,7 @@ export declare interface Settings {
    * Reduce or disable animations for accessibility (spinner shimmer, flash effects, etc.)
    */
   prefersReducedMotion?: boolean;
+
   /**
    * Enable auto-memory for this project. When false, Claude will not read from or write to the auto-memory directory.
    */
@@ -5552,6 +5556,10 @@ export declare interface Settings {
    * Start Remote Control bridge automatically each session
    */
   remoteControlAtStartup?: boolean;
+  /**
+   * Require explicit approval before SendMessage can reach a peer session on another machine via Remote Control
+   */
+  isolatePeerMachines?: boolean;
   /**
    * When no background service is running: 'transient' spawns one for this login session; 'ask' offers to install it persistently
    */
