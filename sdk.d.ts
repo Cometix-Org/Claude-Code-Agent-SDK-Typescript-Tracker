@@ -1106,7 +1106,7 @@ export declare type McpHttpServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1220,7 +1220,7 @@ export declare type McpSSEServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1231,7 +1231,7 @@ export declare type McpStdioServerConfig = {
   args?: string[];
   env?: Record<string, string>;
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1521,6 +1521,14 @@ export declare type Options = {
    * @alpha
    */
   sessionStore?: SessionStore;
+  /**
+   * Controls how aggressively transcript entries are flushed to
+   * {@link Options.sessionStore}. Defaults to `'batched'`. Ignored when
+   * `sessionStore` is not set.
+   *
+   * @alpha
+   */
+  sessionStoreFlush?: SessionStoreFlush;
   /**
    * Timeout for each `sessionStore.load()` / `sessionStore.listSubkeys()` call
    * during resume materialization. If the adapter doesn't settle within this
@@ -4072,6 +4080,20 @@ export declare type SessionStoreEntry = {
 };
 
 /**
+ * Flush strategy for {@link Options.sessionStore} transcript mirroring.
+ *
+ * - `'batched'` (default): buffer transcript_mirror frames and flush at
+ *   end-of-turn or when pending thresholds are exceeded.
+ * - `'eager'`: schedule a background flush after every frame, giving
+ *   near-real-time delivery to {@link SessionStore.append}. Each frame
+ *   becomes its own `append()` batch (no coalescing), so adapters should
+ *   be cheap per call.
+ *
+ * @alpha
+ */
+export declare type SessionStoreFlush = "batched" | "eager";
+
+/**
  * Incrementally-maintained session summary.
  *
  * Stores update this on {@link SessionStore.append} via
@@ -4496,6 +4518,10 @@ export declare interface Settings {
    * Disable the background-agents fleet (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENTS_FLEET=1.
    */
   disableBackgroundAgents?: boolean;
+  /**
+   * Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings.
+   */
+  disableRemoteControl?: boolean;
   /**
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
@@ -5411,11 +5437,11 @@ export declare interface Settings {
     autoSubmit?: boolean;
   };
   /**
-   * Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.
+   * Managed-org opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). claude.ai Teams/Enterprise: default off. Console: default on unless managed settings exist. Set true to allow; users then select servers via --channels.
    */
   channelsEnabled?: boolean;
   /**
-   * Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist — admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true.
+   * Managed-org allowlist of channel plugins. When set, replaces the default Anthropic allowlist — admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true.
    */
   allowedChannelPlugins?: {
     marketplace: string;
@@ -6004,6 +6030,10 @@ export declare type UserPromptSubmitHookSpecificOutput = {
   hookEventName: "UserPromptSubmit";
   additionalContext?: string;
   sessionTitle?: string;
+  /**
+   * When decision is "block", omit the original prompt from the block message
+   */
+  suppressOriginalPrompt?: boolean;
 };
 
 /**
