@@ -2470,7 +2470,6 @@ export interface TodoWriteOutput {
     status: "pending" | "in_progress" | "completed";
     activeForm: string;
   }[];
-  verificationNudgeNeeded?: boolean;
 }
 export interface WebFetchOutput {
   /**
