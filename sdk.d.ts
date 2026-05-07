@@ -2272,17 +2272,25 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
   setMaxThinkingTokens(maxThinkingTokens: number | null): Promise<void>;
   /**
    * Merge the provided settings into the flag settings layer, dynamically
-   * updating the active configuration. Top-level keys are shallow-merged
-   * across successive calls — a second call with `{permissions: {...}}`
-   * replaces the entire `permissions` object from a prior call. The resulting
-   * flag settings are then deep-merged with file-based settings at read time.
+   * updating the active configuration. Equivalent to the inline `settings`
+   * option of `query()`, but applies mid-session. Flag settings sit above
+   * user/project/local settings and below managed policy settings in the
+   * precedence order.
    *
-   * Equivalent to passing an object to the `settings` option of `query()`,
-   * but applies mid-session. Only available in streaming input mode.
+   * Successive calls shallow-merge top-level keys — a second call with
+   * `{permissions: {...}}` replaces the entire `permissions` object from a
+   * prior call. Pass `null` for a key to clear it from the flag layer and
+   * fall back to lower-precedence sources (`undefined` is dropped by JSON
+   * serialization and has no effect).
    *
-   * @param settings - A partial settings object to merge into the flag settings
+   * Only available in streaming input mode.
+   *
+   * @param settings - A partial settings object to merge into the flag settings.
+   * Each top-level key also accepts `null` to clear it from the flag layer.
    */
-  applyFlagSettings(settings: Settings): Promise<void>;
+  applyFlagSettings(settings: {
+    [K in keyof Settings]?: Settings[K] | null;
+  }): Promise<void>;
   /**
    * Get the full initialization result, including supported commands, models,
    * account info, and output style configuration.
