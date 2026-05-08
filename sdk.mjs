@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.132
+// Version: 0.2.133
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -3497,7 +3497,7 @@ var zL = M((WL) => {
   }
   WL.extendSubschemaMode = ny;
 });
-var tU = M((_X$, GL) => {
+var tU = M((fX$, GL) => {
   GL.exports = function $(X, J) {
     if (X === J) return !0;
     if (X && J && typeof X == "object" && typeof J == "object") {
@@ -3527,7 +3527,7 @@ var tU = M((_X$, GL) => {
     return X !== X && J !== J;
   };
 });
-var UL = M((xX$, HL) => {
+var UL = M((yX$, HL) => {
   var N1 = (HL.exports = function ($, X, J) {
     if (typeof X == "function") ((J = X), (X = {}));
     J = X.cb || J;
@@ -4446,7 +4446,7 @@ var kW = M((yL) => {
     return;
   }
 });
-var hL = M((uX$, tg) => {
+var hL = M((cX$, tg) => {
   tg.exports = {
     $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
     description:
@@ -4465,7 +4465,7 @@ var hL = M((uX$, tg) => {
     additionalProperties: !1,
   };
 });
-var mL = M((mX$, uL) => {
+var mL = M((pX$, uL) => {
   var ag = {
     0: 0,
     1: 1,
@@ -4492,7 +4492,7 @@ var mL = M((mX$, uL) => {
   };
   uL.exports = { HEX: ag };
 });
-var oL = M((lX$, rL) => {
+var oL = M((dX$, rL) => {
   var { HEX: sg } = mL(),
     eg =
       /^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u;
@@ -4646,7 +4646,7 @@ var oL = M((lX$, rL) => {
     stringArrayToHexStripped: YK,
   };
 });
-var XM = M((cX$, $M) => {
+var XM = M((iX$, $M) => {
   var zh = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu,
     Gh = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
   function tL($) {
@@ -4740,7 +4740,7 @@ var XM = M((cX$, $M) => {
     zK = { http: eL, https: wh, ws: _W, wss: Bh, urn: qh, "urn:uuid": Dh };
   $M.exports = zK;
 });
-var QM = M((pX$, TW) => {
+var QM = M((nX$, TW) => {
   var {
       normalizeIPv6: Fh,
       normalizeIPv4: jh,
@@ -7238,7 +7238,7 @@ var UA = M((HA) => {
     };
   HA.default = cl;
 });
-var KA = M((gJ$, dl) => {
+var KA = M((mJ$, dl) => {
   dl.exports = {
     $schema: "http://json-schema.org/draft-07/schema#",
     $id: "http://json-schema.org/draft-07/schema#",
@@ -12440,6 +12440,7 @@ function pb() {
     promptId: null,
     promptIndex: 0,
     lastMainRequestId: void 0,
+    lastMainThreadCacheTtlMs: null,
     lastApiCompletionTimestamp: null,
     pendingPostCompaction: !1,
   };
@@ -13314,7 +13315,7 @@ var tN = f6(async () => {
     (await pY(J).catch(() => {}), await qR($, J));
   } catch {}
 });
-var Qa = (() => {
+var za = (() => {
   let $ = process.env.CLAUDE_CODE_SLOW_OPERATION_THRESHOLD_MS;
   if ($ !== void 0) {
     let X = Number($);
@@ -16257,7 +16258,7 @@ var JC = [XC, Pq],
     "user:mcp_servers",
     "user:file_upload",
   ],
-  w$$ = bq([...JC, ...QC]),
+  D$$ = bq([...JC, ...QC]),
   Rq = {
     BASE_API_URL: "https://api.anthropic.com",
     CONSOLE_AUTHORIZE_URL: "https://platform.claude.com/oauth/authorize",
@@ -19347,7 +19348,7 @@ class u7 extends e {
 u7.create = ($) => {
   return new u7({ typeName: R.ZodNaN, ...o($) });
 };
-var g$$ = Symbol("zod_brand");
+var m$$ = Symbol("zod_brand");
 class U3 extends e {
   _parse($) {
     let { ctx: X } = this._processInputParams($),
@@ -19414,7 +19415,7 @@ class i9 extends e {
 i9.create = ($, X) => {
   return new i9({ innerType: $, typeName: R.ZodReadonly, ...o(X) });
 };
-var h$$ = { object: E$.lazycreate },
+var l$$ = { object: E$.lazycreate },
   R;
 (function ($) {
   (($.ZodString = "ZodString"),
@@ -19454,40 +19455,40 @@ var h$$ = { object: E$.lazycreate },
     ($.ZodPipeline = "ZodPipeline"),
     ($.ZodReadonly = "ZodReadonly"));
 })(R || (R = {}));
-var u$$ = j4.create,
-  m$$ = x0.create,
-  l$$ = u7.create,
-  c$$ = T0.create,
-  p$$ = x7.create,
-  d$$ = f9.create,
-  i$$ = T7.create,
-  n$$ = y9.create,
-  r$$ = g9.create,
-  o$$ = f7.create,
-  t$$ = g1.create,
-  a$$ = L4.create,
-  s$$ = y7.create,
-  e$$ = X4.create,
+var c$$ = j4.create,
+  p$$ = x0.create,
+  d$$ = u7.create,
+  i$$ = T0.create,
+  n$$ = x7.create,
+  r$$ = f9.create,
+  o$$ = T7.create,
+  t$$ = y9.create,
+  a$$ = g9.create,
+  s$$ = f7.create,
+  e$$ = g1.create,
+  $6$ = L4.create,
+  X6$ = y7.create,
+  J6$ = X4.create,
   yq = E$.create,
-  $6$ = E$.strictCreate,
-  X6$ = h9.create,
-  J6$ = H3.create,
-  Q6$ = u9.create,
-  W6$ = M4.create,
-  Y6$ = g7.create,
-  z6$ = h7.create,
-  G6$ = f0.create,
-  H6$ = T9.create,
-  U6$ = m9.create,
-  K6$ = l9.create,
-  V6$ = h1.create,
-  N6$ = c9.create,
-  O6$ = y0.create,
-  w6$ = J4.create,
-  B6$ = R6.create,
-  q6$ = o4.create,
-  D6$ = J4.createWithPreprocess,
-  F6$ = m7.create;
+  Q6$ = E$.strictCreate,
+  W6$ = h9.create,
+  Y6$ = H3.create,
+  z6$ = u9.create,
+  G6$ = M4.create,
+  H6$ = g7.create,
+  U6$ = h7.create,
+  K6$ = f0.create,
+  V6$ = T9.create,
+  N6$ = m9.create,
+  O6$ = l9.create,
+  w6$ = h1.create,
+  B6$ = c9.create,
+  q6$ = y0.create,
+  D6$ = J4.create,
+  F6$ = R6.create,
+  j6$ = o4.create,
+  L6$ = J4.createWithPreprocess,
+  M6$ = m7.create;
 var l6 = {};
 F1(l6, {
   version: () => OG,
@@ -29259,7 +29260,7 @@ var rD = [WU, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"],
   ),
   oD = V$([L(), z$().int()]),
   tD = L(),
-  r1$ = r$({ ttl: z$().optional(), pollInterval: z$().optional() }),
+  a1$ = r$({ ttl: z$().optional(), pollInterval: z$().optional() }),
   C_ = x({ ttl: z$().optional() }),
   v_ = x({ taskId: L() }),
   YU = r$({ progressToken: oD.optional(), [z1]: v_.optional() }),
@@ -29294,8 +29295,8 @@ var HU = x({
   error: x({ code: z$().int(), message: L(), data: L$().optional() }),
 }).strict();
 var XF = ($) => HU.safeParse($).success;
-var o1$ = V$([sD, eD, GU, HU]),
-  t1$ = V$([GU, HU]),
+var s1$ = V$([sD, eD, GU, HU]),
+  e1$ = V$([GU, HU]),
   r5 = p$.strict(),
   k_ = S6.extend({ requestId: n5.optional(), reason: L().optional() }),
   o5 = C6.extend({ method: g("notifications/cancelled"), params: k_ }),
@@ -29402,7 +29403,7 @@ var t5 = c$.extend({ method: g("ping"), params: M6.optional() }),
     method: g("tasks/result"),
     params: M6.extend({ taskId: L() }),
   }),
-  a1$ = p$.loose(),
+  $0$ = p$.loose(),
   XW = sX.extend({ method: g("tasks/list") }),
   JW = eX.extend({ tasks: $$($J) }),
   QW = c$.extend({
@@ -29554,14 +29555,14 @@ var t5 = c$.extend({ method: g("ping"), params: M6.optional() }),
     structuredContent: N$(L(), L$()).optional(),
     isError: _$().optional(),
   }),
-  s1$ = KW.or(p$.extend({ toolResult: L$() })),
+  X0$ = KW.or(p$.extend({ toolResult: L$() })),
   Fx = oX.extend({ name: L(), arguments: N$(L(), L$()).optional() }),
   G8 = c$.extend({ method: g("tools/call"), params: Fx }),
   jx = C6.extend({
     method: g("notifications/tools/list_changed"),
     params: S6.optional(),
   }),
-  e1$ = x({
+  J0$ = x({
     autoRefresh: _$().default(!0),
     debounceMs: z$().int().nonnegative().default(300),
   }),
@@ -29765,7 +29766,7 @@ var sx = p$.extend({
     method: g("notifications/roots/list_changed"),
     params: S6.optional(),
   }),
-  $0$ = V$([
+  Q0$ = V$([
     t5,
     UU,
     VW,
@@ -29784,11 +29785,11 @@ var sx = p$.extend({
     XW,
     QW,
   ]),
-  X0$ = V$([o5, a5, KU, XT, XJ]),
-  J0$ = V$([r5, WJ, FU, H8, jU, e5, JW, Y8]),
-  Q0$ = V$([t5, Cx, ix, $T, s5, $W, XW, QW]),
-  W0$ = V$([o5, a5, Ax, Wx, s_, jx, wx, XJ, rx]),
-  Y0$ = V$([r5, m_, sx, Ox, Gx, r_, o_, a_, KW, Dx, e5, JW, Y8]);
+  W0$ = V$([o5, a5, KU, XT, XJ]),
+  Y0$ = V$([r5, WJ, FU, H8, jU, e5, JW, Y8]),
+  z0$ = V$([t5, Cx, ix, $T, s5, $W, XW, QW]),
+  G0$ = V$([o5, a5, Ax, Wx, s_, jx, wx, XJ, rx]),
+  H0$ = V$([r5, m_, sx, Ox, Gx, r_, o_, a_, KW, Dx, e5, JW, Y8]);
 class h extends Error {
   constructor($, X, J) {
     super(`MCP error ${$}: ${X}`);
@@ -33348,7 +33349,7 @@ function mK($, X, J, W) {
         );
       }
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.132";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.133";
   let {
     abortController: w = z0(),
     additionalDirectories: B = [],
@@ -33585,7 +33586,7 @@ function nc($, X) {
     .catch(() => {})
     .finally(() => sW(X));
 }
-function KQ$({ prompt: $, options: X }) {
+function OQ$({ prompt: $, options: X }) {
   if ((X?.resume || X?.continue) && X?.sessionStore) {
     let {
         queryInstance: Y,
@@ -33635,7 +33636,7 @@ function KQ$({ prompt: $, options: X }) {
   } = mK(X, typeof $ === "string");
   return (lK(J, W, $, Q), J);
 }
-async function VQ$({ options: $, initializeTimeoutMs: X = 60000 } = {}) {
+async function wQ$({ options: $, initializeTimeoutMs: X = 60000 } = {}) {
   let J,
     W = $?.resume;
   if ((W || $?.continue) && $?.sessionStore) {
@@ -33710,13 +33711,13 @@ async function VQ$({ options: $, initializeTimeoutMs: X = 60000 } = {}) {
     throw (await z, G);
   }
 }
-function NQ$($) {
+function BQ$($) {
   return nz($);
 }
-function OQ$($, X) {
+function qQ$($, X) {
   return oB($, X);
 }
-async function wQ$($, X) {
+async function DQ$($, X) {
   let W = [];
   try {
     const J = q$(W, nz(X), 1);
@@ -33731,27 +33732,27 @@ async function wQ$($, X) {
     G && (await G);
   }
 }
-async function BQ$($, X) {
+async function FQ$($, X) {
   if (X?.sessionStore) return ac(X.sessionStore, $, X);
   return zq($, X);
 }
-async function qQ$($) {
+async function jQ$($) {
   if ($?.sessionStore) return oc($.sessionStore, $);
   return Hq($);
 }
-async function DQ$($, X) {
+async function LQ$($, X) {
   if (X?.sessionStore) return sc(X.sessionStore, $, X);
   return Uq($, X);
 }
-async function FQ$($, X, J) {
+async function MQ$($, X, J) {
   if (J?.sessionStore) return ec(J.sessionStore, $, X, J.dir);
   return Oq($, X, J);
 }
-async function jQ$($, X, J) {
+async function AQ$($, X, J) {
   if (J?.sessionStore) return $p(J.sessionStore, $, X, J.dir);
   return wq($, X, J);
 }
-async function LQ$($, X) {
+async function IQ$($, X) {
   if (!U$($)) throw Error(`Invalid sessionId: ${$}`);
   if (X?.sessionStore) {
     if (!X.sessionStore.delete) return;
@@ -33761,11 +33762,11 @@ async function LQ$($, X) {
   }
   return Bq($, X);
 }
-async function MQ$($, X) {
+async function ZQ$($, X) {
   if (X?.sessionStore) return Xp(X.sessionStore, $, X);
   return Fq($, X);
 }
-async function AQ$($, X, J) {
+async function bQ$($, X, J) {
   if (!U$($)) throw Error(`Invalid sessionId: ${$}`);
   let W = await n4($, J?.dir);
   if (!W) throw Error(`Session ${$} not found`);
@@ -33820,11 +33821,11 @@ async function rc($) {
   }
   return (await J($), X);
 }
-async function IQ$($, X) {
+async function RQ$($, X) {
   if (X?.sessionStore) return Jp(X.sessionStore, $, X.dir);
   return Iq($, X);
 }
-async function ZQ$($, X, J) {
+async function PQ$($, X, J) {
   if (J?.sessionStore) return Qp(J.sessionStore, $, X, J);
   return Zq($, X, J);
 }
@@ -34075,24 +34076,24 @@ function nA($, X) {
   return null;
 }
 export {
-  OQ$ as unstable_v2_resumeSession,
-  wQ$ as unstable_v2_prompt,
-  NQ$ as unstable_v2_createSession,
+  qQ$ as unstable_v2_resumeSession,
+  DQ$ as unstable_v2_prompt,
+  BQ$ as unstable_v2_createSession,
   Pc as tool,
-  jQ$ as tagSession,
-  VQ$ as startup,
-  FQ$ as renameSession,
-  KQ$ as query,
+  AQ$ as tagSession,
+  wQ$ as startup,
+  MQ$ as renameSession,
+  OQ$ as query,
   vc as parseDirectConnectUrl,
-  IQ$ as listSubagents,
-  qQ$ as listSessions,
-  AQ$ as importSessionToStore,
-  ZQ$ as getSubagentMessages,
-  BQ$ as getSessionMessages,
-  DQ$ as getSessionInfo,
-  MQ$ as forkSession,
+  RQ$ as listSubagents,
+  jQ$ as listSessions,
+  bQ$ as importSessionToStore,
+  PQ$ as getSubagentMessages,
+  FQ$ as getSessionMessages,
+  LQ$ as getSessionInfo,
+  ZQ$ as forkSession,
   xJ as foldSessionSummary,
-  LQ$ as deleteSession,
+  IQ$ as deleteSession,
   Ec as createSdkMcpServer,
   TI as SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
   zY as InMemorySessionStore,

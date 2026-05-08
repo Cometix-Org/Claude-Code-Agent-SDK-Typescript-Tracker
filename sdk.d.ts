@@ -46,7 +46,7 @@ export declare type AgentDefinition = {
    */
   description: string;
   /**
-   * Array of allowed tool names. If omitted, inherits all tools from parent
+   * Array of allowed tool names. If omitted, inherits all tools from parent. Note: passing 'Skill' here is deprecated — use the `skills` field instead.
    */
   tools?: string[];
   /**
@@ -145,6 +145,15 @@ export declare type BaseHookInput = {
    * Agent type name (e.g., "general-purpose", "code-reviewer"). Present when the hook fires from within a subagent (alongside agent_id), or on the main thread of a session started with --agent (without agent_id).
    */
   agent_type?: string;
+  /**
+   * Reasoning effort applied to the current turn. Same shape as StatusLineCommandInput.effort. Present for hooks that fire within a tool-use context (PreToolUse, PostToolUse, Stop, SubagentStop, etc.) on a model that supports the effort parameter; absent for session-lifecycle hooks and models without effort support.
+   */
+  effort?: {
+    /**
+     * Active effort level for the current turn (e.g., "low", "medium", "high", "xhigh", "max"), after any silent downgrade for the selected model. Also exposed to hook commands and Bash as the CLAUDE_EFFORT env var.
+     */
+    level: string;
+  };
 };
 
 export declare type BaseOutputFormat = {
@@ -1366,6 +1375,8 @@ export declare type Options = {
    * List of tool names that are auto-allowed without prompting for permission.
    * These tools will execute automatically without asking the user for approval.
    * To restrict which tools are available, use the `tools` option instead.
+   *
+   * Note: passing `'Skill'` here is deprecated — use the `skills` option instead.
    */
   allowedTools?: string[];
   /**
@@ -1794,18 +1805,20 @@ export declare type Options = {
    */
   settings?: string | Settings;
   /**
-   * Policy-tier settings supplied by the spawning parent process. Merged into
-   * the managed-settings layer below IT-controlled sources (server / MDM /
-   * managed-settings.json) but above HKCU. Honors policy-only keys such as
-   * `sandbox.network.allowManagedDomainsOnly`.
+   * Policy-tier settings supplied by the spawning parent process. When an
+   * IT-controlled managed-settings tier (server / MDM / managed-settings.json)
+   * exists on the user's machine, these are **dropped by default** — they only
+   * layer in if that admin opts in via `parentSettingsBehavior: 'merge'` in
+   * their managed settings. Even when opted in, the value is filtered
+   * restrictive-only: permissive arrays (`permissions.allow`,
+   * `additionalDirectories`, `allowedMcpServers`, …) that would widen an
+   * existing admin lock are silently dropped. With no admin tier present,
+   * these apply as the sole policy tier (still filtered restrictive-only —
+   * non-allowlisted keys are dropped regardless).
    *
    * Intended for embedding applications (e.g. desktop apps) that derive
    * lockdown settings from their own enterprise configuration and need to
    * enforce them on the spawned subprocess without writing root-owned files.
-   *
-   * Unlike `settings`, this option is loaded into the managed (policy) layer
-   * rather than the user-controlled flag layer, so user/project settings
-   * cannot widen restrictions set here.
    *
    * @example
    * ```typescript
@@ -2573,6 +2586,12 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
         },
         z.core.$strip
       >
+    >;
+    bwrapPath: z.ZodCatch<
+      z.ZodOptional<z.ZodPipe<z.ZodTransform<string, unknown>, z.ZodString>>
+    >;
+    socatPath: z.ZodCatch<
+      z.ZodOptional<z.ZodPipe<z.ZodTransform<string, unknown>, z.ZodString>>
     >;
   },
   z.core.$loose
@@ -3550,6 +3569,7 @@ export declare type SDKResultSuccess = {
  * V2 API - UNSTABLE
  * Session interface for multi-turn conversations.
  * Has methods, so not serializable.
+ * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
  * @alpha
  */
 export declare interface SDKSession {
@@ -3618,6 +3638,7 @@ export declare type SDKSessionInfo = {
 /**
  * V2 API - UNSTABLE
  * Options for creating a session.
+ * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
  * @alpha
  */
 export declare type SDKSessionOptions = {
@@ -4517,6 +4538,10 @@ export declare interface Settings {
      * Directories to include when creating worktrees, via git sparse-checkout (cone mode). Dramatically faster in large monorepos — only the listed paths are written to disk.
      */
     sparsePaths?: string[];
+    /**
+     * Which ref new worktrees branch from. 'fresh' (default) branches from origin/<default-branch> for a clean tree. 'head' branches from your current local HEAD so unpushed commits and feature-branch state are present. Applies to --worktree, EnterWorktree, and agent isolation.
+     */
+    baseRef?: "fresh" | "head";
   };
   /**
    * Disable all hooks and statusLine execution
@@ -4592,7 +4617,7 @@ export declare interface Settings {
     command: string;
   };
   /**
-   * Enabled plugins using plugin-id\@marketplace-id format. Example: { "formatter\@anthropic-tools": true }. Also supports extended format with version constraints.
+   * Enabled plugins using plugin-id\@marketplace-id format. Example: { "formatter\@anthropic-tools": true }. Also supports extended format with version constraints. Settings precedence is user < project < local < flag < policy, so to disable a plugin that project settings enable, set it to false in .claude/settings.local.json — setting false in ~/.claude/settings.json is overridden by the project.
    */
   enabledPlugins?: {
     [k: string]:
@@ -5209,6 +5234,10 @@ export declare interface Settings {
    */
   forceLoginMethod?: "claudeai" | "console";
   /**
+   * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (default): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
+   */
+  parentSettingsBehavior?: "first-wins" | "merge";
+  /**
    * Organization UUID to require for OAuth login. Accepts a single UUID string or an array of UUIDs (any one is permitted). When set in managed settings, login fails if the authenticated account does not belong to a listed organization.
    */
   forceLoginOrgUUID?: string | string[];
@@ -5311,6 +5340,14 @@ export declare interface Settings {
       command: string;
       args?: string[];
     };
+    /**
+     * Linux/WSL only: Absolute path to the bwrap (bubblewrap) binary. Overrides auto-detection via PATH. Only honored from admin-controlled managed settings.
+     */
+    bwrapPath?: string;
+    /**
+     * Linux/WSL only: Absolute path to the socat binary used for the sandbox network proxy. Overrides auto-detection via PATH. Only honored from admin-controlled managed settings.
+     */
+    socatPath?: string;
     [k: string]: unknown;
   };
   /**
@@ -5981,6 +6018,7 @@ export declare interface Transport {
 /**
  * V2 API - UNSTABLE
  * Create a persistent session for multi-turn conversations.
+ * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
  * @alpha
  */
 export declare function unstable_v2_createSession(
@@ -5990,6 +6028,7 @@ export declare function unstable_v2_createSession(
 /**
  * V2 API - UNSTABLE
  * One-shot convenience function for single prompts.
+ * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
  * @alpha
  *
  * @example
@@ -6007,6 +6046,7 @@ export declare function unstable_v2_prompt(
 /**
  * V2 API - UNSTABLE
  * Resume an existing session by ID.
+ * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
  * @alpha
  */
 export declare function unstable_v2_resumeSession(
