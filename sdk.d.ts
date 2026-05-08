@@ -390,6 +390,7 @@ declare namespace coreTypes {
     SDKNotificationMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
+    SDKPermissionDeniedMessage,
     SDKPluginInstallMessage,
     SDKPromptSuggestionMessage,
     SDKRateLimitEvent,
@@ -614,6 +615,18 @@ export declare type FileChangedHookSpecificOutput = {
   hookEventName: "FileChanged";
   watchPaths?: string[];
 };
+
+/**
+ * Apply the same trust-tier filter the CLI applies before honoring escalating
+ * permission modes from settings: if `permissions.defaultMode` is escalating
+ * (`bypassPermissions`/`auto`/`acceptEdits`) AND was set by a repo-committed
+ * tier (`project`), drop it from the returned `effective`.
+ *
+ * @alpha
+ */
+export declare function filterEscalatingDefaultMode(
+  _resolved: ResolvedSettings,
+): Settings;
 
 /**
  * Fold a batch of appended entries into the running summary for `key`.
@@ -1593,7 +1606,7 @@ export declare type Options = {
    * - `'medium'` — Moderate thinking
    * - `'high'` — Deep reasoning (default)
    * - `'xhigh'` — Deeper than high (Opus 4.7 only)
-   * - `'max'` — Maximum effort (Opus 4.6/4.7 only)
+   * - `'max'` — Maximum effort (Opus 4.6/4.7, Sonnet 4.6)
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
    */
@@ -2103,6 +2116,19 @@ export declare type PermissionUpdateDestination =
   | "session"
   | "cliArg";
 
+/**
+ * Which policy sub-source supplied a `'managed'` value.
+ * @alpha
+ */
+export declare type PolicySettingsOrigin =
+  | "helper"
+  | "remote"
+  | "plist"
+  | "hklm"
+  | "file"
+  | "parent"
+  | "hkcu";
+
 export declare type PostCompactHookInput = BaseHookInput & {
   hook_event_name: "PostCompact";
   trigger: "manual" | "auto";
@@ -2235,6 +2261,18 @@ export declare type PromptResponse = {
    * The key of the selected option
    */
   selected: string;
+};
+
+/**
+ * Per-key provenance entry.
+ * @alpha
+ */
+export declare type ProvenanceEntry = {
+  source: ResolvedSettingSource;
+  /** Absolute path to the settings file, for filesystem-backed sources. */
+  path?: string;
+  /** Which policy sub-source supplied the value, when `source === 'managed'`. */
+  policyOrigin?: PolicySettingsOrigin;
 };
 
 /**
@@ -2471,6 +2509,98 @@ export declare function renameSession(
   _title: string,
   _options?: SessionMutationOptions,
 ): Promise<void>;
+
+/**
+ * Result of {@link resolveSettings}.
+ * @alpha
+ */
+export declare type ResolvedSettings = {
+  /** Merged settings after applying all enabled sources in precedence order. */
+  effective: Settings;
+  /** For each top-level key in `effective`, which source supplied the value. */
+  provenance: Partial<Record<keyof Settings, ProvenanceEntry>>;
+  /**
+   * Per-source raw settings, low→high precedence. Use this when per-top-level
+   * provenance is too coarse (e.g. checking which tier set a nested key).
+   */
+  sources: Array<{
+    source: ResolvedSettingSource;
+    settings: Settings;
+    path?: string;
+    policyOrigin?: PolicySettingsOrigin;
+  }>;
+};
+
+/**
+ * Source that contributed an effective setting value. Filesystem sources use
+ * the same names as {@link SettingSource}; `'managed'` is the policy tier
+ * (managed-settings.json / `managedSettings` option); `'flag'` is the
+ * `--settings` CLI flag tier.
+ * @alpha
+ */
+export declare type ResolvedSettingSource = SettingSource | "managed" | "flag";
+
+/**
+ * Resolve the effective Claude Code settings for the given options using the
+ * same merge engine as the CLI, without spawning the Claude CLI. Useful for
+ * inspecting what configuration a `query()` call would see.
+ *
+ * @remarks
+ * This reports the **raw settings cascade**, not a security decision. Two
+ * caveats:
+ *
+ * - **The policy tier matches CLI startup** (managed-settings.json,
+ *   remote-cached managed settings, MDM via macOS plist / Windows
+ *   HKLM/HKCU, and `managedSettings`) **except** the admin-configured
+ *   `policyHelper` subprocess is not executed. MDM resolution may invoke
+ *   `plutil` (macOS, when an MDM plist exists) or `reg.exe` (Windows/WSL)
+ *   on the first call per process. If your deployment relies on
+ *   policyHelper to inject managed settings, results will differ.
+ * - **`permissions.defaultMode` is reported as-is across all tiers**
+ *   including project. The CLI applies a separate trust filter before
+ *   honoring escalating modes (`bypassPermissions`, `auto`, `acceptEdits`)
+ *   from repo-committed files; pass the result through
+ *   {@link filterEscalatingDefaultMode} before acting on `defaultMode`.
+ *
+ * @alpha
+ */
+export declare function resolveSettings(
+  _opts?: ResolveSettingsOptions,
+): Promise<ResolvedSettings>;
+
+/**
+ * Options for {@link resolveSettings}.
+ * @alpha
+ */
+export declare type ResolveSettingsOptions = {
+  /**
+   * Directory to resolve project/local settings relative to. Defaults to the
+   * current process's working directory.
+   */
+  cwd?: string;
+  /**
+   * Which filesystem settings sources to load. When omitted, all sources are
+   * loaded (matches CLI defaults). Pass `[]` to skip user/project/local
+   * sources — the managed-settings policy tier is still read from disk.
+   */
+  settingSources?: SettingSource[];
+  /**
+   * Restrictive policy-tier settings — equivalent to `Options.managedSettings`
+   * on `query()`. Feeds the lowest-precedence policy sub-source and is
+   * filtered through a restrictive-key allowlist (`allowManaged*Only` locks,
+   * `permissions.deny`/`ask`, sandbox restrictions); non-restrictive keys
+   * such as `model`, `env`, `cleanupPeriodDays` are silently dropped.
+   */
+  managedSettings?: Settings;
+  /**
+   * Server-managed settings payload (the result of fetching
+   * `/api/claude_code/settings`). Feeds the `'remote'` policy sub-source —
+   * same trust level as the on-disk cache it replaces, so non-restrictive
+   * keys flow through unfiltered. Use this when the embedding host has a
+   * fresher result than the CLI's `~/.claude/remote-settings.json` cache.
+   */
+  serverManagedSettings?: Settings;
+};
 
 /**
  * Result of a rewindFiles operation.
@@ -3361,6 +3491,7 @@ export declare type SDKMessage =
   | SDKMemoryRecallMessage
   | SDKRateLimitEvent
   | SDKElicitationCompleteMessage
+  | SDKPermissionDeniedMessage
   | SDKPromptSuggestionMessage
   | SDKMirrorErrorMessage;
 
@@ -3431,6 +3562,34 @@ export declare type SDKPermissionDenial = {
   tool_name: string;
   tool_use_id: string;
   tool_input: Record<string, unknown>;
+};
+
+/**
+ * Emitted when a tool call is auto-denied without an interactive permission prompt (e.g. auto-mode classifier, dontAsk mode, headless-agent auto-deny, or a deny rule). The 'ask' path surfaces via a can_use_tool control_request; this event covers the 'deny' short-circuit in canUseTool so SDK hosts can render the denial instead of only seeing an is_error tool_result. PreToolUse hook denies bypass canUseTool and are not covered here.
+ */
+export declare type SDKPermissionDeniedMessage = {
+  type: "system";
+  subtype: "permission_denied";
+  tool_name: string;
+  tool_use_id: string;
+  /**
+   * Subagent ID when the denied tool call originated inside a subagent. Mirrors can_use_tool for host-side routing.
+   */
+  agent_id?: string;
+  /**
+   * Discriminator from PermissionDecisionReason (e.g. 'classifier', 'asyncAgent', 'mode', 'rule').
+   */
+  decision_reason_type?: string;
+  /**
+   * Human-readable reason from the deciding component, when available.
+   */
+  decision_reason?: string;
+  /**
+   * The rejection message returned to the model in the tool_result.
+   */
+  message: string;
+  uuid: UUID;
+  session_id: string;
 };
 
 /**
@@ -4180,6 +4339,17 @@ export declare interface Settings {
    * Command to refresh GCP authentication (e.g., gcloud auth application-default login)
    */
   gcpAuthRefresh?: string;
+  /**
+   * Executable that computes managed settings at startup. Honored only from admin-controlled policy sources.
+   */
+  policyHelper?: {
+    /**
+     * Absolute path to the helper executable
+     */
+    path: string;
+    timeoutMs?: number;
+    refreshIntervalMs?: 0 | number;
+  };
   /**
    * Custom file suggestion configuration for \@ mentions
    */
@@ -5651,6 +5821,10 @@ export declare interface Settings {
    * Prevent claude-cli:// protocol handler registration with the OS
    */
   disableDeepLinkRegistration?: "disable";
+  /**
+   * Default transcript view: chat (SendUserMessage checkpoints only) or transcript (full)
+   */
+  defaultView?: "chat" | "transcript";
   [k: string]: unknown;
 }
 
