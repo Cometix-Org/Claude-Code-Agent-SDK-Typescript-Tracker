@@ -26,7 +26,7 @@ export declare type AccountInfo = {
   tokenSource?: string;
   apiKeySource?: string;
   /**
-   * Active API backend. Anthropic OAuth login only applies when "firstParty"; for 3P providers the other fields are absent and auth is external (AWS creds, gcloud ADC, etc.).
+   * Active API backend. Anthropic OAuth login only applies when "firstParty"; for 3P providers the other fields are absent and auth is external (AWS creds, gcloud ADC, etc.). "gateway" means the CLI is authenticated against an enterprise gateway.
    */
   apiProvider?:
     | "firstParty"
@@ -34,7 +34,8 @@ export declare type AccountInfo = {
     | "vertex"
     | "foundry"
     | "anthropicAws"
-    | "mantle";
+    | "mantle"
+    | "gateway";
 };
 
 /**
@@ -2483,6 +2484,19 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   stopTask(taskId: string): Promise<void>;
   /**
+   * Background in-flight foreground tasks (Bash commands and subagents).
+   * With `toolUseId`, targets the single task started by that tool_use
+   * block; without it, backgrounds all foreground tasks — equivalent to
+   * pressing Ctrl+B in the terminal. Each blocking tool call returns
+   * immediately with a "running in the background" tool_result and the
+   * turn continues; the task keeps running and emits a task_notification
+   * when it settles.
+   * @param toolUseId - Optional tool_use block id to target a single task
+   * @returns true when at least one task was backgrounded; false only
+   *   when `toolUseId` was given and it matched no foreground task
+   */
+  backgroundTasks(toolUseId?: string): Promise<boolean>;
+  /**
    * Close the query and terminate the underlying process.
    * This forcefully ends the query, cleaning up all resources including
    * pending requests, MCP transports, and the CLI subprocess.
@@ -2799,6 +2813,17 @@ export declare type SDKCompactBoundaryMessage = {
 declare type SDKControlApplyFlagSettingsRequest = {
   subtype: "apply_flag_settings";
   settings: Record<string, unknown>;
+};
+
+/**
+ * Backgrounds in-flight foreground tasks (Bash commands and subagents). With tool_use_id, targets the single task started by that tool_use block; without it, backgrounds all foreground tasks — the control-request equivalent of pressing Ctrl+B in the terminal. Each blocking tool call returns immediately with a "running in the background" tool_result and the turn continues; the task keeps running and emits a task_notification when it settles.
+ */
+declare type SDKControlBackgroundTasksRequest = {
+  subtype: "background_tasks";
+  /**
+   * When set, backgrounds only the task whose originating tool_use block has this id. When omitted, backgrounds all foreground tasks (Ctrl+B semantics).
+   */
+  tool_use_id?: string;
 };
 
 /**
@@ -3222,6 +3247,7 @@ declare type SDKControlRequestInner =
   | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
   | SDKControlStopTaskRequest
+  | SDKControlBackgroundTasksRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
   | SDKControlElicitationRequest
@@ -4533,6 +4559,10 @@ export declare interface Settings {
              */
             command: string;
             /**
+             * Argument list for exec form. When present, `command` is resolved as an executable and spawned directly with these arguments — no shell. Path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted per-element as plain strings, so paths with quotes, $, or backticks never reach a shell parser. When absent, `command` runs through a shell (bash on POSIX, PowerShell on Windows without Git Bash).
+             */
+            args?: string[];
+            /**
              * Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.
              */
             if?: string;
@@ -4582,6 +4612,10 @@ export declare interface Settings {
              * Model to use for this prompt hook (e.g., "claude-sonnet-4-6"). If not specified, uses the default small fast model.
              */
             model?: string;
+            /**
+             * Sets the continue value for the decision:"block" produced when ok is false. Default false (turn ends). Whether continue:true lets the turn proceed depends on the event's decision:"block" semantics. On PostToolUse, the reason is fed back to Claude and the turn continues.
+             */
+            continueOnBlock?: boolean;
             /**
              * Custom status message to display in spinner while hook runs
              */
@@ -4718,9 +4752,9 @@ export declare interface Settings {
    */
   disableAllHooks?: boolean;
   /**
-   * Disable the background-agents fleet (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENTS_FLEET=1.
+   * Disable agent view (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENT_VIEW=1.
    */
-  disableBackgroundAgents?: boolean;
+  disableAgentView?: boolean;
   /**
    * Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings.
    */
@@ -5720,6 +5754,10 @@ export declare interface Settings {
      */
     startDirectory?: string;
   }[];
+  /**
+   * CLAUDE.md-style instructions injected as organization-managed memory. Only honored from managed/policy settings.
+   */
+  claudeMd?: string;
   /**
    * Glob patterns or absolute paths of CLAUDE.md files to exclude from loading. Patterns are matched against absolute file paths using picomatch. Only applies to User, Project, and Local memory types (Managed/policy files cannot be excluded). Examples: "/home/user/monorepo/CLAUDE.md", "** /code/CLAUDE.md", "** /some-dir/.claude/rules/**"
    */
