@@ -368,9 +368,6 @@ declare namespace coreTypes {
     PreCompactHookInput,
     PreToolUseHookInput,
     PreToolUseHookSpecificOutput,
-    PromptRequestOption,
-    PromptRequest,
-    PromptResponse,
     RewindFilesResult,
     SDKAPIRetryMessage,
     SDKAssistantMessageError,
@@ -2223,47 +2220,6 @@ export declare type PreToolUseHookSpecificOutput = {
   additionalContext?: string;
 };
 
-export declare type PromptRequest = {
-  /**
-   * Request ID. Presence of this key marks the line as a prompt request.
-   */
-  prompt: string;
-  /**
-   * The prompt message to display to the user
-   */
-  message: string;
-  /**
-   * Available options for the user to choose from
-   */
-  options: PromptRequestOption[];
-};
-
-export declare type PromptRequestOption = {
-  /**
-   * Unique key for this option, returned in the response
-   */
-  key: string;
-  /**
-   * Display text for this option
-   */
-  label: string;
-  /**
-   * Optional description shown below the label
-   */
-  description?: string;
-};
-
-export declare type PromptResponse = {
-  /**
-   * The request ID from the corresponding prompt request
-   */
-  prompt_response: string;
-  /**
-   * The key of the selected option
-   */
-  selected: string;
-};
-
 /**
  * Per-key provenance entry.
  * @alpha
@@ -2670,6 +2626,15 @@ declare const SandboxNetworkConfigSchema: () => z.ZodOptional<
       allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
       httpProxyPort: z.ZodOptional<z.ZodNumber>;
       socksProxyPort: z.ZodOptional<z.ZodNumber>;
+      tlsTerminate: z.ZodOptional<
+        z.ZodObject<
+          {
+            caCertPath: z.ZodOptional<z.ZodString>;
+            caKeyPath: z.ZodOptional<z.ZodString>;
+          },
+          z.core.$strip
+        >
+      >;
     },
     z.core.$strip
   >
@@ -2700,6 +2665,15 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
           allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
           httpProxyPort: z.ZodOptional<z.ZodNumber>;
           socksProxyPort: z.ZodOptional<z.ZodNumber>;
+          tlsTerminate: z.ZodOptional<
+            z.ZodObject<
+              {
+                caCertPath: z.ZodOptional<z.ZodString>;
+                caKeyPath: z.ZodOptional<z.ZodString>;
+              },
+              z.core.$strip
+            >
+          >;
         },
         z.core.$strip
       >
@@ -5505,6 +5479,13 @@ export declare interface Settings {
       allowMachLookup?: string[];
       httpProxyPort?: number;
       socksProxyPort?: number;
+      /**
+       * [EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session.
+       */
+      tlsTerminate?: {
+        caCertPath?: string;
+        caKeyPath?: string;
+      };
     };
     filesystem?: {
       /**

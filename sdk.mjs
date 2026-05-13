@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.2.139
+// Version: 0.2.140
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -37047,6 +37047,14 @@ var fs = S(() =>
         ),
       httpProxyPort: K.number().optional(),
       socksProxyPort: K.number().optional(),
+      tlsTerminate: K.object({
+        caCertPath: K.string().min(1).optional(),
+        caKeyPath: K.string().min(1).optional(),
+      })
+        .optional()
+        .describe(
+          "[EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session.",
+        ),
     }).optional(),
   ),
   gs = S(() =>
@@ -37465,6 +37473,7 @@ var SE = new Set([
   "anthropic-marketplace",
   "anthropic-plugins",
   "agent-skills",
+  "anthropic-agent-skills",
   "life-sciences",
   "knowledge-work-plugins",
 ]);
@@ -37523,6 +37532,10 @@ var M4 = S(() => K.string().startsWith("./")),
       })
       .refine(($) => $.toLowerCase() !== "builtin", {
         message: 'Marketplace name "builtin" is reserved for built-in plugins',
+      })
+      .refine(($) => $.toLowerCase() !== "skills-dir", {
+        message:
+          'Marketplace name "skills-dir" is reserved for plugins auto-loaded from .claude/skills/',
       }),
   ),
   kz = S(() =>
@@ -37642,14 +37655,14 @@ var M4 = S(() => K.string().startsWith("./")),
     K.object({
       commands: K.union([
         _z().describe(
-          "Path to additional command file or skill directory (in addition to those in the commands/ directory, if it exists), relative to the plugin root",
+          "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded — list its files here if you want both.",
         ),
         K.array(
           _z().describe(
-            "Path to additional command file or skill directory (in addition to those in the commands/ directory, if it exists), relative to the plugin root",
+            "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded — list its files here if you want both.",
           ),
         ).describe(
-          "List of paths to additional command files or skill directories",
+          "List of command file or skill directory paths. When set, the commands/ directory is not auto-loaded.",
         ),
         K.record(K.string(), Je()).describe(
           'Object mapping of command names to their metadata and source files. Command name becomes the slash command name (e.g., "about" → "/plugin:about")',
@@ -37661,13 +37674,15 @@ var M4 = S(() => K.string().startsWith("./")),
     K.object({
       agents: K.union([
         Sz().describe(
-          "Path to additional agent file (in addition to those in the agents/ directory, if it exists), relative to the plugin root",
+          "Path to an agent file, relative to the plugin root. When set, the agents/ directory is not auto-loaded — list its files here if you want both.",
         ),
         K.array(
           Sz().describe(
-            "Path to additional agent file (in addition to those in the agents/ directory, if it exists), relative to the plugin root",
+            "Path to an agent file, relative to the plugin root. When set, the agents/ directory is not auto-loaded — list its files here if you want both.",
           ),
-        ).describe("List of paths to additional agent files"),
+        ).describe(
+          "List of agent file paths. When set, the agents/ directory is not auto-loaded.",
+        ),
       ]),
     }),
   ),
@@ -37675,13 +37690,15 @@ var M4 = S(() => K.string().startsWith("./")),
     K.object({
       skills: K.union([
         M4().describe(
-          "Path to additional skill directory (in addition to those in the skills/ directory, if it exists), relative to the plugin root",
+          "Path to a skill directory, relative to the plugin root. Loaded in addition to the skills/ directory.",
         ),
         K.array(
           M4().describe(
-            "Path to additional skill directory (in addition to those in the skills/ directory, if it exists), relative to the plugin root",
+            "Path to a skill directory, relative to the plugin root. Loaded in addition to the skills/ directory.",
           ),
-        ).describe("List of paths to additional skill directories"),
+        ).describe(
+          "List of skill directory paths, loaded in addition to the skills/ directory.",
+        ),
       ]),
     }),
   ),
@@ -37689,14 +37706,14 @@ var M4 = S(() => K.string().startsWith("./")),
     K.object({
       outputStyles: K.union([
         M4().describe(
-          "Path to additional output styles directory or file (in addition to those in the output-styles/ directory, if it exists), relative to the plugin root",
+          "Path to an output-styles directory or file, relative to the plugin root. When set, the output-styles/ directory is not auto-loaded — list its files here if you want both.",
         ),
         K.array(
           M4().describe(
-            "Path to additional output styles directory or file (in addition to those in the output-styles/ directory, if it exists), relative to the plugin root",
+            "Path to an output-styles directory or file, relative to the plugin root. When set, the output-styles/ directory is not auto-loaded — list its files here if you want both.",
           ),
         ).describe(
-          "List of paths to additional output styles directories or files",
+          "List of output-style directory or file paths. When set, the output-styles/ directory is not auto-loaded.",
         ),
       ]),
     }),
@@ -37705,13 +37722,15 @@ var M4 = S(() => K.string().startsWith("./")),
     K.object({
       themes: K.union([
         M4().describe(
-          "Path to additional themes directory or file (in addition to those in the themes/ directory, if it exists), relative to the plugin root",
+          "Path to a themes directory or file, relative to the plugin root. When set, the themes/ directory is not auto-loaded — list its files here if you want both.",
         ),
         K.array(
           M4().describe(
-            "Path to additional themes directory or file (in addition to those in the themes/ directory, if it exists), relative to the plugin root",
+            "Path to a themes directory or file, relative to the plugin root. When set, the themes/ directory is not auto-loaded — list its files here if you want both.",
           ),
-        ).describe("List of paths to additional themes directories or files"),
+        ).describe(
+          "List of theme directory or file paths. When set, the themes/ directory is not auto-loaded.",
+        ),
       ]),
     }),
   ),
@@ -41055,7 +41074,7 @@ function cz($, Q, X, Y) {
         );
       }
   }
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.139";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.2.140";
   let {
     abortController: w = a0(),
     additionalDirectories: O = [],
