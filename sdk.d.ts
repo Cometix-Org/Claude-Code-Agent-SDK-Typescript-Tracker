@@ -2776,6 +2776,13 @@ export declare type SDKCompactBoundaryMessage = {
       anchor_uuid: UUID;
       tail_uuid: UUID;
     };
+    /**
+     * Ordered messagesToKeep UUIDs. Supersedes preserved_segment — readers look up each UUID directly and relink uuids[i] to uuids[i-1] (uuids[0] to anchor_uuid) instead of walking the parentUuid chain. Unset when compaction summarizes everything.
+     */
+    preserved_messages?: {
+      anchor_uuid: UUID;
+      uuids: UUID[];
+    };
   };
   uuid: UUID;
   session_id: string;
@@ -4887,6 +4894,9 @@ export declare interface Settings {
             path: string;
           }
         | {
+            source: "skills-dir";
+          }
+        | {
             source: "hostPattern";
             /**
              * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against "github.com". For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
@@ -5092,6 +5102,9 @@ export declare interface Settings {
         path: string;
       }
     | {
+        source: "skills-dir";
+      }
+    | {
         source: "hostPattern";
         /**
          * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against "github.com". For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
@@ -5286,6 +5299,9 @@ export declare interface Settings {
          * Local directory containing .claude-plugin/marketplace.json
          */
         path: string;
+      }
+    | {
+        source: "skills-dir";
       }
     | {
         source: "hostPattern";
@@ -6018,6 +6034,10 @@ export declare type SyncHookJSONOutput = {
   stopReason?: string;
   decision?: "approve" | "block";
   systemMessage?: string;
+  /**
+   * A terminal escape sequence (e.g. OSC 9 / OSC 777 desktop-notification) for Claude Code to emit on your behalf. Only notification/title OSCs (0, 1, 2, 9, 99, 777) and BEL are permitted; anything else is dropped.
+   */
+  terminalSequence?: string;
   reason?: string;
 
   hookSpecificOutput?:
