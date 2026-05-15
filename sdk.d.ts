@@ -687,7 +687,7 @@ export declare type ForkSessionOptions = SessionMutationOptions & {
  * Result of a fork operation.
  */
 export declare type ForkSessionResult = {
-  /** New session UUID. Resumable via `resumeSession(sessionId)`. */
+  /** New session UUID. Resumable via `query({ options: { resume: sessionId } })`. */
   sessionId: string;
 };
 
@@ -1126,7 +1126,7 @@ export declare type McpHttpServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1240,7 +1240,7 @@ export declare type McpSSEServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1251,7 +1251,7 @@ export declare type McpStdioServerConfig = {
   args?: string[];
   env?: Record<string, string>;
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even when MCP_CONNECTION_NONBLOCKING=1, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1410,6 +1410,32 @@ export declare type Options = {
    * otherwise be allowed.
    */
   disallowedTools?: string[];
+  /**
+   * Map of tool-name aliases applied before name resolution. When the
+   * model emits a `tool_use` whose name is a key in this map, the tool
+   * execution path resolves the mapped name instead.
+   *
+   * This lets SDK consumers redirect built-in tool names to their own
+   * tools. For example, a host that runs Bash inside a remote sandbox via
+   * an MCP tool can set `{ Bash: 'mcp__workspace__bash' }` so that if the
+   * model emits `Bash` (e.g. because a skill document instructed it to),
+   * the call is routed to the MCP tool instead of failing as unknown.
+   *
+   * The redirect is single-hop: an alias that points at another aliased
+   * name resolves that target literally rather than following a chain, so
+   * cycles like `{A: 'B', B: 'A'}` cannot loop.
+   *
+   * `toolAliases` is complementary to `disallowedTools`, not a replacement
+   * for it: the alias only affects name-based lookup of model-emitted
+   * `tool_use` blocks, whereas `disallowedTools` also blocks harness-internal
+   * direct calls that hold the tool object without a name lookup.
+   *
+   * @example
+   * ```typescript
+   * toolAliases: { Bash: 'mcp__workspace__bash' }
+   * ```
+   */
+  toolAliases?: Record<string, string>;
   /**
    * Specify the base set of available built-in tools.
    * - `string[]` - Array of specific tool names (e.g., `['Bash', 'Read', 'Edit']`)
@@ -2737,6 +2763,15 @@ export declare type SDKAssistantMessage = {
   error?: SDKAssistantMessageError;
   uuid: UUID;
   session_id: string;
+  request_id?: string;
+  /**
+   * Subagent type that produced this message.
+   */
+  subagent_type?: string;
+  /**
+   * Description of the subagent task that produced this message.
+   */
+  task_description?: string;
 };
 
 export declare type SDKAssistantMessageError =
@@ -2994,6 +3029,10 @@ declare type SDKControlInitializeRequest = {
    */
   planModeInstructions?: string;
 
+  /**
+   * Map of tool-name aliases applied before name resolution. When the model emits a tool_use whose name is a key in this map, the tool execution path resolves the mapped name instead. Single-hop (no chains). See Options.toolAliases.
+   */
+  toolAliases?: Record<string, string>;
   /**
    * When true, omit per-user dynamic sections (working directory, auto-memory path) from the cached system prompt and re-inject them as the first user message. Lets cross-user prompt caching hit on a static system prompt prefix. Tradeoff: the model sees this context slightly later in the prompt, so steering on the working directory and memory location is marginally less authoritative. Has no effect when a custom (non-preset) system prompt is in use.
    */
@@ -3713,6 +3752,7 @@ export declare type SDKResultSuccess = {
   subtype: "success";
   duration_ms: number;
   duration_api_ms: number;
+  ttft_ms?: number;
   is_error: boolean;
   api_error_status?: number | null;
   num_turns: number;
@@ -3730,30 +3770,6 @@ export declare type SDKResultSuccess = {
   uuid: UUID;
   session_id: string;
 };
-
-/**
- * V2 API - UNSTABLE
- * Session interface for multi-turn conversations.
- * Has methods, so not serializable.
- * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
- * @alpha
- */
-export declare interface SDKSession {
-  /**
-   * The session ID. Available after receiving the first message.
-   * For resumed sessions, available immediately.
-   * Throws if accessed before the session is initialized.
-   */
-  readonly sessionId: string;
-  /** Send a message to the agent */
-  send(message: string | SDKUserMessage): Promise<void>;
-  /** Stream messages from the agent */
-  stream(): AsyncGenerator<SDKMessage, void>;
-  /** Close the session */
-  close(): void;
-  /** Async disposal support (calls close if not already closed) */
-  [Symbol.asyncDispose](): Promise<void>;
-}
 
 /**
  * Session metadata returned by listSessions and getSessionInfo.
@@ -3799,85 +3815,6 @@ export declare type SDKSessionInfo = {
    * Creation time in milliseconds since epoch, extracted from the first entry's timestamp.
    */
   createdAt?: number;
-};
-
-/**
- * V2 API - UNSTABLE
- * Options for creating a session.
- * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
- * @alpha
- */
-export declare type SDKSessionOptions = {
-  /** Model to use */
-  model: string;
-  /** Path to Claude Code executable */
-  pathToClaudeCodeExecutable?: string;
-  /** Executable to use (node, bun) */
-  executable?: "node" | "bun";
-  /** Arguments to pass to executable */
-  executableArgs?: string[];
-  /**
-   * Environment variables to pass to the Claude Code process.
-   * Defaults to `process.env`.
-   *
-   * SDK consumers can identify their app/library to include in the User-Agent header by setting:
-   * - `CLAUDE_AGENT_SDK_CLIENT_APP` - Your app/library identifier (e.g., "my-app/1.0.0", "my-library/2.1")
-   */
-  env?: {
-    [envVar: string]: string | undefined;
-  };
-  /**
-   * Working directory for the Claude Code process. Defaults to the current
-   * process's working directory.
-   */
-  cwd?: string;
-  /**
-   * Which settings sources to load (CLAUDE.md, `.claude/settings.json`).
-   * Defaults to `[]`: no project/user settings are loaded unless specified.
-   * Note that `query()` has the opposite default and loads all sources when
-   * this is omitted.
-   */
-  settingSources?: SettingSource[];
-  /**
-   * Must be set to `true` when using `permissionMode: 'bypassPermissions'`.
-   * This is a safety measure to ensure intentional bypassing of permissions.
-   */
-  allowDangerouslySkipPermissions?: boolean;
-  /**
-   * List of tool names that are auto-allowed without prompting for permission.
-   * These tools will execute automatically without asking the user for approval.
-   */
-  allowedTools?: string[];
-  /**
-   * List of tool names that are disallowed. These tools will be removed
-   * from the model's context and cannot be used.
-   */
-  disallowedTools?: string[];
-  /**
-   * Custom permission handler for controlling tool usage. Called before each
-   * tool execution to determine if it should be allowed, denied, or prompt the user.
-   */
-  canUseTool?: CanUseTool;
-  /**
-   * Hook callbacks for responding to various events during execution.
-   */
-  hooks?: Partial<Record<HookEvent, HookCallbackMatcher[]>>;
-  /**
-   * Permission mode for the session.
-   * - `'default'` - Standard permission behavior, prompts for dangerous operations
-   * - `'acceptEdits'` - Auto-accept file edit operations
-   * - `'bypassPermissions'` - Bypass all permission checks (requires `allowDangerouslySkipPermissions`)
-   * - `'plan'` - Planning mode, no execution of tools
-   * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
-   */
-  permissionMode?: PermissionMode;
-  /**
-   * Custom workflow instructions for plan mode. When `permissionMode` is
-   * `'plan'`, this string replaces the default code-implementation workflow
-   * body in the plan-mode system reminder. The CLI still wraps it with the
-   * read-only enforcement preamble and the ExitPlanMode protocol footer.
-   */
-  planModeInstructions?: string;
 };
 
 /**
@@ -3978,6 +3915,10 @@ export declare type SDKTaskProgressMessage = {
   task_id: string;
   tool_use_id?: string;
   description: string;
+  /**
+   * Subagent type for Task tool subagents.
+   */
+  subagent_type?: string;
   usage: {
     total_tokens: number;
     tool_uses: number;
@@ -3996,6 +3937,10 @@ export declare type SDKTaskStartedMessage = {
   task_id: string;
   tool_use_id?: string;
   description: string;
+  /**
+   * Subagent type for Task tool subagents.
+   */
+  subagent_type?: string;
   task_type?: string;
   /**
    * meta.name from the workflow script (e.g. 'spec'). Only set when task_type is 'local_workflow'.
@@ -4067,6 +4012,14 @@ export declare type SDKUserMessage = {
   timestamp?: string;
   uuid?: UUID;
   session_id?: string;
+  /**
+   * Subagent type that produced this message.
+   */
+  subagent_type?: string;
+  /**
+   * Description of the subagent task that produced this message.
+   */
+  task_description?: string;
 };
 
 export declare type SDKUserMessageReplay = {
@@ -6227,45 +6180,6 @@ export declare interface Transport {
    */
   [Symbol.dispose]?(): void;
 }
-
-/**
- * V2 API - UNSTABLE
- * Create a persistent session for multi-turn conversations.
- * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
- * @alpha
- */
-export declare function unstable_v2_createSession(
-  _options: SDKSessionOptions,
-): SDKSession;
-
-/**
- * V2 API - UNSTABLE
- * One-shot convenience function for single prompts.
- * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
- * @alpha
- *
- * @example
- * ```typescript
- * const result = await unstable_v2_prompt("What files are here?", {
- *   model: 'claude-sonnet-4-6'
- * })
- * ```
- */
-export declare function unstable_v2_prompt(
-  _message: string,
-  _options: SDKSessionOptions,
-): Promise<SDKResultMessage>;
-
-/**
- * V2 API - UNSTABLE
- * Resume an existing session by ID.
- * @deprecated Use `query()` instead. The V2 session API will be removed in a future release.
- * @alpha
- */
-export declare function unstable_v2_resumeSession(
-  _sessionId: string,
-  _options: SDKSessionOptions,
-): SDKSession;
 
 export declare type UserPromptExpansionHookInput = BaseHookInput & {
   hook_event_name: "UserPromptExpansion";
