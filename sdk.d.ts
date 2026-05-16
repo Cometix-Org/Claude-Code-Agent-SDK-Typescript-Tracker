@@ -3963,7 +3963,13 @@ export declare type SDKTaskUpdatedMessage = {
    * Wire-safe subset of TaskState fields that changed. Excludes abortController, messages, result. Clients merge into their local task map.
    */
   patch: {
-    status?: "pending" | "running" | "completed" | "failed" | "killed";
+    status?:
+      | "pending"
+      | "running"
+      | "completed"
+      | "failed"
+      | "killed"
+      | "paused";
     description?: string;
     end_time?: number;
     total_paused_ms?: number;
@@ -4680,6 +4686,10 @@ export declare interface Settings {
      * Which ref new worktrees branch from. 'fresh' (default) branches from origin/<default-branch> for a clean tree. 'head' branches from your current local HEAD so unpushed commits and feature-branch state are present. Applies to --worktree, EnterWorktree, and agent isolation.
      */
     baseRef?: "fresh" | "head";
+    /**
+     * Isolation mode for background sessions in this repo. 'worktree' (default) blocks Edit/Write in the main checkout until EnterWorktree is called. 'none' lets background jobs edit the working copy directly.
+     */
+    bgIsolation?: "worktree" | "none";
   };
   /**
    * Disable all hooks and statusLine execution
