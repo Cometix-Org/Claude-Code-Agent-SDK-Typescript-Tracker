@@ -1,12 +1,16 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.3.143",
+  "version": "0.3.144",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
     ".": {
       "types": "./sdk.d.ts",
       "default": "./sdk.mjs"
+    },
+    "./extract": {
+      "types": "./extractFromBunfs.d.ts",
+      "default": "./extractFromBunfs.js"
     },
     "./browser": {
       "types": "./browser-sdk.d.ts",
@@ -35,6 +39,10 @@
   "license": "SEE LICENSE IN README.md",
   "description": "SDK for building AI agents with Claude Code's capabilities. Programmatically interact with Claude to build autonomous agents that can understand codebases, edit files, and execute workflows.",
   "homepage": "https://github.com/anthropics/claude-agent-sdk-typescript",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/claude-agent-sdk-typescript.git"
+  },
   "bugs": {
     "url": "https://github.com/anthropics/claude-agent-sdk-typescript/issues"
   },
@@ -53,14 +61,14 @@
     "zod": "^4.0.0"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.143",
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.143"
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.144",
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.144"
   },
   "files": [
     "sdk.mjs",
@@ -73,8 +81,10 @@
     "assistant.d.ts",
     "browser-sdk.js",
     "browser-sdk.d.ts",
+    "extractFromBunfs.js",
+    "extractFromBunfs.d.ts",
     "manifest.json",
     "manifest.zst.json"
   ],
-  "claudeCodeVersion": "2.1.143"
+  "claudeCodeVersion": "2.1.144"
 }

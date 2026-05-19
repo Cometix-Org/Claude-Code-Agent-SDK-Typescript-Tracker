@@ -2780,6 +2780,7 @@ export declare type SDKAssistantMessageError =
   | "billing_error"
   | "rate_limit"
   | "invalid_request"
+  | "model_not_found"
   | "server_error"
   | "unknown"
   | "max_output_tokens";
@@ -4084,7 +4085,7 @@ export declare type SessionMessage = {
   uuid: string;
   session_id: string;
   message: unknown;
-  parent_tool_use_id: null;
+  parent_tool_use_id: string | null;
 };
 
 /**
