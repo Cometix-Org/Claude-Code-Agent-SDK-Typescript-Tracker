@@ -133,6 +133,39 @@ export declare type AsyncHookJSONOutput = {
   asyncTimeout?: number;
 };
 
+export declare type BackgroundTaskSummary = {
+  id: string;
+  /**
+   * Friendly task-type label (e.g. 'shell', 'subagent', 'monitor', 'workflow'). Falls back to the raw discriminant for unknown types.
+   */
+  type: string;
+  status: string;
+  /**
+   * Free-text description. Capped at 1000 chars; clipped values append an in-string "… [+N chars]" marker.
+   */
+  description: string;
+  /**
+   * Shell command line. Only present for 'shell' tasks. Capped at 1000 chars with the same "… [+N chars]" marker.
+   */
+  command?: string;
+  /**
+   * Subagent type name. Only present for 'subagent' tasks.
+   */
+  agent_type?: string;
+  /**
+   * MCP server name. Only present for 'monitor' / 'MCP task' tasks.
+   */
+  server?: string;
+  /**
+   * MCP tool name. Only present for 'monitor' / 'MCP task' tasks.
+   */
+  tool?: string;
+  /**
+   * Workflow name. Only present for 'workflow' tasks.
+   */
+  name?: string;
+};
+
 export declare type BaseHookInput = {
   session_id: string;
   transcript_path: string;
@@ -310,6 +343,7 @@ declare namespace coreTypes {
     AgentMcpServerSpec,
     ApiKeySource,
     AsyncHookJSONOutput,
+    BackgroundTaskSummary,
     BaseHookInput,
     BaseOutputFormat,
     ConfigChangeHookInput,
@@ -412,6 +446,7 @@ declare namespace coreTypes {
     SDKUserMessage,
     SdkBeta,
     SdkPluginConfig,
+    SessionCronSummary,
     SessionEndHookInput,
     SessionStartHookInput,
     SessionStartHookSpecificOutput,
@@ -456,6 +491,13 @@ export declare function createSdkMcpServer(
 declare type CreateSdkMcpServerOptions = {
   name: string;
   version?: string;
+  /**
+   * Server instructions returned from `initialize` and surfaced to the model
+   * as an MCP instructions block. When proxying a real MCP server through the
+   * SDK transport, pass the underlying server's `getInstructions()` here so
+   * it isn't dropped.
+   */
+  instructions?: string;
   tools?: Array<SdkMcpToolDefinition<any>>;
   /**
    * When true, all tools from this server are always included in the prompt
@@ -3267,6 +3309,7 @@ declare type SDKControlRequestInner =
   | SDKControlUltrareviewLaunchRequest
   | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
+  | SDKControlHostAuthTokenRefreshRequest
   | SDKControlStopTaskRequest
   | SDKControlBackgroundTasksRequest
   | SDKControlApplyFlagSettingsRequest
@@ -4050,6 +4093,22 @@ export declare type SDKUserMessageReplay = {
   session_id: string;
   isReplay: true;
   file_attachments?: unknown[];
+};
+
+export declare type SessionCronSummary = {
+  id: string;
+  /**
+   * Cron expression, e.g. "0 9 * * 1-5".
+   */
+  schedule: string;
+  /**
+   * False for one-shot wakeups whose cron field encodes a single fire time; true for tasks that re-fire on every match.
+   */
+  recurring: boolean;
+  /**
+   * Prompt text submitted when the cron fires. Capped at 1000 chars; clipped values append an in-string "… [+N chars]" marker.
+   */
+  prompt: string;
 };
 
 export declare type SessionEndHookInput = BaseHookInput & {
@@ -5967,6 +6026,14 @@ export declare type StopHookInput = BaseHookInput & {
    * Text content of the last assistant message before stopping. Avoids the need to read and parse the transcript file.
    */
   last_assistant_message?: string;
+  /**
+   * In-flight background work (running/pending + backgrounded) registered in this session. Lets hooks distinguish "session is done" from "session is paused waiting for background work to wake it". Empty array when nothing is in flight.
+   */
+  background_tasks?: BackgroundTaskSummary[];
+  /**
+   * Session-scoped cron tasks (CronCreate, ScheduleWakeup, /loop) that will wake this session later. Empty array when none are scheduled.
+   */
+  session_crons?: SessionCronSummary[];
 };
 
 export declare type SubagentStartHookInput = BaseHookInput & {
@@ -5990,6 +6057,14 @@ export declare type SubagentStopHookInput = BaseHookInput & {
    * Text content of the last assistant message before stopping. Avoids the need to read and parse the transcript file.
    */
   last_assistant_message?: string;
+  /**
+   * In-flight background work (running/pending + backgrounded) registered in this session. Lets hooks distinguish "session is done" from "session is paused waiting for background work to wake it". Empty array when nothing is in flight.
+   */
+  background_tasks?: BackgroundTaskSummary[];
+  /**
+   * Session-scoped cron tasks (CronCreate, ScheduleWakeup, /loop) that will wake this session later. Empty array when none are scheduled.
+   */
+  session_crons?: SessionCronSummary[];
 };
 
 export declare type SyncHookJSONOutput = {
