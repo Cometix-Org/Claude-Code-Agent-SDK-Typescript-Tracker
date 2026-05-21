@@ -320,7 +320,8 @@ export interface AgentInput {
     | "bypassPermissions"
     | "default"
     | "dontAsk"
-    | "plan";
+    | "plan"
+    | "bubble";
   /**
    * Isolation mode. "worktree" creates a temporary git worktree so the agent works on an isolated copy of the repo.
    */

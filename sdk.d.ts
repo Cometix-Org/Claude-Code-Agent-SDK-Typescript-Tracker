@@ -2052,6 +2052,9 @@ export declare type Options = {
    * spawnClaudeCodeProcess: (options) => {
    *   // Custom spawn logic for VM execution
    *   // options contains: command, args, cwd, env, signal
+   *   // `signal` is forwarded — it aborts only AFTER the SDK's
+   *   // stdin-EOF + ~2 s grace window, so passing it to spawn()/your
+   *   // VM API is safe (force-kill fires after the graceful chance).
    *   return myVMProcess; // Must satisfy SpawnedProcess interface
    * }
    * ```
@@ -5989,7 +5992,28 @@ export declare interface SpawnOptions {
   env: {
     [envVar: string]: string | undefined;
   };
-  /** Abort signal for cancellation */
+  /**
+   * Abort signal for cancellation.
+   *
+   * This is a **forwarded** signal owned by `ProcessTransport`, not the
+   * caller's `Options.abortController.signal` directly. It aborts only
+   * after the SDK's graceful-close path has run: stdin EOF →
+   * `GRACEFUL_EXIT_TIMEOUT_MS` (~2 s) grace window. Anything you hang on
+   * it (Node `spawn({signal})` → `child.kill()`, VM/container teardown,
+   * fetch cancellation) fires **after** the child has had a chance to
+   * shut down cleanly via stdin close.
+   *
+   * Why: passing the caller's raw signal to Node `spawn()` registers
+   * Node's own abort listener that calls `child.kill()` — on Windows
+   * that's `TerminateProcess` (instant, uncatchable), and AbortSignal
+   * listeners fire synchronously in registration order, so it would race
+   * ahead of the SDK's stdin-EOF + grace path and the CLI's
+   * `gracefulShutdown` would never run.
+   *
+   * If you need the caller's *immediate* signal (no grace), it's the
+   * `AbortController` you passed to `Options.abortController` — capture
+   * it in closure.
+   */
   signal: AbortSignal;
 }
 
