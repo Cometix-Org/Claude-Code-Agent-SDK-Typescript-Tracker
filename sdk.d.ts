@@ -1160,6 +1160,10 @@ export declare type McpClaudeAIProxyServerConfig = {
   type: "claudeai-proxy";
   url: string;
   id: string;
+  /**
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   */
+  timeout?: number;
 };
 
 export declare type McpHttpServerConfig = {
@@ -1167,6 +1171,10 @@ export declare type McpHttpServerConfig = {
   url: string;
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
+  /**
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   */
+  timeout?: number;
   /**
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
@@ -1282,6 +1290,10 @@ export declare type McpSSEServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   */
+  timeout?: number;
+  /**
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
@@ -1292,6 +1304,10 @@ export declare type McpStdioServerConfig = {
   command: string;
   args?: string[];
   env?: Record<string, string>;
+  /**
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   */
+  timeout?: number;
   /**
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
@@ -3543,12 +3559,12 @@ export declare type SDKMemoryRecallMessage = {
   mode: "select" | "synthesize";
   memories: {
     /**
-     * Absolute path to the memory file, or a synthesis sentinel of the form `<synthesis:DIR>` when mode is 'synthesize'.
+     * Absolute path to the memory file, a synthesis sentinel of the form `<synthesis:DIR>` when mode is 'synthesize', or an https URL when scope is 'organization'.
      */
     path: string;
-    scope: "personal" | "team";
+    scope: "personal" | "team" | "organization";
     /**
-     * Synthesis paragraph. Only present when mode is 'synthesize'; always absent for 'select' (renderers lazy-load from path).
+     * The surfaced memory body. Always present for 'synthesize' mode and 'organization' scope (neither has an on-disk path to lazy-load from); absent for file-backed 'select' entries (renderers lazy-load from path).
      */
     content?: string;
   }[];
