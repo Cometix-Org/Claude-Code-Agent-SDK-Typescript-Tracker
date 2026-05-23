@@ -1507,15 +1507,19 @@ export declare type Options = {
         preset: "claude_code";
       };
   /**
-   * Environment variables to pass to the Claude Code process.
-   * Defaults to `process.env`.
+   * Environment variables for the Claude Code process.
+   *
+   * When set, this value REPLACES the subprocess environment entirely — it is
+   * not merged with `process.env`. Spread `process.env` yourself if the
+   * subprocess still needs inherited variables like `PATH`, `HOME`, or
+   * `ANTHROPIC_API_KEY`. When omitted, the subprocess inherits `process.env`.
    *
    * SDK consumers can identify their app/library to include in the User-Agent header by setting:
    * - `CLAUDE_AGENT_SDK_CLIENT_APP` - Your app/library identifier (e.g., "my-app/1.0.0", "my-library/2.1")
    *
    * @example
    * ```typescript
-   * env: { CLAUDE_AGENT_SDK_CLIENT_APP: 'my-app/1.0.0' }
+   * env: { ...process.env, CLAUDE_AGENT_SDK_CLIENT_APP: 'my-app/1.0.0' }
    * ```
    */
   env?: {
@@ -4406,6 +4410,7 @@ export declare interface Settings {
    * Whether file picker should respect .gitignore files (default: true). Note: .ignore files are always respected.
    */
   respectGitignore?: boolean;
+
   /**
    * Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely.
    */
@@ -4810,6 +4815,10 @@ export declare interface Settings {
    * When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves. Users can still add their own MCP servers, but only the admin-defined allowlist applies.
    */
   allowManagedMcpServersOnly?: boolean;
+  /**
+   * When true (and set in managed settings), claude.ai cloud MCP connectors load alongside managed-mcp.json instead of being suppressed by its exclusive-control lockdown. Default off preserves the lockdown. Read from managed settings only.
+   */
+  allowAllClaudeAiMcps?: boolean;
   /**
    * When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. ["skills", "hooks"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control — plugins gated by marketplace allowlist, everything else blocked here.
    */
