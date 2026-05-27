@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.150
+// Version: 0.3.152
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -7951,6 +7951,7 @@ var r0 = [
     "InstructionsLoaded",
     "CwdChanged",
     "FileChanged",
+    "MessageDisplay",
   ],
   s_ = [
     "clear",
@@ -14889,6 +14890,7 @@ function vT() {
     gatewayAuth: null,
     gatewayRefreshInFlight: null,
     flagSettingsPath: void 0,
+    flagSettingsExpectedContent: void 0,
     flagSettingsInline: null,
     parentManagedSettings: null,
     allowedSettingSources: [
@@ -14927,6 +14929,7 @@ function vT() {
     inlinePluginUrls: [],
     chromeFlagOverride: void 0,
     useCoworkPlugins: !1,
+    disableSlashCommands: !1,
     sessionBypassPermissionsMode: !1,
     scheduledTasksEnabled: !1,
     sessionPrResolved: !1,
@@ -39351,6 +39354,7 @@ function eE($) {
       .describe(
         "Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)",
       ),
+    ...!1,
     includeGitInstructions: K.boolean()
       .optional()
       .describe(
@@ -39442,6 +39446,11 @@ function eE($) {
       .optional()
       .describe(
         "Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings.",
+      ),
+    disableWorkflows: K.boolean()
+      .optional()
+      .describe(
+        "@internal Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS).",
       ),
     disableSkillShellExecution: K.boolean()
       .optional()
@@ -39560,6 +39569,11 @@ function eE($) {
       .optional()
       .describe(
         "Enterprise blocklist of marketplace sources. When set in managed settings, these exact sources are blocked from being added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem.",
+      ),
+    pluginSuggestionMarketplaces: K.array(K.string())
+      .optional()
+      .describe(
+        "Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips), in addition to the official marketplace. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored.",
       ),
     forceLoginMethod: K.enum(["claudeai", "console"])
       .optional()
@@ -39803,7 +39817,7 @@ function eE($) {
     showThinkingSummaries: K.boolean()
       .optional()
       .describe(
-        "Show thinking summaries in the transcript view (ctrl+o). Default: false.",
+        "Request API-side thinking summaries and show them in the conversation and in the transcript view (ctrl+o). Set explicitly to override the default for your install.",
       ),
     skipDangerousModePermissionPrompt: K.boolean()
       .optional()
@@ -40858,14 +40872,14 @@ function N6$($, Q) {
     );
   else X$(`settings file read failed at ${Q}: ${$}`, { level: "error" });
 }
-function HG($) {
-  let Q = CO($);
-  if (Q)
-    return { settings: Q.settings ? A4(Q.settings) : null, errors: Q.errors };
-  let J = w6$($);
+function HG($, Q) {
+  let J = CO($);
+  if (J)
+    return { settings: J.settings ? A4(J.settings) : null, errors: J.errors };
+  let Y = w6$($, Q);
   return (
-    TO($, J),
-    { settings: J.settings ? A4(J.settings) : null, errors: J.errors }
+    TO($, Y),
+    { settings: Y.settings ? A4(Y.settings) : null, errors: Y.errors }
   );
 }
 function sb($) {
@@ -40920,10 +40934,14 @@ function Q_($) {
     };
   return { settings: X.data, errors: Y };
 }
-function w6$($) {
+function w6$($, Q) {
   try {
-    let { resolvedPath: Q } = H5(c$(), $),
-      J = h0(Q);
+    let J;
+    if (Q !== void 0) J = Q;
+    else {
+      let { resolvedPath: G } = H5(c$(), $);
+      J = h0(G);
+    }
     if (J.trim() === "") return { settings: {}, errors: [] };
     let Y = A4(R9(J, !1)),
       X = i1(Y, $),
@@ -40933,8 +40951,8 @@ function w6$($) {
       return { settings: null, errors: [...X, ...G] };
     }
     return { settings: W.data, errors: X };
-  } catch (Q) {
-    return (N6$(Q, $), { settings: null, errors: [] });
+  } catch (J) {
+    return (N6$(J, $), { settings: null, errors: [] });
   }
 }
 function tb($, Q) {
@@ -41102,7 +41120,9 @@ function Y_($) {
 function L6$($, Q) {
   if ($ === "policySettings") return Y_(Q).settings;
   let J = YX($, Q),
-    { settings: Y } = J ? HG(J) : { settings: null };
+    { settings: Y } = J
+      ? HG(J, $ === "flagSettings" ? Q.flagExpectedContent : void 0)
+      : { settings: null };
   if ($ === "flagSettings") {
     let { settings: X } = Q_(Q);
     if (X) return Y1(Y || {}, X, o1);
@@ -41143,7 +41163,10 @@ function A6$($) {
         let q = XX(H);
         if (!G.has(q)) {
           G.add(q);
-          let { settings: V, errors: B } = HG(H);
+          let { settings: V, errors: B } = HG(
+            H,
+            U === "flagSettings" ? $.flagExpectedContent : void 0,
+          );
           for (let z of B) {
             let N = `${z.file}:${z.path}:${z.message}`;
             if (!W.has(N)) (W.add(N), X.push(z));
@@ -41396,7 +41419,7 @@ function yz($, Q, J, Y) {
   else if (Array.isArray(X)) V = X;
   else if (X.type === "preset")
     ((B = X.append), (z = X.excludeDynamicSections));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.150";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.152";
   let {
     abortController: N = f9(),
     additionalDirectories: w = [],
@@ -41481,7 +41504,7 @@ function yz($, Q, J, Y) {
   let rz = lz?.type === "json_schema" ? lz.schema : void 0,
     V6 = F6 ? { ...F6 } : { ...process.env };
   if (!V6.CLAUDE_CODE_ENTRYPOINT) V6.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!V6.CLAUDE_AGENT_SDK_VERSION) V6.CLAUDE_AGENT_SDK_VERSION = "0.3.150";
+  if (!V6.CLAUDE_AGENT_SDK_VERSION) V6.CLAUDE_AGENT_SDK_VERSION = "0.3.152";
   if (W1) V6.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (cz) V6.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (pz) V6.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";

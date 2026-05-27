@@ -374,6 +374,8 @@ declare namespace coreTypes {
     McpServerToolPolicy,
     McpSetServersResult,
     McpStdioServerConfig,
+    MessageDisplayHookInput,
+    MessageDisplayHookSpecificOutput,
     ModelInfo,
     ModelUsage,
     NotificationHookInput,
@@ -869,6 +871,7 @@ export declare const HOOK_EVENTS: readonly [
   "InstructionsLoaded",
   "CwdChanged",
   "FileChanged",
+  "MessageDisplay",
 ];
 
 /**
@@ -921,7 +924,8 @@ export declare type HookEvent =
   | "WorktreeRemove"
   | "InstructionsLoaded"
   | "CwdChanged"
-  | "FileChanged";
+  | "FileChanged"
+  | "MessageDisplay";
 
 export declare type HookInput =
   | PreToolUseHookInput
@@ -952,7 +956,8 @@ export declare type HookInput =
   | WorktreeCreateHookInput
   | WorktreeRemoveHookInput
   | CwdChangedHookInput
-  | FileChangedHookInput;
+  | FileChangedHookInput
+  | MessageDisplayHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 
@@ -1312,6 +1317,44 @@ export declare type McpStdioServerConfig = {
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
+};
+
+/**
+ * Hook input for the MessageDisplay event. Fired with each batch of newly completed lines while an assistant message streams. Display-only: the stored message and what the model sees are untouched.
+ */
+export declare type MessageDisplayHookInput = BaseHookInput & {
+  hook_event_name: "MessageDisplay";
+  /**
+   * UUID of the current turn.
+   */
+  turn_id: string;
+  /**
+   * UUID of the assistant message being displayed. Stable across every flush of the same message. Not the API msg_… id.
+   */
+  message_id: string;
+  /**
+   * Zero-based index of this delta within the message. Increments by one per flush.
+   */
+  index: number;
+  /**
+   * True on the message's last flush. Exactly one flush per message has it.
+   */
+  final: boolean;
+  /**
+   * The newly completed lines since the prior flush. Always whole lines, except on the final flush which may end mid-line. The delta of the final flush is empty when the message ends on a newline; treat final as the end-of-message signal regardless.
+   */
+  delta: string;
+};
+
+/**
+ * Hook-specific output for the MessageDisplay event. Display-only: replaces the delta on screen without changing the stored message.
+ */
+export declare type MessageDisplayHookSpecificOutput = {
+  hookEventName: "MessageDisplay";
+  /**
+   * Text displayed in place of the delta. Omit (or return the delta unchanged) to display the original.
+   */
+  displayContent?: string;
 };
 
 /**
@@ -4193,13 +4236,19 @@ export declare type SessionStartHookInput = BaseHookInput & {
   source: "startup" | "resume" | "clear" | "compact";
   agent_type?: string;
   model?: string;
+  session_title?: string;
 };
 
 export declare type SessionStartHookSpecificOutput = {
   hookEventName: "SessionStart";
   additionalContext?: string;
   initialUserMessage?: string;
+  sessionTitle?: string;
   watchPaths?: string[];
+  /**
+   * Re-scan skill and command directories after SessionStart hooks complete, so skills installed by the hook are available in the same session
+   */
+  reloadSkills?: boolean;
 };
 
 /**
@@ -4787,6 +4836,7 @@ export declare interface Settings {
    * Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings.
    */
   disableRemoteControl?: boolean;
+
   /**
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
@@ -5475,6 +5525,10 @@ export declare interface Settings {
       }
   )[];
   /**
+   * Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips), in addition to the official marketplace. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored.
+   */
+  pluginSuggestionMarketplaces?: string[];
+  /**
    * Force a specific login method: "claudeai" for Claude Pro/Max, "console" for Console billing
    */
   forceLoginMethod?: "claudeai" | "console";
@@ -5762,7 +5816,7 @@ export declare interface Settings {
    */
   autoDreamEnabled?: boolean;
   /**
-   * Show thinking summaries in the transcript view (ctrl+o). Default: false.
+   * Request API-side thinking summaries and show them in the conversation and in the transcript view (ctrl+o). Set explicitly to override the default for your install.
    */
   showThinkingSummaries?: boolean;
   /**
@@ -6145,7 +6199,8 @@ export declare type SyncHookJSONOutput = {
     | ElicitationResultHookSpecificOutput
     | CwdChangedHookSpecificOutput
     | FileChangedHookSpecificOutput
-    | WorktreeCreateHookSpecificOutput;
+    | WorktreeCreateHookSpecificOutput
+    | MessageDisplayHookSpecificOutput;
 };
 
 /**
