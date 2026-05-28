@@ -548,7 +548,7 @@ export declare function deleteSession(
  * - `'low'` — Minimal thinking, fastest responses
  * - `'medium'` — Moderate thinking
  * - `'high'` — Deep reasoning (default)
- * - `'xhigh'` — Deeper than high (Opus 4.7 only; falls back to `'high'` elsewhere)
+ * - `'xhigh'` — Deeper than high (Opus 4.7+; falls back to `'high'` elsewhere)
  * - `'max'` — Maximum effort (select models only)
  */
 export declare type EffortLevel = "low" | "medium" | "high" | "xhigh" | "max";
@@ -1735,8 +1735,8 @@ export declare type Options = {
    * - `'low'` — Minimal thinking, fastest responses
    * - `'medium'` — Moderate thinking
    * - `'high'` — Deep reasoning (default)
-   * - `'xhigh'` — Deeper than high (Opus 4.7 only)
-   * - `'max'` — Maximum effort (Opus 4.6/4.7, Sonnet 4.6)
+   * - `'xhigh'` — Deeper than high (Opus 4.7+)
+   * - `'max'` — Maximum effort (Opus 4.6+, Sonnet 4.6)
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
    */
@@ -1787,7 +1787,7 @@ export declare type Options = {
   mcpServers?: Record<string, McpServerConfig>;
   /**
    * Claude model to use. Defaults to the CLI default model.
-   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-7'
+   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-8'
    */
   model?: string;
   /**
@@ -4853,7 +4853,10 @@ export declare interface Settings {
    * Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings.
    */
   disableRemoteControl?: boolean;
-
+  /**
+   * Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS).
+   */
+  disableWorkflows?: boolean;
   /**
    * Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.
    */
@@ -5739,6 +5742,10 @@ export declare interface Settings {
    * Persisted effort level for supported models.
    */
   effortLevel?: "low" | "medium" | "high" | "xhigh";
+  /**
+   * Enable ultracode for the session: xhigh effort plus standing dynamic-workflow orchestration. Session-scoped — typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and an xhigh-capable model.
+   */
+  ultracode?: boolean;
   /**
    * Auto-compact window size
    */
