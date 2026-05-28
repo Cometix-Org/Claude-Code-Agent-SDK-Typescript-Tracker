@@ -442,6 +442,7 @@ declare namespace coreTypes {
     SDKTaskProgressMessage,
     SDKTaskStartedMessage,
     SDKTaskUpdatedMessage,
+    SDKThinkingTokensMessage,
     SDKToolProgressMessage,
     SDKToolUseSummaryMessage,
     SDKUserMessageReplay,
@@ -2023,8 +2024,11 @@ export declare type Options = {
    */
   stderr?: (data: string) => void;
   /**
-   * Enforce strict validation of MCP server configurations.
-   * When true, invalid configurations will cause errors instead of warnings.
+   * Only use MCP servers passed via the `mcpServers` option (and servers
+   * declared by explicitly-passed agent definitions in `agents`), ignoring
+   * all other MCP configurations: project `.mcp.json`, user settings,
+   * plugins, and on-disk agent frontmatter — including subagent frontmatter
+   * MCP. Maps to the CLI `--strict-mcp-config` flag.
    */
   strictMcpConfig?: boolean;
   /**
@@ -3640,6 +3644,7 @@ export declare type SDKMessage =
   | SDKTaskStartedMessage
   | SDKTaskUpdatedMessage
   | SDKTaskProgressMessage
+  | SDKThinkingTokensMessage
   | SDKSessionStateChangedMessage
   | SDKNotificationMessage
   | SDKFilesPersistedEvent
@@ -4086,6 +4091,18 @@ export declare type SDKTaskUpdatedMessage = {
     error?: string;
     is_backgrounded?: boolean;
   };
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * Live thinking-token estimate, digested from thinking_delta.estimated_tokens during the redacted-thinking phase (where the API otherwise streams only pings). estimated_tokens is the running total for the current thinking block; estimated_tokens_delta is the increment carried by this frame. Approximate progress for spinners/pills, not the authoritative billed output_tokens.
+ */
+export declare type SDKThinkingTokensMessage = {
+  type: "system";
+  subtype: "thinking_tokens";
+  estimated_tokens: number;
+  estimated_tokens_delta: number;
   uuid: UUID;
   session_id: string;
 };
@@ -4838,6 +4855,10 @@ export declare interface Settings {
   disableRemoteControl?: boolean;
 
   /**
+   * Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.
+   */
+  enableWorkflows?: boolean;
+  /**
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
   disableSkillShellExecution?: boolean;
@@ -4953,6 +4974,10 @@ export declare interface Settings {
              * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
              */
             sparsePaths?: string[];
+            /**
+             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             */
+            skipLfs?: boolean;
           }
         | {
             source: "git";
@@ -4972,6 +4997,10 @@ export declare interface Settings {
              * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
              */
             sparsePaths?: string[];
+            /**
+             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             */
+            skipLfs?: boolean;
           }
         | {
             source: "npm";
@@ -5161,6 +5190,10 @@ export declare interface Settings {
          * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
          */
         sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
       }
     | {
         source: "git";
@@ -5180,6 +5213,10 @@ export declare interface Settings {
          * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
          */
         sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
       }
     | {
         source: "npm";
@@ -5360,6 +5397,10 @@ export declare interface Settings {
          * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
          */
         sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
       }
     | {
         source: "git";
@@ -5379,6 +5420,10 @@ export declare interface Settings {
          * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
          */
         sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
       }
     | {
         source: "npm";
@@ -5823,6 +5868,7 @@ export declare interface Settings {
    * Whether the user has accepted the bypass permissions mode dialog
    */
   skipDangerousModePermissionPrompt?: boolean;
+
   /**
    * Disable auto mode
    */
