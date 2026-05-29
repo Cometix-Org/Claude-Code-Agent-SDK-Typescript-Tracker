@@ -4143,6 +4143,7 @@ export declare type SDKUserMessage = {
    * ISO timestamp when the message was created on the originating process. Older emitters omit it; consumers should fall back to receive time.
    */
   timestamp?: string;
+
   uuid?: UUID;
   session_id?: string;
   /**
@@ -4172,6 +4173,7 @@ export declare type SDKUserMessageReplay = {
    * ISO timestamp when the message was created on the originating process. Older emitters omit it; consumers should fall back to receive time.
    */
   timestamp?: string;
+
   uuid: UUID;
   session_id: string;
   isReplay: true;
@@ -4861,6 +4863,10 @@ export declare interface Settings {
    * Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.
    */
   enableWorkflows?: boolean;
+  /**
+   * Enable the "workflow"/"workflows" keyword trigger that opts a prompt into the Workflow tool. Set to false to type the word without triggering a workflow. Default: true.
+   */
+  workflowKeywordTriggerEnabled?: boolean;
   /**
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
