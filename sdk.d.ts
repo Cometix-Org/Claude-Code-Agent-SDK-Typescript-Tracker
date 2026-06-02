@@ -1585,7 +1585,10 @@ export declare type Options = {
    */
   extraArgs?: Record<string, string | null>;
   /**
-   * Fallback model to use if the primary model fails or is unavailable.
+   * Fallback model(s) to use if the primary model is overloaded or
+   * unavailable. Accepts a comma-separated list to try each in order. The
+   * primary model is re-tried at the start of each user turn, so a temporary
+   * outage doesn't permanently demote the session.
    */
   fallbackModel?: string;
   /**
@@ -3377,6 +3380,7 @@ declare type SDKControlRequestInner =
   | SDKControlGenerateSessionTitleRequest
   | SDKControlSideQuestionRequest
   | SDKControlUltrareviewLaunchRequest
+  | SDKControlStageFileRequest
   | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
   | SDKControlHostAuthTokenRefreshRequest
@@ -3394,7 +3398,7 @@ declare type SDKControlRequestInner =
 declare type SDKControlRequestUserDialogRequest = {
   subtype: "request_user_dialog";
   /**
-   * Identifier for the dialog the host should render. Open string union — known kinds include "it2_setup" and "computer_use_approval"; new kinds may be added without bumping the protocol.
+   * Identifier for the dialog the host should render. Open string union — known kinds include "it2_setup", "computer_use_approval", and "refusal_fallback_prompt"; new kinds may be added without bumping the protocol.
    */
   dialog_kind: string;
   /**
@@ -4864,7 +4868,7 @@ export declare interface Settings {
    */
   enableWorkflows?: boolean;
   /**
-   * Enable the "workflow"/"workflows" keyword trigger that opts a prompt into the Workflow tool. Set to false to type the word without triggering a workflow. Default: true.
+   * Enable the "ultracode" keyword trigger: including the keyword in a prompt opts that turn into the Workflow tool. Set to false to disable the trigger. Default: true.
    */
   workflowKeywordTriggerEnabled?: boolean;
   /**
@@ -5964,6 +5968,10 @@ export declare interface Settings {
    * Automatically compact conversation when context fills
    */
   autoCompactEnabled?: boolean;
+  /**
+   * When safety filters block a message, automatically switch to a different model to keep chatting. When off, your chat may stop instead.
+   */
+  switchModelsOnFlag?: boolean;
   /**
    * Auto-scroll the conversation view to bottom (fullscreen mode only)
    */
