@@ -318,6 +318,9 @@ declare type ControlErrorResponse = {
   subtype: "error";
   request_id: string;
   error: string;
+  /**
+   * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
+   */
   pending_permission_requests?: SDKControlRequest[];
 };
 
@@ -325,6 +328,10 @@ declare type ControlResponse = {
   subtype: "success";
   request_id: string;
   response?: Record<string, unknown>;
+  /**
+   * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
+   */
+  pending_permission_requests?: SDKControlRequest[];
 };
 
 declare namespace coreTypes {
@@ -409,6 +416,7 @@ declare namespace coreTypes {
     SDKAssistantMessageError,
     SDKAssistantMessage,
     SDKAuthStatusMessage,
+    SDKCommandsChangedMessage,
     SDKCompactBoundaryMessage,
     SDKDeferredToolUse,
     SDKElicitationCompleteMessage,
@@ -2894,6 +2902,7 @@ export declare type SDKAssistantMessageError =
   | "oauth_org_not_allowed"
   | "billing_error"
   | "rate_limit"
+  | "overloaded"
   | "invalid_request"
   | "model_not_found"
   | "server_error"
@@ -2910,6 +2919,17 @@ export declare type SDKAuthStatusMessage = {
 };
 
 export declare type SdkBeta = "context-1m-2025-08-07";
+
+/**
+ * Fire-and-forget push of the full slash-command list after a mid-session change (e.g. skills discovered dynamically as the agent works in a subdirectory). Clients should REPLACE their cached command list with this payload: supportedCommands() is captured once at initialize and never reflects mid-session changes, so a client re-fetch would return the stale init list.
+ */
+export declare type SDKCommandsChangedMessage = {
+  type: "system";
+  subtype: "commands_changed";
+  commands: SlashCommand[];
+  uuid: UUID;
+  session_id: string;
+};
 
 export declare type SDKCompactBoundaryMessage = {
   type: "system";
@@ -3650,6 +3670,7 @@ export declare type SDKMessage =
   | SDKTaskProgressMessage
   | SDKThinkingTokensMessage
   | SDKSessionStateChangedMessage
+  | SDKCommandsChangedMessage
   | SDKNotificationMessage
   | SDKFilesPersistedEvent
   | SDKToolUseSummaryMessage
@@ -3681,6 +3702,9 @@ export declare type SDKMessageOrigin =
     }
   | {
       kind: "coordinator";
+    }
+  | {
+      kind: "auto-continuation";
     };
 
 /**
