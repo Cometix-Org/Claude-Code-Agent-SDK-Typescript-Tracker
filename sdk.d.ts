@@ -1175,7 +1175,7 @@ export declare type McpClaudeAIProxyServerConfig = {
   url: string;
   id: string;
   /**
-   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
 };
@@ -1186,7 +1186,7 @@ export declare type McpHttpServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
   /**
@@ -1304,7 +1304,7 @@ export declare type McpSSEServerConfig = {
   headers?: Record<string, string>;
   tools?: McpServerToolPolicy[];
   /**
-   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
   /**
@@ -1319,7 +1319,7 @@ export declare type McpStdioServerConfig = {
   args?: string[];
   env?: Record<string, string>;
   /**
-   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Floored at 1000ms.
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
   /**
@@ -1443,6 +1443,19 @@ export declare type OnElicitation = (
 ) => Promise<ElicitationResult>;
 
 /**
+ * Callback for handling `request_user_dialog` control requests.
+ * Called when the CLI asks the host to render a blocking dialog.
+ * If not provided, dialogs are answered as cancelled and the CLI applies
+ * each dialog's default behavior.
+ */
+export declare type OnUserDialog = (
+  request: UserDialogRequest,
+  options: {
+    signal: AbortSignal;
+  },
+) => Promise<UserDialogResult>;
+
+/**
  * Options for the query function.
  * Contains callbacks and other non-serializable fields.
  */
@@ -1551,6 +1564,9 @@ export declare type Options = {
    * - `string[]` - Array of specific tool names (e.g., `['Bash', 'Read', 'Edit']`)
    * - `[]` (empty array) - Disable all built-in tools
    * - `{ type: 'preset'; preset: 'claude_code' }` - Use all default Claude Code tools
+   *
+   * Note: native builds may provide search via Bash `find`/`grep` instead of the
+   * dedicated Grep/Glob tools. List Grep/Glob here or in `allowedTools` to get them.
    */
   tools?:
     | string[]
@@ -1666,6 +1682,16 @@ export declare type Options = {
    * ```
    */
   onElicitation?: OnElicitation;
+  /**
+   * Callback for handling `request_user_dialog` control requests — blocking
+   * dialogs the CLI asks the host to render. Each `dialogKind` defines its
+   * own payload and result shape.
+   *
+   * If not provided — or when the host answers `{behavior: 'cancelled'}`,
+   * which is the required answer for an unrecognized `dialogKind` — the CLI
+   * applies the dialog's default behavior.
+   */
+  onUserDialog?: OnUserDialog;
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -3418,7 +3444,7 @@ declare type SDKControlRequestInner =
 declare type SDKControlRequestUserDialogRequest = {
   subtype: "request_user_dialog";
   /**
-   * Identifier for the dialog the host should render. Open string union — known kinds include "it2_setup", "computer_use_approval", and "refusal_fallback_prompt"; new kinds may be added without bumping the protocol.
+   * Identifier for the dialog the host should render. Open string union — new kinds may be added without bumping the protocol; hosts must answer unrecognized kinds with {behavior: "cancelled"}.
    */
   dialog_kind: string;
   /**
@@ -3896,6 +3922,8 @@ export declare type SDKResultSuccess = {
   duration_ms: number;
   duration_api_ms: number;
   ttft_ms?: number;
+  time_to_request_ms?: number;
+  time_to_request_from_spawn_ms?: number;
   is_error: boolean;
   api_error_status?: number | null;
   num_turns: number;
@@ -5611,9 +5639,10 @@ export declare interface Settings {
    */
   pluginSuggestionMarketplaces?: string[];
   /**
-   * Force a specific login method: "claudeai" for Claude Pro/Max, "console" for Console billing
+   * Force a specific login method: "claudeai" for Claude Pro/Max, "console" for Console billing, "gateway" for the Cloud gateway OIDC device flow
    */
-  forceLoginMethod?: "claudeai" | "console";
+  forceLoginMethod?: "claudeai" | "console" | "gateway";
+
   /**
    * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (default): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
    */
@@ -6461,6 +6490,41 @@ export declare interface Transport {
    */
   [Symbol.dispose]?(): void;
 }
+
+/**
+ * A `request_user_dialog` control request from the CLI, asking the SDK
+ * consumer to render a blocking dialog and return the user's choice.
+ * Each `dialogKind` defines its own payload and result shape; the protocol
+ * transports both opaquely.
+ */
+export declare type UserDialogRequest = {
+  /**
+   * Identifier for the dialog the host should render. Open string union —
+   * new kinds may be added without a protocol bump, so hosts must answer
+   * unrecognized kinds with `{behavior: 'cancelled'}`.
+   */
+  dialogKind: string;
+  /** Dialog-specific data for the host renderer; shape is defined per dialogKind. */
+  payload: Record<string, unknown>;
+  /**
+   * Present when the dialog is tied to a specific tool invocation. Same
+   * value as the `toolUseID` passed to `canUseTool`.
+   */
+  toolUseID?: string;
+};
+
+/**
+ * The host's answer to a {@link UserDialogRequest}. On `cancelled`, the CLI
+ * applies the dialog's default behavior.
+ */
+export declare type UserDialogResult =
+  | {
+      behavior: "completed";
+      result: unknown;
+    }
+  | {
+      behavior: "cancelled";
+    };
 
 export declare type UserPromptExpansionHookInput = BaseHookInput & {
   hook_event_name: "UserPromptExpansion";
