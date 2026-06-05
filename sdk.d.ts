@@ -467,9 +467,11 @@ declare namespace coreTypes {
     SlashCommand,
     StopFailureHookInput,
     StopHookInput,
+    StopHookSpecificOutput,
     SubagentStartHookInput,
     SubagentStartHookSpecificOutput,
     SubagentStopHookInput,
+    SubagentStopHookSpecificOutput,
     SyncHookJSONOutput,
     TaskCompletedHookInput,
     TaskCreatedHookInput,
@@ -2537,6 +2539,12 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   reloadPlugins(): Promise<SDKControlReloadPluginsResponse>;
   /**
+   * Reload skills from disk and return the refreshed skill list.
+   *
+   * @returns The refreshed skill commands after reload
+   */
+  reloadSkills(): Promise<SDKControlReloadSkillsResponse>;
+  /**
    * Get information about the authenticated account.
    *
    * @returns Account information including email, organization, and subscription type
@@ -3376,6 +3384,20 @@ export declare type SDKControlReloadPluginsResponse = {
 };
 
 /**
+ * Reloads skills from disk and returns the refreshed skill list.
+ */
+declare type SDKControlReloadSkillsRequest = {
+  subtype: "reload_skills";
+};
+
+/**
+ * Refreshed skill commands after reload.
+ */
+export declare type SDKControlReloadSkillsResponse = {
+  skills: coreTypes.SlashCommand[];
+};
+
+/**
  * Sets the user-facing title for the current session.
  */
 declare type SDKControlRenameSessionRequest = {
@@ -3412,6 +3434,7 @@ declare type SDKControlRequestInner =
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
   | SDKControlReloadPluginsRequest
+  | SDKControlReloadSkillsRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
   | SDKControlChannelEnableRequest
@@ -3924,6 +3947,7 @@ export declare type SDKResultSuccess = {
   ttft_ms?: number;
   time_to_request_ms?: number;
   time_to_request_from_spawn_ms?: number;
+  warm_spare_claimed?: boolean;
   is_error: boolean;
   api_error_status?: number | null;
   num_turns: number;
@@ -5881,6 +5905,14 @@ export declare interface Settings {
    */
   minimumVersion?: string;
   /**
+   * Minimum Claude Code version required to start. If the running version is older, Claude Code exits at startup with instructions to update. Only enforced from managed (policy) settings.
+   */
+  requiredMinimumVersion?: string;
+  /**
+   * Maximum Claude Code version allowed to start. If the running version is newer, Claude Code exits at startup with instructions to install an approved version. Only enforced from managed (policy) settings.
+   */
+  requiredMaximumVersion?: string;
+  /**
    * Custom directory for plan files, relative to project root. If not set, defaults to ~/.claude/plans/
    */
   plansDirectory?: string;
@@ -6259,6 +6291,14 @@ export declare type StopHookInput = BaseHookInput & {
   session_crons?: SessionCronSummary[];
 };
 
+/**
+ * Hook-specific output for the Stop event. additionalContext is non-error feedback delivered to the model; the conversation continues so the model can act on it.
+ */
+export declare type StopHookSpecificOutput = {
+  hookEventName: "Stop";
+  additionalContext?: string;
+};
+
 export declare type SubagentStartHookInput = BaseHookInput & {
   hook_event_name: "SubagentStart";
   agent_id: string;
@@ -6290,6 +6330,14 @@ export declare type SubagentStopHookInput = BaseHookInput & {
   session_crons?: SessionCronSummary[];
 };
 
+/**
+ * Hook-specific output for the SubagentStop event. additionalContext is non-error feedback delivered to the subagent; the subagent continues so it can act on it.
+ */
+export declare type SubagentStopHookSpecificOutput = {
+  hookEventName: "SubagentStop";
+  additionalContext?: string;
+};
+
 export declare type SyncHookJSONOutput = {
   continue?: boolean;
   suppressOutput?: boolean;
@@ -6312,6 +6360,8 @@ export declare type SyncHookJSONOutput = {
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
     | PostToolBatchHookSpecificOutput
+    | StopHookSpecificOutput
+    | SubagentStopHookSpecificOutput
     | PermissionDeniedHookSpecificOutput
     | NotificationHookSpecificOutput
     | PermissionRequestHookSpecificOutput
