@@ -3362,6 +3362,17 @@ export declare type SDKControlReadFileResponse = {
 };
 
 /**
+ * Add a directory as a working-directory root and optionally reload CLAUDE.md, skills, and plugins. The directory must resolve to a subdirectory of cwd.
+ */
+declare type SDKControlRegisterRepoRootRequest = {
+  subtype: "register_repo_root";
+  directory: string;
+  reload_claude_md?: boolean;
+  reload_plugins?: boolean;
+  reload_skills?: boolean;
+};
+
+/**
  * Reloads plugins from disk and returns the refreshed session components.
  */
 declare type SDKControlReloadPluginsRequest = {
@@ -3433,6 +3444,7 @@ declare type SDKControlRequestInner =
   | SDKControlReadFileRequest
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
+  | SDKControlRegisterRepoRootRequest
   | SDKControlReloadPluginsRequest
   | SDKControlReloadSkillsRequest
   | SDKControlMcpReconnectRequest
@@ -3945,6 +3957,7 @@ export declare type SDKResultSuccess = {
   duration_ms: number;
   duration_api_ms: number;
   ttft_ms?: number;
+  ttft_stream_ms?: number;
   time_to_request_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
@@ -4642,6 +4655,10 @@ export declare interface Settings {
    * Override the default model used by Claude Code
    */
   model?: string;
+  /**
+   * Fallback model(s) tried in order when the primary model is overloaded or unavailable. Each element accepts a model name or alias; "default" expands to the default model. CLI --fallback-model takes precedence.
+   */
+  fallbackModel?: string[];
   /**
    * Allowlist of models that users can select. Accepts family aliases ("opus" allows any opus version), version prefixes ("opus-4-5" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.
    */
@@ -6054,7 +6071,7 @@ export declare interface Settings {
    */
   autoCompactEnabled?: boolean;
   /**
-   * When safety filters block a message, automatically switch to a different model to keep chatting. When off, your chat may stop instead.
+   * When safety measures flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.
    */
   switchModelsOnFlag?: boolean;
   /**
