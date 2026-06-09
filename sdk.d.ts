@@ -322,6 +322,10 @@ declare type ControlErrorResponse = {
    * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
    */
   pending_permission_requests?: SDKControlRequest[];
+  /**
+   * request_user_dialog requests still awaiting a response. Sent on the `initialize` response (sibling of pending_permission_requests) so a client joining an already-initialized session can re-arm in-flight dialogs. Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
+   */
+  pending_user_dialog_requests?: SDKControlRequest[];
 };
 
 declare type ControlResponse = {
@@ -332,6 +336,10 @@ declare type ControlResponse = {
    * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
    */
   pending_permission_requests?: SDKControlRequest[];
+  /**
+   * request_user_dialog requests still awaiting a response. Sent on the `initialize` response (sibling of pending_permission_requests) so a client joining an already-initialized session can re-arm in-flight dialogs. Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
+   */
+  pending_user_dialog_requests?: SDKControlRequest[];
 };
 
 declare namespace coreTypes {
@@ -1689,11 +1697,16 @@ export declare type Options = {
    * dialogs the CLI asks the host to render. Each `dialogKind` defines its
    * own payload and result shape.
    *
-   * If not provided — or when the host answers `{behavior: 'cancelled'}`,
-   * which is the required answer for an unrecognized `dialogKind` — the CLI
-   * applies the dialog's default behavior.
+   * When the host answers `{behavior: 'cancelled'}` — the required answer
+   * for an unrecognized `dialogKind` — the CLI applies the dialog's default
+   * behavior. If the callback is not provided at all, the SDK sends no
+   * answer: on a multi-client session another attached client may be the
+   * declared renderer, and an auto-reply from this one would settle the
+   * dialog out from under it. An unanswered dialog is bounded by the CLI's
+   * park deadline.
    */
   onUserDialog?: OnUserDialog;
+
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -2515,6 +2528,20 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   getContextUsage(): Promise<SDKControlGetContextUsageResponse>;
   /**
+   * Get the structured data behind the `/usage` command: session cost and
+   * token usage totals plus claude.ai plan rate-limit utilization windows
+   * (5-hour, 7-day, per-model) when available. `rate_limits_available` is
+   * false (and `rate_limits` null) for API key, Bedrock, Vertex, and other
+   * sessions where plan limits do not apply.
+   *
+   * EXPERIMENTAL: this API is unstable and may change or be removed in any
+   * release without notice — do not rely on it yet. The method name will
+   * change when the API is stabilized.
+   *
+   * @returns Structured session cost/usage data and plan rate-limit utilization
+   */
+  usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET(): Promise<SDKControlGetUsageResponse>;
+  /**
    * Read a file from the session's filesystem for the remote sidebar
    * viewer. Path is resolved against cwd and gated by the same
    * read-permission rules as the Read tool. Returns null on permission
@@ -2921,6 +2948,7 @@ export declare type SDKAssistantMessage = {
   uuid: UUID;
   session_id: string;
   request_id?: string;
+
   /**
    * Subagent type that produced this message.
    */
@@ -2973,6 +3001,7 @@ export declare type SDKCompactBoundaryMessage = {
     pre_tokens: number;
     post_tokens?: number;
     duration_ms?: number;
+
     /**
      * Relink info for messagesToKeep. Loaders splice the preserved segment at anchor_uuid (summary for suffix-preserving, boundary for prefix-preserving partial compact) so resume includes preserved content. Unset when compaction summarizes everything (no messagesToKeep).
      */
@@ -2989,6 +3018,7 @@ export declare type SDKCompactBoundaryMessage = {
       uuids: UUID[];
     };
   };
+
   uuid: UUID;
   session_id: string;
 };
@@ -3185,6 +3215,225 @@ declare type SDKControlGetSettingsRequest = {
 };
 
 /**
+ * Requests the structured /usage data: session cost/usage totals plus claude.ai plan rate-limit utilization when available. Experimental — the response shape may change.
+ */
+declare type SDKControlGetUsageRequest = {
+  subtype: "get_usage";
+};
+
+/**
+ * Structured /usage data: session cost/usage totals plus claude.ai plan rate-limit utilization. Experimental — the shape may change.
+ */
+export declare type SDKControlGetUsageResponse = {
+  /**
+   * Cost and usage accumulated by the current session.
+   */
+  session: {
+    total_cost_usd: number;
+    total_api_duration_ms: number;
+    total_duration_ms: number;
+    total_lines_added: number;
+    total_lines_removed: number;
+    model_usage: Record<string, coreTypes.ModelUsage>;
+  };
+  /**
+   * Claude.ai subscription type ('pro', 'max', 'team', 'enterprise') or null for API key / 3P provider sessions.
+   */
+  subscription_type: string | null;
+  /**
+   * False when plan rate limits do not apply (API key, Bedrock, Vertex, or missing profile scope) — rate_limits will be null.
+   */
+  rate_limits_available: boolean;
+  /**
+   * Plan rate-limit utilization windows from the claude.ai usage endpoint, or null when unavailable.
+   */
+  rate_limits: {
+    five_hour?: {
+      /**
+       * Percentage of the window used, 0-100.
+       */
+      utilization: number | null;
+      /**
+       * ISO 8601 timestamp when the window resets.
+       */
+      resets_at: string | null;
+    } | null;
+    seven_day?: {
+      /**
+       * Percentage of the window used, 0-100.
+       */
+      utilization: number | null;
+      /**
+       * ISO 8601 timestamp when the window resets.
+       */
+      resets_at: string | null;
+    } | null;
+    seven_day_oauth_apps?: {
+      /**
+       * Percentage of the window used, 0-100.
+       */
+      utilization: number | null;
+      /**
+       * ISO 8601 timestamp when the window resets.
+       */
+      resets_at: string | null;
+    } | null;
+    seven_day_opus?: {
+      /**
+       * Percentage of the window used, 0-100.
+       */
+      utilization: number | null;
+      /**
+       * ISO 8601 timestamp when the window resets.
+       */
+      resets_at: string | null;
+    } | null;
+    seven_day_sonnet?: {
+      /**
+       * Percentage of the window used, 0-100.
+       */
+      utilization: number | null;
+      /**
+       * ISO 8601 timestamp when the window resets.
+       */
+      resets_at: string | null;
+    } | null;
+    extra_usage?: {
+      is_enabled: boolean;
+      monthly_limit: number | null;
+      used_credits: number | null;
+      utilization: number | null;
+      currency?: string | null;
+    } | null;
+  } | null;
+  /**
+   * What's contributing to limits usage, from a scan of local transcripts on this machine (the same data the /usage dialog renders): behavioral characteristics plus per-skill/agent/plugin/MCP-server attribution. Approximate, excludes other devices and claude.ai. Null for non-claude.ai-subscriber sessions (mirrors the dialog) or when the scan fails.
+   */
+  behaviors: {
+    /**
+     * Last 24 hours.
+     */
+    day: {
+      /**
+       * API requests found in local transcripts for this window.
+       */
+      request_count: number;
+      /**
+       * Distinct sessions observed in this window.
+       */
+      session_count: number;
+      /**
+       * Behavioral characteristics of local usage. Categories overlap — this is not a partition, so percentages do not sum to 100.
+       */
+      behaviors: {
+        key:
+          | "cache_miss"
+          | "long_context"
+          | "subagent_heavy"
+          | "high_parallel"
+          | "cron";
+        /**
+         * Share of the weighted local usage attributed to this behavior, 0-100.
+         */
+        pct: number;
+        /**
+         * Requests in this window exhibiting the behavior.
+         */
+        count: number;
+      }[];
+      agents: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      skills: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      plugins: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      mcp_servers: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+    };
+    /**
+     * Last 7 days.
+     */
+    week: {
+      /**
+       * API requests found in local transcripts for this window.
+       */
+      request_count: number;
+      /**
+       * Distinct sessions observed in this window.
+       */
+      session_count: number;
+      /**
+       * Behavioral characteristics of local usage. Categories overlap — this is not a partition, so percentages do not sum to 100.
+       */
+      behaviors: {
+        key:
+          | "cache_miss"
+          | "long_context"
+          | "subagent_heavy"
+          | "high_parallel"
+          | "cron";
+        /**
+         * Share of the weighted local usage attributed to this behavior, 0-100.
+         */
+        pct: number;
+        /**
+         * Requests in this window exhibiting the behavior.
+         */
+        count: number;
+      }[];
+      agents: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      skills: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      plugins: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+      mcp_servers: {
+        name: string;
+        /**
+         * Share of the weighted local usage attributed to this item, 0-100.
+         */
+        pct: number;
+      }[];
+    };
+  } | null;
+};
+
+/**
  * Initializes the SDK session with hooks, MCP servers, and agent configuration.
  */
 declare type SDKControlInitializeRequest = {
@@ -3231,6 +3480,7 @@ export declare type SDKControlInitializeResponse = {
   output_style: string;
   available_output_styles: string[];
   models: coreTypes.ModelInfo[];
+
   /**
    * Information about the logged in user's account.
    */
@@ -3434,6 +3684,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
   | SDKControlGetSessionCostRequest
+  | SDKControlGetUsageRequest
   | SDKControlGetBinaryVersionRequest
   | SDKControlMcpCallRequest
   | SDKControlFileSuggestionsRequest
@@ -4688,6 +4939,10 @@ export declare interface Settings {
     [k: string]: "on" | "name-only" | "user-invocable-only" | "off";
   };
   /**
+   * Disable the skills and workflows that ship with Claude Code: bundled skills and workflows are removed entirely; built-in slash commands stay typable but are hidden from the model. Plugins, .claude/skills/, and .claude/commands/ are unaffected. Equivalent to CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1.
+   */
+  disableBundledSkills?: boolean;
+  /**
    * Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied.
    */
   allowedMcpServers?: {
@@ -5676,7 +5931,7 @@ export declare interface Settings {
       }
   )[];
   /**
-   * Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips), in addition to the official marketplace. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored.
+   * Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips). No marketplace-declared suggestions surface without this allowlist; the built-in first-party frontend-design tip is unaffected. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored. The official marketplace is exempt from the source requirement: allowlisting its name alone suffices, since that name can only register from the official Anthropic source.
    */
   pluginSuggestionMarketplaces?: string[];
   /**
@@ -5905,11 +6160,11 @@ export declare interface Settings {
     };
   };
   /**
-   * Remote session configuration
+   * Cloud session configuration
    */
   remote?: {
     /**
-     * Default environment ID to use for remote sessions
+     * Default environment ID to use for cloud sessions
      */
     defaultEnvironmentId?: string;
   };
