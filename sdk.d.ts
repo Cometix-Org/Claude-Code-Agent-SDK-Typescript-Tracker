@@ -59,7 +59,7 @@ export declare type AgentDefinition = {
    */
   prompt: string;
   /**
-   * Model alias (e.g. 'sonnet', 'opus', 'haiku') or full model ID (e.g. 'claude-opus-4-5'). If omitted or 'inherit', uses the main model
+   * Model alias (e.g. 'fable', 'opus', 'sonnet', 'haiku') or full model ID (e.g. 'claude-fable-5'). If omitted or 'inherit', uses the main model
    */
   model?: string;
   mcpServers?: AgentMcpServerSpec[];
@@ -437,6 +437,7 @@ declare namespace coreTypes {
     SDKMessageOrigin,
     SDKMessage,
     SDKMirrorErrorMessage,
+    SDKModelRefusalFallbackMessage,
     SDKNotificationMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
@@ -566,7 +567,7 @@ export declare function deleteSession(
  * - `'low'` — Minimal thinking, fastest responses
  * - `'medium'` — Moderate thinking
  * - `'high'` — Deep reasoning (default)
- * - `'xhigh'` — Deeper than high (Opus 4.7+; falls back to `'high'` elsewhere)
+ * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+; falls back to `'high'` elsewhere)
  * - `'max'` — Maximum effort (select models only)
  */
 export declare type EffortLevel = "low" | "medium" | "high" | "xhigh" | "max";
@@ -1706,7 +1707,28 @@ export declare type Options = {
    * park deadline.
    */
   onUserDialog?: OnUserDialog;
-
+  /**
+   * Dialog kinds this consumer's `onUserDialog` can actually render
+   * (`request_user_dialog` `dialog_kind` values, e.g.
+   * 'refusal_fallback_prompt'). Declare only kinds your UI genuinely
+   * displays and answers. Providing `onUserDialog` alone does NOT opt the
+   * consumer into receiving dialogs — the CLI only emits a dialog kind
+   * declared here.
+   *
+   * The CLI fails closed on absence: a dialog kind not declared here is
+   * never emitted to this session — the flow behind it degrades to its
+   * no-dialog behavior instead (for 'refusal_fallback_prompt', the classic
+   * refusal error message ends the turn). Omitting the option entirely
+   * means no dialogs are emitted, even with `onUserDialog` wired.
+   *
+   * Requires `onUserDialog`; passing a non-empty list without the callback
+   * throws at option intake. On multi-client (remote) sessions the first
+   * attached client's declaration wins for the worker's lifetime, and the
+   * winning declaration is persisted to worker metadata so it survives
+   * worker restarts (restored as a default that the next epoch's first
+   * explicit declaration overrides).
+   */
+  supportedDialogKinds?: string[];
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -1787,8 +1809,8 @@ export declare type Options = {
    * - `'low'` — Minimal thinking, fastest responses
    * - `'medium'` — Moderate thinking
    * - `'high'` — Deep reasoning (default)
-   * - `'xhigh'` — Deeper than high (Opus 4.7+)
-   * - `'max'` — Maximum effort (Opus 4.6+, Sonnet 4.6)
+   * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+)
+   * - `'max'` — Maximum effort (Fable 5, Opus 4.6+, Sonnet 4.6)
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
    */
@@ -1839,7 +1861,7 @@ export declare type Options = {
   mcpServers?: Record<string, McpServerConfig>;
   /**
    * Claude model to use. Defaults to the CLI default model.
-   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-8'
+   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-8', 'claude-fable-5'
    */
   model?: string;
   /**
@@ -2948,7 +2970,10 @@ export declare type SDKAssistantMessage = {
   uuid: UUID;
   session_id: string;
   request_id?: string;
-
+  /**
+   * Wire uuids of previously-delivered messages that this message replaces (refusal-fallback supersede). The list can include tombstoned tool_result frames from the refused leg, not only assistant frames. Evict the named messages on arrival and treat this frame as their canonical replacement. Idempotent with the end-of-turn model_refusal_fallback notice, whose retracted_message_uuids remains the complete audit record for the turn.
+   */
+  supersedes?: UUID[];
   /**
    * Subagent type that produced this message.
    */
@@ -3469,6 +3494,10 @@ declare type SDKControlInitializeRequest = {
   promptSuggestions?: boolean;
   agentProgressSummaries?: boolean;
   forwardSubagentText?: boolean;
+  /**
+   * Dialog kinds (request_user_dialog `dialog_kind` values) this consumer's onUserDialog can actually render. The CLI treats ABSENCE as 'cannot display' and fails closed: without the kind declared here, a dialog-gated flow degrades to its no-dialog behavior (for 'refusal_fallback_prompt', the classic refusal error) instead of parking a dialog the consumer may mishandle. First-attached-client-wins on multi-client sessions; later initializes do not change it.
+   */
+  supportedDialogKinds?: string[];
 };
 
 /**
@@ -3969,6 +3998,7 @@ export declare type SDKMessage =
   | SDKCompactBoundaryMessage
   | SDKStatusMessage
   | SDKAPIRetryMessage
+  | SDKModelRefusalFallbackMessage
   | SDKLocalCommandOutputMessage
   | SDKHookStartedMessage
   | SDKHookProgressMessage
@@ -4031,6 +4061,34 @@ export declare type SDKMirrorErrorMessage = {
     sessionId: string;
     subpath?: string;
   };
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * Emitted when the primary model ends the stream with stop_reason "refusal" and the turn is retried once on a fallback model with the swap made persistent for the session (direction: "retry"). "revert" and "sticky" are retained in the enum for SDK-consumer compat and are no longer emitted.
+ */
+export declare type SDKModelRefusalFallbackMessage = {
+  type: "system";
+  subtype: "model_refusal_fallback";
+  trigger: "refusal";
+  direction: "retry" | "revert" | "sticky";
+  original_model: string;
+  fallback_model: string;
+  request_id: string | null;
+  /**
+   * stop_details.category from the refused API response ("cyber", "bio", …). Open string — new categories ship on the wire ahead of schema updates. null when the response carried no category (normal, not an error). Absent when emitted by an older CLI.
+   */
+  api_refusal_category?: string | null;
+  /**
+   * stop_details.explanation from the refused API response. Unstable human prose — display only, never parse. null/absent under the same rules as api_refusal_category.
+   */
+  api_refusal_explanation?: string | null;
+  /**
+   * Wire uuids of the messages this fallback retracted — the refused partial as the consumer received it (one uuid per normalized SDK message; multi-block messages carry per-block derived uuids) plus any tombstoned tool_results. Emitted AFTER the retraction, so this is a resolution-time eviction signal: remove these messages from transcript state on receipt. Eviction is idempotent — unknown or already-removed uuids are a no-op. Absent when emitted by an older CLI.
+   */
+  retracted_message_uuids?: string[];
+  content: string;
   uuid: UUID;
   session_id: string;
 };
@@ -4173,6 +4231,7 @@ export declare type SDKRateLimitInfo = {
     | "fetch_error"
     | "unknown";
   isUsingOverage?: boolean;
+  overageInUse?: boolean;
   surpassedThreshold?: number;
 };
 
