@@ -4163,6 +4163,10 @@ export declare type SdkPluginConfig = {
    * Absolute or relative path to the plugin directory
    */
   path: string;
+  /**
+   * When true, the engine loads skills/hooks/agents/commands from this plugin but does NOT read its .mcp.json or manifest mcpServers. Use when the SDK host owns this plugin's MCP connections.
+   */
+  skipMcpDiscovery?: boolean;
 };
 
 /**
@@ -5270,6 +5274,10 @@ export declare interface Settings {
    * Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS).
    */
   disableWorkflows?: boolean;
+  /**
+   * Disable the Artifact tool (also via CLAUDE_CODE_DISABLE_ARTIFACT).
+   */
+  disableArtifact?: boolean;
   /**
    * Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.
    */
