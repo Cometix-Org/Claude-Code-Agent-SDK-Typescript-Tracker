@@ -1288,7 +1288,11 @@ export declare type McpServerStatusConfig =
  */
 export declare type McpServerToolPolicy = {
   name: string;
-  permission_policy: "always_allow" | "always_ask" | "always_deny";
+  permission_policy?: "always_allow" | "always_ask" | "always_deny";
+  /**
+   * Org admin's per-tool ceiling. Drives the auto-mode isOrgAskCeiling gate so an admin 'ask' cap forces a user prompt even in auto mode.
+   */
+  org_max_permission?: "allow" | "ask" | "blocked";
 };
 
 /**
@@ -4842,7 +4846,7 @@ export declare interface Settings {
   /**
    * JSON Schema reference for Claude Code settings
    */
-  $schema?: "https://json.schemastore.org/claude-code-settings.json";
+  $schema?: string;
   /**
    * Path to a script that outputs authentication values
    */
@@ -6400,6 +6404,10 @@ export declare interface Settings {
    * Auto-scroll the conversation view to bottom (fullscreen mode only)
    */
   autoScrollEnabled?: boolean;
+  /**
+   * Ramp mouse-wheel scroll speed during fast scrolls (fullscreen mode only)
+   */
+  wheelScrollAccelerationEnabled?: boolean;
   /**
    * Snapshot files before edits so /rewind can restore them
    */
