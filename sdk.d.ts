@@ -4982,6 +4982,10 @@ export declare interface Settings {
    */
   availableModels?: string[];
   /**
+   * When true and availableModels is a non-empty array, the Default model selection is also constrained: if the default model for the user tier is not in availableModels, Default resolves to the first allowed availableModels entry instead. Has no effect when availableModels is unset or an empty array. Typically set in managed settings by enterprise administrators.
+   */
+  enforceAvailableModels?: boolean;
+  /**
    * Override mapping from Anthropic model ID (e.g. "claude-opus-4-6") to provider-specific model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by enterprise administrators.
    */
   modelOverrides?: {
