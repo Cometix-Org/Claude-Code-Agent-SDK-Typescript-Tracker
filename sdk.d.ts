@@ -1934,8 +1934,10 @@ export declare type Options = {
    * Delivery semantics:
    * - At most one `prompt_suggestion` per turn; arrives after the `result` message.
    * - Consumers must keep iterating the stream after `result` to receive it.
-   * - Suppressed on the first turn, after API errors, in plan mode, and by the
-   *   `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false` env var.
+   * - Suppressed on the first turn, after API errors, in plan mode, by the
+   *   `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false` env var, and when the user
+   *   has `promptSuggestionEnabled: false` in settings.json (the env var wins
+   *   over the setting).
    * - Suggestions piggyback on the parent's prompt cache, making them nearly free.
    */
   promptSuggestions?: boolean;
@@ -5349,9 +5351,40 @@ export declare interface Settings {
     hideVimModeIndicator?: boolean;
   };
   /**
-   * URL template for PR links in the footer badge and inline messages. Placeholders: {host} {owner} {repo} {number} {url}. Example: "https://reviews.example.com/{owner}/{repo}/pull/{number}"
+   * URL template for PR links in the footer link badges and inline messages. The detected git PR is rendered as the first footer-link badge. Placeholders: {host} {owner} {repo} {number} {url}. Example: "https://reviews.example.com/{owner}/{repo}/pull/{number}"
    */
   prUrlTemplate?: string;
+  /**
+   * Extra clickable footer badges that appear when a regex matches turn output (tool results and assistant responses). Read from user, flag, and managed settings only; ignored in project .claude/settings.json and local .claude/settings.local.json. At most 5 badges render; the oldest is displaced by newer matches and /clear removes them. Use to surface IDs printed by project CLIs as session links.
+   */
+  footerLinksRegexes?: (
+    | {
+        /**
+         * Config variant. This client understands "regex": matches turn output and builds a URL from named capture groups. Entries with other variants are preserved but skipped at runtime.
+         */
+        type: "regex";
+        /**
+         * Regex matched against turn output (tool results and assistant text)
+         */
+        pattern: string;
+        /**
+         * Link target. {name} placeholders are filled from named regex capture groups, e.g. (?<id>...) -> {id}. Values are URL-encoded; the origin must be literal in the template. The scheme must be https, http, or a recognized editor or workspace deep-link scheme: vscode, vscode-insiders, cursor, windsurf, zed, jetbrains, idea, slack, linear, notion, figma.
+         */
+        url: string;
+        /**
+         * Badge text. {name} placeholders filled from named capture groups; defaults to the full match.
+         */
+        label?: string;
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * Config variant discriminator for entries this client does not understand; the entry is preserved as-is and skipped at runtime.
+         */
+        type: string;
+        [k: string]: unknown;
+      }
+  )[];
   /**
    * Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin
    */
