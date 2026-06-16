@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.177
+// Version: 0.3.178
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -15001,6 +15001,7 @@ function E2() {
     tracerProvider: null,
     cachedTelemetryResource: null,
     cachedOtlpHttpAgentFactory: null,
+    foundryDeploymentCapabilities: new Map(),
     agentColorMap: new Map(),
     agentColorIndex: 0,
     lastAPIRequest: null,
@@ -15025,6 +15026,7 @@ function E2() {
     loopTickInFlightPrompt: null,
     loopConsecutiveKeepalives: 0,
     sessionCreatedTeams: new Set(),
+    inheritedTeamName: void 0,
     sessionTrustAccepted: !1,
     sessionPersistenceDisabled: !1,
     hasExitedPlanMode: !1,
@@ -15039,6 +15041,10 @@ function E2() {
     slowOperations: [],
     sdkBetas: void 0,
     longContext1mCreditsBlocked: !1,
+    fableCreditsRequired: !1,
+    fableConsentSessionFallback: !1,
+    fableBridgeDialogTimedOut: !1,
+    fableConsentDialogInteracted: !1,
     sdkOAuthTokenRefreshCallback: null,
     hostAuthTokenRefreshCallback: null,
     mainThreadAgentType: void 0,
@@ -16581,7 +16587,7 @@ function SB(e) {
 function xB(e, t) {
   if (hB(e))
     return t
-      ? `Claude Code native binary at ${e} exists but failed to launch.`
+      ? `Claude Code native binary at ${e} exists but failed to launch. This usually means the binary does not match this system's libc — e.g. spawning a musl-linked binary on a glibc Linux host fails because the musl dynamic loader (/lib/ld-musl-*) is missing. Specify a matching binary with options.pathToClaudeCodeExecutable.`
       : `Claude Code executable at ${e} exists but failed to launch.`;
   return t
     ? `Claude Code native binary not found at ${e}. Please ensure Claude Code is installed via native installer or specify a valid path with options.pathToClaudeCodeExecutable.`
@@ -17135,10 +17141,11 @@ class zh {
   async setModel(e) {
     await this.request({ subtype: "set_model", model: e });
   }
-  async setMaxThinkingTokens(e) {
+  async setMaxThinkingTokens(e, t) {
     await this.request({
       subtype: "set_max_thinking_tokens",
       max_thinking_tokens: e,
+      thinking_display: t,
     });
   }
   async applyFlagSettings(e) {
@@ -19089,26 +19096,26 @@ var J6 = [G6, y0],
     "user:file_upload",
     ...[],
   ],
-  lbe = Dd([...J6, ...X6]),
-  h0 = {
-    BASE_API_URL: "https://api.anthropic.com",
-    CONSOLE_AUTHORIZE_URL: "https://platform.claude.com/oauth/authorize",
-    CLAUDE_AI_AUTHORIZE_URL: "https://claude.com/cai/oauth/authorize",
-    CLAUDE_AI_ORIGIN: "https://claude.ai",
-    TOKEN_URL: "https://platform.claude.com/v1/oauth/token",
-    API_KEY_URL:
-      "https://api.anthropic.com/api/oauth/claude_cli/create_api_key",
-    ROLES_URL: "https://api.anthropic.com/api/oauth/claude_cli/roles",
-    CONSOLE_SUCCESS_URL:
-      "https://platform.claude.com/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code",
-    CLAUDEAI_SUCCESS_URL:
-      "https://platform.claude.com/oauth/code/success?app=claude-code",
-    MANUAL_REDIRECT_URL: "https://platform.claude.com/oauth/code/callback",
-    CLIENT_ID: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
-    OAUTH_FILE_SUFFIX: "",
-    MCP_PROXY_URL: "https://mcp-proxy.anthropic.com",
-    MCP_PROXY_PATH: "/v1/mcp/{server_id}",
-  };
+  lbe = Dd([...J6, ...X6]);
+var h0 = {
+  BASE_API_URL: "https://api.anthropic.com",
+  CONSOLE_AUTHORIZE_URL: "https://platform.claude.com/oauth/authorize",
+  CLAUDE_AI_AUTHORIZE_URL: "https://claude.com/cai/oauth/authorize",
+  CLAUDE_AI_ORIGIN: "https://claude.ai",
+  TOKEN_URL: "https://platform.claude.com/v1/oauth/token",
+  API_KEY_URL: "https://api.anthropic.com/api/oauth/claude_cli/create_api_key",
+  ROLES_URL: "https://api.anthropic.com/api/oauth/claude_cli/roles",
+  CONSOLE_SUCCESS_URL:
+    "https://platform.claude.com/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code",
+  CLAUDEAI_SUCCESS_URL:
+    "https://platform.claude.com/oauth/code/success?app=claude-code",
+  MANUAL_REDIRECT_URL: "https://platform.claude.com/oauth/code/callback",
+  CLIENT_ID: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+  DESIGN_CLIENT_ID: "59637612-477b-4836-a601-b0589eda7704",
+  OAUTH_FILE_SUFFIX: "",
+  MCP_PROXY_URL: "https://mcp-proxy.anthropic.com",
+  MCP_PROXY_PATH: "/v1/mcp/{server_id}",
+};
 var Y6 = void 0;
 function Q6() {
   let e =
@@ -19132,6 +19139,7 @@ function Q6() {
     CLAUDEAI_SUCCESS_URL: `${r}/oauth/code/success?app=claude-code`,
     MANUAL_REDIRECT_URL: `${r}/oauth/code/callback`,
     CLIENT_ID: "22422756-60c9-4084-8eb7-27705fd5cf9a",
+    DESIGN_CLIENT_ID: "00000000-0000-4000-8000-000000000000",
     OAUTH_FILE_SUFFIX: "-local-oauth",
     MCP_PROXY_URL: "http://localhost:8205",
     MCP_PROXY_PATH: "/v1/toolbox/shttp/mcp/{server_id}",
@@ -38494,16 +38502,16 @@ var vr = P(() => l.string().startsWith("./")),
     l.object({
       skills: l.union([
         vr().describe(
-          "Path to a skill directory, relative to the plugin root. Loaded in addition to the skills/ directory.",
+          "Path to a skill directory, relative to the plugin root. Loaded in addition to the skills/ directory (except: for a marketplace entry whose source resolves to the marketplace root, declaring a specific subdirectory replaces the skills/ scan).",
         ),
         l
           .array(
             vr().describe(
-              "Path to a skill directory, relative to the plugin root. Loaded in addition to the skills/ directory.",
+              "Path to a skill directory, relative to the plugin root.",
             ),
           )
           .describe(
-            "List of skill directory paths, loaded in addition to the skills/ directory.",
+            "List of skill directory paths, loaded in addition to the skills/ directory (except: for a marketplace entry whose source resolves to the marketplace root, declaring specific subdirectories replaces the skills/ scan).",
           ),
       ]),
     }),
@@ -42345,7 +42353,7 @@ function tw(e, t, r, o) {
   else if (Array.isArray(n)) d = n;
   else if (n.type === "preset")
     ((p = n.append), (f = n.excludeDynamicSections));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.177";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.178";
   let {
     abortController: m = qs(),
     additionalDirectories: g = [],
@@ -42436,7 +42444,7 @@ function tw(e, t, r, o) {
   let fw = aw?.type === "json_schema" ? aw.schema : void 0,
     ut = yt ? { ...yt } : { ...process.env };
   if (!ut.CLAUDE_CODE_ENTRYPOINT) ut.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!ut.CLAUDE_AGENT_SDK_VERSION) ut.CLAUDE_AGENT_SDK_VERSION = "0.3.177";
+  if (!ut.CLAUDE_AGENT_SDK_VERSION) ut.CLAUDE_AGENT_SDK_VERSION = "0.3.178";
   if (cn) ut.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (cw) ut.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (lw) ut.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";
