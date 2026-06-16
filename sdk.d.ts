@@ -6489,6 +6489,7 @@ export declare interface Settings {
    * Automatically compact conversation when context fills
    */
   autoCompactEnabled?: boolean;
+
   /**
    * When safety measures flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.
    */
