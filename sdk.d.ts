@@ -262,58 +262,6 @@ export declare type ConfigChangeHookInput = BaseHookInput & {
  */
 export declare type ConfigScope = "local" | "user" | "project";
 
-/**
- * Structured failure from connectRemoteControl.
- * @alpha
- */
-export declare type ConnectRemoteControlError = {
-  kind: "conflict" | "auth" | "network" | "unknown";
-  detail: string;
-};
-
-/**
- * Options for connectRemoteControl.
- * @alpha
- */
-export declare type ConnectRemoteControlOptions = {
-  dir: string;
-  /** Override directory sent to backend for env registration. */
-  registrationDir?: string;
-  name?: string;
-  workerType?: string;
-  branch?: string;
-  gitRepoUrl?: string | null;
-  getAccessToken: () => string | undefined;
-  baseUrl: string;
-  orgUUID: string;
-  model: string;
-  /** Reuse env+session across restarts (reads bridge-pointer.json). */
-  perpetual?: boolean;
-  /** SSE high-water mark so reconnect sends from_sequence_num. */
-  initialSSESequenceNum?: number;
-  /** Called on 401; return true after refreshing token to retry. */
-  onAuth401?: (staleAccessToken: string) => Promise<boolean>;
-  /** Called on 409 conflict; return 'takeover' to deregister + retry. */
-  onConflict?: (detail: {
-    machineName: string;
-    message: string;
-  }) => Promise<"takeover" | "abort">;
-};
-
-/**
- * Discriminated result from connectRemoteControl.
- * @alpha
- */
-export declare type ConnectRemoteControlResult =
-  | {
-      ok: true;
-      handle: RemoteControlHandle;
-    }
-  | {
-      ok: false;
-      error: ConnectRemoteControlError;
-    };
-
 declare type ControlErrorResponse = {
   subtype: "error";
   request_id: string;
@@ -1026,15 +974,6 @@ export declare type ImportSessionToStoreOptions = {
    * `append()` is called multiple times per session. Default: 500.
    */
   batchSize?: number;
-};
-
-/**
- * A user message typed on claude.ai, extracted from the bridge WS.
- * @alpha
- */
-export declare type InboundPrompt = {
-  content: string | unknown[];
-  uuid?: string;
 };
 
 export declare type InferShape<T extends AnyZodRawShape> = {
@@ -2944,6 +2883,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
     >;
     enableWeakerNestedSandbox: z.ZodOptional<z.ZodBoolean>;
     enableWeakerNetworkIsolation: z.ZodOptional<z.ZodBoolean>;
+    allowAppleEvents: z.ZodOptional<z.ZodBoolean>;
     excludedCommands: z.ZodOptional<z.ZodArray<z.ZodString>>;
     ripgrep: z.ZodOptional<
       z.ZodObject<
@@ -4125,11 +4065,11 @@ export declare type SDKModelRefusalFallbackMessage = {
   fallback_model: string;
   request_id: string | null;
   /**
-   * stop_details.category from the refused API response ("cyber", "bio", …). Open string — new categories ship on the wire ahead of schema updates. null when the response carried no category (normal, not an error). Absent when emitted by an older CLI.
+   * The refusal category ('cyber', 'bio', …): stop_details.category from the refused API response (client lane), or the fallback block's server-gated trigger.category (server lane). Open string — new categories ship on the wire ahead of schema updates. null when neither source carried a category (normal, not an error). Absent when emitted by an older CLI.
    */
   api_refusal_category?: string | null;
   /**
-   * stop_details.explanation from the refused API response. Unstable human prose — display only, never parse. null/absent under the same rules as api_refusal_category.
+   * stop_details.explanation from the refused API response (client lane only — the server-lane trigger carries no explanation). Unstable human prose — display only, never parse. null/absent when the response carried none, and always null on server-lane banners.
    */
   api_refusal_explanation?: string | null;
   /**
@@ -4285,6 +4225,10 @@ export declare type SDKRateLimitInfo = {
   isUsingOverage?: boolean;
   overageInUse?: boolean;
   surpassedThreshold?: number;
+
+  errorCode?: "credits_required";
+  canUserPurchaseCredits?: boolean;
+  hasChargeableSavedPaymentMethod?: boolean;
 };
 
 export declare type SDKResultError = {
@@ -4323,6 +4267,7 @@ export declare type SDKResultSuccess = {
   time_to_request_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
+  time_origin_ms?: number;
   is_error: boolean;
   api_error_status?: number | null;
   num_turns: number;
@@ -6209,6 +6154,10 @@ export declare interface Settings {
      * macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** — opens a potential data exfiltration vector through the trustd service. Default: false
      */
     enableWeakerNetworkIsolation?: boolean;
+    /**
+     * macOS only: Allow sandboxed commands to send Apple Events (and look up the appleeventsd Mach service). Needed for `open`, `osascript`, and browser-based auth flows that open URLs. **Removes code-execution isolation** — sandboxed commands can launch other applications unsandboxed with no user prompt, and can script running apps (e.g. Terminal) subject to the user's per-app TCC automation consent. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. Default: false
+     */
+    allowAppleEvents?: boolean;
     excludedCommands?: string[];
     /**
      * Custom ripgrep configuration for bundled ripgrep support
