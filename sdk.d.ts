@@ -3686,6 +3686,7 @@ declare type SDKControlRequestInner =
   | SDKControlReloadSkillsRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
+  | SDKControlSetMcpPermissionModeOverrideRequest
   | SDKControlChannelEnableRequest
   | SDKControlEndSessionRequest
   | SDKControlMcpAuthenticateRequest
@@ -4927,6 +4928,10 @@ export declare interface Settings {
      * Attribution text for pull request descriptions. Empty string hides attribution.
      */
     pr?: string;
+    /**
+     * Whether to append the claude.ai session link to commits and PRs created from web or Remote Control sessions (default: true). Set to false to omit the Claude-Session trailer and PR-body link.
+     */
+    sessionUrl?: boolean;
   };
   /**
    * Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)
@@ -5006,6 +5011,10 @@ export declare interface Settings {
    * List of rejected MCP servers from .mcp.json
    */
   disabledMcpjsonServers?: string[];
+  /**
+   * When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected. Only gates auto-fetched connectors — a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) still follows the normal MCP config trust flow. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.
+   */
+  disableClaudeAiConnectors?: boolean;
   /**
    * Per-skill listing overrides keyed by skill name. "name-only" lists the skill without its description; "user-invocable-only" hides it from the model but keeps /name; "off" hides it from both. Absent = on.
    */
@@ -6931,6 +6940,14 @@ export declare interface Transport {
    * End the input stream
    */
   endInput(): void;
+  /**
+   * Await the underlying subprocess's exit. Only meaningful for
+   * subprocess-backed transports (ProcessTransport); WebSocket / SSE /
+   * in-process transports leave this undefined. Query.performCleanup()
+   * awaits it (bounded) so .return() / asyncDispose don't resolve while
+   * the child is still draining the stdin EOF that close() just sent.
+   */
+  waitForExit?(): Promise<void>;
   /**
    * Optional Disposable support. All built-in transports implement this
    * (delegating to close()), so `using transport = new ProcessTransport(...)`
