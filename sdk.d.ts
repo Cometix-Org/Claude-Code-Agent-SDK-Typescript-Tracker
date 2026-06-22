@@ -3687,6 +3687,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
   | SDKControlSetMcpPermissionModeOverrideRequest
+  | SDKControlRewindConversationRequest
   | SDKControlChannelEnableRequest
   | SDKControlEndSessionRequest
   | SDKControlMcpAuthenticateRequest
@@ -5315,6 +5316,10 @@ export declare interface Settings {
    */
   defaultShell?: "bash" | "powershell";
   /**
+   * Whether Claude responds after an input-box ! bash command runs. Set to false to add the command output to context without a response. Default: true.
+   */
+  respondToBashCommands?: boolean;
+  /**
    * When true (and set in managed settings), only hooks from managed settings run. User, project, and local hooks are ignored.
    */
   allowManagedHooksOnly?: boolean;
@@ -6481,9 +6486,9 @@ export declare interface Settings {
    */
   todoFeatureEnabled?: boolean;
   /**
-   * How spawned teammates execute (tmux, in-process, auto)
+   * How spawned teammates execute (tmux, iterm2, in-process, auto)
    */
-  teammateMode?: "auto" | "tmux" | "in-process";
+  teammateMode?: "auto" | "tmux" | "iterm2" | "in-process";
   /**
    * Start Remote Control bridge automatically each session
    */
@@ -6843,6 +6848,7 @@ export declare type TerminalReason =
   | "hook_stopped"
   | "tool_deferred"
   | "max_turns"
+  | "background_requested"
   | "completed";
 
 /**
