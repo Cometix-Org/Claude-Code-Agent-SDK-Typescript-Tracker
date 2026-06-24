@@ -3385,6 +3385,17 @@ export declare type SDKControlGetUsageResponse = {
        */
       resets_at: string | null;
     } | null;
+    /**
+     * Per-model weekly windows from the server limits[] array, filtered by the overage-included-models allowlist. Additive — present only when the server emits them.
+     */
+    model_scoped?: {
+      /**
+       * Server-supplied label for the model bucket (e.g. 'Fable').
+       */
+      display_name: string;
+      utilization: number | null;
+      resets_at: string | null;
+    }[];
     extra_usage?: {
       is_enabled: boolean;
       monthly_limit: number | null;
@@ -4312,6 +4323,7 @@ export declare type SDKRateLimitInfo = {
     | "seven_day"
     | "seven_day_opus"
     | "seven_day_sonnet"
+    | "seven_day_overage_included"
     | "overage";
   utilization?: number;
   overageStatus?: "allowed" | "allowed_warning" | "rejected";
