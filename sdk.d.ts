@@ -292,6 +292,7 @@ declare type ControlResponse = {
 
 declare namespace coreTypes {
   export {
+    SandboxCredentialsConfig,
     SandboxFilesystemConfig,
     SandboxIgnoreViolations,
     SandboxNetworkConfig,
@@ -2414,6 +2415,28 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   setPermissionMode(mode: PermissionMode): Promise<void>;
   /**
+   * Pin (or clear, with mode:null) a per-MCP-server permission-mode
+   * override. Tighten-only: only 'default' | 'auto' | null are accepted;
+   * the override applies only when the session mode would already
+   * auto-allow (bypassPermissions/auto), so it can never widen privilege.
+   * Only available in streaming input mode.
+   *
+   * @param serverName - The MCP server name (must match the name the server
+   *   was registered under)
+   * @param mode - 'default' to force per-action prompts, 'auto' to route
+   *   through the auto-mode classifier, or null to clear the override
+   * @returns An object with an optional `warning` — set when `serverName`
+   *   does not match any currently known MCP server. For a set, the
+   *   override is stored regardless and applies once a server with that
+   *   exact name connects; the warning is informational (typo detection).
+   */
+  setMcpPermissionModeOverride(
+    serverName: string,
+    mode: "default" | "auto" | null,
+  ): Promise<{
+    warning?: string;
+  }>;
+  /**
    * Change the model used for subsequent responses.
    * Only available in streaming input mode.
    *
@@ -2771,6 +2794,59 @@ export declare type RewindFilesResult = {
   deletions?: number;
 };
 
+export declare type SandboxCredentialsConfig = NonNullable<
+  z.infer<ReturnType<typeof SandboxCredentialsConfigSchema>>
+>;
+
+/**
+ * Credentials configuration schema for sandbox.
+ *
+ * Declares credential sources (files/directories and environment variables)
+ * to protect. Every entry carries `mode: 'deny'`: file paths are denied for
+ * reads inside the sandbox, environment variables are unset in sandboxed
+ * commands.
+ *
+ * Only explicitly declared sources are affected — sandbox-runtime ships no
+ * built-in credential deny list, so entries here are the complete set of
+ * credential restrictions applied to sandboxed commands.
+ *
+ * Mode is `deny`-only — no `mask`. Claude Code hands this config to
+ * sandbox-runtime programmatically, bypassing sandbox-runtime's own Zod
+ * validation, and on that path unsupported modes are silently ignored rather
+ * than rejected. This schema must be the gate that rejects modes
+ * sandbox-runtime can't enforce yet; widen the mode (e.g. `mask`) only once
+ * a sandbox-runtime version that enforces it ships.
+ */
+declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
+  z.ZodObject<
+    {
+      files: z.ZodOptional<
+        z.ZodArray<
+          z.ZodObject<
+            {
+              path: z.ZodString;
+              mode: z.ZodLiteral<"deny">;
+            },
+            z.core.$strip
+          >
+        >
+      >;
+      envVars: z.ZodOptional<
+        z.ZodArray<
+          z.ZodObject<
+            {
+              name: z.ZodString;
+              mode: z.ZodLiteral<"deny">;
+            },
+            z.core.$strip
+          >
+        >
+      >;
+    },
+    z.core.$strip
+  >
+>;
+
 export declare type SandboxFilesystemConfig = NonNullable<
   z.infer<ReturnType<typeof SandboxFilesystemConfigSchema>>
 >;
@@ -2874,6 +2950,35 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
           denyRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
           allowRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
           allowManagedReadPathsOnly: z.ZodOptional<z.ZodBoolean>;
+        },
+        z.core.$strip
+      >
+    >;
+    credentials: z.ZodOptional<
+      z.ZodObject<
+        {
+          files: z.ZodOptional<
+            z.ZodArray<
+              z.ZodObject<
+                {
+                  path: z.ZodString;
+                  mode: z.ZodLiteral<"deny">;
+                },
+                z.core.$strip
+              >
+            >
+          >;
+          envVars: z.ZodOptional<
+            z.ZodArray<
+              z.ZodObject<
+                {
+                  name: z.ZodString;
+                  mode: z.ZodLiteral<"deny">;
+                },
+                z.core.$strip
+              >
+            >
+          >;
         },
         z.core.$strip
       >
@@ -3701,6 +3806,7 @@ declare type SDKControlRequestInner =
   | SDKControlSideQuestionRequest
   | SDKControlUltrareviewLaunchRequest
   | SDKControlStageFileRequest
+  | SDKControlAddDirectoryRequest
   | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
   | SDKControlHostAuthTokenRefreshRequest
@@ -6159,6 +6265,34 @@ export declare interface Settings {
        * When true (set in managed settings), only allowRead paths from policySettings are used.
        */
       allowManagedReadPathsOnly?: boolean;
+    };
+    credentials?: {
+      /**
+       * Credential files or directories to protect. `deny` blocks reads inside the sandbox.
+       */
+      files?: {
+        /**
+         * Path to a credential file or directory. Same resolution as sandbox.filesystem.* paths: absolute, ~ expanded, or relative to the settings file root (project root for project settings, ~/.claude for user settings).
+         */
+        path: string;
+        /**
+         * Access mode for this path. Only `deny` is supported.
+         */
+        mode: "deny";
+      }[];
+      /**
+       * Environment variables to protect. `deny` unsets the variable for sandboxed commands.
+       */
+      envVars?: {
+        /**
+         * Environment variable name.
+         */
+        name: string;
+        /**
+         * Access mode for this environment variable. Only `deny` is supported.
+         */
+        mode: "deny";
+      }[];
     };
     ignoreViolations?: {
       [k: string]: string[];
