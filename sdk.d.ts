@@ -1087,6 +1087,17 @@ export declare type ListSessionsOptions = {
    */
   includeWorktrees?: boolean;
   /**
+   * Include programmatic/headless sessions (SDK entrypoints `sdk-cli`,
+   * `sdk-ts`, `sdk-py`) and daemon/daemon-worker sessions. Defaults to
+   * `true` for backward compatibility — SDK consumers enumerating their
+   * own sessions see them. IDE session pickers pass `false` for parity
+   * with terminal `/resume`.
+   *
+   * Only applies when reading from the local filesystem; ignored when
+   * `sessionStore` is provided.
+   */
+  includeProgrammatic?: boolean;
+  /**
    * When provided, list sessions from this store instead of the local
    * filesystem. Requires `store.listSessions` to be defined.
    * @alpha
@@ -2798,25 +2809,6 @@ export declare type SandboxCredentialsConfig = NonNullable<
   z.infer<ReturnType<typeof SandboxCredentialsConfigSchema>>
 >;
 
-/**
- * Credentials configuration schema for sandbox.
- *
- * Declares credential sources (files/directories and environment variables)
- * to protect. Every entry carries `mode: 'deny'`: file paths are denied for
- * reads inside the sandbox, environment variables are unset in sandboxed
- * commands.
- *
- * Only explicitly declared sources are affected — sandbox-runtime ships no
- * built-in credential deny list, so entries here are the complete set of
- * credential restrictions applied to sandboxed commands.
- *
- * Mode is `deny`-only — no `mask`. Claude Code hands this config to
- * sandbox-runtime programmatically, bypassing sandbox-runtime's own Zod
- * validation, and on that path unsupported modes are silently ignored rather
- * than rejected. This schema must be the gate that rejects modes
- * sandbox-runtime can't enforce yet; widen the mode (e.g. `mask`) only once
- * a sandbox-runtime version that enforces it ships.
- */
 declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
   z.ZodObject<
     {

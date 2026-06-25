@@ -2788,7 +2788,7 @@ export interface GlobOutput {
    */
   durationMs: number;
   /**
-   * Total number of files found
+   * Number of file paths returned (after any truncation)
    */
   numFiles: number;
   /**
@@ -2799,6 +2799,14 @@ export interface GlobOutput {
    * Whether results were truncated (limited to 100 files)
    */
   truncated: boolean;
+  /**
+   * Total number of matching files before truncation. A lower bound when countIsComplete is false. Absent on results persisted by CLI versions predating this field.
+   */
+  totalMatches?: number;
+  /**
+   * Whether totalMatches is the exact total (true) or a floor because the underlying search truncated its own output (false). Absent on results persisted by CLI versions predating this field.
+   */
+  countIsComplete?: boolean;
 }
 export interface GrepOutput {
   mode?: "content" | "files_with_matches" | "count";
@@ -2833,6 +2841,10 @@ export interface NotebookEditOutput {
    * The new source code that was written to the cell
    */
   new_source: string;
+  /**
+   * The previous cell source (replace/delete only). Enables cell-relative diff rendering without re-reading the notebook.
+   */
+  old_source?: string;
   /**
    * The ID of the cell that was edited
    */
