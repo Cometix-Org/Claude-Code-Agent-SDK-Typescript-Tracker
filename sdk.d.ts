@@ -388,6 +388,7 @@ declare namespace coreTypes {
     SDKMessage,
     SDKMirrorErrorMessage,
     SDKModelRefusalFallbackMessage,
+    SDKModelRefusalNoFallbackMessage,
     SDKNotificationMessage,
     SDKPartialAssistantMessage,
     SDKPermissionDenial,
@@ -4091,6 +4092,7 @@ export declare type SDKMessage =
   | SDKStatusMessage
   | SDKAPIRetryMessage
   | SDKModelRefusalFallbackMessage
+  | SDKModelRefusalNoFallbackMessage
   | SDKLocalCommandOutputMessage
   | SDKHookStartedMessage
   | SDKHookProgressMessage
@@ -4187,6 +4189,26 @@ export declare type SDKModelRefusalFallbackMessage = {
    * Wire uuids of the messages this fallback retracted — the refused partial as the consumer received it (one uuid per normalized SDK message; multi-block messages carry per-block derived uuids) plus any tombstoned tool_results. Emitted AFTER the retraction, so this is a resolution-time eviction signal: remove these messages from transcript state on receipt. Eviction is idempotent — unknown or already-removed uuids are a no-op. Absent when emitted by an older CLI.
    */
   retracted_message_uuids?: string[];
+  /**
+   * UUID of the user message the refused request was for — the rewind target and composer prefill for edit-and-retry. This is the message's own uuid as delivered on the replay ack (not a per-block normalized uuid). null when the refused turn was not human-authored (e.g. a background task notification or auto-continuation — nothing to edit-and-retry) or otherwise cannot be identified; absent from older CLIs.
+   */
+  refused_user_message_uuid?: string | null;
+  content: string;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * Emitted when the model ends the stream with stop_reason "refusal" and no fallback model is configured, so the turn ends as an error. The structured counterpart to detecting stop_reason "refusal" on the assistant error frame. Not emitted when a fallback existed but was declined or gate-failed (model_refusal_fallback covers the retry case). Absent from older CLIs.
+ */
+export declare type SDKModelRefusalNoFallbackMessage = {
+  type: "system";
+  subtype: "model_refusal_no_fallback";
+  original_model: string;
+  request_id: string | null;
+  api_refusal_category?: string | null;
+  api_refusal_explanation?: string | null;
+  refused_user_message_uuid?: string | null;
   content: string;
   uuid: UUID;
   session_id: string;
@@ -5623,7 +5645,7 @@ export declare interface Settings {
         | {
             source: "hostPattern";
             /**
-             * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against "github.com". For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
+             * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against github.com. For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
              */
             hostPattern: string;
           }
@@ -5839,7 +5861,7 @@ export declare interface Settings {
     | {
         source: "hostPattern";
         /**
-         * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against "github.com". For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
+         * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against github.com. For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
          */
         hostPattern: string;
       }
@@ -6046,7 +6068,7 @@ export declare interface Settings {
     | {
         source: "hostPattern";
         /**
-         * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against "github.com". For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
+         * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against github.com. For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
          */
         hostPattern: string;
       }
@@ -6163,6 +6185,10 @@ export declare interface Settings {
         };
       }
   )[];
+  /**
+   * When true (and set in managed settings), rejects the --plugin-dir, --plugin-url, --agents, and non-sdk --mcp-config CLI flags at startup. Closes the CLI-flag bypass of strictKnownMarketplaces. Pair with allowedMcpServers for per-server MCP control; this setting does not gate other MCP entry points (SDK setMcpServers, claude mcp add, .mcp.json). Also blocks surfaces that spawn the CLI with these flags internally (see settings documentation). Only honored from managed settings; ignored in user/project/local settings.
+   */
+  disableSideloadFlags?: boolean;
   /**
    * Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips). No marketplace-declared suggestions surface without this allowlist; the built-in first-party frontend-design tip is unaffected. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored. The official marketplace is exempt from the source requirement: allowlisting its name alone suffices, since that name can only register from the official Anthropic source.
    */
@@ -6407,22 +6433,26 @@ export declare interface Settings {
    * Per-plugin configuration including MCP server user configs, keyed by plugin ID (plugin\@marketplace format)
    */
   pluginConfigs?: {
-    [k: string]: {
-      /**
-       * User configuration values for MCP servers keyed by server name
-       */
-      mcpServers?: {
-        [k: string]: {
-          [k: string]: string | number | boolean | string[];
+    [k: string]:
+      | {
+          /**
+           * User configuration values for MCP servers keyed by server name
+           */
+          mcpServers?: {
+            [k: string]: {
+              [k: string]: string | number | boolean | string[];
+            };
+          };
+          /**
+           * Non-sensitive option values from plugin manifest userConfig, keyed by option name. Sensitive values go to secure storage instead.
+           */
+          options?: {
+            [k: string]: string | number | boolean | string[];
+          };
+        }
+      | {
+          [k: string]: unknown;
         };
-      };
-      /**
-       * Non-sensitive option values from plugin manifest userConfig, keyed by option name. Sensitive values go to secure storage instead.
-       */
-      options?: {
-        [k: string]: string | number | boolean | string[];
-      };
-    };
   };
   /**
    * Cloud session configuration
