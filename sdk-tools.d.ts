@@ -2520,7 +2520,14 @@ export interface MonitorInput {
   /**
    * Shell command or script. Each stdout line is an event; exit ends the watch.
    */
-  command: string;
+  command?: string;
+  /**
+   * WebSocket to open. Each text frame is an event; binary frames are reported as a placeholder line. Socket close ends the watch. Cannot be combined with command.
+   */
+  ws?: {
+    url: string;
+    protocols?: string[];
+  };
 }
 export interface ArtifactInput {
   /**

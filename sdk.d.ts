@@ -2510,6 +2510,23 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   initializationResult(): Promise<SDKControlInitializeResponse>;
   /**
+   * Re-send the `initialize` control request to an already-running CLI.
+   *
+   * Use this after a transport gap (e.g. reattaching to a daemon whose
+   * ring buffer evicted frames during a disconnect): the CLI's response
+   * carries any `can_use_tool` / `request_user_dialog` control requests
+   * the loop is still blocked on, and the SDK redelivers them to
+   * `canUseTool` / `onUserDialog`. In-flight request_ids are deduped
+   * SDK-side, but callbacks should be idempotent per request_id since a
+   * request whose response was lost in the gap will be dispatched again.
+   *
+   * Unlike {@link Query.initializationResult}, this always sends a fresh request
+   * rather than returning the cached first-connect result.
+   *
+   * @returns A fresh initialization response
+   */
+  reinitialize(): Promise<SDKControlInitializeResponse>;
+  /**
    * Get the list of available skills for the current session.
    *
    * @returns Array of available skills with their names and descriptions
