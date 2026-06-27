@@ -3507,7 +3507,7 @@ var BS = k((bPe, fC) => {
       var o, n, i;
       if (Array.isArray(t)) {
         if (((o = t.length), o != r.length)) return !1;
-        for (n = o; n-- !== 0; ) if (!e(t[n], r[n])) return !1;
+        for (n = o; n-- !== 0;) if (!e(t[n], r[n])) return !1;
         return !0;
       }
       if (t.constructor === RegExp)
@@ -3518,9 +3518,9 @@ var BS = k((bPe, fC) => {
         return t.toString() === r.toString();
       if (((i = Object.keys(t)), (o = i.length), o !== Object.keys(r).length))
         return !1;
-      for (n = o; n-- !== 0; )
+      for (n = o; n-- !== 0;)
         if (!Object.prototype.hasOwnProperty.call(r, i[n])) return !1;
-      for (n = o; n-- !== 0; ) {
+      for (n = o; n-- !== 0;) {
         var s = i[n];
         if (!e(t[s], r[s])) return !1;
       }
@@ -4483,9 +4483,11 @@ var ex = k((PPe, XC) => {
       o = 0;
     for (o = 0; o < e.length; o++) {
       if (((r = e[o].charCodeAt(0)), r === 48)) continue;
-      if (
-        !((r >= 48 && r <= 57) || (r >= 65 && r <= 70) || (r >= 97 && r <= 102))
-      )
+      if (!(
+        (r >= 48 && r <= 57) ||
+        (r >= 65 && r <= 70) ||
+        (r >= 97 && r <= 102)
+      ))
         return "";
       t += e[o];
       break;
@@ -17005,9 +17007,9 @@ class Bh {
               "[Query.readMessages] First result received for single-turn query, closing stdin",
             ),
               this.transport.endInput());
-        } else if (
-          !(e.type === "system" && e.subtype === "session_state_changed")
-        )
+        } else if (!(
+          e.type === "system" && e.subtype === "session_state_changed"
+        ))
           this.lastErrorResultText = void 0;
         this.inputStream.enqueue(e);
       }
@@ -18676,7 +18678,7 @@ async function tV(e, t, r, o) {
     i = t && t > 0 ? t : 1 / 0,
     s = 0,
     a = new Set();
-  for (let c = 0; c < e.length && n.length < i; ) {
+  for (let c = 0; c < e.length && n.length < i;) {
     let u = Math.min(c + Q6, e.length),
       d = e.slice(c, u),
       p = await Promise.all(d.map((f) => pR(f, o)));
@@ -21263,9 +21265,9 @@ class ze extends oe {
     let { status: r, ctx: o } = this._processInputParams(e),
       { shape: n, keys: i } = this._getCached(),
       s = [];
-    if (
-      !(this._def.catchall instanceof Wr && this._def.unknownKeys === "strip")
-    ) {
+    if (!(
+      this._def.catchall instanceof Wr && this._def.unknownKeys === "strip"
+    )) {
       for (let c in o.data) if (!i.includes(c)) s.push(c);
     }
     let a = [];
@@ -36838,7 +36840,7 @@ class lg {
   };
   *#x({ allowStale: e = this.allowStale } = {}) {
     if (this.#i)
-      for (let t = this.#s; ; ) {
+      for (let t = this.#s; ;) {
         if (!this.#U(t)) break;
         if (e || !this.#m(t)) yield t;
         if (t === this.#c) break;
@@ -36847,7 +36849,7 @@ class lg {
   }
   *#w({ allowStale: e = this.allowStale } = {}) {
     if (this.#i)
-      for (let t = this.#c; ; ) {
+      for (let t = this.#c; ;) {
         if (!this.#U(t)) break;
         if (e || !this.#m(t)) yield t;
         if (t === this.#s) break;

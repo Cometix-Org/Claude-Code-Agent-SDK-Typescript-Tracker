@@ -116,17 +116,12 @@ export declare type AgentInfo = {
 };
 
 export declare type AgentMcpServerSpec =
-  | string
-  | Record<string, McpServerConfigForProcessTransport>;
+  string | Record<string, McpServerConfigForProcessTransport>;
 
 export declare type AnyZodRawShape = ZodRawShape | ZodRawShape_2;
 
 export declare type ApiKeySource =
-  | "user"
-  | "project"
-  | "org"
-  | "temporary"
-  | "oauth";
+  "user" | "project" | "org" | "temporary" | "oauth";
 
 export declare type AsyncHookJSONOutput = {
   async: true;
@@ -1234,8 +1229,7 @@ export declare type McpServerStatus = {
 };
 
 export declare type McpServerStatusConfig =
-  | McpServerConfigForProcessTransport
-  | McpClaudeAIProxyServerConfig;
+  McpServerConfigForProcessTransport | McpClaudeAIProxyServerConfig;
 
 /**
  * Per-tool permission policy carried on mcp_set_servers for remote servers.
@@ -2173,9 +2167,7 @@ export declare type PermissionBehavior = "allow" | "deny" | "ask";
  * Classification of this permission decision for telemetry. SDK hosts that prompt users (desktop apps, IDEs) should set this to reflect what actually happened: user_temporary for allow-once, user_permanent for always-allow (both the click and later cache hits), user_reject for deny. If unset, the CLI infers conservatively (temporary for allow, reject for deny). The vocabulary matches tool_decision OTel events (monitoring-usage docs).
  */
 export declare type PermissionDecisionClassification =
-  | "user_temporary"
-  | "user_permanent"
-  | "user_reject";
+  "user_temporary" | "user_permanent" | "user_reject";
 
 export declare type PermissionDeniedHookInput = BaseHookInput & {
   hook_event_name: "PermissionDenied";
@@ -2194,12 +2186,7 @@ export declare type PermissionDeniedHookSpecificOutput = {
  * Permission mode for controlling how tool executions are handled. 'default' - Standard behavior, prompts for dangerous operations. 'acceptEdits' - Auto-accept file edit operations. 'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). 'plan' - Planning mode, no actual tool execution. 'dontAsk' - Don't prompt for permissions, deny if not pre-approved. 'auto' - Use a model classifier to approve/deny permission prompts.
  */
 export declare type PermissionMode =
-  | "default"
-  | "acceptEdits"
-  | "bypassPermissions"
-  | "plan"
-  | "dontAsk"
-  | "auto";
+  "default" | "acceptEdits" | "bypassPermissions" | "plan" | "dontAsk" | "auto";
 
 export declare type PermissionRequestHookInput = BaseHookInput & {
   hook_event_name: "PermissionRequest";
@@ -2280,24 +2267,14 @@ export declare type PermissionUpdate =
     };
 
 export declare type PermissionUpdateDestination =
-  | "userSettings"
-  | "projectSettings"
-  | "localSettings"
-  | "session"
-  | "cliArg";
+  "userSettings" | "projectSettings" | "localSettings" | "session" | "cliArg";
 
 /**
  * Which policy sub-source supplied a `'managed'` value.
  * @alpha
  */
 export declare type PolicySettingsOrigin =
-  | "helper"
-  | "remote"
-  | "plist"
-  | "hklm"
-  | "file"
-  | "parent"
-  | "hkcu";
+  "helper" | "remote" | "plist" | "hklm" | "file" | "parent" | "hkcu";
 
 export declare type PostCompactHookInput = BaseHookInput & {
   hook_event_name: "PostCompact";
@@ -4630,12 +4607,7 @@ export declare type SDKTaskUpdatedMessage = {
    */
   patch: {
     status?:
-      | "pending"
-      | "running"
-      | "completed"
-      | "failed"
-      | "killed"
-      | "paused";
+      "pending" | "running" | "completed" | "failed" | "killed" | "paused";
     description?: string;
     end_time?: number;
     total_paused_ms?: number;
@@ -5496,8 +5468,7 @@ export declare interface Settings {
    * When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. ["skills", "hooks"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control — plugins gated by marketplace allowlist, everything else blocked here.
    */
   strictPluginOnlyCustomization?:
-    | boolean
-    | ("skills" | "agents" | "hooks" | "mcp")[];
+    boolean | ("skills" | "agents" | "hooks" | "mcp")[];
   /**
    * Custom status line display configuration
    */
@@ -7048,9 +7019,7 @@ export declare type ThinkingAdaptive = {
  * Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.
  */
 export declare type ThinkingConfig =
-  | ThinkingAdaptive
-  | ThinkingEnabled
-  | ThinkingDisabled;
+  ThinkingAdaptive | ThinkingEnabled | ThinkingDisabled;
 
 /**
  * No extended thinking
