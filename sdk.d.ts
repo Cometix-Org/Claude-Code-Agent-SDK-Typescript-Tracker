@@ -165,6 +165,10 @@ export declare type BaseHookInput = {
   session_id: string;
   transcript_path: string;
   cwd: string;
+  /**
+   * UUID correlating a user prompt with all subsequent events until the next prompt. Same value emitted on OpenTelemetry events as the `prompt.id` attribute, so hook output can be joined to OTel events at prompt grain. Absent until the first user input of the process lifetime.
+   */
+  prompt_id?: string;
   permission_mode?: string;
   /**
    * Subagent identifier. Present only when the hook fires from within a subagent (e.g., a tool called by an AgentTool worker). Absent for the main thread, even in --agent sessions. Use this field (not agent_type) to distinguish subagent calls from main-thread calls.
@@ -3074,6 +3078,7 @@ export declare type SDKCompactBoundaryMessage = {
     trigger: "manual" | "auto";
     pre_tokens: number;
     post_tokens?: number;
+
     duration_ms?: number;
 
     /**
@@ -5420,6 +5425,10 @@ export declare interface Settings {
    * Disable the Artifact tool (also via CLAUDE_CODE_DISABLE_ARTIFACT).
    */
   disableArtifact?: boolean;
+  /**
+   * Enable or disable the Artifact tool for this user. Unset = default by plan once the feature is available.
+   */
+  enableArtifact?: boolean;
   /**
    * Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.
    */
