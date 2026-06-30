@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.196
+// Version: 0.3.197
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -38305,7 +38305,7 @@ function Dte() {
         .string()
         .optional()
         .describe(
-          'Model to use for this prompt hook (e.g., "claude-sonnet-4-6"). If not specified, uses the default small fast model.',
+          'Model to use for this prompt hook (e.g., "claude-sonnet-5"). If not specified, uses the default small fast model.',
         ),
       continueOnBlock: l
         .boolean()
@@ -38402,7 +38402,7 @@ function Dte() {
         .string()
         .optional()
         .describe(
-          'Model to use for this agent hook (e.g., "claude-sonnet-4-6"). If not specified, uses Haiku.',
+          'Model to use for this agent hook (e.g., "claude-sonnet-5"). If not specified, uses Haiku.',
         ),
       statusMessage: l
         .string()
@@ -42843,7 +42843,7 @@ function lw(e, t, r, o) {
   else if (Array.isArray(n)) d = n;
   else if (n.type === "preset")
     ((p = n.append), (f = n.excludeDynamicSections));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.196";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.197";
   let {
     abortController: m = Ks(),
     additionalDirectories: g = [],
@@ -42934,7 +42934,7 @@ function lw(e, t, r, o) {
   let Sw = gw?.type === "json_schema" ? gw.schema : void 0,
     dt = _t ? { ..._t } : { ...process.env };
   if (!dt.CLAUDE_CODE_ENTRYPOINT) dt.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!dt.CLAUDE_AGENT_SDK_VERSION) dt.CLAUDE_AGENT_SDK_VERSION = "0.3.196";
+  if (!dt.CLAUDE_AGENT_SDK_VERSION) dt.CLAUDE_AGENT_SDK_VERSION = "0.3.197";
   if (ln) dt.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (hw) dt.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (yw) dt.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";

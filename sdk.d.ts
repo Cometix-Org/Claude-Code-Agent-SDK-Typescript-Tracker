@@ -518,7 +518,7 @@ export declare function deleteSession(
  * - `'low'` — Minimal thinking, fastest responses
  * - `'medium'` — Moderate thinking
  * - `'high'` — Deep reasoning (default)
- * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+; falls back to `'high'` elsewhere)
+ * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+, Sonnet 5; falls back to `'high'` elsewhere)
  * - `'max'` — Maximum effort (select models only)
  */
 export declare type EffortLevel = "low" | "medium" | "high" | "xhigh" | "max";
@@ -1342,6 +1342,10 @@ export declare type ModelInfo = {
    */
   value: string;
   /**
+   * Canonical wire model id this row's `value` resolves to (e.g. 'sonnet' → 'claude-sonnet-5'). Lets hosts match a persisted explicit id against the alias row that covers it.
+   */
+  resolvedModel?: string;
+  /**
    * Human-readable display name
    */
   displayName: string;
@@ -1765,8 +1769,8 @@ export declare type Options = {
    * - `'low'` — Minimal thinking, fastest responses
    * - `'medium'` — Moderate thinking
    * - `'high'` — Deep reasoning (default)
-   * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+)
-   * - `'max'` — Maximum effort (Fable 5, Opus 4.6+, Sonnet 4.6)
+   * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+, Sonnet 5)
+   * - `'max'` — Maximum effort (Fable 5, Opus 4.6+, Sonnet 4.6+)
    *
    * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
    */
@@ -1817,7 +1821,7 @@ export declare type Options = {
   mcpServers?: Record<string, McpServerConfig>;
   /**
    * Claude model to use. Defaults to the CLI default model.
-   * Examples: 'claude-sonnet-4-6', 'claude-opus-4-8', 'claude-fable-5'
+   * Examples: 'claude-sonnet-5', 'claude-opus-4-8', 'claude-fable-5'
    */
   model?: string;
   /**
@@ -1970,7 +1974,7 @@ export declare type Options = {
    *
    * @example Inline settings object
    * ```typescript
-   * settings: { model: 'claude-sonnet-4-6', permissions: { allow: ['Bash(*)'] } }
+   * settings: { model: 'claude-sonnet-5', permissions: { allow: ['Bash(*)'] } }
    * ```
    *
    * @example Path to settings file
@@ -5263,7 +5267,7 @@ export declare interface Settings {
              */
             timeout?: number;
             /**
-             * Model to use for this prompt hook (e.g., "claude-sonnet-4-6"). If not specified, uses the default small fast model.
+             * Model to use for this prompt hook (e.g., "claude-sonnet-5"). If not specified, uses the default small fast model.
              */
             model?: string;
             /**
@@ -5297,7 +5301,7 @@ export declare interface Settings {
              */
             timeout?: number;
             /**
-             * Model to use for this agent hook (e.g., "claude-sonnet-4-6"). If not specified, uses Haiku.
+             * Model to use for this agent hook (e.g., "claude-sonnet-5"). If not specified, uses Haiku.
              */
             model?: string;
             /**
