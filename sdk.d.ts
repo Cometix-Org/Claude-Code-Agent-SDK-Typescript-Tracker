@@ -1153,6 +1153,7 @@ export declare type McpHttpServerConfig = {
    * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
+
   /**
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
@@ -1274,6 +1275,7 @@ export declare type McpSSEServerConfig = {
    * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
    */
   timeout?: number;
+
   /**
    * When true, all tools from this server are always included in the prompt and never deferred behind tool search. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
@@ -3595,6 +3597,13 @@ declare type SDKControlInterruptRequest = {
 };
 
 /**
+ * Requests the worker's selectable model catalog. Fulfills the caps.modelCatalog capability: in a remote thin-client session the worker's provider, settings cascade, and enforcement policy decide which models the session can run, so the thin client must ask rather than read its own getModelOptions().
+ */
+declare type SDKControlListModelsRequest = {
+  subtype: "list_models";
+};
+
+/**
  * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call.
  */
 declare type SDKControlMcpCallRequest = {
@@ -3782,6 +3791,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpStatusRequest
   | SDKControlGetContextUsageRequest
   | SDKControlGetSessionCostRequest
+  | SDKControlListModelsRequest
   | SDKControlGetUsageRequest
   | SDKControlGetBinaryVersionRequest
   | SDKControlMcpCallRequest
@@ -3791,6 +3801,8 @@ declare type SDKControlRequestInner =
   | SDKControlRewindFilesRequest
   | SDKControlCancelAsyncMessageRequest
   | SDKControlReadFileRequest
+  | SDKControlGetWorkspaceDiffRequest
+  | SDKControlGetPlanRequest
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
   | SDKControlRegisterRepoRootRequest
@@ -4094,6 +4106,7 @@ export declare type SDKMessage =
   | SDKCompactBoundaryMessage
   | SDKStatusMessage
   | SDKAPIRetryMessage
+  | SDKControlRequestProgressMessage
   | SDKModelRefusalFallbackMessage
   | SDKModelRefusalNoFallbackMessage
   | SDKLocalCommandOutputMessage
@@ -4120,7 +4133,8 @@ export declare type SDKMessage =
   | SDKPermissionDeniedMessage
   | SDKPromptSuggestionMessage
   | SDKMirrorErrorMessage
-  | SDKInformationalMessage;
+  | SDKInformationalMessage
+  | SDKConversationResetMessage;
 
 /**
  * Provenance of a user-role message (peer session, team lead, channel). Absent or `human` means keyboard input from the user.
@@ -5430,7 +5444,7 @@ export declare interface Settings {
    */
   disableArtifact?: boolean;
   /**
-   * Enable or disable the Artifact tool for this user. Unset = default by plan once the feature is available.
+   * Enable or disable the Artifact tool for this user. Unset defaults to enabled once the feature is available.
    */
   enableArtifact?: boolean;
   /**
@@ -6835,6 +6849,7 @@ declare type StdoutMessage =
   | coreTypes.SDKPostTurnSummaryMessage
   | coreTypes.SDKTaskSummaryMessage
   | coreTypes.SDKTranscriptMirrorMessage
+  | coreTypes.SDKActiveGoalMessage
   | SDKControlResponse
   | SDKControlRequest
   | SDKControlCancelRequest

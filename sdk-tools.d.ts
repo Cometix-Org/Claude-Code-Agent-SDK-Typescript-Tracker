@@ -428,7 +428,7 @@ export interface AgentInput {
    */
   model?: "sonnet" | "opus" | "haiku" | "fable";
   /**
-   * Set to true to run this agent in the background. You will be notified when it completes.
+   * Agents run in the background by default; you will be notified when one completes. Set to false to run this agent synchronously when you need its result before continuing.
    */
   run_in_background?: boolean;
   /**
@@ -637,7 +637,7 @@ export interface GrepInput {
 }
 export interface TaskStopInput {
   /**
-   * The ID of the background task to stop
+   * The ID of the background task to stop. Agent-team teammates and named background agents are also accepted by agent ID or name.
    */
   task_id?: string;
   /**
@@ -3283,6 +3283,10 @@ export interface AskUserQuestionOutput {
       notes?: string;
     };
   };
+  /**
+   * Set when the dialog auto-resolved after this many milliseconds of idle (user away from keyboard). Absent on every human-resolved path.
+   */
+  afkTimeoutMs?: number;
 }
 export interface EnterWorktreeOutput {
   worktreePath: string;
@@ -3339,7 +3343,13 @@ export interface ArtifactOutput {
   path: string;
   title?: string;
   version?: string;
-  mcpDropped?: string;
+  capabilities?: unknown;
+  stored?: {
+    contract: string;
+    capabilities?: {
+      [k: string]: unknown;
+    };
+  };
 }
 export interface RemoteTriggerOutput {
   status: number;
