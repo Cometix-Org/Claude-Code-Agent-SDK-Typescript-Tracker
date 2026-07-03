@@ -95,6 +95,14 @@ export declare type AgentDefinition = {
    * Permission mode controlling how tool executions are handled
    */
   permissionMode?: PermissionMode;
+  /**
+   * Agent type auto-spawned as a background observer whenever this agent runs. The observer receives read-only activity digests and reports via the ObserverReport tool; it never participates in the task.
+   */
+  observer?: string;
+  /**
+   * Supplemental postamble appended (after the harness-owned default) to each activity digest sent to the observer. Blank values are ignored.
+   */
+  observerMessage?: string;
 };
 
 /**
@@ -2447,6 +2455,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
   ): Promise<{
     warning?: string;
   }>;
+
   /**
    * Change the model used for subsequent responses.
    * Only available in streaming input mode.
@@ -3852,6 +3861,7 @@ declare type SDKControlRequestInner =
   | SDKControlUltrareviewLaunchRequest
   | SDKControlStageFileRequest
   | SDKControlAddDirectoryRequest
+  | SDKControlSetCwdRequest
   | SDKControlMessageRatedRequest
   | SDKControlOAuthTokenRefreshRequest
   | SDKControlHostAuthTokenRefreshRequest
@@ -4190,7 +4200,15 @@ export declare type SDKMessageOrigin =
       kind: "coordinator";
     }
   | {
+      kind: "observer";
+      from: string;
+      senderTaskId: string;
+    }
+  | {
       kind: "auto-continuation";
+    }
+  | {
+      kind: "observer-activity";
     };
 
 /**
@@ -5129,7 +5147,7 @@ export declare interface Settings {
      */
     ask?: string[];
     /**
-     * Default permission mode when Claude Code needs access
+     * Default permission mode when Claude Code needs access ('manual' is accepted as an alias for 'default')
      */
     defaultMode?:
       | "acceptEdits"
@@ -6471,6 +6489,10 @@ export declare interface Settings {
    */
   showClearContextOnPlanAccept?: boolean;
   /**
+   * Idle time before Claude's questions auto-continue with any answers selected so far. Defaults to never — auto-continue only runs when explicitly set to 60s/5m/10m.
+   */
+  askUserQuestionTimeout?: "60s" | "5m" | "10m" | "never";
+  /**
    * Name of an agent (built-in or custom) to use for the main thread. Applies the agent's system prompt, tool restrictions, and model.
    */
   agent?: string;
@@ -7158,6 +7180,13 @@ export declare interface Transport {
    * Each transport handles its own protocol and error checking
    */
   readMessages(): AsyncGenerator<StdoutMessage, void, unknown>;
+  /**
+   * Register a request_id whose control_response the caller will await
+   * out-of-band via Query.awaitControlResponse. Transports that see
+   * per-frame source (multi-client fan-out) SHOULD drop non-worker
+   * control_responses matching this id — only the worker may answer.
+   */
+  expectControlResponse?(requestId: string): void;
   /**
    * End the input stream
    */
