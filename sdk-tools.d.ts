@@ -29,6 +29,7 @@ export type ToolInputSchemas =
   | WebFetchInput
   | WebSearchInput
   | AskUserQuestionInput
+  | ClaudeDesignInput
   | ProjectsInput
   | EnterPlanModeInput
   | TaskCreateInput
@@ -87,6 +88,7 @@ export type ToolOutputSchemas =
   | CronDeleteOutput
   | CronListOutput
   | PushNotificationOutput
+  | ClaudeDesignOutput
   | ProjectsOutput;
 export type AgentOutput =
   | {
@@ -304,6 +306,10 @@ export type FileReadOutput =
          */
         filePath: string;
       };
+      /**
+       * Set when the dedup matched a startup-seeded entry (CLAUDE.md / nested memory) rather than a prior Read tool_result
+       */
+      source?: "seeded";
     };
 export type ListMcpResourcesOutput = {
   /**
@@ -364,9 +370,6 @@ export type ProjectsOutput =
       knowledge: {
         knowledge_size: number;
         max_knowledge_size: number;
-        search_threshold: number | null;
-        rag_active: boolean;
-        remaining_budget: number | null;
       };
     }
   | {
@@ -395,13 +398,6 @@ export type ProjectsOutput =
       path: string;
       doc_uuid: string;
       replaced: boolean;
-      knowledge: {
-        knowledge_size: number;
-        max_knowledge_size: number;
-        search_threshold: number | null;
-        rag_active: boolean;
-        remaining_budget: number | null;
-      };
     }
   | {
       method: "project_delete";
@@ -723,6 +719,10 @@ export interface ReportFindingsInput {
      * Concrete inputs/state → wrong output/crash
      */
     failure_scenario: string;
+    /**
+     * Short kebab-case slug of the finding type, e.g. "correctness", "simplification", "efficiency", "test-coverage"
+     */
+    category?: string;
     /**
      * Set when a verify pass ran; absent on inline-only reviews
      */
@@ -2344,6 +2344,18 @@ export interface AskUserQuestionInput {
     source?: string;
   };
 }
+export interface ClaudeDesignInput {
+  /**
+   * Claude Design action to perform. Call with "list" first to discover the available operations and their argument schemas.
+   */
+  operation: string;
+  /**
+   * Action input object (server-validated). Pass {} for operations that take no input.
+   */
+  arguments: {
+    [k: string]: unknown;
+  };
+}
 export interface ProjectsInput {
   method:
     | "project_info"
@@ -2363,10 +2375,6 @@ export interface ProjectsInput {
    * project_write: a file inside the working directory to upload. The tool reads, encodes, and uploads directly — contents never enter your context. Mutually exclusive with content.
    */
   local_path?: string;
-  /**
-   * project_write: bypass the chat-injection budget guard. Set only when the write is genuinely worth degrading chat to retrieval mode for everyone in the project.
-   */
-  force?: boolean;
   /**
    * project_search: knowledge-base query
    */
@@ -3005,6 +3013,10 @@ export interface ReportFindingsOutput {
      */
     failure_scenario: string;
     /**
+     * Short kebab-case slug of the finding type, e.g. "correctness", "simplification", "efficiency", "test-coverage"
+     */
+    category?: string;
+    /**
      * Set when a verify pass ran; absent on inline-only reviews
      */
     verdict?: "CONFIRMED" | "PLAUSIBLE";
@@ -3496,10 +3508,15 @@ export interface PushNotificationOutput {
   pushSent?: boolean;
   localSent?: boolean;
   disabledReason?: "config_off" | "user_present" | "no_transport";
-  idleSec?: number;
-  hasFocus?: boolean;
   /**
    * ISO timestamp captured at tool execution on the emitting process. Optional — resumed sessions replay pre-sentAt outputs verbatim.
    */
   sentAt?: string;
+}
+export interface ClaudeDesignOutput {
+  operation: string;
+  content: {
+    [k: string]: unknown;
+  }[];
+  isError?: boolean;
 }

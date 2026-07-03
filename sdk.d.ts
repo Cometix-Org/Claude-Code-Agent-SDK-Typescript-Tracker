@@ -196,6 +196,12 @@ export declare type BaseOutputFormat = {
 /**
  * Permission callback function for controlling tool usage.
  * Called before each tool execution to determine if it should be allowed.
+ *
+ * Return `null` ONLY after the consumer has already sent the
+ * control_response out-of-band (e.g. a signed HTTP POST echoing
+ * `requestId`); the SDK will skip its own transport write. Fail-closed: an
+ * accidental null means no control_response is sent and the tool stays
+ * blocked indefinitely — permission prompts have no park deadline.
  */
 export declare type CanUseTool = (
   toolName: string,
@@ -242,8 +248,14 @@ export declare type CanUseTool = (
     toolUseID: string;
     /** If running within the context of a sub-agent, the sub-agent's ID. */
     agentID?: string;
+    /**
+     * The control_request envelope's `request_id`. A control_response sent
+     * out-of-band (e.g. a signed HTTP POST instead of the SDK's WS write)
+     * must echo this value for the worker to match it.
+     */
+    requestId: string;
   },
-) => Promise<PermissionResult>;
+) => Promise<PermissionResult | null>;
 
 export declare type ConfigChangeHookInput = BaseHookInput & {
   hook_event_name: "ConfigChange";
@@ -2833,12 +2845,17 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
           z.ZodObject<
             {
               name: z.ZodString;
-              mode: z.ZodLiteral<"deny">;
+              mode: z.ZodEnum<{
+                deny: "deny";
+                mask: "mask";
+              }>;
+              injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
             },
             z.core.$strip
           >
         >
       >;
+      allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
     },
     z.core.$strip
   >
@@ -2970,12 +2987,17 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
               z.ZodObject<
                 {
                   name: z.ZodString;
-                  mode: z.ZodLiteral<"deny">;
+                  mode: z.ZodEnum<{
+                    deny: "deny";
+                    mask: "mask";
+                  }>;
+                  injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 },
                 z.core.$strip
               >
             >
           >;
+          allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
         },
         z.core.$strip
       >
@@ -3690,6 +3712,10 @@ declare type SDKControlPermissionRequest = {
   tool_use_id: string;
   agent_id?: string;
   description?: string;
+  /**
+   * True when the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction()). SDK hosts must not offer one-tap Approve/Deny for these — the user has to open the session and respond on the card itself.
+   */
+  requires_user_interaction?: boolean;
 };
 
 /**
@@ -6282,7 +6308,7 @@ export declare interface Settings {
       httpProxyPort?: number;
       socksProxyPort?: number;
       /**
-       * [EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session.
+       * [EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
        */
       tlsTerminate?: {
         caCertPath?: string;
@@ -6326,7 +6352,7 @@ export declare interface Settings {
         mode: "deny";
       }[];
       /**
-       * Environment variables to protect. `deny` unsets the variable for sandboxed commands.
+       * Environment variables to protect. `deny` unsets the variable for sandboxed commands; `mask` substitutes a sentinel inside the sandbox and injects the real value at the proxy.
        */
       envVars?: {
         /**
@@ -6334,10 +6360,18 @@ export declare interface Settings {
          */
         name: string;
         /**
-         * Access mode for this environment variable. Only `deny` is supported.
+         * Access mode for this environment variable. `deny` unsets the variable for sandboxed commands; `mask` shows sandboxed commands a sentinel value and the host proxy swaps sentinel→real on egress to `injectHosts`.
          */
-        mode: "deny";
+        mode: "deny" | "mask";
+        /**
+         * Optional narrowing of where the proxy substitutes this credential. Only meaningful when mode is `mask`; accepted but ignored for `deny`. If unset, defaults to `network.allowedDomains` — the credential is injected at every reachable host. Each entry must be reachable via `network.allowedDomains` (sandbox-runtime validates this).
+         */
+        injectHosts?: string[];
       }[];
+      /**
+       * Allow sentinel→real substitution on the plain-HTTP proxy path. Defaults to false: without TLS termination the upstream identity is unverified and the credential travels in cleartext. Set only for trusted-network test fixtures. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+       */
+      allowPlaintextInject?: boolean;
     };
     ignoreViolations?: {
       [k: string]: string[];
