@@ -4834,6 +4834,13 @@ export declare type SessionMessage = {
   session_id: string;
   message: unknown;
   parent_tool_use_id: string | null;
+  /**
+   * agentId of the subagent that spawned this subagent, or null when this
+   * message belongs to a depth-1 subagent (spawned by the main loop) or to
+   * the main session itself. Sessions whose metadata lacks the field report
+   * null.
+   */
+  parent_agent_id: string | null;
 };
 
 /**
