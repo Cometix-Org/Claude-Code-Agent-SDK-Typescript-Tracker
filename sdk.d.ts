@@ -389,11 +389,15 @@ declare namespace coreTypes {
     PreToolUseHookSpecificOutput,
     RewindFilesResult,
     SDKAPIRetryMessage,
+    SDKActiveGoalMessage,
     SDKAssistantMessageError,
     SDKAssistantMessage,
     SDKAuthStatusMessage,
+    SDKBackgroundTasksChangedMessage,
     SDKCommandsChangedMessage,
     SDKCompactBoundaryMessage,
+    SDKControlRequestProgressMessage,
+    SDKConversationResetMessage,
     SDKDeferredToolUse,
     SDKElicitationCompleteMessage,
     SDKFilesPersistedEvent,
@@ -3038,6 +3042,22 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
 >;
 
 /**
+ * Emitted when the user's /goal Stop hook reports met (clears) or not-yet-met (bumps iterations + last_reason). Any surface with a goal indicator re-renders from this. value is null when the goal is cleared. From internal QueryEvent 'active_goal'.
+ */
+export declare type SDKActiveGoalMessage = {
+  type: "active_goal";
+  value: {
+    condition: string;
+    iterations: number;
+    set_at: number;
+    tokens_at_start: number;
+    last_reason?: string;
+  } | null;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
  * Emitted when an API request fails with a retryable error and will be retried after a delay. error_status is null for connection errors (e.g. timeouts) that had no HTTP response.
  */
 export declare type SDKAPIRetryMessage = {
@@ -3091,6 +3111,24 @@ export declare type SDKAuthStatusMessage = {
   isAuthenticating: boolean;
   output: string[];
   error?: string;
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
+ * The full set of live background tasks, emitted whenever membership changes (start, completion, kill, a foreground agent being backgrounded). A level signal, unlike the task_started/task_notification edge bookends: consumers that only need 'is background work running' should replace their set with each payload rather than pairing edges, so a missed bookend cannot wedge a stale running indicator. Ordering relative to the bookends for the same transition is unspecified (in practice the level precedes them) and the payload carries ids only, so do not correlate it with the edge stream. The level is per-process: nothing is emitted at startup, so consumers must reset to the empty set whenever the session's CLI process (re)starts and let the next membership change repopulate it.
+ */
+export declare type SDKBackgroundTasksChangedMessage = {
+  type: "system";
+  subtype: "background_tasks_changed";
+  /**
+   * Every live background task after the change. REPLACE semantics: swap your set for this payload.
+   */
+  tasks: {
+    task_id: string;
+    task_type: string;
+    description: string;
+  }[];
   uuid: UUID;
   session_id: string;
 };
@@ -3314,6 +3352,13 @@ export declare type SDKControlGetContextUsageResponse = {
     cache_creation_input_tokens: number;
     cache_read_input_tokens: number;
   } | null;
+};
+
+/**
+ * Read the session's current plan-mode plan. Unlike read_file, the caller does not need to know the plan file's path — the worker resolves its own plan slug. Never creates a plan slug or file.
+ */
+declare type SDKControlGetPlanRequest = {
+  subtype: "get_plan";
 };
 
 /**
@@ -3558,6 +3603,13 @@ export declare type SDKControlGetUsageResponse = {
       }[];
     };
   } | null;
+};
+
+/**
+ * Requests the workspace git diff for the thin-client /diff dialog. The worker resolves one base ref for both stats and hunks (working tree vs HEAD, falling back to branch-vs-default-merge-base when the tree is clean) and applies the standard caps (5s git timeout, 50 files, 1MB/file).
+ */
+declare type SDKControlGetWorkspaceDiffRequest = {
+  subtype: "get_workspace_diff";
 };
 
 /**
@@ -3845,33 +3897,31 @@ declare type SDKControlRequestInner =
   | SDKControlReloadSkillsRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
-  | SDKControlSetMcpPermissionModeOverrideRequest
-  | SDKControlRewindConversationRequest
-  | SDKControlChannelEnableRequest
-  | SDKControlEndSessionRequest
-  | SDKControlMcpAuthenticateRequest
-  | SDKControlMcpClearAuthRequest
-  | SDKControlMcpOAuthCallbackUrlRequest
-  | SDKControlClaudeAuthenticateRequest
-  | SDKControlClaudeOAuthCallbackRequest
-  | SDKControlClaudeOAuthWaitForCompletionRequest
-  | SDKControlRemoteControlRequest
-  | SDKControlGenerateSessionTitleRequest
-  | SDKControlSideQuestionRequest
-  | SDKControlUltrareviewLaunchRequest
-  | SDKControlStageFileRequest
-  | SDKControlAddDirectoryRequest
-  | SDKControlSetCwdRequest
-  | SDKControlMessageRatedRequest
-  | SDKControlOAuthTokenRefreshRequest
-  | SDKControlHostAuthTokenRefreshRequest
   | SDKControlStopTaskRequest
   | SDKControlBackgroundTasksRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
   | SDKControlElicitationRequest
-  | SDKControlRequestUserDialogRequest
-  | SDKControlSubmitFeedbackRequest;
+  | SDKControlRequestUserDialogRequest;
+
+/**
+ * Progress for a long-running client-originated control_request (currently only side_question), correlated by request_id. status 'started' means the worker accepted the request and launched the work; 'api_retry' carries the same retry counters as SDKAPIRetryMessage and is present only for that status.
+ */
+export declare type SDKControlRequestProgressMessage = {
+  type: "system";
+  subtype: "control_request_progress";
+  /**
+   * request_id of the in-flight control_request this progress belongs to.
+   */
+  request_id: string;
+  status: "started" | "api_retry";
+  attempt?: number;
+  max_retries?: number;
+  retry_delay_ms?: number;
+  error_status?: number | null;
+  uuid: UUID;
+  session_id: string;
+};
 
 /**
  * Requests the SDK consumer to render a tool-driven blocking dialog and return the user choice. Used by tools that previously rendered Ink JSX via setToolJSX with an onDone callback.
@@ -3954,6 +4004,16 @@ declare type SDKControlSetPermissionModeRequest = {
 declare type SDKControlStopTaskRequest = {
   subtype: "stop_task";
   task_id: string;
+};
+
+/**
+ * Emitted by /clear, plan-mode exit, and fresh-session flows. The surface should mount a fresh transcript under new_conversation_id and reset any cached session title. From internal QueryEvent 'conversation_reset'.
+ */
+export declare type SDKConversationResetMessage = {
+  type: "conversation_reset";
+  new_conversation_id: UUID;
+  uuid: UUID;
+  session_id: string;
 };
 
 export declare type SDKDeferredToolUse = {
@@ -4156,6 +4216,7 @@ export declare type SDKMessage =
   | SDKTaskStartedMessage
   | SDKTaskUpdatedMessage
   | SDKTaskProgressMessage
+  | SDKBackgroundTasksChangedMessage
   | SDKThinkingTokensMessage
   | SDKSessionStateChangedMessage
   | SDKWorkerShuttingDownMessage
@@ -6909,9 +6970,6 @@ export declare function startup(_params?: {
 
 declare type StdoutMessage =
   | coreTypes.SDKMessage
-  | coreTypes.SDKPostTurnSummaryMessage
-  | coreTypes.SDKTaskSummaryMessage
-  | coreTypes.SDKTranscriptMirrorMessage
   | coreTypes.SDKActiveGoalMessage
   | SDKControlResponse
   | SDKControlRequest
