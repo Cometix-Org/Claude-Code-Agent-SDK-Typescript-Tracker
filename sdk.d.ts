@@ -2427,9 +2427,13 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    */
   /**
    * Interrupt the current query execution. The query will stop processing
-   * and return control to the caller.
+   * and return control to the caller. On CLIs advertising the
+   * `interrupt_receipt_v1` capability (system/init `capabilities`) the
+   * resolved value is the interrupt receipt — `still_queued` uuids of async
+   * user messages that WILL still run unless cancelled first. Older CLIs
+   * resolve to `undefined`.
    */
-  interrupt(): Promise<void>;
+  interrupt(): Promise<SDKControlInterruptResponse | undefined>;
   /**
    * Change the permission mode for the current session.
    * Only available in streaming input mode.
@@ -3680,6 +3684,16 @@ declare type SDKControlInterruptRequest = {
 };
 
 /**
+ * Result of an interrupt operation. Advertised by the interrupt_receipt_v1 capability on system/init; older CLIs send an empty success response with no still_queued field.
+ */
+export declare type SDKControlInterruptResponse = {
+  /**
+   * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. These WILL run unless cancelled first. Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
+   */
+  still_queued: string[];
+};
+
+/**
  * Requests the worker's selectable model catalog. Fulfills the caps.modelCatalog capability: in a remote thin-client session the worker's provider, settings cascade, and enforcement policy decide which models the session can run, so the thin client must ask rather than read its own getModelOptions().
  */
 declare type SDKControlListModelsRequest = {
@@ -4247,12 +4261,19 @@ export declare type SDKMessageOrigin =
   | {
       kind: "peer";
       from: string;
+      /**
+       * Sender display name, normalized by the harness: Unicode control, format, surrogate, and line/paragraph-separator code points stripped (categories Cc/Cf/Cs/Zl/Zp — covers bidi controls, zero-width characters, and tag characters), trimmed, at most 64 code points (+ ellipsis, never splitting a surrogate pair). Sender-asserted display text (the addressable identity is `from`) — render it as reported speech, but no client-side character sanitization is needed. Absent when the wire is not exactly one harness-formed envelope and on messages from older senders.
+       */
       name?: string;
 
       /**
        * Task id of the in-process background subagent that sent this message, stamped by the harness from the sending loop (never from tool input). Absent for cross-session peers.
        */
       senderTaskId?: string;
+      /**
+       * Decoded message body with the peer envelope stripped — byte-exact with what the model sees. Present only when the turn is exactly one harness-formed envelope (or an in-process agent message); render this instead of re-parsing the message text.
+       */
+      body?: string;
     }
   | {
       kind: "task-notification";
@@ -4657,6 +4678,10 @@ export declare type SDKSystemMessage = {
   }[];
 
   fast_mode_state?: FastModeState;
+  /**
+   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). Absent on older CLIs.
+   */
+  capabilities?: string[];
 
   uuid: UUID;
   session_id: string;

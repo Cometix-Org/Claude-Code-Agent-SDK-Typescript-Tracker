@@ -360,6 +360,7 @@ export type ArtifactOutput =
       };
       warnings?: string[];
       contract?: string;
+      updated?: boolean;
     }
   | {
       artifacts: {
@@ -525,7 +526,7 @@ export interface TaskOutputInput {
 }
 export interface ExitPlanModeInput {
   /**
-   * Prompt-based permissions needed to implement the plan. These describe categories of actions rather than specific commands.
+   * Deprecated: no longer used.
    */
   allowedPrompts?: {
     /**
