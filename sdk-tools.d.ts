@@ -3419,6 +3419,10 @@ export interface ScheduleWakeupOutput {
    * True when the model ended the loop via `stop: true`
    */
   stopped?: boolean;
+  /**
+   * How many pending dynamic-loop wakeups stop:true cancelled. 0 means nothing was pending — a recurring /loop cron is not cancelled by stop:true.
+   */
+  cancelledWakeups?: number;
 }
 export interface MonitorOutput {
   /**
