@@ -4845,6 +4845,9 @@ export declare type SDKUserMessage = {
   message: MessageParam;
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
+  /**
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is AgentToolCompletedOutput: the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
   origin?: SDKMessageOrigin;
@@ -4875,6 +4878,9 @@ export declare type SDKUserMessageReplay = {
   message: MessageParam;
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
+  /**
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is AgentToolCompletedOutput: the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
   origin?: SDKMessageOrigin;
