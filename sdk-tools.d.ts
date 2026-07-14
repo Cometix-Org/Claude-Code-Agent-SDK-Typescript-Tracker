@@ -2924,6 +2924,7 @@ export interface GrepOutput {
   content?: string;
   numLines?: number;
   numMatches?: number;
+  totalFiles?: number;
   appliedLimit?: number;
   appliedOffset?: number;
 }

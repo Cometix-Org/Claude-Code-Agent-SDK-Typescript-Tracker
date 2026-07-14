@@ -479,7 +479,8 @@ declare namespace coreTypes {
  * Creates an MCP server instance that can be used with the SDK transport.
  * This allows SDK users to define custom tools that run in the same process.
  *
- * If your SDK MCP calls will run longer than 60s, override CLAUDE_CODE_STREAM_CLOSE_TIMEOUT
+ * Tool calls are bounded by the MCP tool-call timeout — the MCP_TOOL_TIMEOUT
+ * env var (ms), effectively unbounded by default.
  */
 export declare function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,
@@ -4023,11 +4024,11 @@ declare type SDKControlSetColorRequest = {
 };
 
 /**
- * Sets the maximum number of thinking tokens for extended thinking. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears it back to the API default, and when omitted the display mode from session start (--thinking-display) is kept.
+ * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears it back to the API default, and when omitted the display mode from session start (--thinking-display) is kept.
  */
 declare type SDKControlSetMaxThinkingTokensRequest = {
   subtype: "set_max_thinking_tokens";
-  max_thinking_tokens: number | null;
+  max_thinking_tokens?: number | null;
   thinking_display?: ("summarized" | "omitted") | null;
 };
 
@@ -4380,7 +4381,7 @@ export declare type SDKModelRefusalFallbackMessage = {
 };
 
 /**
- * Emitted when the model ends the stream with stop_reason "refusal" and no retry runs: no fallback model is configured, or per-category routing declined the retry (the refusal category has no fallback map entry). The structured counterpart to detecting stop_reason "refusal" on the assistant error frame. Not emitted when the retry ran or the user declined the retry dialog (model_refusal_fallback covers the retry case). Absent from older CLIs.
+ * Emitted when the model ends the stream with stop_reason "refusal" and no retry runs: no fallback model is configured, or per-category routing declined the retry (the mapped fallback target is unresolvable, or CLAUDE_CODE_REFUSAL_FALLBACK_CATCH_ALL is explicitly disabled and the refusal category has no fallback map entry). The structured counterpart to detecting stop_reason "refusal" on the assistant error frame. Not emitted when the retry ran or the user declined the retry dialog (model_refusal_fallback covers the retry case). Absent from older CLIs.
  */
 export declare type SDKModelRefusalNoFallbackMessage = {
   type: "system";
@@ -6810,6 +6811,12 @@ export declare interface Settings {
    */
   editorMode?: "normal" | "vim";
   /**
+   * Vim INSERT-mode key-sequence remaps, e.g. {"jj": "<Esc>"}. Each key is exactly two printable characters typed in sequence; "<Esc>" (return to NORMAL mode) is the only supported target. Applies when editorMode is "vim".
+   */
+  vimInsertModeRemaps?: {
+    [k: string]: unknown;
+  };
+  /**
    * Show full tool output instead of truncated summaries
    */
   verbose?: boolean;
@@ -6819,8 +6826,8 @@ export declare interface Settings {
   preferredNotifChannel?:
     | "auto"
     | "iterm2"
-    | "iterm2_with_bell"
     | "terminal_bell"
+    | "iterm2_with_bell"
     | "kitty"
     | "ghostty"
     | "notifications_disabled";
