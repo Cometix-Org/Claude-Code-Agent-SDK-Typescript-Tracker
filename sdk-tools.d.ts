@@ -375,8 +375,10 @@ export type ArtifactOutput =
         title: string;
         url: string;
         updatedAt?: string;
+        rel?: "mine" | "shared";
       }[];
       truncated?: boolean;
+      scope?: "shared" | "all";
     };
 export type ProjectsOutput =
   | {
@@ -2621,11 +2623,11 @@ export interface MonitorInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates the user's published artifacts; only `limit` may accompany it.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it.
    */
   action?: "publish" | "list";
   /**
-   * Path to an .html or .md file to render. Required to publish (the default action). Use a short, distinctive basename — it is the fallback title if the HTML has no <title>.
+   * Path to an .html or .md file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given.
    */
   file_path?: string;
   /**
@@ -2636,6 +2638,14 @@ export interface ArtifactInput {
    * list only: maximum artifacts to return (default 25).
    */
   limit?: number;
+  /**
+   * list only: 'mine' (default) lists artifacts the user owns — the only ones the update flow can target; 'shared' lists artifacts other people shared with the user (read-only); 'all' lists both. Rows are labeled (mine)/(shared) whenever scope is not 'mine'.
+   */
+  scope?: "mine" | "shared" | "all";
+  /**
+   * Title for the artifact — the name shown in the browser tab and gallery. Prefer a <title> tag in the HTML itself; this parameter fills in only when the file lacks one and never overrides the tag. HTML publishes only — Markdown pages keep their filename identity. Content always comes from file_path — there is no inline content parameter.
+   */
+  title?: string;
   /**
    * One-sentence subtitle shown on the gallery card. Say what the page is or does.
    */
@@ -2709,6 +2719,14 @@ export interface BashOutput {
    * True if the user manually backgrounded the command with Ctrl+B
    */
   backgroundedByUser?: boolean;
+  /**
+   * Set when the command hit its timeout and was auto-backgrounded; the timeout value in ms
+   */
+  timedOutAfterMs?: number;
+  /**
+   * Model-facing note that the session cwd was not changed by a backgrounded command containing a directory-change builtin (cd/pushd/popd/chdir)
+   */
+  backgroundCwdHint?: string;
   /**
    * Flag to indicate if sandbox mode was overridden
    */
@@ -2925,6 +2943,7 @@ export interface GrepOutput {
   numLines?: number;
   numMatches?: number;
   totalFiles?: number;
+  totalLines?: number;
   appliedLimit?: number;
   appliedOffset?: number;
 }

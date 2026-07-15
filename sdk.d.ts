@@ -2676,9 +2676,16 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * are managed by the CLI subprocess.
    *
    * Note: This only affects servers added dynamically via this method or the SDK.
-   * Servers configured via settings files are not affected.
+   * Servers configured via settings files are not affected. Servers introduced
+   * by plugins are also exempt: they are managed by the plugin system, so
+   * omitting them from the payload does NOT remove them — they keep running
+   * (unless enterprise policy denies the server) and are simply absent from
+   * the result's `removed` list. In particular, `setMcpServers({})` no longer
+   * guarantees a session has zero dynamic MCP surface when plugins are
+   * loaded. Naming a plugin server explicitly in the payload still replaces
+   * it (ownership is preserved CLI-side).
    *
-   * @param servers - Record of server name to configuration. Pass an empty object to remove all dynamic servers.
+   * @param servers - Record of server name to configuration. Pass an empty object to remove all dynamic servers (except plugin-owned ones, which are retained).
    * @returns Information about which servers were added, removed, and any connection errors
    */
   setMcpServers(
@@ -4287,7 +4294,7 @@ export declare type SDKMessage =
   | SDKConversationResetMessage;
 
 /**
- * Provenance of a user-role message (peer session, team lead, channel). Absent or `human` means keyboard input from the user.
+ * Provenance of a user-role message (peer session, team lead, channel). A host wrapping keyboard input must stamp {kind:'human'} explicitly — absent origin is treated as unattributed and fails closed at strict isHuman() trust gates.
  */
 export declare type SDKMessageOrigin =
   | {
@@ -5198,6 +5205,10 @@ export declare interface Settings {
    * Command to refresh GCP authentication (e.g., gcloud auth application-default login)
    */
   gcpAuthRefresh?: string;
+  /**
+   * Corporate launcher argv prefix for the background-agent supervisor, the sessions and workers it hosts, and the other covered background processes listed in the Claude Code corporate-launcher documentation. Equivalent to the CLAUDE_CODE_PROCESS_WRAPPER environment variable, which takes precedence when set. Honored from managed settings, a --settings/SDK-supplied settings file, and user settings, in that precedence order; project and local settings are ignored.
+   */
+  processWrapper?: string;
   /**
    * Executable that computes managed settings at startup. Honored only from admin-controlled policy sources.
    */
@@ -7407,6 +7418,10 @@ export declare type UserPromptExpansionHookSpecificOutput = {
 export declare type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
   prompt: string;
+  /**
+   * Who authored/injected the prompt: `user` = submitted from the interactive composer, `sdk` = non-interactive entrypoint (`-p` / Agent SDK), `loop_wakeup` = dynamic /loop wakeup, `schedule_wakeup` = scheduled-task fire (CronCreate/routine), `system` = other machine-injected turns (peer/channel messages, task notifications, auto-continuation). Currently only set for Anthropic-internal sessions while the field is trialed; external payloads omit it.
+   */
+  source?: "user" | "sdk" | "system" | "loop_wakeup" | "schedule_wakeup";
   session_title?: string;
 };
 
