@@ -1642,7 +1642,7 @@ export declare type Options = {
    * Enable beta features. Currently supported:
    * - `'context-1m-2025-08-07'` - Enable 1M token context window (Sonnet 4/4.5 only)
    *
-   * @see https://docs.anthropic.com/en/api/beta-headers
+   * @see https://platform.claude.com/docs/en/api/beta-headers
    */
   betas?: SdkBeta[];
   /**
@@ -1786,7 +1786,7 @@ export declare type Options = {
    *
    * When set, takes precedence over the deprecated `maxThinkingTokens`.
    *
-   * @see https://docs.anthropic.com/en/docs/build-with-claude/adaptive-thinking
+   * @see https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
    */
   thinking?: ThinkingConfig;
   /**
@@ -1799,7 +1799,7 @@ export declare type Options = {
    * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+, Sonnet 5)
    * - `'max'` — Maximum effort (Fable 5, Opus 4.6+, Sonnet 4.6+)
    *
-   * @see https://docs.anthropic.com/en/docs/build-with-claude/effort
+   * @see https://platform.claude.com/docs/en/build-with-claude/effort
    */
   effort?: EffortLevel;
   /**
@@ -1989,7 +1989,7 @@ export declare type Options = {
    * }
    * ```
    *
-   * @see https://docs.anthropic.com/en/docs/claude-code/settings#sandbox-settings
+   * @see https://code.claude.com/docs/en/settings#sandbox-settings
    */
   sandbox?: SandboxSettings;
   /**
@@ -2191,6 +2191,17 @@ export declare type Options = {
    */
   spawnClaudeCodeProcess?: (options: SpawnOptions) => SpawnedProcess;
 };
+
+/**
+ * Emitted on the same severity:'error' path as the usage-limit bucket, but
+ * the condition is an org policy, not an exhausted limit — consumers route
+ * these to org-disabled presentation, never the usage-limit card.
+ *
+ * @alpha
+ */
+export declare const ORG_POLICY_LIMIT_PREFIXES: readonly [
+  "This service is disabled for your org",
+];
 
 export declare type OutputFormat = JsonSchemaOutputFormat;
 
@@ -3093,6 +3104,10 @@ export declare type SDKAssistantMessage = {
   session_id: string;
   request_id?: string;
   /**
+   * This turn continued the preceding truncated assistant turn inside its trailing signed thinking block (max-output-tokens recovery). Its thinking signatures are cumulative over that preceding thinking-only turn, so a history replayed through the bridge must carry this flag back for the normalizer to keep the run's prefix on the wire. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
+   */
+  resumed_from_incomplete_thinking?: true;
+  /**
    * Wire uuids of previously-delivered messages that this message replaces (refusal-fallback supersede). The list can include tombstoned tool_result frames from the refused leg, not only assistant frames. Evict the named messages on arrival and treat this frame as their canonical replacement. Idempotent with the end-of-turn model_refusal_fallback notice, whose retracted_message_uuids remains the complete audit record for the turn.
    */
   supersedes?: UUID[];
@@ -3104,6 +3119,11 @@ export declare type SDKAssistantMessage = {
    * Description of the subagent task that produced this message.
    */
   task_description?: string;
+
+  /**
+   * ISO timestamp of when this content block finished on the originating process. One API assistant turn may produce several assistant messages sharing a message.id, each with its own timestamp. Uses the originating host's clock, so it's for display only; do not order messages by this field. Older emitters omit it; consumers should fall back to receive time.
+   */
+  timestamp?: string;
 };
 
 export declare type SDKAssistantMessageError =
@@ -3709,7 +3729,7 @@ declare type SDKControlListModelsRequest = {
 };
 
 /**
- * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call. STAGED calls (input_files/output_files declared) additionally stage lane rows in/out around the call — see the input_files describe. Staged failures come back as a success-subtype response whose staging field carries a typed error_code; subtype:error is emitted only when the call could not be attempted at all (server not connected, kill switch, dispatch failure) and means nothing ran. Standard RPC semantics: a redelivered request_id supersedes the in-flight run (it is aborted and its response suppressed — exactly one response per request_id); conversion is idempotent, so re-running is safe. Cancellable via control_cancel_request.
+ * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call. STAGED calls (input_files/output_files declared) additionally stage lane rows in/out around the call — see the input_files describe. Staged failures come back as a success-subtype response whose staging field carries a typed error_code; subtype:error is emitted only when the call could not be attempted at all (server not connected, kill switch, dispatch failure) and means nothing ran. A target server that is not yet connected is brought up on demand: dispatch runs the deferred plugin/MCP startup resolution (the work a first model turn would have done) and waits up to 30s — shortened by expires_at when that is sooner — for the server to connect before answering "MCP server not connected", so a dispatch that races plugin startup (e.g. after an idle-wake reattach) succeeds instead of failing until a turn runs. Standard RPC semantics: a redelivered request_id supersedes the in-flight run (it is aborted and its response suppressed — exactly one response per request_id); conversion is idempotent, so re-running is safe. Cancellable via control_cancel_request.
  */
 declare type SDKControlMcpCallRequest = {
   subtype: "mcp_call";
@@ -6970,6 +6990,12 @@ export declare interface SpawnedProcess {
   /** Exit code if the process has exited, null otherwise */
   readonly exitCode: number | null;
   /**
+   * Signal that terminated the process, if any. Optional: ChildProcess
+   * provides it; custom spawners may omit it (signal exits then read as
+   * still-running until their 'exit' event delivers the signal).
+   */
+  readonly signalCode?: NodeJS.Signals | null;
+  /**
    * Kill the process with the given signal
    * @param signal - The signal to send (e.g., 'SIGTERM', 'SIGKILL')
    */
@@ -6978,6 +7004,11 @@ export declare interface SpawnedProcess {
    * Register a callback for when the process exits
    * @param event - Must be 'exit'
    * @param listener - Callback receiving exit code and signal
+   *
+   * ProcessTransport's built-in local spawn delivers this only after the
+   * child's stderr has also closed (bounded by a short grace), so exit
+   * consumers see a complete stderr tail in exit errors. Custom
+   * `spawnClaudeCodeProcess` implementations emit plain process exit.
    */
   on(
     event: "exit",
@@ -7365,6 +7396,56 @@ export declare interface Transport {
    */
   [Symbol.dispose]?(): void;
 }
+
+/**
+ * Messages meaning "a usage limit was genuinely reached" — the error-path
+ * outputs of getLimitReachedText (rateLimitMessages.ts) and
+ * getFableCreditsRequiredContent (api/errors.ts).
+ *
+ * @alpha
+ */
+export declare const USAGE_LIMIT_ERROR_PREFIXES: readonly [
+  "You've hit your",
+  "You've reached your",
+  "You're out of usage credits",
+  "Your org is out of usage · add funds to continue",
+  "Your org is out of usage · contact your admin",
+  "Your seat type doesn't include usage credits",
+  "Your seat type doesn't include usage",
+  "Your usage allocation has been disabled by your admin",
+  "Your group's usage limit is set to $0",
+  "Fable 5 requires usage credits",
+  "You're out of extra usage",
+  "Your seat type doesn't include extra usage",
+];
+
+/**
+ * Overage-transition notifications ("now drawing from credits"). Toast only;
+ * these never arrive as API errors.
+ *
+ * @alpha
+ */
+export declare const USAGE_TRANSITION_PREFIXES: readonly [
+  "You're now using usage credits",
+  "You're now using your usage allocation",
+  "Now using your usage allocation",
+  "Now using usage credits",
+  "You're now using extra usage",
+  "Now using extra usage",
+];
+
+/**
+ * Approaching-limit warnings (severity:'warning'). Footer/toast only; these
+ * never arrive as API errors. ("Approaching …" early warnings are
+ * deliberately unregistered — they render in the footer without
+ * <RateLimitMessage> styling; see the generator-coverage tests.)
+ *
+ * @alpha
+ */
+export declare const USAGE_WARNING_PREFIXES: readonly [
+  "You've used",
+  "You're close to",
+];
 
 /**
  * A `request_user_dialog` control request from the CLI, asking the SDK

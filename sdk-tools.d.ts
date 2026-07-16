@@ -20,6 +20,7 @@ export type ToolInputSchemas =
   | GrepInput
   | TaskStopInput
   | ListMcpResourcesInput
+  | RefreshMcpToolsInput
   | McpInput
   | NotebookEditInput
   | ReadMcpResourceDirInput
@@ -61,6 +62,7 @@ export type ToolOutputSchemas =
   | GrepOutput
   | TaskStopOutput
   | ListMcpResourcesOutput
+  | RefreshMcpToolsOutput
   | McpOutput
   | NotebookEditOutput
   | ReadMcpResourceDirOutput
@@ -340,6 +342,32 @@ export type ListMcpResourcesOutput = {
    * Server that provides this resource
    */
   server: string;
+}[];
+export type RefreshMcpToolsOutput = {
+  /**
+   * Server name
+   */
+  server: string;
+  /**
+   * refreshed: tool list re-queried and applied. error: the re-query failed and the previous tool set was kept. not_connected: the server has no live connection to query (this tool never dials).
+   */
+  status: "refreshed" | "error" | "not_connected";
+  /**
+   * Number of tools now available from this server
+   */
+  toolCount?: number;
+  /**
+   * Tool names this refresh added
+   */
+  added?: string[];
+  /**
+   * Tool names this refresh removed
+   */
+  removed?: string[];
+  /**
+   * Why the refresh failed or the server was unavailable
+   */
+  error?: string;
 }[];
 /**
  * MCP tool execution result
@@ -681,6 +709,12 @@ export interface TaskStopInput {
 export interface ListMcpResourcesInput {
   /**
    * Optional server name to filter resources by
+   */
+  server?: string;
+}
+export interface RefreshMcpToolsInput {
+  /**
+   * Optional server name: refresh only this server. Omit to refresh all connected servers.
    */
   server?: string;
 }
