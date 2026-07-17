@@ -6595,6 +6595,10 @@ export declare interface Settings {
    */
   feedbackSurveyRate?: number;
   /**
+   * Model-drafted feedback (the SendFeedback tool). "notify" (default) shows a one-line notice when a draft is queued; "quiet" shows only the footer counter; "off" disables the tool entirely so drafts are never queued.
+   */
+  feedbackDrafts?: "notify" | "quiet" | "off";
+  /**
    * Whether to show tips in the spinner
    */
   spinnerTipsEnabled?: boolean;
