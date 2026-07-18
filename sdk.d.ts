@@ -34,6 +34,7 @@ export declare type AccountInfo = {
     | "vertex"
     | "foundry"
     | "anthropicAws"
+    | "anthropicGoogleCloud"
     | "mantle"
     | "gateway";
 };
@@ -262,6 +263,18 @@ export declare type CanUseTool = (
      * must echo this value for the worker to match it.
      */
     requestId: string;
+    /**
+     * Set when a user-configured ask RULE (permissions.ask) forced this
+     * prompt while the ask carries the tool's own decisionReason. Hosts
+     * making policy on the reason (e.g. auto-deny a safetyCheck) or
+     * running host-side auto-approval should treat asks carrying this
+     * field as rule-forced: the user's stated intent is a human prompt.
+     */
+    matchedAskRule?: {
+      source: string;
+      toolName: string;
+      ruleContent?: string;
+    };
   },
 ) => Promise<PermissionResult | null>;
 
@@ -2526,9 +2539,15 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    *
    * @param settings - A partial settings object to merge into the flag settings.
    * Each top-level key also accepts `null` to clear it from the flag layer.
+   * `effortLevel` additionally accepts `'max'`, which is session-scoped: it
+   * applies for the rest of the session on models that support it and is
+   * never persisted to settings files (the persisted
+   * {@link Settings.effortLevel} excludes it for that reason).
    */
   applyFlagSettings(settings: {
-    [K in keyof Settings]?: Settings[K] | null;
+    [K in keyof Settings]?: K extends "effortLevel"
+      ? EffortLevel | null
+      : Settings[K] | null;
   }): Promise<void>;
   /**
    * Get the full initialization result, including supported commands, models,
@@ -3111,6 +3130,10 @@ export declare type SDKAssistantMessage = {
    * Wire uuids of previously-delivered messages that this message replaces (refusal-fallback supersede). The list can include tombstoned tool_result frames from the refused leg, not only assistant frames. Evict the named messages on arrival and treat this frame as their canonical replacement. Idempotent with the end-of-turn model_refusal_fallback notice, whose retracted_message_uuids remains the complete audit record for the turn.
    */
   supersedes?: UUID[];
+  /**
+   * True when this assistant message was truncated by an interrupt/abort before the stream completed: stop_reason was never received and the content may end mid-word. Absent on normally completed messages.
+   */
+  aborted?: true;
   /**
    * Subagent type that produced this message.
    */
@@ -3828,9 +3851,12 @@ declare type SDKControlPermissionRequest = {
   input: Record<string, unknown>;
   permission_suggestions?: coreTypes.PermissionUpdate[];
   blocked_path?: string;
+  /**
+   * Human-readable reason the ask escalated, for the consent line of the host's dialog. For decision_reason_type "subcommandResults" (compound bash), this is the NESTED safety check's warning text — the wrapper itself has no text — preferring a check that requires manual approval (classifier_approvable false); treat it with the same display/policy care as a "safetyCheck" reason. May carry ANSI escapes; sanitize before rendering.
+   */
   decision_reason?: string;
   /**
-   * Structured discriminator for why auto-mode escalated. Lets SDK hosts make policy (e.g. auto-deny safetyCheck) without parsing decision_reason text. For compound bash commands this is "subcommandResults" even when a safetyCheck is nested inside — check classifier_approvable for that case.
+   * Structured discriminator for why auto-mode escalated. Lets SDK hosts make policy (e.g. auto-deny safetyCheck) without parsing decision_reason text. For compound bash commands this is "subcommandResults" even when a safetyCheck is nested inside — check classifier_approvable for that case, and see decision_reason: for this variant it carries the nested safety check's warning text.
    */
   decision_reason_type?:
     | "rule"
@@ -3848,13 +3874,25 @@ declare type SDKControlPermissionRequest = {
    * Set when a safetyCheck is present anywhere in the decision reason (including nested inside subcommandResults for compound bash). false = at least one safety check requires manual approval (e.g. Windows path bypass, dangerous rm); true = all safety checks MAY be classifier-approved (e.g. sensitive-file paths). Absent when no safetyCheck is involved.
    */
   classifier_approvable?: boolean;
+  /**
+   * True when the dialog must not offer the persistent "don't ask again" row for this ask: accepting it would write a whole-tool allow rule broader than the ask's own verb (PermissionAskDecision.suppressAlwaysAllowRule). Hosts rendering approve options should omit any persistent-rule affordance when set.
+   */
+  suppress_always_allow_rule?: boolean;
+  /**
+   * Set when a user-configured ask RULE (permissions.ask) forced this prompt but the ask carries the tool's own decision_reason — the ask-rule substitution keeps the richer tool-minted ask, so the rule rides here instead of decision_reason_type 'rule'. Hosts making policy on decision_reason_type (e.g. auto-deny safetyCheck) or running host-side auto-approval should treat asks carrying this field as rule-forced: the user's stated intent is a human prompt. Values are producer-authored but render-unsafe like decision_reason; sanitize before display.
+   */
+  matched_ask_rule?: {
+    source: string;
+    tool_name: string;
+    rule_content?: string;
+  };
   title?: string;
   display_name?: string;
   tool_use_id: string;
   agent_id?: string;
   description?: string;
   /**
-   * True when the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction()). SDK hosts must not offer one-tap Approve/Deny for these — the user has to open the session and respond on the card itself.
+   * True when one-tap Approve/Deny must not be offered: the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction() — the user responds on the card itself), OR the pending ask is localDisplayOnly (its consent disclosure cannot ride this wire and only the local dialog renders it). Either way the user has to open the session to answer.
    */
   requires_user_interaction?: boolean;
 };
@@ -3913,6 +3951,10 @@ export declare type SDKControlReloadPluginsResponse = {
     name: string;
     path: string;
     source?: string;
+    /**
+     * The plugin's version as declared in its plugin.json manifest, emitted verbatim (plugin-author-controlled — validate before trusting). Omitted when the manifest declares no version.
+     */
+    version?: string;
   }[];
   mcpServers: coreTypes.McpServerStatus[];
   error_count: number;
@@ -4343,6 +4385,10 @@ export declare type SDKMessageOrigin =
     }
   | {
       kind: "task-notification";
+      /**
+       * Present when the delivery is the fired stored prompt of a scheduled task/routine (stamped from server-asserted provenance; the schedule attests storage, not authorship). The harness frames it as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
+       */
+      subkind?: "scheduled-trigger";
     }
   | {
       kind: "coordinator";
@@ -4741,6 +4787,11 @@ export declare type SDKSystemMessage = {
   plugins: {
     name: string;
     path: string;
+
+    /**
+     * The plugin's version as declared in its plugin.json manifest, emitted verbatim (plugin-author-controlled — validate before trusting). Omitted when the manifest declares no version.
+     */
+    version?: string;
   }[];
 
   fast_mode_state?: FastModeState;
@@ -4858,6 +4909,16 @@ export declare type SDKToolProgressMessage = {
   task_id?: string;
   uuid: UUID;
   session_id: string;
+  heartbeat?: boolean;
+  subagent_type?: string;
+  subagent_retry?: {
+    agent_id: string;
+    attempt: number;
+    max_retries: number;
+    retry_delay_ms: number;
+    error_status: number | null;
+    error_category: string;
+  };
 };
 
 export declare type SDKToolUseSummaryMessage = {
@@ -5021,7 +5082,7 @@ export declare type SessionMutationOptions = {
 
 export declare type SessionStartHookInput = BaseHookInput & {
   hook_event_name: "SessionStart";
-  source: "startup" | "resume" | "clear" | "compact";
+  source: "startup" | "resume" | "clear" | "compact" | "fork";
   agent_type?: string;
   model?: string;
   session_title?: string;
