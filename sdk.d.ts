@@ -6741,6 +6741,10 @@ export declare interface Settings {
    * When false, prompt suggestions are disabled. When absent or true, prompt suggestions are enabled.
    */
   promptSuggestionEnabled?: boolean;
+  /**
+   * When false, the :emoji: shortcode typeahead (the suggestion popup and the :name: inline replacement) is disabled. When absent or true, it is enabled.
+   */
+  emojiCompletionEnabled?: boolean;
 
   /**
    * When true, the plan-approval dialog offers a "clear context" option. Defaults to false.
@@ -7020,6 +7024,10 @@ export declare interface Settings {
    * Prevent claude-cli:// protocol handler registration with the OS
    */
   disableDeepLinkRegistration?: "disable";
+  /**
+   * Enable voice mode (hold-to-talk dictation)
+   */
+  voiceEnabled?: boolean;
   /**
    * Default transcript view: chat (SendUserMessage checkpoints only) or transcript (full)
    */
