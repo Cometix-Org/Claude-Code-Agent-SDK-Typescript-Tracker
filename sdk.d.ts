@@ -1424,6 +1424,14 @@ export declare type ModelUsage = {
   costUSD: number;
   contextWindow: number;
   maxOutputTokens: number;
+  /**
+   * Canonical model id used for the pricing lookup (e.g. 'claude-opus-4-7'). May differ from the raw model string this entry is keyed by (provider-specific ids, aliases).
+   */
+  canonicalModel?: string;
+  /**
+   * API provider that served this model ('firstParty', 'bedrock', 'vertex', 'foundry', 'anthropicAws', 'anthropicGoogleCloud', 'mantle', 'gateway').
+   */
+  provider?: string;
 };
 
 export declare type NonNullableUsage = {
@@ -4954,7 +4962,7 @@ export declare type SDKUserMessage = {
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
   /**
-   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is AgentToolCompletedOutput: the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
@@ -4987,7 +4995,7 @@ export declare type SDKUserMessageReplay = {
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
   /**
-   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is AgentToolCompletedOutput: the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
@@ -6981,7 +6989,7 @@ export declare interface Settings {
    */
   showTurnDuration?: boolean;
   /**
-   * Stamp each assistant message with its arrival time
+   * Stamp each message with its arrival time
    */
   showMessageTimestamps?: boolean;
   /**
