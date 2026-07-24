@@ -346,11 +346,13 @@ declare namespace coreTypes {
     ConfigScope,
     CwdChangedHookInput,
     CwdChangedHookSpecificOutput,
+    DirectoryAddedHookInput,
     ElicitationHookInput,
     ElicitationHookSpecificOutput,
     ElicitationResultHookInput,
     ElicitationResultHookSpecificOutput,
     ExitReason,
+    FastModeDisabledReason,
     FastModeState,
     FileChangedHookInput,
     FileChangedHookSpecificOutput,
@@ -550,6 +552,18 @@ export declare function deleteSession(
   _options?: SessionMutationOptions,
 ): Promise<void>;
 
+export declare type DirectoryAddedHookInput = BaseHookInput & {
+  hook_event_name: "DirectoryAdded";
+  /**
+   * Absolute path of the directory that was added.
+   */
+  directory: string;
+  /**
+   * How the directory was added: "slash_command" for /add-dir, "register_repo_root" for the SDK control_request.
+   */
+  source: "slash_command" | "register_repo_root";
+};
+
 /**
  * Effort level for controlling how much thinking/reasoning Claude applies.
  *
@@ -650,6 +664,21 @@ export declare type ExitReason =
   | "prompt_input_exit"
   | "other"
   | "bypass_permissions_disabled";
+
+/**
+ * Why fast mode can't serve right now. Absent when nothing blocks it (a request may still choose standard speed). A paused-after-rate-limit run is not here; it rides fast_mode_state as 'cooldown'.
+ */
+export declare type FastModeDisabledReason =
+  | "free"
+  | "preference"
+  | "extra_usage_disabled"
+  | "network_error"
+  | "unknown"
+  | "not_first_party"
+  | "disabled_by_env"
+  | "model_not_allowed"
+  | "sdk_opt_in_required"
+  | "pending";
 
 /**
  * Fast mode state: off, in cooldown after rate limit, or actively enabled.
@@ -880,6 +909,7 @@ export declare const HOOK_EVENTS: readonly [
   "InstructionsLoaded",
   "CwdChanged",
   "FileChanged",
+  "DirectoryAdded",
   "MessageDisplay",
 ];
 
@@ -934,6 +964,7 @@ export declare type HookEvent =
   | "InstructionsLoaded"
   | "CwdChanged"
   | "FileChanged"
+  | "DirectoryAdded"
   | "MessageDisplay";
 
 export declare type HookInput =
@@ -966,6 +997,7 @@ export declare type HookInput =
   | WorktreeRemoveHookInput
   | CwdChangedHookInput
   | FileChangedHookInput
+  | DirectoryAddedHookInput
   | MessageDisplayHookInput;
 
 export declare type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
@@ -2965,6 +2997,7 @@ declare const SandboxNetworkConfigSchema: () => z.ZodOptional<
     {
       allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
       deniedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+      strictAllowlist: z.ZodOptional<z.ZodBoolean>;
       allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
       allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
       allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
@@ -3004,6 +3037,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
         {
           allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
           deniedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          strictAllowlist: z.ZodOptional<z.ZodBoolean>;
           allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
           allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
           allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
@@ -3739,6 +3773,7 @@ export declare type SDKControlInitializeResponse = {
   account: coreTypes.AccountInfo;
 
   fast_mode_state?: coreTypes.FastModeState;
+  fast_mode_disabled_reason?: coreTypes.FastModeDisabledReason;
 };
 
 /**
@@ -3746,6 +3781,11 @@ export declare type SDKControlInitializeResponse = {
  */
 declare type SDKControlInterruptRequest = {
   subtype: "interrupt";
+
+  /**
+   * When true, the interrupt also cancels every uuid-stamped main-thread command still in the queue or already dequeued for the imminent turn but not yet reachable by the abort (the first-command prewait window) — the same set the response would otherwise list under `still_queued`. Each is closed with a terminal 'cancelled' lifecycle and listed on the response's `cancelled` field. `still_queued` is always empty. (The isFoldInFlight guard cancel_async_message uses does not apply here: this request also aborts the running turn, so a fold-in-flight uuid is never delivered and is swept with the rest. A fold-in-flight uuid's queued_command attachment may already appear in the aborted turn's transcript if the abort landed after the fold's attachment yield — pre-existing leave-queued semantics; it never runs as its own turn.) Uuid-less commands (task notifications) still in the queue are also dequeued but cannot be listed; a uuid-less command already in the prewait window is unreachable by either leg and still runs. When false or absent, queued commands survive the interrupt and are listed under `still_queued` — the interrupt_receipt_v1 contract is unchanged. A Stop-means-stop-everything client (a remote UI's Stop button) sets this true so one round-trip halts the session; a wrapper that wants per-uuid control leaves it false and follows up with cancel_async_message. Advertised by the `interrupt_cancel_queued_v1` capability on system/init; older CLIs ignore the field and behave as if false.
+   */
+  cancel_queued?: boolean;
 };
 
 /**
@@ -3753,9 +3793,13 @@ declare type SDKControlInterruptRequest = {
  */
 export declare type SDKControlInterruptResponse = {
   /**
-   * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. These WILL run unless cancelled first. Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
+   * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. These WILL run unless cancelled first (or unless the request set cancel_queued:true, in which case this list is always empty — every uuid-stamped survivor is removed, emitted a terminal `cancelled` synchronously, and listed under `cancelled` instead). Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
    */
   still_queued: string[];
+  /**
+   * Present only when the request set cancel_queued:true — uuids of main-thread commands cancelled by this interrupt: every survivor that would otherwise have appeared under `still_queued`, including any uuid that was mid-fold at the interrupt instant (this request also aborts, so the fold never delivers it). Each listed uuid has been removed (queue-resident) or marked cancel-pending (the first-command prewait window, closed by the drain loop's backstop) and emits a terminal 'cancelled' lifecycle synchronously at the first such interrupt (a repeat interrupt over the same parked batch re-lists the uuid idempotently without re-emitting); none will run. Same coverage caveats as `still_queued` (uuid-stamped main-thread only; internally-enqueued uuids may appear). Advertised by the `interrupt_cancel_queued_v1` capability.
+   */
+  cancelled?: string[];
 };
 
 /**
@@ -3938,7 +3982,7 @@ export declare type SDKControlReadFileResponse = {
 };
 
 /**
- * Add a directory as a working-directory root and optionally reload CLAUDE.md, skills, and plugins. The directory must resolve to a subdirectory of cwd.
+ * Add a directory as a working-directory root and optionally reload CLAUDE.md, skills, and plugins. The directory must resolve to a strict subdirectory of cwd, or of a directory passed at launch via --add-dir / the SDK additionalDirectories option. A directory that is already a registered working directory (including a duplicate of an earlier request) is denied with an error; the registration pipeline and DirectoryAdded hooks do not re-run.
  */
 declare type SDKControlRegisterRepoRootRequest = {
   subtype: "register_repo_root";
@@ -4664,6 +4708,7 @@ export declare type SDKResultError = {
   errors: string[];
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
+  fast_mode_disabled_reason?: FastModeDisabledReason;
   origin?: SDKMessageOrigin;
   uuid: UUID;
   session_id: string;
@@ -4697,6 +4742,7 @@ export declare type SDKResultSuccess = {
   deferred_tool_use?: SDKDeferredToolUse;
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
+  fast_mode_disabled_reason?: FastModeDisabledReason;
   origin?: SDKMessageOrigin;
   uuid: UUID;
   session_id: string;
@@ -4822,8 +4868,9 @@ export declare type SDKSystemMessage = {
   }[];
 
   fast_mode_state?: FastModeState;
+  fast_mode_disabled_reason?: FastModeDisabledReason;
   /**
-   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). Absent on older CLIs.
+   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is always empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it). Absent on older CLIs.
    */
   capabilities?: string[];
 
@@ -5754,6 +5801,10 @@ export declare interface Settings {
    */
   enableWorkflows?: boolean;
   /**
+   * Advisory size guideline for the dynamic workflows Claude writes: "small" aims for fewer than 5 agents, "medium" (the default) fewer than 15, "large" fewer than 50, and "unrestricted" sends no guideline. A value here — including from managed settings — takes precedence over the "Dynamic workflow size" choice in /config, and that /config row is hidden while a settings file provides the key. This is a guideline, not an enforced limit.
+   */
+  workflowSizeGuideline?: "unrestricted" | "small" | "medium" | "large";
+  /**
    * Enable the "ultracode" keyword trigger: including the keyword in a prompt opts that turn into the Workflow tool. Set to false to disable the trigger. Default: true.
    */
   workflowKeywordTriggerEnabled?: boolean;
@@ -6565,6 +6616,10 @@ export declare interface Settings {
        */
       deniedDomains?: string[];
       /**
+       * When true, the sandbox runtime deterministically denies hosts not in allowedDomains instead of prompting. Enforced for sandboxed commands only — in-process tools such as WebFetch are not gated by this setting. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+       */
+      strictAllowlist?: boolean;
+      /**
        * When true (and set in managed settings), only allowedDomains and WebFetch(domain:...) allow rules from managed settings are respected. User, project, local, and flag settings domains are ignored. Denied domains are still respected from all sources.
        */
       allowManagedDomainsOnly?: boolean;
@@ -6967,9 +7022,12 @@ export declare interface Settings {
    * Automatically compact conversation when context fills
    */
   autoCompactEnabled?: boolean;
-
   /**
-   * When safety measures flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.
+   * Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on.
+   */
+  precomputeCompactionEnabled?: boolean;
+  /**
+   * When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.
    */
   switchModelsOnFlag?: boolean;
   /**

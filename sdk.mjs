@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.218
+// Version: 0.3.219
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -18550,6 +18550,7 @@ var Os = [
     "InstructionsLoaded",
     "CwdChanged",
     "FileChanged",
+    "DirectoryAdded",
     "MessageDisplay",
   ],
   qW = [
@@ -29197,6 +29198,48 @@ var OR = {
       advisor_rank: 4,
     },
     {
+      id: "claude-opus-5",
+      family: "opus",
+      display_name: "Opus 5",
+      knowledge_cutoff: "May 2026",
+      provider_ids: {
+        first_party: "claude-opus-5",
+        bedrock: "us.anthropic.claude-opus-5",
+        vertex: "claude-opus-5",
+        foundry: "claude-opus-5",
+        anthropic_aws: "claude-opus-5",
+        anthropic_google_cloud: "claude-opus-5",
+        mantle: "anthropic.claude-opus-5",
+        gateway: "claude-opus-5",
+      },
+      eager_input_streaming: { bedrock: !0, vertex: !0 },
+      vertex_region_env_var: "VERTEX_REGION_CLAUDE_5_OPUS",
+      fallback_3p: "claude-opus-4-8",
+      context: {
+        window: 1e6,
+        native_1m: !0,
+        supports_1m_beta: !0,
+        supports_1m_suffix: !0,
+      },
+      max_output_tokens: { default: 64000, upper: 128000 },
+      pricing: "tier_5_25",
+      capabilities: [
+        "effort",
+        "max_effort",
+        "xhigh_effort",
+        "adaptive_thinking",
+        "mid_conv_system",
+        "context_management",
+        "fast_mode",
+        "lean_prompt",
+        "refusal_fallback",
+        "opus_5_prompt_bundle",
+      ],
+      default_effort: "high",
+      image_limits: { maxWidth: 2000, maxHeight: 2000 },
+      advisor_rank: 4,
+    },
+    {
       id: "claude-fable-5",
       family: "fable",
       display_name: "Fable 5",
@@ -29213,7 +29256,7 @@ var OR = {
       },
       eager_input_streaming: { bedrock: !0, vertex: !0 },
       vertex_region_env_var: "VERTEX_REGION_CLAUDE_FABLE_5",
-      fallback_3p: "claude-opus-4-8",
+      fallback_3p: "claude-opus-5",
       context: { window: 1e6, native_1m: !0, supports_1m_beta: !0 },
       max_output_tokens: { default: 64000, upper: 128000 },
       pricing: "tier_10_50",
@@ -29258,13 +29301,13 @@ var OR = {
   ],
   aliases: {
     opus: {
-      default: "claude-opus-4-8",
+      default: "claude-opus-5",
       per_provider: {
-        bedrock: "claude-opus-4-8",
-        vertex: "claude-opus-4-8",
+        bedrock: "claude-opus-5",
+        vertex: "claude-opus-5",
         foundry: "claude-opus-4-6",
-        mantle: "claude-opus-4-8",
-        anthropic_aws: "claude-opus-4-8",
+        mantle: "claude-opus-5",
+        anthropic_aws: "claude-opus-5",
         gateway: "claude-opus-4-7",
       },
     },
@@ -29286,7 +29329,7 @@ var OR = {
   best: "fable",
   latest_per_family: {
     fable: "claude-fable-5",
-    opus: "claude-opus-4-8",
+    opus: "claude-opus-5",
     sonnet: "claude-sonnet-5",
     haiku: "claude-haiku-4-5",
   },
@@ -52569,6 +52612,15 @@ var oNe = C(() =>
           .describe(
             "Domains that are always blocked, even if matched by allowedDomains. Supports the same wildcard syntax as allowedDomains. Merged from all settings sources regardless of allowManagedDomainsOnly.",
           ),
+        strictAllowlist: l
+          .boolean()
+          .optional()
+          .describe(
+            "When true, the sandbox runtime deterministically denies hosts not in allowedDomains instead of prompting. " +
+              "Enforced for sandboxed commands only — in-process tools such as WebFetch are not gated by this setting. " +
+              "Only honored from user, managed/policy, or CLI (--settings) settings — " +
+              "project settings (.claude/settings.json and .claude/settings.local.json) are ignored.",
+          ),
         allowManagedDomainsOnly: l
           .boolean()
           .optional()
@@ -55498,6 +55550,12 @@ function x6(e) {
         .describe(
           "Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available.",
         ),
+      workflowSizeGuideline: l
+        .enum(["unrestricted", "small", "medium", "large"])
+        .optional()
+        .describe(
+          'Advisory size guideline for the dynamic workflows Claude writes: "small" aims for fewer than 5 agents, "medium" (the default) fewer than 15, "large" fewer than 50, and "unrestricted" sends no guideline. A value here — including from managed settings — takes precedence over the "Dynamic workflow size" choice in /config, and that /config row is hidden while a settings file provides the key. This is a guideline, not an enforced limit.',
+        ),
       workflowKeywordTriggerEnabled: l
         .boolean()
         .optional()
@@ -56147,13 +56205,13 @@ function x6(e) {
         .boolean()
         .optional()
         .describe(
-          "@internal Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on.",
+          "Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on.",
         ),
       switchModelsOnFlag: l
         .boolean()
         .optional()
         .describe(
-          "When safety measures flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.",
+          "When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.",
         ),
       autoScrollEnabled: l
         .boolean()
@@ -57067,6 +57125,7 @@ function jMe(e, t) {
     if (o) {
       let c = Ey(o, ["deniedDomains"]);
       if (o.allowManagedDomainsOnly === !0) c.allowManagedDomainsOnly = !0;
+      if (o.strictAllowlist === !0) c.strictAllowlist = !0;
       if (
         t.sandbox?.network?.allowManagedDomainsOnly !== !0 &&
         o.allowedDomains
@@ -57711,7 +57770,7 @@ function pO(e, t) {
   else if (Array.isArray(i)) f = i;
   else if (i.type === "preset")
     ((m = i.append), (g = i.excludeDynamicSections));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.218";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.219";
   let {
     abortController: h = Jc(),
     additionalDirectories: _ = [],
@@ -57803,7 +57862,7 @@ function pO(e, t) {
   let vO = mO?.type === "json_schema" ? mO.schema : void 0,
     Kt = xt ? { ...xt } : { ...process.env };
   if (!Kt.CLAUDE_CODE_ENTRYPOINT) Kt.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!Kt.CLAUDE_AGENT_SDK_VERSION) Kt.CLAUDE_AGENT_SDK_VERSION = "0.3.218";
+  if (!Kt.CLAUDE_AGENT_SDK_VERSION) Kt.CLAUDE_AGENT_SDK_VERSION = "0.3.219";
   if (H) Kt.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (hO) Kt.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (_O) Kt.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";
