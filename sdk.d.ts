@@ -2930,27 +2930,46 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
     {
       files: z.ZodOptional<
         z.ZodArray<
-          z.ZodObject<
-            {
-              path: z.ZodString;
-              mode: z.ZodLiteral<"deny">;
-            },
-            z.core.$strip
+          z.ZodPipe<
+            z.ZodTransform<unknown, unknown>,
+            z.ZodObject<
+              {
+                path: z.ZodString;
+                mode: z.ZodEnum<{
+                  deny: "deny";
+                  mask: "mask";
+                }>;
+                extract: z.ZodOptional<z.ZodString>;
+                onExtractNoMatch: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    error: "error";
+                    warn: "warn";
+                  }>
+                >;
+                maskDuplicates: z.ZodOptional<z.ZodBoolean>;
+                injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+              },
+              z.core.$strip
+            >
           >
         >
       >;
       envVars: z.ZodOptional<
         z.ZodArray<
-          z.ZodObject<
-            {
-              name: z.ZodString;
-              mode: z.ZodEnum<{
-                deny: "deny";
-                mask: "mask";
-              }>;
-              injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
-            },
-            z.core.$strip
+          z.ZodPipe<
+            z.ZodTransform<unknown, unknown>,
+            z.ZodObject<
+              {
+                name: z.ZodString;
+                mode: z.ZodEnum<{
+                  deny: "deny";
+                  mask: "mask";
+                }>;
+                injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+              },
+              z.core.$strip
+            >
           >
         >
       >;
@@ -3076,27 +3095,46 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
         {
           files: z.ZodOptional<
             z.ZodArray<
-              z.ZodObject<
-                {
-                  path: z.ZodString;
-                  mode: z.ZodLiteral<"deny">;
-                },
-                z.core.$strip
+              z.ZodPipe<
+                z.ZodTransform<unknown, unknown>,
+                z.ZodObject<
+                  {
+                    path: z.ZodString;
+                    mode: z.ZodEnum<{
+                      deny: "deny";
+                      mask: "mask";
+                    }>;
+                    extract: z.ZodOptional<z.ZodString>;
+                    onExtractNoMatch: z.ZodOptional<
+                      z.ZodEnum<{
+                        deny: "deny";
+                        error: "error";
+                        warn: "warn";
+                      }>
+                    >;
+                    maskDuplicates: z.ZodOptional<z.ZodBoolean>;
+                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                  },
+                  z.core.$strip
+                >
               >
             >
           >;
           envVars: z.ZodOptional<
             z.ZodArray<
-              z.ZodObject<
-                {
-                  name: z.ZodString;
-                  mode: z.ZodEnum<{
-                    deny: "deny";
-                    mask: "mask";
-                  }>;
-                  injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
-                },
-                z.core.$strip
+              z.ZodPipe<
+                z.ZodTransform<unknown, unknown>,
+                z.ZodObject<
+                  {
+                    name: z.ZodString;
+                    mode: z.ZodEnum<{
+                      deny: "deny";
+                      mask: "mask";
+                    }>;
+                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                  },
+                  z.core.$strip
+                >
               >
             >
           >;
@@ -3122,10 +3160,14 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
       >
     >;
     bwrapPath: z.ZodCatch<
-      z.ZodOptional<z.ZodPipe<z.ZodTransform<string, unknown>, z.ZodString>>
+      z.ZodOptional<
+        z.ZodPipe<z.ZodTransform<string | undefined, unknown>, z.ZodString>
+      >
     >;
     socatPath: z.ZodCatch<
-      z.ZodOptional<z.ZodPipe<z.ZodTransform<string, unknown>, z.ZodString>>
+      z.ZodOptional<
+        z.ZodPipe<z.ZodTransform<string | undefined, unknown>, z.ZodString>
+      >
     >;
   },
   z.core.$loose
@@ -6639,7 +6681,7 @@ export declare interface Settings {
       httpProxyPort?: number;
       socksProxyPort?: number;
       /**
-       * [EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+       * [EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session. On native Windows an ephemeral CA cannot pass the sandbox trust check, so omitting the paths uses a persistent CA managed by the sandbox runtime (set up and trusted via /sandbox install); configured paths are passed to the sandbox runtime verbatim, which rejects a bad or incomplete pair at sandbox initialization. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
        */
       tlsTerminate?: {
         caCertPath?: string;
@@ -6668,13 +6710,13 @@ export declare interface Settings {
        */
       allowManagedReadPathsOnly?: boolean;
       /**
-       * macOS and Linux/WSL only: skip filesystem isolation entirely while keeping network and seccomp isolation. Ignored on native Windows, where the sandboxed process runs as a separate user with no inherent rights, so skipping the filesystem rules would withhold every access grant rather than loosen them — filesystem isolation stays on there. Sandboxed commands get unrestricted read/write access to the host filesystem; network egress is still confined to network.allowedDomains. Intended for deployments whose goal is egress control rather than filesystem containment. Does not change Bash prompting: sandbox.autoAllowBashIfSandboxed is independent and still defaults to true, so set it to false to keep prompting for sandboxed commands. Drops the read protection from filesystem.denyRead and credentials.files for sandboxed commands, since both are enforced by the filesystem layer this turns off; credentials.envVars deny/mask is unaffected. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. If managed settings configure sandbox.filesystem at all, or list any sandbox.credentials.files entry, only managed settings can set this: an admin who deployed filesystem restrictions must not have them switched off by a user-writable file. (sandbox.credentials.envVars does not pin it — env scrubbing is independent of the filesystem layer and survives this setting.) When unset, filesystem isolation stays on.
+       * macOS and Linux/WSL only: skip filesystem isolation entirely while keeping network and seccomp isolation. Ignored on native Windows, where the sandboxed process runs as a separate user with no inherent rights, so skipping the filesystem rules would withhold every access grant rather than loosen them — filesystem isolation stays on there. Sandboxed commands get unrestricted read/write access to the host filesystem; network egress is still confined to network.allowedDomains. Intended for deployments whose goal is egress control rather than filesystem containment. Does not change Bash prompting: sandbox.autoAllowBashIfSandboxed is independent and still defaults to true, so set it to false to keep prompting for sandboxed commands. Drops the read protection from filesystem.denyRead and credentials.files deny entries for sandboxed commands, since both are enforced by the filesystem layer this turns off; credentials.files mask entries (sentinel binds) and credentials.envVars deny/mask are unaffected. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. If managed settings configure sandbox.filesystem at all, or list any sandbox.credentials.files deny entry, only managed settings can set this: an admin who deployed filesystem restrictions must not have them switched off by a user-writable file. (sandbox.credentials.envVars and credentials.files mask entries do not pin it — env scrubbing and sentinel binds are independent of the filesystem layer and survive this setting.) When unset, filesystem isolation stays on.
        */
       disabled?: boolean;
     };
     credentials?: {
       /**
-       * Credential files or directories to protect. `deny` blocks reads inside the sandbox.
+       * Credential files or directories to protect. `deny` blocks reads inside the sandbox; `mask` substitutes a sentinel inside the sandbox (whole-file, or per-`extract` capture) and injects the real value at the proxy. On macOS and Windows `mask` degrades to `deny`.
        */
       files?: {
         /**
@@ -6682,9 +6724,25 @@ export declare interface Settings {
          */
         path: string;
         /**
-         * Access mode for this path. Only `deny` is supported.
+         * Access mode for this path. `deny` blocks reads inside the sandbox; `mask` shows sandboxed commands a sentinel-substituted copy (whole-file, or only the spans captured by `extract`) and the host proxy swaps sentinel→real on egress to `injectHosts`. On macOS and Windows `mask` currently degrades to `deny`.
          */
-        mode: "deny";
+        mode: "deny" | "mask";
+        /**
+         * Optional regex for structured masking when mode is `mask`. Applied globally to the file; capture group 1 of each match is a credential value, and only those captured spans are replaced with sentinels — the rest of the file is preserved so a tool that parses it (.netrc, JSON, YAML) still succeeds. Without `extract`, the entire file content is replaced with one sentinel (whole-file masking, suited to single-secret files). If the regex matches nothing, behavior is governed by `onExtractNoMatch` (default `warn`). Accepted but ignored for `deny`.
+         */
+        extract?: string;
+        /**
+         * What to do when `extract` matches nothing in the file. `warn` (default) emits a stderr warning and leaves the file readable as-is inside the sandbox (fail-open, for credentials that may be legitimately absent); `deny` degrades the entry to mode `deny` so the file is unreadable (fail-closed) — under `sandbox.filesystem.disabled` it is treated as `error`, since read-denies are dropped in that mode; `error` aborts at sandbox setup so nothing runs until the config is fixed. Only meaningful when mode is `mask` and `extract` is set; accepted but ignored otherwise.
+         */
+        onExtractNoMatch?: "warn" | "deny" | "error";
+        /**
+         * If true, verbatim occurrences of each captured credential value outside the regex-matched spans are also replaced with the corresponding sentinel — for a secret repeated where the regex does not reach (e.g. pasted into a comment). Matches raw substrings, so short or common values may corrupt unrelated content; intended for long, high-entropy secrets. Defaults to false. Only meaningful when mode is `mask` and `extract` is set; accepted but ignored otherwise.
+         */
+        maskDuplicates?: boolean;
+        /**
+         * Optional narrowing of where the proxy substitutes this credential. Only meaningful when mode is `mask`; accepted but ignored for `deny`. If unset, defaults to `network.allowedDomains` — the credential is injected at every reachable host. Each entry must be reachable via `network.allowedDomains` (sandbox-runtime validates this).
+         */
+        injectHosts?: string[];
       }[];
       /**
        * Environment variables to protect. `deny` unsets the variable for sandboxed commands; `mask` substitutes a sentinel inside the sandbox and injects the real value at the proxy.
