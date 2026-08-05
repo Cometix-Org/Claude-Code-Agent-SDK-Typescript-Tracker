@@ -4533,13 +4533,17 @@ export declare type SDKMirrorErrorMessage = {
 };
 
 /**
- * Emitted when the primary model ends the stream with stop_reason "refusal" and the turn is retried once on a fallback model with the swap made persistent for the session (direction: "retry"). "revert" and "sticky" are retained in the enum for SDK-consumer compat and are no longer emitted.
+ * Emitted when the primary model ends the stream with stop_reason "refusal" and the turn is retried once on a fallback model (direction: "retry"). When `scope` is "session" (or absent — older CLIs), the swap is made persistent for the session; when `scope` is "local", only that subagent/side-question response came from the fallback model and the session model is unchanged. "revert" and "sticky" are retained in the enum for SDK-consumer compat and are no longer emitted.
  */
 export declare type SDKModelRefusalFallbackMessage = {
   type: "system";
   subtype: "model_refusal_fallback";
   trigger: "refusal";
   direction: "retry" | "revert" | "sticky";
+  /**
+   * 'session': the main thread fell back and the session model is swapped. 'local': a subagent / side-question (/btw) / background fork fell back — only that response came from the fallback model and the session model is unchanged. Absent from older CLIs (treat as 'session').
+   */
+  scope?: "session" | "local";
   original_model: string;
   fallback_model: string;
   request_id: string | null;
