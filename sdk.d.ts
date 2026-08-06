@@ -2000,9 +2000,62 @@ export declare type Options = {
   /**
    * When resuming, only resume messages up to and including the message with this UUID.
    * Use with `resume`. This allows you to resume from a specific point in the conversation.
-   * The message ID should be from `SDKAssistantMessage.uuid`.
+   * Accepts any chain-entry UUID — typically `SDKAssistantMessage.uuid`, but
+   * end-turn tool sessions and transcript-only appends need a later entry's
+   * UUID (see `resumeDropsTurn` for the fork-point guidance).
    */
   resumeSessionAt?: string;
+  /**
+   * With `resumeSessionAt`: declares the prompt UUID of the turn this
+   * truncating resume intends to discard. The CLI validates at fork time
+   * that every entry past the `resumeSessionAt` point is attributable to
+   * that turn, and refuses the resume (an `error_during_execution` result
+   * whose message starts with `Resume rejected by --resume-drops-turn:`)
+   * when the discarded range contains anything else — e.g. a queued user
+   * message or task notification the session absorbed mid-turn that the
+   * caller's view of the conversation had not yet observed. Omit to keep
+   * the unvalidated truncation behavior.
+   *
+   * Consumers MUST map a refusal (match on the message prefix above) to
+   * their rewind-recovery path — clear the pending fork target and resume
+   * plainly, keeping the evidence — not retry: the refusal is
+   * deterministic, so re-sending the same fork request fails forever.
+   *
+   * End-turn tool sessions (`outputFormat: {type: 'json_schema'}`, or any
+   * MCP tool using `_meta['claude/endTurn']`): a completed turn there ends
+   * on a successful tool_result carrier — with no trailing assistant
+   * message — followed by a `structured_output` attachment holding the
+   * turn's actual output (the carrier's data is a placeholder). Fork at
+   * the LAST entry of the turn being kept — the `structured_output`
+   * attachment when present, else the carrier — not the last assistant
+   * UUID; `resumeSessionAt` accepts any chain UUID. Forking earlier
+   * leaves the carrier or attachment in the discarded range, and the
+   * validator deliberately refuses: both are the kept turn's own payload,
+   * and dropping either would discard kept-turn output (the attachment is
+   * its sole persisted copy) or leave its tool_use dangling.
+   *
+   * The same fork-past-your-appends rule applies to plain (non-synthetic)
+   * `shouldQuery: false` transcript appends (e.g. CCD bash mode): they
+   * persist as bare user entries, so a fork point that leaves one in the
+   * discarded range refuses. Fork at or after your own last append.
+   *
+   * PRINT/HEADLESS LANE ONLY: the pair is consumed exclusively by the
+   * headless boot path (print-mode CLI, Agent SDK, ProcessTransport). An
+   * interactive `claude --resume` boot and background-job worker boots
+   * ignore both options — the resume loads the full chain with no
+   * truncation, no guard, and no error — so callers must not pass the
+   * pair outside print mode and expect an armed guard (rejecting it on
+   * those lanes is tracked follow-up work).
+   *
+   * General rule subsuming all of the above: fork at the KEPT turn's last
+   * chain entry, whatever it is — `resumeSessionAt` accepts any chain
+   * UUID. This also covers interrupted turns that completed one or more
+   * tools before Esc: the completed (non-error) tool_result in the tail
+   * is kept-turn payload and deliberately refuses at an assistant-UUID
+   * fork point, while the marker / cancel-batch entries after it are
+   * skippable — so fork at the last entry and the refusal never fires.
+   */
+  resumeDropsTurn?: string;
   /**
    * Sandbox settings for command execution isolation.
    *
@@ -4505,6 +4558,9 @@ export declare type SDKMessageOrigin =
       kind: "coordinator";
     }
   | {
+      kind: "unclassified";
+    }
+  | {
       kind: "observer";
       from: string;
       senderTaskId: string;
@@ -4615,7 +4671,7 @@ export declare type SDKPermissionDenial = {
 };
 
 /**
- * Emitted when a tool call is auto-denied without an interactive permission prompt (e.g. auto-mode classifier, dontAsk mode, headless-agent auto-deny, or a deny rule). The 'ask' path surfaces via a can_use_tool control_request; this event covers the 'deny' short-circuit in canUseTool so SDK hosts can render the denial instead of only seeing an is_error tool_result. PreToolUse hook denies bypass canUseTool and are not covered here.
+ * Emitted when a tool call is auto-denied without an interactive permission prompt (e.g. auto-mode classifier, dontAsk mode, headless-agent auto-deny, or a deny rule). With a permission prompt surface (stdio/SDK canUseTool), the 'ask' path surfaces via a can_use_tool control_request and this event covers the 'deny' short-circuit. Without one (bare -p / SDK query() with no canUseTool), 'ask' decisions are terminal, so this event also covers those implicit denials. Best-effort advisory: in rare races a denial can book without a frame or a frame can lack a booking twin — result.permission_denials is the authoritative record. Denials that resolve before canUseTool runs — PreToolUse hook denies, and deny-rule overrides of hook allow/ask decisions — are not covered here, and neither is the MCP --permission-prompt-tool surface (the prompt tool is the host there).
  */
 export declare type SDKPermissionDeniedMessage = {
   type: "system";
@@ -4747,8 +4803,17 @@ export declare type SDKResultError = {
   is_error: boolean;
   num_turns: number;
   stop_reason: string | null;
+  /**
+   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, resumed sessions start fresh, and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   */
   total_cost_usd: number;
+  /**
+   * MAIN AGENT LOOP ONLY — excludes Task subagent, sidechain, and auxiliary model calls, and is per-turn in streaming-input sessions. Prefer modelUsage for token/cost accounting.
+   */
   usage: NonNullableUsage;
+  /**
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   */
   modelUsage: Record<string, ModelUsage>;
   permission_denials: SDKPermissionDenial[];
   errors: string[];
@@ -4780,8 +4845,17 @@ export declare type SDKResultSuccess = {
   num_turns: number;
   result: string;
   stop_reason: string | null;
+  /**
+   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, resumed sessions start fresh, and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   */
   total_cost_usd: number;
+  /**
+   * MAIN AGENT LOOP ONLY — excludes Task subagent, sidechain, and auxiliary model calls, and is per-turn in streaming-input sessions. Prefer modelUsage for token/cost accounting.
+   */
   usage: NonNullableUsage;
+  /**
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   */
   modelUsage: Record<string, ModelUsage>;
   permission_denials: SDKPermissionDenial[];
   structured_output?: unknown;
@@ -5989,7 +6063,7 @@ export declare interface Settings {
         | {
             source: "github";
             /**
-             * GitHub repository in owner/repo format
+             * GitHub repository in owner/repo format. ONLY in the managed-settings policy lists (strictKnownMarketplaces / blockedMarketplaces) the owner-wildcard form "owner/*" matches every repository under exactly that owner. Everywhere else (marketplace add, extraKnownMarketplaces, known_marketplaces.json) the value must name a single repository — a wildcard is taken literally and fails to clone.
              */
             repo: string;
             /**
@@ -6186,7 +6260,7 @@ export declare interface Settings {
     };
   };
   /**
-   * Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces.
+   * Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these sources can be added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {"source":"github","repo":"owner/*"} to allow every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces.
    */
   strictKnownMarketplaces?: (
     | {
@@ -6205,7 +6279,7 @@ export declare interface Settings {
     | {
         source: "github";
         /**
-         * GitHub repository in owner/repo format
+         * GitHub repository in owner/repo format. ONLY in the managed-settings policy lists (strictKnownMarketplaces / blockedMarketplaces) the owner-wildcard form "owner/*" matches every repository under exactly that owner. Everywhere else (marketplace add, extraKnownMarketplaces, known_marketplaces.json) the value must name a single repository — a wildcard is taken literally and fails to clone.
          */
         repo: string;
         /**
@@ -6393,7 +6467,7 @@ export declare interface Settings {
       }
   )[];
   /**
-   * Enterprise blocklist of marketplace sources. When set in managed settings, these exact sources are blocked from being added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem.
+   * Enterprise blocklist of marketplace sources. When set in managed settings, these sources are blocked from being added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {"source":"github","repo":"owner/*"} to block every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem.
    */
   blockedMarketplaces?: (
     | {
@@ -6412,7 +6486,7 @@ export declare interface Settings {
     | {
         source: "github";
         /**
-         * GitHub repository in owner/repo format
+         * GitHub repository in owner/repo format. ONLY in the managed-settings policy lists (strictKnownMarketplaces / blockedMarketplaces) the owner-wildcard form "owner/*" matches every repository under exactly that owner. Everywhere else (marketplace add, extraKnownMarketplaces, known_marketplaces.json) the value must name a single repository — a wildcard is taken literally and fails to clone.
          */
         repo: string;
         /**

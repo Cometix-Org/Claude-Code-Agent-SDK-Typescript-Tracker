@@ -2438,13 +2438,45 @@ export interface SendFeedbackInput {
    */
   title: string;
   /**
-   * Factual, reproducible report: what was attempted, what happened, exact error text if short, repro steps. No speculation, no secrets.
+   * Labeled bullets, in order: **What happened:** (observed vs. expected, exact error text if short); **What the user said:** (quoted, or "User didn't comment; observed by the model."); **Repro:** (minimal steps); **Evidence:** (request IDs, timestamps, paths, versions — omit if none); optionally a final **Cause:** only if verified in-session. One to three lines per bullet. No narrative paragraphs, no speculation, no secrets.
    */
   details: string;
   /**
    * Optional short tag naming the part of Claude Code this is about (e.g. "hooks config", "/help", "file editing"). Leave blank if unclear.
    */
   area?: string;
+  /**
+   * When the report is about MODEL BEHAVIOR (not a product bug), the closest failure mode — or `other` when it is a model-behavior issue that fits no listed value. Omit only when the report is a product/tool bug with no model-behavior component.
+   */
+  failure_mode?:
+    | "instruction_following"
+    | "destructive_actions"
+    | "code_quality"
+    | "repetition_and_looping"
+    | "model_regression"
+    | "overconfidence_and_hallucination"
+    | "context_and_memory"
+    | "overeager"
+    | "over_correction"
+    | "stopping_short"
+    | "dispute_or_decline"
+    | "subagent_overspawn"
+    | "tone_or_preachiness"
+    | "excessive_questions"
+    | "unwanted_scope"
+    | "other";
+  /**
+   * What kind of task the session was doing when the issue occurred — or `other` when it is a clear task that fits no listed value. Omit only if genuinely unclear.
+   */
+  task_category?:
+    | "code_edit"
+    | "debug"
+    | "explain"
+    | "plan"
+    | "shell"
+    | "search"
+    | "review"
+    | "other";
 }
 export interface ClaudeDesignInput {
   /**
