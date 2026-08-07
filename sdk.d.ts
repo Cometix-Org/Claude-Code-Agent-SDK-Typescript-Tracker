@@ -10,7 +10,7 @@ import type { Readable } from "stream";
 import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import type { UUID } from "crypto";
 import type { Writable } from "stream";
-import { z } from "zod/v4";
+import * as z from "zod/v4";
 import type { ZodRawShape } from "zod";
 import type { ZodRawShape as ZodRawShape_2 } from "zod/v4";
 
@@ -3000,6 +3000,12 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
                     warn: "warn";
                   }>
                 >;
+                decode: z.ZodOptional<
+                  z.ZodEnum<{
+                    jwt: "jwt";
+                  }>
+                >;
+                maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 maskDuplicates: z.ZodOptional<z.ZodBoolean>;
                 injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
               },
@@ -3019,6 +3025,20 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
                   deny: "deny";
                   mask: "mask";
                 }>;
+                extract: z.ZodOptional<z.ZodString>;
+                onExtractNoMatch: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    error: "error";
+                    warn: "warn";
+                  }>
+                >;
+                decode: z.ZodOptional<
+                  z.ZodEnum<{
+                    jwt: "jwt";
+                  }>
+                >;
+                maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
               },
               z.core.$strip
@@ -3027,6 +3047,43 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
         >
       >;
       allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
+      awsPairs: z.ZodOptional<
+        z.ZodArray<
+          z.ZodObject<
+            {
+              accessKeyIdVar: z.ZodString;
+              secretAccessKeyVar: z.ZodString;
+              sessionTokenVar: z.ZodOptional<z.ZodString>;
+            },
+            z.core.$strip
+          >
+        >
+      >;
+      sigv4: z.ZodOptional<
+        z.ZodObject<
+          {
+            streaming: z.ZodOptional<
+              z.ZodEnum<{
+                deny: "deny";
+                passthrough: "passthrough";
+              }>
+            >;
+            presigned: z.ZodOptional<
+              z.ZodEnum<{
+                deny: "deny";
+                passthrough: "passthrough";
+              }>
+            >;
+            sigv4a: z.ZodOptional<
+              z.ZodEnum<{
+                deny: "deny";
+                passthrough: "passthrough";
+              }>
+            >;
+          },
+          z.core.$strip
+        >
+      >;
     },
     z.core.$strip
   >
@@ -3165,6 +3222,12 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
                         warn: "warn";
                       }>
                     >;
+                    decode: z.ZodOptional<
+                      z.ZodEnum<{
+                        jwt: "jwt";
+                      }>
+                    >;
+                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
                     maskDuplicates: z.ZodOptional<z.ZodBoolean>;
                     injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
                   },
@@ -3184,6 +3247,20 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
                       deny: "deny";
                       mask: "mask";
                     }>;
+                    extract: z.ZodOptional<z.ZodString>;
+                    onExtractNoMatch: z.ZodOptional<
+                      z.ZodEnum<{
+                        deny: "deny";
+                        error: "error";
+                        warn: "warn";
+                      }>
+                    >;
+                    decode: z.ZodOptional<
+                      z.ZodEnum<{
+                        jwt: "jwt";
+                      }>
+                    >;
+                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
                     injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
                   },
                   z.core.$strip
@@ -3192,6 +3269,43 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
             >
           >;
           allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
+          awsPairs: z.ZodOptional<
+            z.ZodArray<
+              z.ZodObject<
+                {
+                  accessKeyIdVar: z.ZodString;
+                  secretAccessKeyVar: z.ZodString;
+                  sessionTokenVar: z.ZodOptional<z.ZodString>;
+                },
+                z.core.$strip
+              >
+            >
+          >;
+          sigv4: z.ZodOptional<
+            z.ZodObject<
+              {
+                streaming: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+                presigned: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+                sigv4a: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+              },
+              z.core.$strip
+            >
+          >;
         },
         z.core.$strip
       >
@@ -4550,9 +4664,9 @@ export declare type SDKMessageOrigin =
   | {
       kind: "task-notification";
       /**
-       * Present when the delivery is the fired stored prompt of a scheduled task/routine (stamped from server-asserted provenance; the schedule attests storage, not authorship). The harness frames it as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
+       * Present when the delivery is the fired stored prompt of a scheduled task/routine ('scheduled-trigger', stamped from server-asserted provenance; the schedule attests storage, not authorship), or a coordinator co-member SendMessage delivery ('peer-send-message': model-authored text from another of the same user's sessions, verified by the server-stamped receiver co-membership — task-notification for prompt authority, but distinguishable so the receive-side crossSessionInbound setting can apply to it). The harness frames a scheduled-trigger delivery as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
        */
-      subkind?: "scheduled-trigger";
+      subkind?: "scheduled-trigger" | "peer-send-message";
     }
   | {
       kind: "coordinator";
@@ -6228,7 +6342,19 @@ export declare interface Settings {
                     sha?: string;
                   }
                 | {
+                    source: "archive";
+                    /**
+                     * HTTPS URL of a zip archive containing the plugin. The plugin root (the directory holding .claude-plugin/) may be at the top of the archive or nested one directory deep — a single wrapping directory is stripped.
+                     */
+                    url: string;
+                    /**
+                     * SHA-256 digest of the archive. When set, every download is verified against it and the install is refused on mismatch. It also serves as the version identity when neither plugin.json nor the marketplace entry declares a `version`. Recommended. Note the update signal is the version string (plugin.json version, else the entry version, else this digest) — changing only the digest while a version is declared does not trigger an update.
+                     */
+                    sha256?: string;
+                  }
+                | {
                     source: "unsupported";
+                    error?: string;
                   };
               description?: string;
               version?: string;
@@ -6444,7 +6570,19 @@ export declare interface Settings {
                 sha?: string;
               }
             | {
+                source: "archive";
+                /**
+                 * HTTPS URL of a zip archive containing the plugin. The plugin root (the directory holding .claude-plugin/) may be at the top of the archive or nested one directory deep — a single wrapping directory is stripped.
+                 */
+                url: string;
+                /**
+                 * SHA-256 digest of the archive. When set, every download is verified against it and the install is refused on mismatch. It also serves as the version identity when neither plugin.json nor the marketplace entry declares a `version`. Recommended. Note the update signal is the version string (plugin.json version, else the entry version, else this digest) — changing only the digest while a version is declared does not trigger an update.
+                 */
+                sha256?: string;
+              }
+            | {
                 source: "unsupported";
+                error?: string;
               };
           description?: string;
           version?: string;
@@ -6651,7 +6789,19 @@ export declare interface Settings {
                 sha?: string;
               }
             | {
+                source: "archive";
+                /**
+                 * HTTPS URL of a zip archive containing the plugin. The plugin root (the directory holding .claude-plugin/) may be at the top of the archive or nested one directory deep — a single wrapping directory is stripped.
+                 */
+                url: string;
+                /**
+                 * SHA-256 digest of the archive. When set, every download is verified against it and the install is refused on mismatch. It also serves as the version identity when neither plugin.json nor the marketplace entry declares a `version`. Recommended. Note the update signal is the version string (plugin.json version, else the entry version, else this digest) — changing only the digest while a version is declared does not trigger an update.
+                 */
+                sha256?: string;
+              }
+            | {
                 source: "unsupported";
+                error?: string;
               };
           description?: string;
           version?: string;
@@ -6810,11 +6960,19 @@ export declare interface Settings {
          */
         extract?: string;
         /**
-         * What to do when `extract` matches nothing in the file. `warn` (default) emits a stderr warning and leaves the file readable as-is inside the sandbox (fail-open, for credentials that may be legitimately absent); `deny` degrades the entry to mode `deny` so the file is unreadable (fail-closed) — under `sandbox.filesystem.disabled` it is treated as `error`, since read-denies are dropped in that mode; `error` aborts at sandbox setup so nothing runs until the config is fixed. Only meaningful when mode is `mask` and `extract` is set; accepted but ignored otherwise.
+         * What to do when `extract` matches nothing in the file — or, with `decode`, when no candidate survives verification. `warn` (default) emits a stderr warning and leaves the file readable as-is inside the sandbox (fail-open, for credentials that may be legitimately absent); `deny` degrades the entry to mode `deny` so the file is unreadable (fail-closed) — under `sandbox.filesystem.disabled` it is treated as `error`, since read-denies are dropped in that mode; `error` aborts at sandbox setup so nothing runs until the config is fixed. Only meaningful when mode is `mask` and `extract` or `decode` is set; accepted but ignored otherwise.
          */
         onExtractNoMatch?: "warn" | "deny" | "error";
         /**
-         * If true, verbatim occurrences of each captured credential value outside the regex-matched spans are also replaced with the corresponding sentinel — for a secret repeated where the regex does not reach (e.g. pasted into a comment). Matches raw substrings, so short or common values may corrupt unrelated content; intended for long, high-entropy secrets. Defaults to false. Only meaningful when mode is `mask` and `extract` is set; accepted but ignored otherwise.
+         * Optional encoded-credential format for `mask` mode. `jwt`: candidates are located with a built-in JWT regex (or the explicit `extract` pattern, if set), verified to actually be JWTs before masking, and replaced with a structurally valid fake JWT so client-side token parsing inside the sandbox keeps working. If no candidate verifies, behavior is governed by `onExtractNoMatch` (default `warn`). Accepted but ignored for `deny`.
+         */
+        decode?: "jwt";
+        /**
+         * Names of top-level payload claims to mask inside each decoded value, instead of replacing the whole token. Each named claim present with a string value gets its own sentinel and the token is rebuilt around the modified payload; all other claims are preserved so a tool that decodes the token and reads a non-secret claim keeps working. Requires `decode`. If no named claim matches in any verified token, behavior is governed by `onExtractNoMatch` (default `warn`). Only meaningful when mode is `mask`; accepted but ignored for `deny`.
+         */
+        maskClaims?: string[];
+        /**
+         * If true, verbatim occurrences of each captured credential value outside the regex-matched spans are also replaced with the corresponding sentinel — for a secret repeated where the regex does not reach (e.g. pasted into a comment). Matches raw substrings, so short or common values may corrupt unrelated content; intended for long, high-entropy secrets. Defaults to false. Only meaningful when mode is `mask` and `extract` or `decode` is set; accepted but ignored otherwise.
          */
         maskDuplicates?: boolean;
         /**
@@ -6835,6 +6993,22 @@ export declare interface Settings {
          */
         mode: "deny" | "mask";
         /**
+         * Optional regex for structured masking when mode is `mask`. Applied globally to the value; capture group 1 of each match is a credential value, and only those captured spans are replaced with sentinels — the rest of the value is preserved so a tool that parses it (a `DATABASE_URL` connection string, a composite `KEY:SECRET` pair) still succeeds inside the sandbox. Without `extract`, the entire value is replaced with one sentinel (whole-value masking, suited to bare tokens). If the regex matches nothing, behavior is governed by `onExtractNoMatch` (default `warn`). Cannot be combined with `decode` (the decode path never consults it). Accepted but ignored for `deny`.
+         */
+        extract?: string;
+        /**
+         * What to do when `extract` matches nothing in the value. `warn` (default) emits a stderr warning and lets the variable pass through unmasked (fail-open, for credentials that may be legitimately absent); `deny` unsets the variable inside the sandbox (fail-closed); `error` aborts at sandbox setup so nothing runs until the config is fixed. Only meaningful when mode is `mask` and `extract` is set without `decode`. On a mask entry with `decode`, the runtime takes the decode path and never consults this field, so a fail-closed setting cannot be honored — `deny` and `error` are rejected there; only `warn` is accepted. In all other shapes the field is accepted but ignored.
+         */
+        onExtractNoMatch?: "warn" | "deny" | "error";
+        /**
+         * Optional encoded-credential format for `mask` mode. `jwt`: the variable's whole value is verified to actually be a JWT and replaced with a structurally valid fake JWT so client-side token parsing inside the sandbox keeps working; the proxy swaps the whole fake token on egress. If the value does not verify, the variable is left unmasked with a stderr warning (fail-open). Cannot be combined with `extract` — the decode path never consults it. Accepted but ignored for `deny`.
+         */
+        decode?: "jwt";
+        /**
+         * Names of top-level payload claims to mask inside the decoded value, instead of replacing the whole token. Each named claim present with a string value gets its own sentinel and the token is rebuilt around the modified payload; all other claims are preserved so claim-reading clients keep working. Requires `decode`. If no named claim matches, the variable is left unmasked with a stderr warning (fail-open). Only meaningful when mode is `mask`; accepted but ignored for `deny`.
+         */
+        maskClaims?: string[];
+        /**
          * Optional narrowing of where the proxy substitutes this credential. Only meaningful when mode is `mask`; accepted but ignored for `deny`. If unset, defaults to `network.allowedDomains` — the credential is injected at every reachable host. Each entry must be reachable via `network.allowedDomains` (sandbox-runtime validates this).
          */
         injectHosts?: string[];
@@ -6843,6 +7017,40 @@ export declare interface Settings {
        * Allow sentinel→real substitution on the plain-HTTP proxy path. Defaults to false: without TLS termination the upstream identity is unverified and the credential travels in cleartext. Set only for trusted-network test fixtures. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
        */
       allowPlaintextInject?: boolean;
+      /**
+       * Explicit groupings of masked env vars into AWS credential pairs for SigV4 re-signing, for non-standard variable names. The conventional AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN trio is paired automatically when masked. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. A member is only usable when its env var is forwarded as a whole-value `mask` entry (an entry carrying `extract` or `decode` does not qualify — re-signing needs the whole real value). A pair whose key id or secret member is unusable never re-signs: it is dropped, unless it names a conventional AWS variable, in which case it is forwarded as an inert suppressor so implicit auto-pairing stays overridden. A pair whose ONLY unusable member is the session token still re-signs, without an x-amz-security-token (temporary-credential requests fail upstream until the entry is fixed).
+       */
+      awsPairs?: {
+        /**
+         * Name of the masked env var holding the AWS access key id.
+         */
+        accessKeyIdVar: string;
+        /**
+         * Name of the masked env var holding the AWS secret access key.
+         */
+        secretAccessKeyVar: string;
+        /**
+         * Optional name of the masked env var holding the AWS session token (temporary credentials). When set, the proxy sends the real token as x-amz-security-token on re-signed requests and adds it to the signed header set if the client did not.
+         */
+        sessionTokenVar?: string;
+      }[];
+      /**
+       * Policies for AWS SigV4 request shapes the proxy cannot re-sign (streaming, presigned, sigv4a) when they reference a masked credential pair: `deny` (default) or `passthrough`. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+       */
+      sigv4?: {
+        /**
+         * Policy for aws-chunked streaming uploads (x-amz-content-sha256: STREAMING-*): per-chunk signatures chain off the seed signature, so re-signing would require rewriting the body. `deny` (default) fails closed with a 403; `passthrough` forwards the request unre-signed (the upstream will reject its signature).
+         */
+        streaming?: "deny" | "passthrough";
+        /**
+         * Policy for presigned URLs (X-Amz-Algorithm/X-Amz-Signature in the query, no Authorization header): the signature lives in the URL itself. `deny` (default) or `passthrough`.
+         */
+        presigned?: "deny" | "passthrough";
+        /**
+         * Policy for SigV4A (AWS4-ECDSA-P256-SHA256) asymmetric signatures: there is no shared-key HMAC to recompute. `deny` (default) or `passthrough`.
+         */
+        sigv4a?: "deny" | "passthrough";
+      };
     };
     ignoreViolations?: {
       [k: string]: string[];
@@ -6953,6 +7161,10 @@ export declare interface Settings {
    * Idle time before Claude's questions auto-continue with any answers selected so far. Defaults to never — auto-continue only runs when explicitly set to 60s/5m/10m.
    */
   askUserQuestionTimeout?: "60s" | "5m" | "10m" | "never";
+  /**
+   * Max time a permission/user dialog forwarded to a remote client stays parked awaiting an answer, and how long a HELD cross-session message awaits approval, before either resolves to its safe no-action default (cancelled / dropped-with-denial). Defaults to 5m to match the long-standing remote-dialog deadline; "never" disables the deadline. Local-only permission prompts (no remote client) are unaffected. The CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS env var, when set, overrides this. Read from trusted sources only (never a checked-in repo settings file).
+   */
+  dialogExpiry?: "60s" | "5m" | "10m" | "never";
   /**
    * Name of an agent (built-in or custom) to use for the main thread. Applies the agent's system prompt, tool restrictions, and model.
    */
@@ -7210,6 +7422,10 @@ export declare interface Settings {
    * When no background service is running: 'transient' spawns one for this login session; 'ask' offers to install it persistently
    */
   daemonColdStart?: "transient" | "ask";
+  /**
+   * Inbound cross-session peer messages (SendMessage from your other sessions): 'accept' delivers them, 'hold' parks them for your review without letting Claude act, 'refuse' opts this session out. An explicit value always wins. Unset (mode parity): a message auto-delivers only when the sending session's permission-mode class matches yours (bypass↔bypass or prompting↔prompting); a mismatched sender's message is held for your approval; a sender that asserts no class is held only while this session bypasses permission prompts.
+   */
+  crossSessionInbound?: "accept" | "hold" | "refuse";
   /**
    * Mirror local sessions to claude.ai as view-only (no remote control)
    */
