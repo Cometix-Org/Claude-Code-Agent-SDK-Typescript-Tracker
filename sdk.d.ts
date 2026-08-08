@@ -1485,26 +1485,50 @@ export declare type NotificationHookSpecificOutput = {
 /**
  * Callback for handling MCP elicitation requests.
  * Called when an MCP server requests user input and no hook handles it.
+ *
+ * Return `null` ONLY after the consumer has already sent the
+ * control_response out-of-band (e.g. a signed HTTP POST echoing
+ * `requestId`); the SDK will skip its own transport write. Same contract as
+ * {@link CanUseTool}. Fail-closed: an accidental null means no response is
+ * sent and the elicitation stays pending until the server times it out.
  */
 export declare type OnElicitation = (
   request: ElicitationRequest,
   options: {
     signal: AbortSignal;
+    /**
+     * The control_request envelope's `request_id`. A control_response sent
+     * out-of-band (e.g. a signed HTTP POST instead of the SDK's WS write)
+     * must echo this value for the worker to match it.
+     */
+    requestId: string;
   },
-) => Promise<ElicitationResult>;
+) => Promise<ElicitationResult | null>;
 
 /**
  * Callback for handling `request_user_dialog` control requests.
  * Called when the CLI asks the host to render a blocking dialog.
- * If not provided, dialogs are answered as cancelled and the CLI applies
- * each dialog's default behavior.
+ * If not provided, the dialog is left unanswered so a renderer-bearing
+ * client (or the worker's park deadline) can settle it.
+ *
+ * Return `null` ONLY after the consumer has already sent the
+ * control_response out-of-band (e.g. a signed HTTP POST echoing
+ * `requestId`); the SDK will skip its own transport write. Same contract as
+ * {@link CanUseTool}. Fail-closed: an accidental null means no response is
+ * sent and the dialog stays parked until the worker's deadline.
  */
 export declare type OnUserDialog = (
   request: UserDialogRequest,
   options: {
     signal: AbortSignal;
+    /**
+     * The control_request envelope's `request_id`. A control_response sent
+     * out-of-band (e.g. a signed HTTP POST instead of the SDK's WS write)
+     * must echo this value for the worker to match it.
+     */
+    requestId: string;
   },
-) => Promise<UserDialogResult>;
+) => Promise<UserDialogResult | null>;
 
 /**
  * Options for the query function.

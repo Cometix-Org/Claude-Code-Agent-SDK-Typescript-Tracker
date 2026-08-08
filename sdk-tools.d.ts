@@ -2680,7 +2680,8 @@ export interface ScheduleWakeupInput {
   stop?: boolean;
 }
 export interface RemoteTriggerInput {
-  action: "list" | "get" | "create" | "update" | "run";
+  action:
+    "list" | "get" | "create" | "update" | "run" | "create_webhook_trigger";
   /**
    * Required for get, update, and run
    */
