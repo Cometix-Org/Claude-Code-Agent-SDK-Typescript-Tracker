@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.225
+// Version: 0.3.226
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -53273,7 +53273,7 @@ function dT(e, t) {
   else if (Array.isArray(s)) d = s;
   else if (s.type === "preset")
     ((m = s.append), (f = s.excludeDynamicSections));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.225";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.226";
   let {
       abortController: g = Rc(),
       additionalDirectories: _ = [],
@@ -53367,7 +53367,7 @@ function dT(e, t) {
   let ET = hT?.type === "json_schema" ? hT.schema : void 0,
     Gt = st ? { ...st } : { ...process.env };
   if (!Gt.CLAUDE_CODE_ENTRYPOINT) Gt.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!Gt.CLAUDE_AGENT_SDK_VERSION) Gt.CLAUDE_AGENT_SDK_VERSION = "0.3.225";
+  if (!Gt.CLAUDE_AGENT_SDK_VERSION) Gt.CLAUDE_AGENT_SDK_VERSION = "0.3.226";
   if (q) Gt.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (gT) Gt.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (_T) Gt.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";
