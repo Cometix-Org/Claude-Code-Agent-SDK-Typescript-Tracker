@@ -6859,7 +6859,10 @@ export declare interface Settings {
    * Force a specific login method: "claudeai" for Claude Pro/Max, "console" for Console billing, "gateway" for the Cloud gateway OIDC device flow
    */
   forceLoginMethod?: "claudeai" | "console" | "gateway";
-
+  /**
+   * Cloud gateway URL to pre-fill and auto-connect to during login, alongside forceLoginMethod: "gateway". Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings.
+   */
+  forceLoginGatewayUrl?: string;
   /**
    * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (default): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
    */
@@ -7193,6 +7196,7 @@ export declare interface Settings {
    * Name of an agent (built-in or custom) to use for the main thread. Applies the agent's system prompt, tool restrictions, and model.
    */
   agent?: string;
+
   /**
    * Company announcements to display at startup (one will be randomly selected if multiple are provided)
    */

@@ -48,6 +48,7 @@ export type ToolInputSchemas =
   | ShowOnboardingRolePickerInput
   | MonitorInput
   | ProposeSkillsInput
+  | ProposeGoalInput
   | ArtifactInput
   | PushNotificationInput
   | EnterWorktreeInput
@@ -87,6 +88,7 @@ export type ToolOutputSchemas =
   | ScheduleWakeupOutput
   | MonitorOutput
   | ProposeSkillsOutput
+  | ProposeGoalOutput
   | EnterPlanModeOutput
   | REPLOutput
   | WorkflowOutput
@@ -499,7 +501,7 @@ export interface AgentInput {
    */
   model?: "sonnet" | "opus" | "haiku" | "fable";
   /**
-   * Agents run in the background by default; you will be notified when one completes. Set to false to run this agent synchronously when you need its result before continuing.
+   * Agents run in the background by default; you will be notified when one completes. Set to false only when your very next action depends on this agent's result and nothing else could usefully happen while it runs — otherwise leave it in the background so the user can hand you other work.
    */
   run_in_background?: boolean;
   /**
@@ -2681,11 +2683,26 @@ export interface ScheduleWakeupInput {
 }
 export interface RemoteTriggerInput {
   action:
-    "list" | "get" | "create" | "update" | "run" | "create_webhook_trigger";
+    | "list"
+    | "get"
+    | "create"
+    | "update"
+    | "run"
+    | "create_webhook_trigger"
+    | "list_runs"
+    | "get_run_log";
   /**
-   * Required for get, update, and run
+   * Required for get, update, run, and list_runs
    */
   trigger_id?: string;
+  /**
+   * Required for get_run_log: a run session id (cse_… or session_…, from list_runs)
+   */
+  session_id?: string;
+  /**
+   * next_cursor from a previous list_runs or get_run_log page
+   */
+  cursor?: string;
   /**
    * Required for create and update; optional for run
    */
@@ -2870,6 +2887,16 @@ export interface ProposeSkillsInput {
         },
       ];
 }
+export interface ProposeGoalInput {
+  /**
+   * The completion condition to propose, written so a separate evaluator can verify it from the conversation (e.g. "all tests in test/auth pass (bun test exits 0)"). At most 500 characters — the user must be able to read the whole condition in the approval dialog.
+   */
+  condition: string;
+  /**
+   * Whether to ask the user for approval before the goal is set. Defaults to true — an approval dialog is shown. Set false ONLY when the user's own words in this conversation stated this outcome as what they want; the goal is then set directly, with a visible notice in the transcript, and the user can clear it with /goal clear.
+   */
+  ask_user?: boolean;
+}
 export interface ArtifactInput {
   /**
    * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it.
@@ -2892,7 +2919,7 @@ export interface ArtifactInput {
    */
   scope?: "mine" | "shared" | "all";
   /**
-   * Title for the artifact — the name shown in the browser tab and gallery. Prefer a <title> tag in the HTML itself; this parameter fills in only when the file lacks one and never overrides the tag. HTML publishes only — Markdown pages keep their filename identity. Content always comes from file_path — there is no inline content parameter.
+   * Title for the artifact — the name shown in the browser tab and gallery. Prefer a <title> tag at the top of the HTML itself; this parameter fills in only when the file lacks one in the first 8KB of the file, and never overrides the tag. HTML publishes only — Markdown pages keep their filename identity. Content always comes from file_path — there is no inline content parameter.
    */
   title?: string;
   /**
@@ -2904,7 +2931,7 @@ export interface ArtifactInput {
    */
   label?: string;
   /**
-   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" if you don't have it; without this, a conversation that didn't publish the artifact always mints a new URL. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns.
+   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns.
    */
   url?: string;
   /**
@@ -2977,6 +3004,10 @@ export interface BashOutput {
    */
   backgroundCwdHint?: string;
   /**
+   * True when this backgrounded command is owned by a synchronous subagent and is therefore terminated when that agent gives its final response; absent when the command survives (main loop, async subagents)
+   */
+  backgroundEndsWithFinalResponse?: true;
+  /**
    * Flag to indicate if sandbox mode was overridden
    */
   dangerouslyDisableSandbox?: boolean;
@@ -3015,6 +3046,7 @@ export interface BashOutput {
     commit?: {
       sha: string;
       kind: "committed" | "amended" | "cherry-picked";
+      branch?: string;
     };
     push?: {
       branch: string;
@@ -3728,6 +3760,16 @@ export interface ProposeSkillsOutput {
    * Number of proposals shown on the review card
    */
   proposalCount: number;
+}
+export interface ProposeGoalOutput {
+  /**
+   * The condition shown to the user for approval, or set directly when ask_user was false
+   */
+  condition: string;
+  /**
+   * Whether the user was asked for approval (true) or the goal was set directly (false)
+   */
+  askUser: boolean;
 }
 export interface EnterPlanModeOutput {
   /**
