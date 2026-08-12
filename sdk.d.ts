@@ -2933,7 +2933,7 @@ export declare type ResolvedSettingSource = SettingSource | "managed" | "flag";
  * - **The policy tier matches CLI startup** (managed-settings.json,
  *   remote-cached managed settings, MDM via macOS plist / Windows
  *   HKLM/HKCU, and `managedSettings`) **except** the admin-configured
- *   `policyHelper` subprocess is not executed. MDM resolution may invoke
+ *   `policyHelper`/`policyHelpers` subprocess is not executed. MDM resolution may invoke
  *   `plutil` (macOS, when an MDM plist exists) or `reg.exe` (Windows/WSL)
  *   on the first call per process. If your deployment relies on
  *   policyHelper to inject managed settings, results will differ.
@@ -5633,6 +5633,43 @@ export declare interface Settings {
     path: string;
     timeoutMs?: number;
     refreshIntervalMs?: 0 | number;
+  };
+  /**
+   * Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl. The entry for the current platform wins over policyHelper; a platform with no entry falls back to policyHelper (wsl falls back to the linux entry first). Honored only from admin-controlled policy sources.
+   */
+  policyHelpers?: {
+    macos?: {
+      /**
+       * Absolute path to the helper executable
+       */
+      path: string;
+      timeoutMs?: number;
+      refreshIntervalMs?: 0 | number;
+    };
+    linux?: {
+      /**
+       * Absolute path to the helper executable
+       */
+      path: string;
+      timeoutMs?: number;
+      refreshIntervalMs?: 0 | number;
+    };
+    windows?: {
+      /**
+       * Absolute path to the helper executable
+       */
+      path: string;
+      timeoutMs?: number;
+      refreshIntervalMs?: 0 | number;
+    };
+    wsl?: {
+      /**
+       * Absolute path to the helper executable
+       */
+      path: string;
+      timeoutMs?: number;
+      refreshIntervalMs?: 0 | number;
+    };
   };
   /**
    * Custom file suggestion configuration for \@ mentions

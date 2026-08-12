@@ -129,6 +129,9 @@ export type AgentOutput =
         inference_geo?: string | null;
         speed?: string | null;
         iterations?: unknown;
+        output_tokens_details?: {
+          thinking_tokens?: number | null;
+        } | null;
       };
       toolStats?: {
         readCount: number;
@@ -2919,7 +2922,7 @@ export interface ArtifactInput {
    */
   scope?: "mine" | "shared" | "all";
   /**
-   * Title for the artifact — the name shown in the browser tab and gallery. Prefer a <title> tag at the top of the HTML itself; this parameter fills in only when the file lacks one in the first 8KB of the file, and never overrides the tag. HTML publishes only — Markdown pages keep their filename identity. Content always comes from file_path — there is no inline content parameter.
+   * Title for the artifact — the name shown in the browser tab and gallery. A short, distinctive noun-phrase name — not a generic label, a summary, or a name with an appended explainer. Prefer a <title> tag at the top of the HTML itself; this parameter fills in only when the file lacks one in the first 8KB of the file, and never overrides the tag. HTML publishes only — Markdown pages keep their filename identity. Content always comes from file_path — there is no inline content parameter.
    */
   title?: string;
   /**
