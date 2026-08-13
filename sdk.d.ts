@@ -5113,6 +5113,10 @@ export declare type SDKSystemMessage = {
    */
   permissionMode: PermissionMode;
   slash_commands: string[];
+  /**
+   * Subset of slash_commands whose UX is bound to the local terminal (e.g. exit, statusline). Phone/remote UIs should hide these from command menus; desktop surfaces may keep them. Present only when non-empty; absent on CLIs that predate the field, and on sessions where no advertised command carries the tag.
+   */
+  terminal_slash_commands?: string[];
   output_style: string;
   skills: string[];
   plugins: {
@@ -5128,7 +5132,7 @@ export declare type SDKSystemMessage = {
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
   /**
-   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is always empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it). Absent on older CLIs.
+   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is always empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the CCR backend reads this from the persisted init event to decide whether it may send them). Absent on older CLIs.
    */
   capabilities?: string[];
 
@@ -5721,6 +5725,7 @@ export declare interface Settings {
      * Whether to append the claude.ai session link to commits and PRs created from web or Remote Control sessions (default: true). Set to false to omit the Claude-Session trailer and PR-body link.
      */
     sessionUrl?: boolean;
+    [k: string]: unknown;
   };
   /**
    * Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)
@@ -6414,6 +6419,21 @@ export declare interface Settings {
                     sha256?: string;
                   }
                 | {
+                    source: "command";
+                    /**
+                     * Shell command that prints the absolute path of the plugin directory on stdout (exactly one line) and exits 0. It must leave a complete plugin in that directory before exiting; the directory is copied into the plugin cache, so the printed path may change between runs (it is re-resolved on every install and update, and once per session in the background). Runs through the platform shell (sh on macOS/Linux, cmd.exe on Windows) from the user's home directory with Claude Code's subprocess environment.
+                     */
+                    command: string;
+                    /**
+                     * Seconds to wait for the command before giving up (default: 60)
+                     */
+                    timeout?: number;
+                    /**
+                     * copy (default): the printed directory is copied into the plugin cache and content-hashed, so it may be deleted afterwards. link: the cache entry links to the printed directory in place (no copy, no size limit; macOS/Linux) — for large exports; the directory must then stay valid while Claude Code runs, and a different printed path is what signals new content.
+                     */
+                    mode?: "copy" | "link";
+                  }
+                | {
                     source: "unsupported";
                     error?: string;
                   };
@@ -6642,6 +6662,21 @@ export declare interface Settings {
                 sha256?: string;
               }
             | {
+                source: "command";
+                /**
+                 * Shell command that prints the absolute path of the plugin directory on stdout (exactly one line) and exits 0. It must leave a complete plugin in that directory before exiting; the directory is copied into the plugin cache, so the printed path may change between runs (it is re-resolved on every install and update, and once per session in the background). Runs through the platform shell (sh on macOS/Linux, cmd.exe on Windows) from the user's home directory with Claude Code's subprocess environment.
+                 */
+                command: string;
+                /**
+                 * Seconds to wait for the command before giving up (default: 60)
+                 */
+                timeout?: number;
+                /**
+                 * copy (default): the printed directory is copied into the plugin cache and content-hashed, so it may be deleted afterwards. link: the cache entry links to the printed directory in place (no copy, no size limit; macOS/Linux) — for large exports; the directory must then stay valid while Claude Code runs, and a different printed path is what signals new content.
+                 */
+                mode?: "copy" | "link";
+              }
+            | {
                 source: "unsupported";
                 error?: string;
               };
@@ -6861,6 +6896,21 @@ export declare interface Settings {
                 sha256?: string;
               }
             | {
+                source: "command";
+                /**
+                 * Shell command that prints the absolute path of the plugin directory on stdout (exactly one line) and exits 0. It must leave a complete plugin in that directory before exiting; the directory is copied into the plugin cache, so the printed path may change between runs (it is re-resolved on every install and update, and once per session in the background). Runs through the platform shell (sh on macOS/Linux, cmd.exe on Windows) from the user's home directory with Claude Code's subprocess environment.
+                 */
+                command: string;
+                /**
+                 * Seconds to wait for the command before giving up (default: 60)
+                 */
+                timeout?: number;
+                /**
+                 * copy (default): the printed directory is copied into the plugin cache and content-hashed, so it may be deleted afterwards. link: the cache entry links to the printed directory in place (no copy, no size limit; macOS/Linux) — for large exports; the directory must then stay valid while Claude Code runs, and a different printed path is what signals new content.
+                 */
+                mode?: "copy" | "link";
+              }
+            | {
                 source: "unsupported";
                 error?: string;
               };
@@ -6884,6 +6934,10 @@ export declare interface Settings {
         };
       }
   )[];
+  /**
+   * Controls the `command` plugin source, whose plugin directory is produced by running a marketplace-declared command on this machine. true: command-sourced plugins are never installed, updated, or re-resolved (the command never runs). false: explicitly allowed. Unset: follows allowManagedHooksOnly — an org that restricts hook execution to managed settings gets command sources disabled too. Only honored from managed settings.
+   */
+  disableCommandPluginSources?: boolean;
   /**
    * When true (and set in managed settings), rejects the --plugin-dir, --plugin-url, --agents, and non-sdk --mcp-config CLI flags at startup. Closes the CLI-flag bypass of strictKnownMarketplaces. Pair with allowedMcpServers for per-server MCP control; this setting does not gate other MCP entry points (SDK setMcpServers, claude mcp add, .mcp.json). Also blocks surfaces that spawn the CLI with these flags internally (see settings documentation). Only honored from managed settings; ignored in user/project/local settings.
    */

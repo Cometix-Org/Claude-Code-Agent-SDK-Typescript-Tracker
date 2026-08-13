@@ -46,6 +46,7 @@ export type ToolInputSchemas =
   | ScheduleWakeupInput
   | RemoteTriggerInput
   | ShowOnboardingRolePickerInput
+  | ReadNotificationsInput
   | MonitorInput
   | ProposeSkillsInput
   | ProposeGoalInput
@@ -85,6 +86,7 @@ export type ToolOutputSchemas =
   | ArtifactOutput
   | RemoteTriggerOutput
   | ShowOnboardingRolePickerOutput
+  | ReadNotificationsOutput
   | ScheduleWakeupOutput
   | MonitorOutput
   | ProposeSkillsOutput
@@ -2714,6 +2716,7 @@ export interface RemoteTriggerInput {
   };
 }
 export interface ShowOnboardingRolePickerInput {}
+export interface ReadNotificationsInput {}
 export interface MonitorInput {
   /**
    * Short human-readable description of what you are monitoring (shown in notifications).
@@ -3721,6 +3724,30 @@ export interface RemoteTriggerOutput {
 export interface ShowOnboardingRolePickerOutput {
   role?: string;
   dismissed?: boolean;
+}
+export interface ReadNotificationsOutput {
+  notifications: {
+    /**
+     * Server-assigned stable id — the dedup key across redeliveries.
+     */
+    notification_id: string;
+    /**
+     * Server-attested source token: "github_webhook" | "trigger_fire" | "mcp_send_message" (open set; unknown well-formed tokens pass through verbatim, off-grammar values coerce to "unknown").
+     */
+    origin: string;
+    /**
+     * RFC3339 timestamp of when the backend queued it.
+     */
+    queued_at: string;
+    /**
+     * Verbatim notification body.
+     */
+    content: string;
+  }[];
+  /**
+   * Notifications still queued after this drain (drains are size-budgeted); call the tool again to read them.
+   */
+  remaining: number;
 }
 export interface ScheduleWakeupOutput {
   /**
