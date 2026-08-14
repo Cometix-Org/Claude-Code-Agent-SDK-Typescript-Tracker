@@ -411,6 +411,8 @@ declare namespace coreTypes {
     SDKBackgroundTasksChangedMessage,
     SDKCommandsChangedMessage,
     SDKCompactBoundaryMessage,
+    SDKContextUsageCategory,
+    SDKContextUsage,
     SDKControlRequestProgressMessage,
     SDKConversationResetMessage,
     SDKDeferredToolUse,
@@ -2933,7 +2935,7 @@ export declare type ResolvedSettingSource = SettingSource | "managed" | "flag";
  * - **The policy tier matches CLI startup** (managed-settings.json,
  *   remote-cached managed settings, MDM via macOS plist / Windows
  *   HKLM/HKCU, and `managedSettings`) **except** the admin-configured
- *   `policyHelper`/`policyHelpers` subprocess is not executed. MDM resolution may invoke
+ *   `policyHelper` subprocess is not executed. MDM resolution may invoke
  *   `plutil` (macOS, when an MDM plist exists) or `reg.exe` (Windows/WSL)
  *   on the first call per process. If your deployment relies on
  *   policyHelper to inject managed settings, results will differ.
@@ -3428,6 +3430,11 @@ export declare type SDKAssistantMessage = {
    * ISO timestamp of when this content block finished on the originating process. One API assistant turn may produce several assistant messages sharing a message.id, each with its own timestamp. Uses the originating host's clock, so it's for display only; do not order messages by this field. Older emitters omit it; consumers should fall back to receive time.
    */
   timestamp?: string;
+
+  /**
+   * Structured twin of the /context report, carried on the synthetic assistant message that delivers the markdown table. Present only on /context results from CLIs new enough to attach it; the markdown in message.content remains the canonical fallback. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
+   */
+  context_usage?: SDKContextUsage;
 };
 
 export declare type SDKAssistantMessageError =
@@ -3511,6 +3518,87 @@ export declare type SDKCompactBoundaryMessage = {
 
   uuid: UUID;
   session_id: string;
+};
+
+/**
+ * Structured twin of the /context report — the data a client needs to render the context-usage card without parsing the markdown table. Evolves additively (new optional fields); a breaking reshape would ship as a sibling field, so consumers can trust the fields they know.
+ */
+export declare type SDKContextUsage = {
+  /**
+   * Main-loop model the usage was computed for.
+   */
+  model: string;
+  /**
+   * Estimated tokens in use, unclamped — may exceed raw_max_tokens when over limit.
+   */
+  total_tokens: number;
+  /**
+   * The window usage is measured against: the resolved autocompact window — the model's believed limit, or a smaller compaction-policy window (a configured value, or e.g. the 200K boundary on 1M-window models).
+   */
+  raw_max_tokens: number;
+  /**
+   * Rounded total_tokens / raw_max_tokens, 0-100+.
+   */
+  percentage: number;
+  /**
+   * Present when total_tokens exceeds raw_max_tokens. kind says how the window was resolved, not whether the API will accept the next request: 'hard_limit' means the window is the model's believed limit (the API will refuse past it); 'compaction_window' means a compaction-policy window, which may or may not coincide with the model's hard limit.
+   */
+  over_limit?: {
+    tokens_over: number;
+    kind: "hard_limit" | "compaction_window";
+  };
+  categories: SDKContextUsageCategory[];
+  mcp_tools: {
+    /**
+     * Wire name, e.g. "mcp__linear__create_issue".
+     */
+    name: string;
+    server_name: string;
+    tokens: number;
+  }[];
+  memory_files: {
+    path: string;
+    /**
+     * Display label of the memory-file source, e.g. "Project" or "User".
+     */
+    type: string;
+    tokens: number;
+  }[];
+  agents: {
+    agent_type: string;
+    /**
+     * Raw source identifier, e.g. 'projectSettings', 'userSettings', 'plugin'. Built-in agents are excluded by the producer. Display labels are the renderer's concern.
+     */
+    source: string;
+    tokens: number;
+  }[];
+  /**
+   * Omitted when no skills contribute tokens.
+   */
+  skills?: {
+    name: string;
+    /**
+     * Raw source identifier, e.g. 'userSettings', 'plugin', 'syncedSkills'.
+     */
+    source: string;
+    plugin_name?: string;
+    tokens: number;
+  }[];
+};
+
+/**
+ * One row of the /context usage-by-category breakdown. Rows may carry zero tokens; renderers typically hide those.
+ */
+export declare type SDKContextUsageCategory = {
+  /**
+   * Display name of the row as the CLI renders it, e.g. "Messages" or "MCP tools (deferred)". Use `kind` (not this name) to classify the row.
+   */
+  name: string;
+  tokens: number;
+  /**
+   * What the row is: 'used' content occupies the window; 'free' is the remaining window; 'buffer' is the compaction reserve (autocompact or manual); 'deferred' rows are out-of-window tool schemas — listed for awareness, excluded from usage math.
+   */
+  kind: "used" | "free" | "buffer" | "deferred";
 };
 
 /**
@@ -5638,43 +5726,7 @@ export declare interface Settings {
     timeoutMs?: number;
     refreshIntervalMs?: 0 | number;
   };
-  /**
-   * Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl. The entry for the current platform wins over policyHelper; a platform with no entry falls back to policyHelper (wsl falls back to the linux entry first). Honored only from admin-controlled policy sources.
-   */
-  policyHelpers?: {
-    macos?: {
-      /**
-       * Absolute path to the helper executable
-       */
-      path: string;
-      timeoutMs?: number;
-      refreshIntervalMs?: 0 | number;
-    };
-    linux?: {
-      /**
-       * Absolute path to the helper executable
-       */
-      path: string;
-      timeoutMs?: number;
-      refreshIntervalMs?: 0 | number;
-    };
-    windows?: {
-      /**
-       * Absolute path to the helper executable
-       */
-      path: string;
-      timeoutMs?: number;
-      refreshIntervalMs?: 0 | number;
-    };
-    wsl?: {
-      /**
-       * Absolute path to the helper executable
-       */
-      path: string;
-      timeoutMs?: number;
-      refreshIntervalMs?: 0 | number;
-    };
-  };
+
   /**
    * Custom file suggestion configuration for \@ mentions
    */
@@ -6467,9 +6519,491 @@ export declare interface Settings {
     };
   };
   /**
+   * Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it (and their settings sync would upload a file that uses only this spelling as if it declared no marketplaces), so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.
+   */
+  additionalMarketplaces?: {
+    [k: string]: {
+      /**
+       * Where to fetch the marketplace from
+       */
+      source:
+        | {
+            source: "url";
+            /**
+             * Direct URL to marketplace.json file
+             */
+            url: string;
+            /**
+             * Custom HTTP headers (e.g., for authentication)
+             */
+            headers?: {
+              [k: string]: string;
+            };
+          }
+        | {
+            source: "github";
+            /**
+             * GitHub repository in owner/repo format. ONLY in the managed-settings policy lists (strictKnownMarketplaces / blockedMarketplaces) the owner-wildcard form "owner/*" matches every repository under exactly that owner. Everywhere else (marketplace add, extraKnownMarketplaces, known_marketplaces.json) the value must name a single repository — a wildcard is taken literally and fails to clone.
+             */
+            repo: string;
+            /**
+             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             */
+            ref?: string;
+            /**
+             * Path to marketplace.json within repo (defaults to .claude-plugin/marketplace.json)
+             */
+            path?: string;
+            /**
+             * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
+             */
+            sparsePaths?: string[];
+            /**
+             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             */
+            skipLfs?: boolean;
+          }
+        | {
+            source: "git";
+            /**
+             * Full git repository URL
+             */
+            url: string;
+            /**
+             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             */
+            ref?: string;
+            /**
+             * Path to marketplace.json within repo (defaults to .claude-plugin/marketplace.json)
+             */
+            path?: string;
+            /**
+             * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
+             */
+            sparsePaths?: string[];
+            /**
+             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             */
+            skipLfs?: boolean;
+          }
+        | {
+            source: "npm";
+            /**
+             * NPM package containing marketplace.json
+             */
+            package: string;
+          }
+        | {
+            source: "file";
+            /**
+             * Local file path to marketplace.json
+             */
+            path: string;
+          }
+        | {
+            source: "directory";
+            /**
+             * Local directory containing .claude-plugin/marketplace.json
+             */
+            path: string;
+          }
+        | {
+            source: "skills-dir";
+          }
+        | {
+            source: "hostPattern";
+            /**
+             * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against github.com. For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
+             */
+            hostPattern: string;
+          }
+        | {
+            source: "pathPattern";
+            /**
+             * Regex pattern matched against the .path field of file and directory sources. Use in strictKnownMarketplaces to allow filesystem-based marketplaces alongside hostPattern restrictions for network sources. Use ".*" to allow all filesystem paths, or a narrower pattern (e.g., "^/opt/approved/") to restrict to specific directories.
+             */
+            pathPattern: string;
+          }
+        | {
+            source: "settings";
+            /**
+             * Marketplace name. Must match the extraKnownMarketplaces key (enforced); the synthetic manifest is written under this name. Same validation as PluginMarketplaceSchema plus reserved-name rejection — validateOfficialNameSource runs after the disk write, too late to clean up.
+             */
+            name: string;
+            /**
+             * Plugin entries declared inline in settings.json
+             */
+            plugins: {
+              /**
+               * Plugin name as it appears in the target repository
+               */
+              name: string;
+              /**
+               * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+               */
+              source:
+                | string
+                | {
+                    source: "npm";
+                    /**
+                     * Package name (or url, or local path, or anything else that can be passed to `npm` as a package)
+                     */
+                    package: string;
+                    /**
+                     * Specific version or version range (e.g., ^1.0.0, ~2.1.0)
+                     */
+                    version?: string;
+                    /**
+                     * Custom NPM registry URL (defaults to using system default, likely npmjs.org)
+                     */
+                    registry?: string;
+                  }
+                | {
+                    source: "url";
+                    /**
+                     * Full git repository URL (https:// or git\@)
+                     */
+                    url: string;
+                    /**
+                     * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                     */
+                    ref?: string;
+                    /**
+                     * Specific commit SHA to use
+                     */
+                    sha?: string;
+                  }
+                | {
+                    source: "github";
+                    /**
+                     * GitHub repository in owner/repo format
+                     */
+                    repo: string;
+                    /**
+                     * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                     */
+                    ref?: string;
+                    /**
+                     * Specific commit SHA to use
+                     */
+                    sha?: string;
+                  }
+                | {
+                    source: "git-subdir";
+                    /**
+                     * Git repository: GitHub owner/repo shorthand, https://, or git\@ URL
+                     */
+                    url: string;
+                    /**
+                     * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                     */
+                    path: string;
+                    /**
+                     * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                     */
+                    ref?: string;
+                    /**
+                     * Specific commit SHA to use
+                     */
+                    sha?: string;
+                  }
+                | {
+                    source: "archive";
+                    /**
+                     * HTTPS URL of a zip archive containing the plugin. The plugin root (the directory holding .claude-plugin/) may be at the top of the archive or nested one directory deep — a single wrapping directory is stripped.
+                     */
+                    url: string;
+                    /**
+                     * SHA-256 digest of the archive. When set, every download is verified against it and the install is refused on mismatch. It also serves as the version identity when neither plugin.json nor the marketplace entry declares a `version`. Recommended. Note the update signal is the version string (plugin.json version, else the entry version, else this digest) — changing only the digest while a version is declared does not trigger an update.
+                     */
+                    sha256?: string;
+                  }
+                | {
+                    source: "command";
+                    /**
+                     * Shell command that prints the absolute path of the plugin directory on stdout (exactly one line) and exits 0. It must leave a complete plugin in that directory before exiting; the directory is copied into the plugin cache, so the printed path may change between runs (it is re-resolved on every install and update, and once per session in the background). Runs through the platform shell (sh on macOS/Linux, cmd.exe on Windows) from the user's home directory with Claude Code's subprocess environment.
+                     */
+                    command: string;
+                    /**
+                     * Seconds to wait for the command before giving up (default: 60)
+                     */
+                    timeout?: number;
+                    /**
+                     * copy (default): the printed directory is copied into the plugin cache and content-hashed, so it may be deleted afterwards. link: the cache entry links to the printed directory in place (no copy, no size limit; macOS/Linux) — for large exports; the directory must then stay valid while Claude Code runs, and a different printed path is what signals new content.
+                     */
+                    mode?: "copy" | "link";
+                  }
+                | {
+                    source: "unsupported";
+                    error?: string;
+                  };
+              description?: string;
+              version?: string;
+              strict?: boolean;
+            }[];
+            owner?: {
+              /**
+               * Display name of the plugin author or organization
+               */
+              name: string;
+              /**
+               * Contact email for support or feedback
+               */
+              email?: string;
+              /**
+               * Website, GitHub profile, or organization URL
+               */
+              url?: string;
+            };
+          };
+      /**
+       * Local cache path where marketplace manifest is stored (auto-generated if not provided)
+       */
+      installLocation?: string;
+      /**
+       * Whether to automatically update this marketplace and its installed plugins on startup
+       */
+      autoUpdate?: boolean;
+    };
+  };
+  /**
    * Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these sources can be added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {"source":"github","repo":"owner/*"} to allow every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces.
    */
   strictKnownMarketplaces?: (
+    | {
+        source: "url";
+        /**
+         * Direct URL to marketplace.json file
+         */
+        url: string;
+        /**
+         * Custom HTTP headers (e.g., for authentication)
+         */
+        headers?: {
+          [k: string]: string;
+        };
+      }
+    | {
+        source: "github";
+        /**
+         * GitHub repository in owner/repo format. ONLY in the managed-settings policy lists (strictKnownMarketplaces / blockedMarketplaces) the owner-wildcard form "owner/*" matches every repository under exactly that owner. Everywhere else (marketplace add, extraKnownMarketplaces, known_marketplaces.json) the value must name a single repository — a wildcard is taken literally and fails to clone.
+         */
+        repo: string;
+        /**
+         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         */
+        ref?: string;
+        /**
+         * Path to marketplace.json within repo (defaults to .claude-plugin/marketplace.json)
+         */
+        path?: string;
+        /**
+         * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
+         */
+        sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
+      }
+    | {
+        source: "git";
+        /**
+         * Full git repository URL
+         */
+        url: string;
+        /**
+         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         */
+        ref?: string;
+        /**
+         * Path to marketplace.json within repo (defaults to .claude-plugin/marketplace.json)
+         */
+        path?: string;
+        /**
+         * Directories to include via git sparse-checkout (cone mode). Use for monorepos where the marketplace lives in a subdirectory. Example: [".claude-plugin", "plugins"]. If omitted, the full repository is cloned.
+         */
+        sparsePaths?: string[];
+        /**
+         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         */
+        skipLfs?: boolean;
+      }
+    | {
+        source: "npm";
+        /**
+         * NPM package containing marketplace.json
+         */
+        package: string;
+      }
+    | {
+        source: "file";
+        /**
+         * Local file path to marketplace.json
+         */
+        path: string;
+      }
+    | {
+        source: "directory";
+        /**
+         * Local directory containing .claude-plugin/marketplace.json
+         */
+        path: string;
+      }
+    | {
+        source: "skills-dir";
+      }
+    | {
+        source: "hostPattern";
+        /**
+         * Regex pattern to match the host/domain extracted from any marketplace source type. For github sources, matches against github.com. For git sources (SSH or HTTPS), extracts the hostname from the URL. Use in strictKnownMarketplaces to allow all marketplaces from a specific host (e.g., "^github\.mycompany\.com$").
+         */
+        hostPattern: string;
+      }
+    | {
+        source: "pathPattern";
+        /**
+         * Regex pattern matched against the .path field of file and directory sources. Use in strictKnownMarketplaces to allow filesystem-based marketplaces alongside hostPattern restrictions for network sources. Use ".*" to allow all filesystem paths, or a narrower pattern (e.g., "^/opt/approved/") to restrict to specific directories.
+         */
+        pathPattern: string;
+      }
+    | {
+        source: "settings";
+        /**
+         * Marketplace name. Must match the extraKnownMarketplaces key (enforced); the synthetic manifest is written under this name. Same validation as PluginMarketplaceSchema plus reserved-name rejection — validateOfficialNameSource runs after the disk write, too late to clean up.
+         */
+        name: string;
+        /**
+         * Plugin entries declared inline in settings.json
+         */
+        plugins: {
+          /**
+           * Plugin name as it appears in the target repository
+           */
+          name: string;
+          /**
+           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+           */
+          source:
+            | string
+            | {
+                source: "npm";
+                /**
+                 * Package name (or url, or local path, or anything else that can be passed to `npm` as a package)
+                 */
+                package: string;
+                /**
+                 * Specific version or version range (e.g., ^1.0.0, ~2.1.0)
+                 */
+                version?: string;
+                /**
+                 * Custom NPM registry URL (defaults to using system default, likely npmjs.org)
+                 */
+                registry?: string;
+              }
+            | {
+                source: "url";
+                /**
+                 * Full git repository URL (https:// or git\@)
+                 */
+                url: string;
+                /**
+                 * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                 */
+                ref?: string;
+                /**
+                 * Specific commit SHA to use
+                 */
+                sha?: string;
+              }
+            | {
+                source: "github";
+                /**
+                 * GitHub repository in owner/repo format
+                 */
+                repo: string;
+                /**
+                 * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                 */
+                ref?: string;
+                /**
+                 * Specific commit SHA to use
+                 */
+                sha?: string;
+              }
+            | {
+                source: "git-subdir";
+                /**
+                 * Git repository: GitHub owner/repo shorthand, https://, or git\@ URL
+                 */
+                url: string;
+                /**
+                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                 */
+                path: string;
+                /**
+                 * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+                 */
+                ref?: string;
+                /**
+                 * Specific commit SHA to use
+                 */
+                sha?: string;
+              }
+            | {
+                source: "archive";
+                /**
+                 * HTTPS URL of a zip archive containing the plugin. The plugin root (the directory holding .claude-plugin/) may be at the top of the archive or nested one directory deep — a single wrapping directory is stripped.
+                 */
+                url: string;
+                /**
+                 * SHA-256 digest of the archive. When set, every download is verified against it and the install is refused on mismatch. It also serves as the version identity when neither plugin.json nor the marketplace entry declares a `version`. Recommended. Note the update signal is the version string (plugin.json version, else the entry version, else this digest) — changing only the digest while a version is declared does not trigger an update.
+                 */
+                sha256?: string;
+              }
+            | {
+                source: "command";
+                /**
+                 * Shell command that prints the absolute path of the plugin directory on stdout (exactly one line) and exits 0. It must leave a complete plugin in that directory before exiting; the directory is copied into the plugin cache, so the printed path may change between runs (it is re-resolved on every install and update, and once per session in the background). Runs through the platform shell (sh on macOS/Linux, cmd.exe on Windows) from the user's home directory with Claude Code's subprocess environment.
+                 */
+                command: string;
+                /**
+                 * Seconds to wait for the command before giving up (default: 60)
+                 */
+                timeout?: number;
+                /**
+                 * copy (default): the printed directory is copied into the plugin cache and content-hashed, so it may be deleted afterwards. link: the cache entry links to the printed directory in place (no copy, no size limit; macOS/Linux) — for large exports; the directory must then stay valid while Claude Code runs, and a different printed path is what signals new content.
+                 */
+                mode?: "copy" | "link";
+              }
+            | {
+                source: "unsupported";
+                error?: string;
+              };
+          description?: string;
+          version?: string;
+          strict?: boolean;
+        }[];
+        owner?: {
+          /**
+           * Display name of the plugin author or organization
+           */
+          name: string;
+          /**
+           * Contact email for support or feedback
+           */
+          email?: string;
+          /**
+           * Website, GitHub profile, or organization URL
+           */
+          url?: string;
+        };
+      }
+  )[];
+  /**
+   * Alias for strictKnownMarketplaces (managed settings only): this key is read exactly as if it were spelled strictKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Clients older than this alias ignore it, so keep using strictKnownMarketplaces when the allowlist must also bind older Claude Code versions.
+   */
+  allowedMarketplaces?: (
     | {
         source: "url";
         /**
@@ -7184,7 +7718,7 @@ export declare interface Settings {
     allowAppleEvents?: boolean;
     excludedCommands?: string[];
     /**
-     * Custom ripgrep configuration for bundled ripgrep support
+     * Custom ripgrep configuration for bundled ripgrep support. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
      */
     ripgrep?: {
       command: string;
