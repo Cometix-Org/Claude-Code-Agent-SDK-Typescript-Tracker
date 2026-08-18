@@ -129,8 +129,19 @@ export declare type AgentMcpServerSpec =
 
 export declare type AnyZodRawShape = ZodRawShape | ZodRawShape_2;
 
+/**
+ * Where the credential used for API requests came from: 'ANTHROPIC_API_KEY' (environment variable), 'apiKeyHelper' (the configured helper command), '/login managed key' (an API key created and stored by /login with an Anthropic Console account), or 'none' (no API key in use - e.g. claude.ai OAuth login, a bearer token, or a third-party cloud provider). 'user' | 'project' | 'org' | 'temporary' | 'oauth' are legacy members that current CLIs never emit; they remain only so the type stays backward compatible.
+ */
 export declare type ApiKeySource =
-  "user" | "project" | "org" | "temporary" | "oauth";
+  | "ANTHROPIC_API_KEY"
+  | "apiKeyHelper"
+  | "/login managed key"
+  | "none"
+  | "user"
+  | "project"
+  | "org"
+  | "temporary"
+  | "oauth";
 
 export declare type AsyncHookJSONOutput = {
   async: true;
@@ -294,9 +305,18 @@ export declare type ConfigChangeHookInput = BaseHookInput & {
  */
 export declare type ConfigScope = "local" | "user" | "project";
 
+/**
+ * The request failed or was rejected (unknown subtype, invalid arguments, or an error while handling it).
+ */
 declare type ControlErrorResponse = {
   subtype: "error";
+  /**
+   * The request_id of the control_request this answers.
+   */
   request_id: string;
+  /**
+   * Human-readable failure description.
+   */
   error: string;
   /**
    * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
@@ -308,9 +328,18 @@ declare type ControlErrorResponse = {
   pending_user_dialog_requests?: SDKControlRequest[];
 };
 
+/**
+ * The request was handled.
+ */
 declare type ControlResponse = {
   subtype: "success";
+  /**
+   * The request_id of the control_request this answers.
+   */
   request_id: string;
+  /**
+   * The success payload, shaped as documented for the answered request's subtype; absent or {} for requests that are merely acknowledged.
+   */
   response?: Record<string, unknown>;
   /**
    * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
@@ -656,16 +685,10 @@ export declare const EXIT_REASONS: readonly [
   "logout",
   "prompt_input_exit",
   "other",
-  "bypass_permissions_disabled",
 ];
 
 export declare type ExitReason =
-  | "clear"
-  | "resume"
-  | "logout"
-  | "prompt_input_exit"
-  | "other"
-  | "bypass_permissions_disabled";
+  "clear" | "resume" | "logout" | "prompt_input_exit" | "other";
 
 /**
  * Why fast mode can't serve right now. Absent when nothing blocks it (a request may still choose standard speed). A paused-after-rate-limit run is not here; it rides fast_mode_state as 'cooldown'.
@@ -2013,6 +2036,7 @@ export declare type Options = {
    * Applies to both foreground and background subagents. Defaults to false.
    */
   agentProgressSummaries?: boolean;
+
   /**
    * Session ID to resume. Loads the conversation history from the specified session.
    */
@@ -3397,8 +3421,14 @@ export declare type SDKAPIRetryMessage = {
   session_id: string;
 };
 
+/**
+ * An assistant message. While a response streams the CLI emits one assistant message per completed content block, so several consecutive assistant messages can share message.id and each carries just that block in message.content; on those, message.stop_reason is null and message.usage is not final — the turn's stop reason and total usage arrive on the result message. parent_tool_use_id is non-null when the message was produced inside a subagent started by that tool_use.
+ */
 export declare type SDKAssistantMessage = {
   type: "assistant";
+  /**
+   * Shaped like an Anthropic Messages API Message object (role "assistant"): id, model, content blocks (text, thinking, tool_use, ...), stop_reason and usage. When streamed, content typically holds the single block this message delivers and stop_reason is still null — see SDKAssistantMessage. See the Messages API reference for the block types.
+   */
   message: BetaMessage;
   parent_tool_use_id: string | null;
   error?: SDKAssistantMessageError;
@@ -3629,10 +3659,13 @@ declare type SDKControlCancelAsyncMessageRequest = {
 };
 
 /**
- * Cancels a currently open control request.
+ * Tells the other side that the sender no longer needs the answer to one of its own in-flight control_requests (for example a pending can_use_tool prompt after the turn was interrupted, or one that another client already answered). Either side may send it for a request it originated. The sender stops waiting at once and ignores any control_response that still arrives for that request_id; a receiver that can abort the work does so and may still reply (typically with an error), otherwise it simply completes the request. There is no reply to the cancel itself.
  */
 declare type SDKControlCancelRequest = {
   type: "control_cancel_request";
+  /**
+   * The request_id of the control_request being withdrawn.
+   */
   request_id: string;
 };
 
@@ -3776,13 +3809,6 @@ export declare type SDKControlGetContextUsageResponse = {
     cache_creation_input_tokens: number;
     cache_read_input_tokens: number;
   } | null;
-};
-
-/**
- * Read the session's current plan-mode plan. Unlike read_file, the caller does not need to know the plan file's path — the worker resolves its own plan slug. Never creates a plan slug or file.
- */
-declare type SDKControlGetPlanRequest = {
-  subtype: "get_plan";
 };
 
 /**
@@ -4030,13 +4056,6 @@ export declare type SDKControlGetUsageResponse = {
 };
 
 /**
- * Requests the workspace git diff for the thin-client /diff dialog. The worker resolves one base ref for both stats and hunks (working tree vs HEAD, falling back to branch-vs-default-merge-base when the tree is clean) and applies the standard caps (5s git timeout, 50 files, 1MB/file).
- */
-declare type SDKControlGetWorkspaceDiffRequest = {
-  subtype: "get_workspace_diff";
-};
-
-/**
  * Initializes the SDK session with hooks, MCP servers, and agent configuration.
  */
 declare type SDKControlInitializeRequest = {
@@ -4181,11 +4200,14 @@ declare type SDKControlMcpCallRequest = {
 };
 
 /**
- * Sends a JSON-RPC message to a specific MCP server.
+ * Carries one MCP JSON-RPC message for an SDK-hosted MCP server (one named in initialize.sdkMcpServers or added later with mcp_set_servers). Flows in both directions: the CLI sends it to the client to reach the in-process server, and the client sends it to the CLI to deliver that server's own messages. When the client answers, the success response carries the server's JSON-RPC reply under mcp_response; the CLI acknowledges a client-sent one with an empty success.
  */
 declare type SDKControlMcpMessageRequest = {
   subtype: "mcp_message";
   server_name: string;
+  /**
+   * A JSON-RPC 2.0 message as defined by the Model Context Protocol (request, notification, or response object).
+   */
   message: JSONRPCMessage;
 };
 
@@ -4361,8 +4383,14 @@ declare type SDKControlRenameSessionRequest = {
   title: string;
 };
 
+/**
+ * Envelope for a control-protocol request, sent by either side on the same stream as the messages. The receiver normally answers with exactly one control_response carrying the same request_id (a few request types document when no answer is sent), and a requester ignores responses for request_ids it is not waiting on. Each request type's own documentation says which side sends it and what its success response carries.
+ */
 export declare type SDKControlRequest = {
   type: "control_request";
+  /**
+   * Chosen by the sender, unique among its in-flight requests; the control_response (and any control_cancel_request) for this request echoes it.
+   */
   request_id: string;
   request: SDKControlRequestInner;
 };
@@ -4389,8 +4417,6 @@ declare type SDKControlRequestInner =
   | SDKControlRewindFilesRequest
   | SDKControlCancelAsyncMessageRequest
   | SDKControlReadFileRequest
-  | SDKControlGetWorkspaceDiffRequest
-  | SDKControlGetPlanRequest
   | SDKControlSeedReadStateRequest
   | SDKControlMcpSetServersRequest
   | SDKControlRegisterRepoRootRequest
@@ -4430,7 +4456,7 @@ export declare type SDKControlRequestProgressMessage = {
 declare type SDKControlRequestUserDialogRequest = {
   subtype: "request_user_dialog";
   /**
-   * Identifier for the dialog the host should render. Open string union — new kinds may be added without bumping the protocol; hosts must answer unrecognized kinds with {behavior: "cancelled"}.
+   * Identifier for the dialog the host should render. Open string union — new kinds may be added without bumping the protocol. A kind is only sent in sessions where some attached client declared it in initialize.supportedDialogKinds (declare exactly the kinds you can render); on multi-client transports the request still reaches every attached client. A host that receives a kind it did not declare must not answer it (an error-subtype response is discarded and the dialog stays pending) — never with {behavior: "cancelled"}, which is a real settlement treated as the user dismissing the dialog. An unanswered dialog is cancelled by the CLI after its dialog deadline.
    */
   dialog_kind: string;
   /**
@@ -4440,6 +4466,9 @@ declare type SDKControlRequestUserDialogRequest = {
   tool_use_id?: string;
 };
 
+/**
+ * Envelope for the single reply to a control_request, sent by whichever side received the request.
+ */
 export declare type SDKControlResponse = {
   type: "control_response";
   response: ControlResponse | ControlErrorResponse;
@@ -4559,6 +4588,9 @@ export declare type SDKFilesPersistedEvent = {
  */
 declare type SDKHookCallbackMatcher = {
   matcher?: string;
+  /**
+   * Opaque ids chosen by the client, one per hook function it registered for this matcher. When the hook fires the CLI sends a hook_callback control request carrying one of these ids as callback_id; the client maps it back to its function.
+   */
   hookCallbackIds: string[];
   timeout?: number;
 };
@@ -4635,7 +4667,7 @@ export declare type SDKInformationalMessage = {
 };
 
 /**
- * Keep-alive message to maintain WebSocket connection.
+ * Liveness heartbeat with no payload. Either side may send it at any time (the CLI emits it periodically, for example while a long-running control request is in progress); receivers must ignore it.
  */
 declare type SDKKeepAliveMessage = {
   type: "keep_alive";
@@ -4696,6 +4728,9 @@ export declare type SDKMemoryRecallMessage = {
   session_id: string;
 };
 
+/**
+ * Every conversational and informational message the CLI emits on its output stream, discriminated by type (and subtype for system/result messages). Consumers should ignore types and subtypes they do not recognize: the set grows over time.
+ */
 export declare type SDKMessage =
   | SDKAssistantMessage
   | SDKUserMessage
@@ -4751,6 +4786,10 @@ export declare type SDKMessageOrigin =
   | {
       kind: "peer";
       from: string;
+      /**
+       * The SENDING session's permission class as declared by the host that injects this message on local stdin ('bypass' for sessions that run tools without asking, 'prompting' otherwise). Lets the recipient deliver a same-class message immediately while a cross-class or undeclared sender is still held at a recipient that runs without asking. Honored only from the injecting host on local stdin; absent when the host does not declare it.
+       */
+      fromMode?: "bypass" | "prompting";
       /**
        * Sender display name, normalized by the harness: Unicode control, format, surrogate, and line/paragraph-separator code points stripped (categories Cc/Cf/Cs/Zl/Zp — covers bidi controls, zero-width characters, and tag characters), trimmed, at most 64 code points (+ ellipsis, never splitting a surrogate pair). Sender-asserted display text (the addressable identity is `from`) — render it as reported speech, but no client-side character sanitization is needed. Absent when the wire is not exactly one harness-formed envelope and on messages from older senders.
        */
@@ -4833,6 +4872,7 @@ export declare type SDKModelRefusalFallbackMessage = {
    * The refusal category ('cyber', 'bio', …): stop_details.category from the refused API response (client lane), or the fallback block's server-gated trigger.category (server lane). Open string — new categories ship on the wire ahead of schema updates. null when neither source carried a category (normal, not an error). Absent when emitted by an older CLI.
    */
   api_refusal_category?: string | null;
+
   /**
    * stop_details.explanation from the refused API response (client lane only — the server-lane trigger carries no explanation). Unstable human prose — display only, never parse. null/absent when the response carried none, and always null on server-lane banners.
    */
@@ -4881,8 +4921,14 @@ export declare type SDKNotificationMessage = {
   session_id: string;
 };
 
+/**
+ * An incremental streaming event for the assistant message being generated, emitted only when partial messages are requested (--include-partial-messages). The complete assistant message still follows as its own message.
+ */
 export declare type SDKPartialAssistantMessage = {
   type: "stream_event";
+  /**
+   * One Anthropic Messages API streaming event (message_start, content_block_start, content_block_delta, content_block_stop, message_delta, message_stop) as defined for the streaming Messages API.
+   */
   event: BetaRawMessageStreamEvent;
   parent_tool_use_id: string | null;
   uuid: UUID;
@@ -5051,6 +5097,9 @@ export declare type SDKResultError = {
   session_id: string;
 };
 
+/**
+ * The outcome of a turn. The CLI emits exactly one result message per turn, after that turn's assistant, user and stream_event messages; treat it as the turn-complete signal (informational system messages such as task notifications, session state changes or prompt suggestions may still follow it). subtype "success" carries the final assistant text in result — or, with is_error true, the error text when the turn ended on an API error; the error subtypes say why the turn stopped early. In single-prompt (non-streaming-input) mode the process exits after the turn.
+ */
 export declare type SDKResultMessage = SDKResultSuccess | SDKResultError;
 
 export declare type SDKResultSuccess = {
@@ -5178,14 +5227,21 @@ export declare type SDKStatusMessage = {
   permissionMode?: PermissionMode;
   compact_result?: "success" | "failed";
   compact_error?: string;
+
   uuid: UUID;
   session_id: string;
 };
 
+/**
+ * Session metadata the CLI emits at the start of each turn, normally ahead of every other message of that turn: session_id, model, working directory, tools, MCP servers, slash commands, permission mode, and the capabilities list for feature detection.
+ */
 export declare type SDKSystemMessage = {
   type: "system";
   subtype: "init";
   agents?: string[];
+  /**
+   * Where the credential used for API requests came from: 'ANTHROPIC_API_KEY' (environment variable), 'apiKeyHelper' (the configured helper command), '/login managed key' (an API key created and stored by /login with an Anthropic Console account), or 'none' (no API key in use - e.g. claude.ai OAuth login, a bearer token, or a third-party cloud provider). 'user' | 'project' | 'org' | 'temporary' | 'oauth' are legacy members that current CLIs never emit; they remain only so the type stays backward compatible.
+   */
   apiKeySource: ApiKeySource;
   betas?: string[];
   claude_code_version: string;
@@ -5219,6 +5275,10 @@ export declare type SDKSystemMessage = {
 
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
+  /**
+   * The effort level the session will send on its next request — after env overrides, session state, org caps and model-support downgrades; the same value get_settings reports as applied.effort. null when no effort parameter will be sent (a model without effort, CLAUDE_CODE_EFFORT_LEVEL=unset, or an internal numeric budget). Present on Remote Control bridge init frames (terminal- and Desktop/VS Code-hosted sessions); absent on hosts that do not publish it and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
+   */
+  effort?: ("low" | "medium" | "high" | "xhigh" | "max") | null;
   /**
    * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is always empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the CCR backend reads this from the persisted init event to decide whether it may send them). Absent on older CLIs.
    */
@@ -5353,8 +5413,14 @@ export declare type SDKToolUseSummaryMessage = {
   session_id: string;
 };
 
+/**
+ * A user-role message. A client writes one to the CLI to submit a prompt (this starts a turn); the CLI emits them for user-role content it adds to the conversation itself, chiefly the tool_result blocks answering the assistant's tool_use blocks.
+ */
 export declare type SDKUserMessage = {
   type: "user";
+  /**
+   * An Anthropic Messages API user message: a MessageParam with role "user" whose content is a string or an array of content blocks (text, image, document, tool_result, ...). See the Messages API reference for the block types.
+   */
   message: MessageParam;
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
@@ -5388,6 +5454,9 @@ export declare type SDKUserMessage = {
 
 export declare type SDKUserMessageReplay = {
   type: "user";
+  /**
+   * An Anthropic Messages API user message: a MessageParam with role "user" whose content is a string or an array of content blocks (text, image, document, tool_result, ...). See the Messages API reference for the block types.
+   */
   message: MessageParam;
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
@@ -5743,6 +5812,10 @@ export declare interface Settings {
    * Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely.
    */
   cleanupPeriodDays?: number;
+  /**
+   * Set to false to turn off syncing of the skills you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced skills (~/.claude/skills/synced) can no longer be run, are hidden from every session started afterwards, and are moved to ~/.claude/skills/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced skills are blocked and hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored — the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced skills are available in every session, re-synced every 10 minutes, and removed when you disable them on claude.ai. Only applies when signed in with your Claude account.
+   */
+  syncClaudeAiSkills?: boolean;
   /**
    * Per-skill description character cap in the skill listing sent to Claude (default: 1536). Descriptions longer than this are truncated. Raise to opt in to higher per-turn context cost.
    */
@@ -6519,7 +6592,7 @@ export declare interface Settings {
     };
   };
   /**
-   * Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it (and their settings sync would upload a file that uses only this spelling as if it declared no marketplaces), so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.
+   * Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it, so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.
    */
   additionalMarketplaces?: {
     [k: string]: {
@@ -8032,6 +8105,10 @@ export declare interface Settings {
    */
   switchModelsOnFlag?: boolean;
   /**
+   * When a claude.ai usage limit stops your session, wait for the limit to reset and continue the task automatically. When off, the limit dialog offers the wait as a choice instead.
+   */
+  autoContinueAtUsageLimit?: boolean;
+  /**
    * Auto-scroll the conversation view to bottom (fullscreen mode only)
    */
   autoScrollEnabled?: boolean;
@@ -8254,6 +8331,9 @@ export declare function startup(_params?: {
   initializeTimeoutMs?: number;
 }): Promise<WarmQuery>;
 
+/**
+ * Everything the CLI writes to its output stream (stdout in stream-json mode): exactly one StdoutMessage per line, as a single JSON object. Besides the SDKMessage members this includes the control protocol - control requests the CLI originates, control responses to the client's requests, cancellations and keep-alives.
+ */
 declare type StdoutMessage =
   | coreTypes.SDKMessage
   | coreTypes.SDKActiveGoalMessage
@@ -8668,9 +8748,15 @@ export declare type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
   prompt: string;
   /**
-   * Who authored/injected the prompt: `user` = submitted from the interactive composer, `sdk` = non-interactive entrypoint (`-p` / Agent SDK), `loop_wakeup` = dynamic /loop wakeup, `schedule_wakeup` = scheduled-task fire (CronCreate/routine), `system` = other machine-injected turns (peer/channel messages, task notifications, auto-continuation). Currently only set for Anthropic-internal sessions while the field is trialed; external payloads omit it.
+   * Who authored/injected the prompt: `user` = submitted from the interactive composer, `sdk` = non-interactive entrypoint (`-p` / Agent SDK), `loop_wakeup` = dynamic /loop wakeup, `schedule_wakeup` = scheduled-task fire (CronCreate/routine), `system` = other machine-injected turns (peer/channel messages, task notifications, auto-continuation), `poll_event` = the poll-event channel enqueue-time pass (the hook fires when the host submits an event, before its delivery ack exists — a blocking verdict rejects the event). Currently only set for Anthropic-internal sessions while the field is trialed; external payloads omit it.
    */
-  source?: "user" | "sdk" | "system" | "loop_wakeup" | "schedule_wakeup";
+  source?:
+    | "user"
+    | "sdk"
+    | "system"
+    | "loop_wakeup"
+    | "schedule_wakeup"
+    | "poll_event";
   session_title?: string;
 };
 
