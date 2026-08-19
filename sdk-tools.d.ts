@@ -3010,6 +3010,16 @@ export interface ArtifactInput {
    * list_assets only: the `next` value from a previous list_assets result, to continue that listing.
    */
   after?: string;
+  /**
+   * Runtime capabilities this page declares, as {name: config}. The control plane is the authority on valid names and config shapes. An empty object clears any previously stored declaration; omit the field on a redeploy to carry the stored declaration forward unchanged. Before declaring any capability, load the `artifact-capabilities` skill for the current contract and per-capability guidance.
+   */
+  capabilities?: {
+    [k: string]: unknown;
+  };
+  /**
+   * The artifact's runtime version. Omit to keep its current version (the default); 'latest' to upgrade; a specific version to pin or roll back. Changing it changes how the published page behaves — pass only when the author explicitly intends the change, never as a side effect of editing.
+   */
+  contract?: "latest" | string;
 }
 export interface PushNotificationInput {
   /**

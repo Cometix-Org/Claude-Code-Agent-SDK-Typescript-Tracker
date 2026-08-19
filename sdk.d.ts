@@ -1486,7 +1486,7 @@ export declare type ModelUsage = {
    */
   canonicalModel?: string;
   /**
-   * API provider that served this model ('firstParty', 'bedrock', 'vertex', 'foundry', 'anthropicAws', 'anthropicGoogleCloud', 'mantle', 'gateway').
+   * API provider that served this model (e.g. 'firstParty', 'bedrock', 'vertex', 'foundry', 'anthropicAws', 'mantle', 'gateway').
    */
   provider?: string;
 };
@@ -3470,6 +3470,7 @@ export declare type SDKAssistantMessage = {
 export declare type SDKAssistantMessageError =
   | "authentication_failed"
   | "oauth_org_not_allowed"
+  | "account_on_hold"
   | "billing_error"
   | "rate_limit"
   | "overloaded"
@@ -7837,6 +7838,28 @@ export declare interface Settings {
    * Whether to disable syntax highlighting in diffs
    */
   syntaxHighlightingDisabled?: boolean;
+  /**
+   * Underline misspelled words in the prompt input as you type, using an installed aspell, hunspell or ispell (off unless "enabled" is true; does nothing if none is installed). Read from user, flag and managed settings only (the whole block from the highest-precedence of those applies); ignored in project .claude/settings.json and .claude/settings.local.json.
+   */
+  spellcheck?: {
+    /**
+     * Turn on spell checking of the prompt input (default: false)
+     */
+    enabled?: boolean;
+    /**
+     * Which spell checker to run: "aspell", "hunspell", "ispell", or "auto" (default) for the first of those found on PATH
+     */
+    checker?: string;
+    /**
+     * Dictionary to use, passed to the checker as-is (aspell --lang, hunspell -d, ispell -d), e.g. "en_GB"; names are checker-specific (letters, digits and _ - . , only). Default: the checker's own default
+     */
+    language?: string;
+    /**
+     * Color of misspelled words (they are also underlined): a terminal color name such as "red" or "magenta", "#rrggbb", "rgb(r,g,b)", "ansi256(n)" or "ansi:<name>". Default: the theme's error color
+     */
+    color?: string;
+    [k: string]: unknown;
+  };
   /**
    * Whether /rename updates the terminal tab title (defaults to true). Set to false to keep auto-generated topic titles.
    */
