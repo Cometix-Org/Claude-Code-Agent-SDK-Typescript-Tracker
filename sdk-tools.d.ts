@@ -401,6 +401,7 @@ export type ArtifactOutput =
   | {
       url: string;
       path: string;
+      artifact_id?: string;
       title?: string;
       version?: string;
       capabilities?: unknown;
@@ -2999,13 +3000,13 @@ export interface ArtifactInput {
    */
   force?: boolean;
   /**
+   * read_asset: directory to save the file into (default: the working directory); the file is named by the asset id plus the extension for its type.
+   */
+  out_dir?: string;
+  /**
    * read_asset and delete_asset: the asset's id (32 hex characters), from a list_assets or upload_asset result.
    */
   asset_id?: string;
-  /**
-   * read_asset only: directory to save the file into (default: the working directory). The file is named by the asset id plus the extension for its type.
-   */
-  out_dir?: string;
   /**
    * list_assets only: the `next` value from a previous list_assets result, to continue that listing.
    */
