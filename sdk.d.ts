@@ -2023,6 +2023,9 @@ export declare type Options = {
    *   `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false` env var, and when the user
    *   has `promptSuggestionEnabled: false` in settings.json (the env var wins
    *   over the setting).
+   * - Also suppressed while the account is near or at its plan usage limit.
+   *   `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=true` keeps them on in the
+   *   near-limit case; at the limit they stay off.
    * - Suggestions piggyback on the parent's prompt cache, making them nearly free.
    */
   promptSuggestions?: boolean;
@@ -2713,6 +2716,15 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * `canUseTool` / `onUserDialog`. In-flight request_ids are deduped
    * SDK-side, but callbacks should be idempotent per request_id since a
    * request whose response was lost in the gap will be dispatched again.
+   *
+   * Over stdio the CLI also re-registers this query's hooks from the
+   * re-sent request (the response reports `hooks_applied: true`; CLIs that
+   * predate that field ignore hooks here) and resolves any hook callback it
+   * was still waiting on itself — cancelling it at this host, denying a
+   * pending PreToolUse with a retry notice and blocking a pending prompt —
+   * since it cannot tell whether the re-sent callback ids still name the
+   * same hooks. Expect one denied-then-retried tool call or one prompt to
+   * re-send if the call races an unanswered hook.
    *
    * Unlike {@link Query.initializationResult}, this always sends a fresh request
    * rather than returning the cached first-connect result.
@@ -4117,6 +4129,11 @@ export declare type SDKControlInitializeResponse = {
    */
   account: coreTypes.AccountInfo;
 
+  /**
+   * Whether the `hooks` this initialize carried were registered: true on a session's first initialize, and on a repeated initialize from the process that owns the CLI's stdin (its set replaces the one registered earlier); false when a repeated initialize's hooks were ignored (a client joining a remote session another client configured). Absent when the request carried no hooks, and on CLIs that predate the field — those ignored `hooks` on every repeated initialize.
+   */
+  hooks_applied?: boolean;
+
   fast_mode_state?: coreTypes.FastModeState;
   fast_mode_disabled_reason?: coreTypes.FastModeDisabledReason;
 };
@@ -5092,6 +5109,7 @@ export declare type SDKResultError = {
    * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
+
   permission_denials: SDKPermissionDenial[];
   errors: string[];
   terminal_reason?: TerminalReason;
@@ -5137,6 +5155,7 @@ export declare type SDKResultSuccess = {
    * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
+
   permission_denials: SDKPermissionDenial[];
   structured_output?: unknown;
   deferred_tool_use?: SDKDeferredToolUse;
@@ -5343,6 +5362,14 @@ export declare type SDKTaskStartedMessage = {
    * Subagent type for Task tool subagents.
    */
   subagent_type?: string;
+  /**
+   * Whether the task was registered in the background (true) or in the foreground with the spawning tool call blocking on it (false). A resumed subagent is always registered in the background. A later move to the background arrives as task_updated patch.is_backgrounded. Set for local_agent and local_bash tasks.
+   */
+  is_backgrounded?: boolean;
+  /**
+   * Nesting depth of a spawned subagent (local_agent) task: 1 for a top-level spawn, N+1 when spawned from inside a depth-N agent. Not set on other tasks.
+   */
+  spawn_depth?: number;
   task_type?: string;
   /**
    * meta.name from the workflow script (e.g. 'spec'). Only set when task_type is 'local_workflow'.
@@ -6369,6 +6396,10 @@ export declare interface Settings {
             headers?: {
               [k: string]: string;
             };
+            /**
+             * Command that prints a JSON object of HTTP headers (e.g. a short-lived auth token). Its output overrides `headers` and, like `headers`, is inherited by same-origin archive downloads from this marketplace. Runs from a fixed directory (the Claude config home, never the session's), so give a bare command found via PATH or an absolute path; it is re-run on later refreshes of this marketplace.
+             */
+            headersHelper?: string;
           }
         | {
             source: "github";
@@ -6570,6 +6601,16 @@ export declare interface Settings {
               description?: string;
               version?: string;
               strict?: boolean;
+              /**
+               * HTTP headers sent when downloading this entry's `archive` source.
+               */
+              headers?: {
+                [k: string]: string;
+              };
+              /**
+               * Command that prints a JSON object of HTTP headers for downloading this entry's `archive` source. Runs only when a user explicitly installs or updates this plugin. Unlike a catalog entry, an entry written here does not need `strict: false`: it is declared in a settings file, which has no manifest fields to inline. A declaration in project settings is not operator-authored, so request-routing and client-identity header names are still filtered there. Use an absolute path.
+               */
+              headersHelper?: string;
             }[];
             owner?: {
               /**
@@ -6617,6 +6658,10 @@ export declare interface Settings {
             headers?: {
               [k: string]: string;
             };
+            /**
+             * Command that prints a JSON object of HTTP headers (e.g. a short-lived auth token). Its output overrides `headers` and, like `headers`, is inherited by same-origin archive downloads from this marketplace. Runs from a fixed directory (the Claude config home, never the session's), so give a bare command found via PATH or an absolute path; it is re-run on later refreshes of this marketplace.
+             */
+            headersHelper?: string;
           }
         | {
             source: "github";
@@ -6818,6 +6863,16 @@ export declare interface Settings {
               description?: string;
               version?: string;
               strict?: boolean;
+              /**
+               * HTTP headers sent when downloading this entry's `archive` source.
+               */
+              headers?: {
+                [k: string]: string;
+              };
+              /**
+               * Command that prints a JSON object of HTTP headers for downloading this entry's `archive` source. Runs only when a user explicitly installs or updates this plugin. Unlike a catalog entry, an entry written here does not need `strict: false`: it is declared in a settings file, which has no manifest fields to inline. A declaration in project settings is not operator-authored, so request-routing and client-identity header names are still filtered there. Use an absolute path.
+               */
+              headersHelper?: string;
             }[];
             owner?: {
               /**
@@ -6860,6 +6915,10 @@ export declare interface Settings {
         headers?: {
           [k: string]: string;
         };
+        /**
+         * Command that prints a JSON object of HTTP headers (e.g. a short-lived auth token). Its output overrides `headers` and, like `headers`, is inherited by same-origin archive downloads from this marketplace. Runs from a fixed directory (the Claude config home, never the session's), so give a bare command found via PATH or an absolute path; it is re-run on later refreshes of this marketplace.
+         */
+        headersHelper?: string;
       }
     | {
         source: "github";
@@ -7061,6 +7120,16 @@ export declare interface Settings {
           description?: string;
           version?: string;
           strict?: boolean;
+          /**
+           * HTTP headers sent when downloading this entry's `archive` source.
+           */
+          headers?: {
+            [k: string]: string;
+          };
+          /**
+           * Command that prints a JSON object of HTTP headers for downloading this entry's `archive` source. Runs only when a user explicitly installs or updates this plugin. Unlike a catalog entry, an entry written here does not need `strict: false`: it is declared in a settings file, which has no manifest fields to inline. A declaration in project settings is not operator-authored, so request-routing and client-identity header names are still filtered there. Use an absolute path.
+           */
+          headersHelper?: string;
         }[];
         owner?: {
           /**
@@ -7094,6 +7163,10 @@ export declare interface Settings {
         headers?: {
           [k: string]: string;
         };
+        /**
+         * Command that prints a JSON object of HTTP headers (e.g. a short-lived auth token). Its output overrides `headers` and, like `headers`, is inherited by same-origin archive downloads from this marketplace. Runs from a fixed directory (the Claude config home, never the session's), so give a bare command found via PATH or an absolute path; it is re-run on later refreshes of this marketplace.
+         */
+        headersHelper?: string;
       }
     | {
         source: "github";
@@ -7295,6 +7368,16 @@ export declare interface Settings {
           description?: string;
           version?: string;
           strict?: boolean;
+          /**
+           * HTTP headers sent when downloading this entry's `archive` source.
+           */
+          headers?: {
+            [k: string]: string;
+          };
+          /**
+           * Command that prints a JSON object of HTTP headers for downloading this entry's `archive` source. Runs only when a user explicitly installs or updates this plugin. Unlike a catalog entry, an entry written here does not need `strict: false`: it is declared in a settings file, which has no manifest fields to inline. A declaration in project settings is not operator-authored, so request-routing and client-identity header names are still filtered there. Use an absolute path.
+           */
+          headersHelper?: string;
         }[];
         owner?: {
           /**
@@ -7328,6 +7411,10 @@ export declare interface Settings {
         headers?: {
           [k: string]: string;
         };
+        /**
+         * Command that prints a JSON object of HTTP headers (e.g. a short-lived auth token). Its output overrides `headers` and, like `headers`, is inherited by same-origin archive downloads from this marketplace. Runs from a fixed directory (the Claude config home, never the session's), so give a bare command found via PATH or an absolute path; it is re-run on later refreshes of this marketplace.
+         */
+        headersHelper?: string;
       }
     | {
         source: "github";
@@ -7529,6 +7616,16 @@ export declare interface Settings {
           description?: string;
           version?: string;
           strict?: boolean;
+          /**
+           * HTTP headers sent when downloading this entry's `archive` source.
+           */
+          headers?: {
+            [k: string]: string;
+          };
+          /**
+           * Command that prints a JSON object of HTTP headers for downloading this entry's `archive` source. Runs only when a user explicitly installs or updates this plugin. Unlike a catalog entry, an entry written here does not need `strict: false`: it is declared in a settings file, which has no manifest fields to inline. A declaration in project settings is not operator-authored, so request-routing and client-identity header names are still filtered there. Use an absolute path.
+           */
+          headersHelper?: string;
         }[];
         owner?: {
           /**
@@ -8098,6 +8195,10 @@ export declare interface Settings {
    * Key binding mode for the prompt input
    */
   editorMode?: "normal" | "vim";
+  /**
+   * Which conventions the prompt's editing keys follow: "readline" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace); "classic" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word)
+   */
+  keybindingFlavor?: "classic" | "readline";
   /**
    * Vim INSERT-mode key-sequence remaps, e.g. {"jj": "<Esc>"}. Each key is exactly two printable characters typed in sequence; "<Esc>" (return to NORMAL mode) is the only supported target. Applies when editorMode is "vim".
    */
@@ -8769,6 +8870,10 @@ export declare type UserPromptExpansionHookInput = BaseHookInput & {
 export declare type UserPromptExpansionHookSpecificOutput = {
   hookEventName: "UserPromptExpansion";
   additionalContext?: string;
+  /**
+   * When decision is "block", omit the original prompt from the block message
+   */
+  suppressOriginalPrompt?: boolean;
 };
 
 export declare type UserPromptSubmitHookInput = BaseHookInput & {
