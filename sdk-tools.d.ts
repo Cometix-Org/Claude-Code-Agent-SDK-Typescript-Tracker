@@ -427,6 +427,88 @@ export type ArtifactOutput =
       scope?: "shared" | "all";
     }
   | {
+      read: {
+        url: string;
+        bytes: number;
+        code: number;
+        codeText: string;
+        result: string;
+        durationMs: number;
+      };
+      artifactRead?: {
+        slug: string;
+        ver?: string;
+        seeded?: false;
+      };
+    }
+  | {
+      watch: {
+        url: string;
+        watching: boolean;
+        outcome: string;
+        reason?: string;
+        durable_skip_reason?: string;
+        task_id?: string;
+        since?: number;
+        token_expires_at?: number;
+        rail?: string;
+        trigger_id?: string;
+        durable_since?: string;
+        status?: number;
+        note?: string;
+        events?: string[];
+      };
+    }
+  | {
+      unwatch: {
+        url: string;
+        was_watching: boolean;
+      };
+    }
+  | {
+      watches: (
+        | {
+            url: string;
+            task_id: string;
+            since: number;
+            explicit: boolean;
+            connected: boolean;
+            connecting?: boolean;
+            token_expires_at: number;
+            armed_via?: string;
+          }
+        | {
+            url: string;
+            rail: "durable_wake";
+            trigger_id: string;
+            since: string;
+            events?: string[];
+            restored?: boolean;
+          }
+        | {
+            url: string;
+            rail: "live_stopped";
+            since?: number;
+            explicit?: boolean;
+            armed_via?: string;
+            stop_kind: string;
+          }
+      )[];
+      filter_url?: string;
+      arms?: {
+        url: string;
+        rail?: string;
+        state: string;
+        reconnect?: boolean;
+        failures?: number;
+        max_failures?: number;
+        next_in_s?: number;
+        last_failure?: string;
+        reason?: string;
+        at?: number;
+      }[];
+    }
+  | {
       asset_upload: {
         id: string;
         url: string;
@@ -2954,17 +3036,21 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'upload_asset' adds one local media, PDF, or font file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **To read an existing artifact's content**. 'watch', 'unwatch', and 'status' manage live-update subscriptions that notify a session when an artifact is republished elsewhere, and those aren't available in this session: 'watch' only reports that — no republish notification reaches this session — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, or font file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
    */
   action?:
     | "publish"
     | "list"
+    | "read"
+    | "watch"
+    | "unwatch"
+    | "status"
     | "upload_asset"
     | "list_assets"
     | "read_asset"
     | "delete_asset";
   /**
-   * Path to an .html or .md file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, or font file to upload.
+   * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, or font file to upload.
    */
   file_path?: string;
   /**
@@ -2992,11 +3078,15 @@ export interface ArtifactInput {
    */
   label?: string;
   /**
-   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns.
+   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns. For 'read' and the other url-addressed actions: the artifact to act on.
    */
   url?: string;
   /**
-   * Last-resort overwrite that DISCARDS another session's published version. On a 409 conflict the normal fix is to re-read the artifact, merge your edits on top of the newer content, and publish again — not force. Pass force:true only when the user explicitly wants to replace the other session's version. The tracked baseVersion is still sent; with force:true the server treats it as informational and overwrites. Omit (or false) so a concurrent write 409s instead of being silently clobbered.
+   * read only: what to extract from an artifact shared with the user — its content reaches you as an isolated summary answering this. Ignored for artifacts the user owns and for a page published in this session's own Slack channel (raw content is returned); optional.
+   */
+  prompt?: string;
+  /**
+   * Last-resort overwrite that DISCARDS the newer published version — another session's publish, or someone's save from a page that can publish new versions of itself. On a conflict the fix is to merge your changes onto the newer content (handed to you in the rejection, or re-read) and publish again — not force. Pass force:true only when the user has explicitly said to discard that specific version; never to get past a conflict on your own judgment. The tracked baseVersion is still sent; with force:true the server treats it as informational and overwrites, unless it refuses force over a version saved from inside the page. Omit (or false) so a concurrent write conflicts instead of being silently clobbered.
    */
   force?: boolean;
   /**
@@ -3512,6 +3602,7 @@ export interface WebFetchOutput {
   artifactRead?: {
     slug: string;
     ver?: string;
+    seeded?: false;
   };
 }
 export interface WebSearchOutput {
