@@ -2662,11 +2662,11 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    *
    * @param maxThinkingTokens - Maximum tokens for thinking, or null to clear the limit
    * @param thinkingDisplay - Optional thinking display mode for the rest of
-   * the session: a value replaces the session display mode, `null` clears it
-   * back to the API default, and when omitted the display mode from session
-   * start (`thinking.display` / `--thinking-display`) is kept — note a
-   * session started with thinking disabled has none, so re-enabling thinking
-   * without this param yields the API's default display.
+   * the session: a value replaces the session display mode, `null` clears
+   * that override so Claude Code's default display handling applies again,
+   * and when omitted the display mode from session start (`thinking.display`
+   * / `--thinking-display`) is kept — a session started with thinking
+   * disabled has none, so re-enabling without this param gets that default.
    */
   setMaxThinkingTokens(
     maxThinkingTokens: number | null,
@@ -4523,7 +4523,7 @@ declare type SDKControlSetColorRequest = {
 };
 
 /**
- * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears it back to the API default, and when omitted the display mode from session start (--thinking-display) is kept.
+ * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept.
  */
 declare type SDKControlSetMaxThinkingTokensRequest = {
   subtype: "set_max_thinking_tokens";
