@@ -103,6 +103,22 @@ export type ToolOutputSchemas =
 export type AgentOutput =
   | {
       agentId: string;
+      /**
+       * @internal Count of leading harness-authored content blocks (hand-back provenance bookkeeping; not a stable consumer field)
+       */
+      harnessNoteCount?: number;
+      /**
+       * @internal Count of trailing harness-authored content blocks (hand-back provenance bookkeeping; not a stable consumer field)
+       */
+      harnessTailCount?: number;
+      /**
+       * @internal Fingerprint binding the harness section counts to the exact content they were computed against; a hook rewrite invalidates the counts rather than misplacing rewritten bytes
+       */
+      harnessSectionHash?: string;
+      /**
+       * @internal The handoff review was skipped because the provenance frame covers this delivery (tengu_auto_mode_config.classifyHandoff: false); the tool_result mapper MUST compose the frame when set, regardless of a fresh flag read
+       */
+      handoffReviewSkipped?: boolean;
       agentType?: string;
       content: {
         type: "text";
@@ -234,6 +250,13 @@ export type FileReadOutput =
          */
         truncatedByTokenCap?: boolean;
       };
+      /**
+       * Set when this Read completed a saved Artifact source file: the Artifact and the version of it that now counts as viewed.
+       */
+      artifactRead?: {
+        slug: string;
+        ver: string;
+      };
     }
   | {
       type: "image";
@@ -323,6 +346,27 @@ export type FileReadOutput =
          */
         outputDir: string;
       };
+      /**
+       * Document page number of the first extracted page (1 when no range was requested); labels the page images in the model-facing tool_result
+       */
+      firstPage?: number;
+      /**
+       * Extracted page images, in page order. Present only transiently in-process: the page image bytes are delivered solely as image blocks in the model-facing tool_result content and are not retained on the tool_use_result, so this key is absent on the emitted/persisted result
+       */
+      pages?: {
+        /**
+         * Base64-encoded page image; empty when the page could not be processed
+         */
+        base64: string;
+        /**
+         * The MIME type of the image
+         */
+        mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+        /**
+         * Why the page could not be processed as an image; set only when base64 is empty
+         */
+        error?: string;
+      }[];
     }
   | {
       type: "file_unchanged";
@@ -455,6 +499,7 @@ export type ArtifactOutput =
         trigger_id?: string;
         durable_since?: string;
         status?: number;
+        detail?: string;
         note?: string;
         events?: string[];
       };
@@ -505,6 +550,8 @@ export type ArtifactOutput =
         next_in_s?: number;
         last_failure?: string;
         reason?: string;
+        detail?: string;
+        server_message?: string;
         at?: number;
       }[];
     }
@@ -2576,7 +2623,7 @@ export interface SendFeedbackInput {
    */
   title: string;
   /**
-   * Labeled bullets, in order: **What happened:** (observed vs. expected, exact error text if short); **What the user said:** (quoted, or "User didn't comment; observed by the model."); **Repro:** (minimal steps); **Evidence:** (request IDs, timestamps, paths, versions — omit if none); optionally a final **Cause:** only if verified in-session. One to three lines per bullet. No narrative paragraphs, no speculation, no secrets.
+   * Labeled bullets, in order: **What happened:** (observed vs. expected, exact error text if short); **What the user said:** (quoted, or "User didn't comment; observed by the model."); **Repro:** (minimal steps); **Evidence:** (request IDs, timestamps, paths, versions; omit if none); optionally a final **Cause:** only if verified in-session. One to three lines per bullet. No narrative paragraphs, no speculation, no secrets.
    */
   details: string;
   /**
@@ -2584,7 +2631,7 @@ export interface SendFeedbackInput {
    */
   area?: string;
   /**
-   * When the report is about MODEL BEHAVIOR (not a product bug), the closest failure mode — or `other` when it is a model-behavior issue that fits no listed value. Omit only when the report is a product/tool bug with no model-behavior component.
+   * When the report is about MODEL BEHAVIOR (not a product bug), the closest failure mode, or `other` when it is a model-behavior issue that fits no listed value. Omit only when the report is a product/tool bug with no model-behavior component.
    */
   failure_mode?:
     | "instruction_following"
@@ -2604,7 +2651,7 @@ export interface SendFeedbackInput {
     | "unwanted_scope"
     | "other";
   /**
-   * What kind of task the session was doing when the issue occurred — or `other` when it is a clear task that fits no listed value. Omit only if genuinely unclear.
+   * What kind of task the session was doing when the issue occurred, or `other` when it is a clear task that fits no listed value. Omit only if genuinely unclear.
    */
   task_category?:
     | "code_edit"
@@ -2816,6 +2863,10 @@ export interface ScheduleWakeupInput {
    * Set to true to end the dynamic loop immediately instead of scheduling another wakeup. When true, all other fields are ignored and no further wakeups fire.
    */
   stop?: boolean;
+  /**
+   * true = nothing changed (you checked and there is nothing to report). false = something happened worth keeping (edited a file, posted a message, advanced state, surfaced a finding). Consecutive noop:true ticks are collapsed in the user's terminal view and tracked as a streak. Required unless `stop` is true.
+   */
+  noop?: boolean;
 }
 export interface RemoteTriggerInput {
   action:
@@ -3086,7 +3137,7 @@ export interface ArtifactInput {
    */
   prompt?: string;
   /**
-   * Last-resort overwrite that DISCARDS the newer published version — another session's publish, or someone's save from a page that can publish new versions of itself. On a conflict the fix is to merge your changes onto the newer content (handed to you in the rejection, or re-read) and publish again — not force. Pass force:true only when the user has explicitly said to discard that specific version; never to get past a conflict on your own judgment. The tracked baseVersion is still sent; with force:true the server treats it as informational and overwrites, unless it refuses force over a version saved from inside the page. Omit (or false) so a concurrent write conflicts instead of being silently clobbered.
+   * Last-resort overwrite that DISCARDS the newer published version's page — another session's publish, or someone's save from a page that can publish new versions of itself. On a conflict the fix is to merge your changes onto the newer content (handed to you in the rejection, or re-read) and publish again — not force. Pass force:true only when the user has explicitly said to discard that specific version; never to get past a conflict on your own judgment. The tracked baseVersion is still sent; with force:true the server treats it as informational and overwrites, unless it refuses force over a version saved from inside the page. Omit (or false) so a concurrent write conflicts instead of being silently clobbered.
    */
   force?: boolean;
   /**
@@ -4015,11 +4066,31 @@ export interface REPLOutput {
     mediaType: string;
   }[];
   /**
+   * Count of inner-Read images dropped by the per-result image cap; surfaced as a note in the tool_result
+   */
+  imagesOmitted?: number;
+  /**
+   * Pages of inner page-range Reads that could not be processed as an image; surfaced as one note each in the tool_result
+   */
+  imagePagesFailed?: {
+    page: number;
+    file?: string;
+    error?: string;
+  }[];
+  /**
+   * Count of failed-page notes dropped by the per-result note cap; surfaced as a note in the tool_result
+   */
+  imagePagesFailedOmitted?: number;
+  /**
    * PDFs returned by inner Read calls — surfaced as document content blocks
    */
   documents?: {
     base64: string;
   }[];
+  /**
+   * Count of inner-Read PDFs dropped by the per-result document cap; surfaced as a note in the tool_result
+   */
+  documentsOmitted?: number;
 }
 export interface WorkflowOutput {
   status: "async_launched" | "remote_launched";
