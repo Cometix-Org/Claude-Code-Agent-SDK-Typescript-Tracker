@@ -3087,7 +3087,7 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **To read an existing artifact's content**. 'watch', 'unwatch', and 'status' manage live-update subscriptions that notify a session when an artifact is republished elsewhere, and those aren't available in this session: 'watch' only reports that — no republish notification reaches this session — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, or font file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **To read an existing artifact's content**. 'watch', 'unwatch', and 'status' manage live-update subscriptions that notify a session when an artifact is republished elsewhere, and those aren't available in this session: 'watch' only reports that — no republish notification reaches this session — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
    */
   action?:
     | "publish"
@@ -3101,7 +3101,7 @@ export interface ArtifactInput {
     | "read_asset"
     | "delete_asset";
   /**
-   * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, or font file to upload.
+   * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, font, or text (CSV, Markdown, JSON, plain text) file to upload.
    */
   file_path?: string;
   /**
@@ -3385,7 +3385,7 @@ export interface FileWriteOutput {
    */
   content: string;
   /**
-   * Diff patch showing the changes
+   * Diff patch showing the changes (empty when nothing changed, the diff timed out, or — with originalFile null on an update — the previous content was too large to diff)
    */
   structuredPatch: {
     oldStart: number;
@@ -3395,7 +3395,7 @@ export interface FileWriteOutput {
     lines: string[];
   }[];
   /**
-   * The original file content before the write (null for new files)
+   * The original file content before the write (null for new files, or when the previous content was too large to include)
    */
   originalFile: string | null;
   gitDiff?: {

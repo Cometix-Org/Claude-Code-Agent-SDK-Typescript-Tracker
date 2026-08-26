@@ -1489,6 +1489,10 @@ export declare type ModelUsage = {
    * API provider that served this model (e.g. 'firstParty', 'bedrock', 'vertex', 'foundry', 'anthropicAws', 'mantle', 'gateway').
    */
   provider?: string;
+  /**
+   * Which price table the most recent request for this model was priced at: Claude Code's built-in list prices ('list'), the organization's managed-settings modelPricing rates or multiplier ('managed'), or neither ('unknown' — no pricing row and no built-in price matched the model ID, so costUSD is a guess at the default model's rate). Overwritten per request like canonicalModel, so a consumer that differences the cumulative costUSD per turn gets that turn's basis. Absent until this process has priced a request for the model (e.g. right after --resume) and on builds that predate the field; treat as 'list'.
+   */
+  costBasis?: "list" | "managed" | "unknown";
 };
 
 export declare type NonNullableUsage = {
@@ -1818,6 +1822,26 @@ export declare type Options = {
    * explicit declaration overrides).
    */
   supportedDialogKinds?: string[];
+  /**
+   * Declares that this consumer renders a per-task stop control wired to
+   * the `stop_task` control request, so the user can stop an individual
+   * background task.
+   *
+   * When declared, an interrupt on an open-input (interactive
+   * stream-json) session spares running background agents/workflows —
+   * Stop only aborts the current turn, and tasks are stopped one at a
+   * time through the consumer's own affordance. Closed-input exception:
+   * on a one-shot run (the string `prompt` form and `-p`, which close
+   * stdin), hold-back tasks are still killed when the held result is
+   * released, regardless of this declaration — with stdin closed, a
+   * `stop_task` control could never be delivered, so the fail-closed
+   * kill stands. The CLI also fails closed on absence: without the
+   * declaration, an interrupt kills background tasks, because a spared
+   * runaway task would otherwise be unstoppable from this consumer short
+   * of ending the session. First-attached-client
+   * wins on multi-client sessions; later initializes do not change it.
+   */
+  perTaskStopAffordance?: boolean;
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -3452,6 +3476,10 @@ export declare type SDKAssistantMessage = {
   session_id: string;
   request_id?: string;
   /**
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on the turn's FIRST reply frame only — the first assistant message in complete-message mode; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every later frame of the turn, on subagent frames (parent_tool_use_id set), on synthetic/scheduled (meta) turns, on turns without a client uuid, and from older producers.
+   */
+  user_message_uuid?: string;
+  /**
    * This turn continued the preceding truncated assistant turn inside its trailing signed thinking block (max-output-tokens recovery). Its thinking signatures are cumulative over that preceding thinking-only turn, so a history replayed through the bridge must carry this flag back for the normalizer to keep the run's prefix on the wire. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
    */
   resumed_from_incomplete_thinking?: true;
@@ -4112,6 +4140,10 @@ declare type SDKControlInitializeRequest = {
    * Dialog kinds (request_user_dialog `dialog_kind` values) this consumer's onUserDialog can actually render. The CLI treats ABSENCE as 'cannot display' and fails closed: without the kind declared here, a dialog-gated flow degrades to its no-dialog behavior (for 'refusal_fallback_prompt', the classic refusal error) instead of parking a dialog the consumer may mishandle. First-attached-client-wins on multi-client sessions; later initializes do not change it.
    */
   supportedDialogKinds?: string[];
+  /**
+   * Declares that this consumer renders a per-task stop control wired to the `stop_task` control request, so the user can stop an individual background task. When declared, an interrupt on an open-input (interactive stream-json) session spares running background agents/workflows (Stop only aborts the turn). Closed-input exception: a one-shot run (string prompt / -p closes stdin) still kills hold-back tasks at the held-result release regardless of the declaration — with stdin closed, a stop_task control could never be delivered, so the fail-closed kill stands. ABSENCE also fails closed: the interrupt kills background tasks, since the user would otherwise have no way to stop a runaway one. First-attached-client-wins on multi-client sessions; later initializes do not change it.
+   */
+  perTaskStopAffordance?: boolean;
 };
 
 /**
@@ -4960,6 +4992,10 @@ export declare type SDKPartialAssistantMessage = {
   uuid: UUID;
   session_id: string;
   ttft_ms?: number;
+  /**
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on the turn's FIRST non-ping stream event only (the frame that triggers the turn's initial ack) so a consumer can bind the reply stream to the send it answers without waiting for the result. Absent on every later stream event of the turn, on synthetic/scheduled (meta) turns, on turns without a client uuid, and from older producers.
+   */
+  user_message_uuid?: string;
 };
 
 export declare type SDKPermissionDenial = {
@@ -5121,6 +5157,10 @@ export declare type SDKResultError = {
    */
   queued_turn_count?: number;
   errors: string[];
+  /**
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. Absent on synthetic/scheduled (meta) turns, on turns without a client uuid, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
+   */
+  user_message_uuid?: string;
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
@@ -5862,6 +5902,10 @@ export declare interface Settings {
    */
   syncClaudeAiSkills?: boolean;
   /**
+   * Set to false to turn off syncing of the plugins you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced plugins (~/.claude/plugins/synced) are hidden from every session started afterwards and moved to ~/.claude/plugins/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced plugins are hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored — the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced plugins load in every session like plugins you installed yourself (a plugin you installed with the same name takes precedence), are re-synced at each launch, and are removed when you disable them on claude.ai. Only applies when signed in with your Claude account.
+   */
+  syncClaudeAiPlugins?: boolean;
+  /**
    * Per-skill description character cap in the skill listing sent to Claude (default: 1536). Descriptions longer than this are truncated. Raise to opt in to higher per-turn context cost.
    */
   skillListingMaxDescChars?: number;
@@ -5990,7 +6034,7 @@ export declare interface Settings {
     replaceBuiltInOptions?: boolean;
   };
   /**
-   * Price usage at your organization's contracted rates instead of list price. Affects every spend figure Claude Code reports — /cost, the status line, the SDK total_cost_usd, --max-budget-usd, and the OpenTelemetry cost metric and events — which remain USD estimates, not an invoice (the per-Mtok price labels in /model stay at list). "overrides" maps a model ID to its USD-per-million-token rates (input, output, cacheRead, cacheWrite — all four required, each 0 to 10000; cacheWrite prices both 5-minute and 1-hour cache writes). A matching row is charged exactly as written; fast-mode and US-data-residency surcharges are not added on top. A key Claude Code itself uses for a built-in model — its ID such as "claude-sonnet-4-6", or its first-party, Bedrock (any or no region prefix), Vertex or Foundry ID — covers every dated and provider form of that model; any other key — a gateway model alias, or a spelling Claude Code does not itself use — matches that model ID only (case-insensitive), and such an exact match wins over a built-in row. On Bedrock an application inference profile is matched by its backing model. An invalid row or multiplier is reported and skipped; the rest still apply. "multiplier" in (0, 1] scales every computed cost, overridden or not (0.85 = 85% of the price). Only honored from managed settings (server-managed, MDM / OS policy, or managed-settings.json); ignored in user, project, local and --settings sources.
+   * Price usage at your organization's contracted rates instead of list price. Affects every spend figure Claude Code reports — /cost, the status line, the SDK total_cost_usd, --max-budget-usd, and the OpenTelemetry cost metric and events — which remain USD estimates, not an invoice (the per-Mtok price labels in /model stay at list). "overrides" maps a model ID to its USD-per-million-token rates (input, output, cacheRead, cacheWrite — all four required, each 0 to 10000; cacheWrite prices both 5-minute and 1-hour cache writes). A matching row is charged exactly as written; fast-mode and US-data-residency surcharges are not added on top. A key Claude Code itself uses for a built-in model — its ID such as "claude-sonnet-4-6", or its first-party, Bedrock (any or no region prefix), Vertex or Foundry ID — covers every dated and provider form of that model; any other key — a gateway model alias, or a spelling Claude Code does not itself use — matches that model ID only (case-insensitive), and such an exact match wins over a built-in row. On Bedrock an application inference profile is matched by its backing model. An invalid row or multiplier is reported and skipped; the rest still apply. "multiplier" in (0, 1] scales every computed cost, overridden or not (0.85 = 85% of the price). Only honored from managed settings (server-managed, MDM / OS policy, or managed-settings.json), or — when none of those sets it — when supplied by a host application that manages the model provider; ignored in user, project, local and --settings sources.
    */
   modelPricing?: {
     multiplier?: number;
