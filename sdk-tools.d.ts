@@ -103,22 +103,6 @@ export type ToolOutputSchemas =
 export type AgentOutput =
   | {
       agentId: string;
-      /**
-       * @internal Count of leading harness-authored content blocks (hand-back provenance bookkeeping; not a stable consumer field)
-       */
-      harnessNoteCount?: number;
-      /**
-       * @internal Count of trailing harness-authored content blocks (hand-back provenance bookkeeping; not a stable consumer field)
-       */
-      harnessTailCount?: number;
-      /**
-       * @internal Fingerprint binding the harness section counts to the exact content they were computed against; a hook rewrite invalidates the counts rather than misplacing rewritten bytes
-       */
-      harnessSectionHash?: string;
-      /**
-       * @internal The handoff review was skipped because the provenance frame covers this delivery (tengu_auto_mode_config.classifyHandoff: false); the tool_result mapper MUST compose the frame when set, regardless of a fresh flag read
-       */
-      handoffReviewSkipped?: boolean;
       agentType?: string;
       content: {
         type: "text";
@@ -3264,7 +3248,7 @@ export interface BashOutput {
    */
   ghRateLimitHint?: string;
   /**
-   * @internal Structured classification of git/gh operations detected in this command (commit/push/merge/rebase/PR). Client-facing — lets clients render git activity without re-parsing stdout; not surfaced to the model.
+   * Structured classification of git/gh operations detected in this command (commit/push/merge/rebase/PR). Client-facing — lets clients render git activity without re-parsing stdout; not surfaced to the model.
    */
   gitOperation?: {
     commit?: {

@@ -3534,7 +3534,7 @@ export declare type SDKAuthStatusMessage = {
 };
 
 /**
- * The full set of live background tasks, emitted whenever membership changes (start, completion, kill, a foreground agent being backgrounded). A level signal, unlike the task_started/task_notification edge bookends: consumers that only need 'is background work running' should replace their set with each payload rather than pairing edges, so a missed bookend cannot wedge a stale running indicator. Ordering relative to the bookends for the same transition is unspecified (in practice the level precedes them) and the payload carries ids only, so do not correlate it with the edge stream. The level is per-process: nothing is emitted at startup, so consumers must reset to the empty set whenever the session's CLI process (re)starts and let the next membership change repopulate it. A host that re-initializes an already-running process (a repeated `initialize` control request, e.g. after reconnecting) is sent a snapshot of the current set right behind the success response to that request, even when it is empty, so it need not wait for a change; CLIs that predate this send nothing there.
+ * The full set of live background tasks, emitted whenever membership changes (start, completion, kill, a foreground agent being backgrounded) or an entry's `ambient` flag flips. A level signal, unlike the task_started/task_notification edge bookends: consumers that only need 'is background work running' should replace their set with each payload rather than pairing edges, so a missed bookend cannot wedge a stale running indicator. Ordering relative to the bookends for the same transition is unspecified (in practice the level precedes them) and the payload carries ids only, so do not correlate it with the edge stream. The level is per-process: nothing is emitted at startup, so consumers must reset to the empty set whenever the session's CLI process (re)starts and let the next membership change repopulate it. A host that re-initializes an already-running process (a repeated `initialize` control request, e.g. after reconnecting) is sent a snapshot of the current set right behind the success response to that request, even when it is empty, so it need not wait for a change; CLIs that predate this send nothing there.
  */
 export declare type SDKBackgroundTasksChangedMessage = {
   type: "system";
@@ -3546,6 +3546,10 @@ export declare type SDKBackgroundTasksChangedMessage = {
     task_id: string;
     task_type: string;
     description: string;
+    /**
+     * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+     */
+    ambient?: boolean;
   }[];
   uuid: UUID;
   session_id: string;
@@ -5379,6 +5383,10 @@ export declare type SDKTaskNotificationMessage = {
     duration_ms: number;
   };
   skip_transcript?: boolean;
+  /**
+   * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+   */
+  ambient?: boolean;
   uuid: UUID;
   session_id: string;
 };
@@ -5433,6 +5441,10 @@ export declare type SDKTaskStartedMessage = {
    * Ambient/housekeeping task. Consumers should hide this from the inline transcript; it may still appear in a tasks panel.
    */
   skip_transcript?: boolean;
+  /**
+   * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+   */
+  ambient?: boolean;
   uuid: UUID;
   session_id: string;
 };
@@ -8034,11 +8046,25 @@ export declare interface Settings {
     verbs: string[];
   };
   /**
-   * Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false).
+   * Add your organization's own tips to the spinner tip rotation. tips: strings or {id, text, cooldownSessions?, priority?} objects; tipsFile: a JSON file of the same; label: prefix shown before your tips; excludeDefault: if true, only show your tips (default: false).
    */
   spinnerTipsOverride?: {
     excludeDefault?: boolean;
-    tips: string[];
+    tips?: (
+      | string
+      | {
+          [k: string]: unknown;
+        }
+    )[];
+    /**
+     * Absolute or ~/ local path to a JSON file holding an array of tips (same shapes as `tips`); honored from user, --settings and on-disk managed settings only. Read once per CLI process (restart to pick up edits).
+     */
+    tipsFile?: string;
+    /**
+     * Prefix shown before your tips in the spinner (default "Tip")
+     */
+    label?: string;
+    [k: string]: unknown;
   };
   /**
    * Whether to disable syntax highlighting in diffs
