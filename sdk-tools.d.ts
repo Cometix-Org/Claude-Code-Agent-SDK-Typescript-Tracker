@@ -435,13 +435,17 @@ export type ArtifactOutput =
       capabilities?: unknown;
       stored?: {
         contract: string;
+        preferredContract?: string;
         capabilities?: {
           [k: string]: unknown;
         };
+        carried?: boolean;
+        read?: string;
       };
       warnings?: string[];
       contract?: string;
       updated?: boolean;
+      audience?: string;
       liveSubscription?: string;
     }
   | {
@@ -665,7 +669,7 @@ export interface AgentInput {
    */
   subagent_type?: string;
   /**
-   * Optional model override for this agent. Takes precedence over the agent definition's model frontmatter. If omitted, uses the agent definition's model, or inherits from the parent. Ignored for subagent_type: "fork" — forks always inherit the parent model.
+   * Optional model override for this agent. Takes precedence over the agent definition's model frontmatter and the configured default subagent model. If omitted, uses the agent definition's model, else the default (inherits from the parent unless a default subagent model is configured). Ignored for subagent_type: "fork" — forks always inherit the parent model.
    */
   model?: "sonnet" | "opus" | "haiku" | "fable";
   /**
@@ -3113,6 +3117,10 @@ export interface ArtifactInput {
    * Short human-readable name for this version, max 60 chars (e.g. "fixed-background"). Shown in the version picker. Not a description — keep it to a few words.
    */
   label?: string;
+  /**
+   * publish only: what changed in this version — a few sentences on what is new or reworked, shown beside `label` in the version picker. Optional; leave it out when nothing is worth noting.
+   */
+  note?: string;
   /**
    * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns. For 'read' and the other url-addressed actions: the artifact to act on.
    */

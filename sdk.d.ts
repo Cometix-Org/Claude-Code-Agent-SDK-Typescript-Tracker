@@ -60,7 +60,7 @@ export declare type AgentDefinition = {
    */
   prompt: string;
   /**
-   * Model alias (e.g. 'fable', 'opus', 'sonnet', 'haiku') or full model ID (e.g. 'claude-fable-5'). If omitted or 'inherit', uses the main model
+   * Model alias (e.g. 'fable', 'opus', 'sonnet', 'haiku') or full model ID (e.g. 'claude-fable-5'). 'inherit' uses the main model; if omitted, uses the default subagent model when one is configured, else the main model
    */
   model?: string;
   mcpServers?: AgentMcpServerSpec[];
@@ -119,7 +119,7 @@ export declare type AgentInfo = {
    */
   description: string;
   /**
-   * Model alias this agent uses. If omitted, inherits the parent's model
+   * Model this agent uses: an alias or model ID, or 'inherit' for the parent's model. If omitted, uses the default subagent model when one is configured, else the parent's model
    */
   model?: string;
 };
@@ -421,6 +421,8 @@ declare namespace coreTypes {
     PermissionUpdateDestination,
     PermissionUpdate,
     PostCompactHookInput,
+    PostModelSwitchHookInput,
+    PostModelSwitchHookSpecificOutput,
     PostToolBatchHookInput,
     PostToolBatchHookSpecificOutput,
     PostToolBatchToolCall,
@@ -429,6 +431,8 @@ declare namespace coreTypes {
     PostToolUseHookInput,
     PostToolUseHookSpecificOutput,
     PreCompactHookInput,
+    PreModelSwitchHookInput,
+    PreModelSwitchHookSpecificOutput,
     PreToolUseHookInput,
     PreToolUseHookSpecificOutput,
     RewindFilesResult,
@@ -930,6 +934,8 @@ export declare const HOOK_EVENTS: readonly [
   "SubagentStop",
   "PreCompact",
   "PostCompact",
+  "PreModelSwitch",
+  "PostModelSwitch",
   "PermissionRequest",
   "PermissionDenied",
   "Setup",
@@ -985,6 +991,8 @@ export declare type HookEvent =
   | "SubagentStop"
   | "PreCompact"
   | "PostCompact"
+  | "PreModelSwitch"
+  | "PostModelSwitch"
   | "PermissionRequest"
   | "PermissionDenied"
   | "Setup"
@@ -1019,6 +1027,8 @@ export declare type HookInput =
   | SubagentStopHookInput
   | PreCompactHookInput
   | PostCompactHookInput
+  | PreModelSwitchHookInput
+  | PostModelSwitchHookInput
   | PermissionRequestHookInput
   | SetupHookInput
   | TeammateIdleHookInput
@@ -2528,6 +2538,52 @@ export declare type PostCompactHookInput = BaseHookInput & {
   compact_summary: string;
 };
 
+export declare type PostModelSwitchHookInput = (BaseHookInput & {
+  hook_event_name: "PostModelSwitch";
+}) & {
+  /**
+   * Resolved model id the session was running before the switch
+   */
+  from_model: string;
+  /**
+   * Resolved model id the session runs after the switch
+   */
+  to_model: string;
+  /**
+   * What was asked for (alias such as "opus", a full id, or null for "default")
+   */
+  requested_model: string | null;
+  /**
+   * command: /model <name>, the /config Model row, or enabling fast mode when that promotes the model; picker: an interactive model picker; sdk: headless set_model (SDK, Remote Control, IDE); auto: automatic fallback or other programmatic change; resume: model restored while resuming a session
+   */
+  source: "command" | "picker" | "sdk" | "auto" | "resume";
+  /**
+   * Prompt tokens the next request re-sends: the last main-thread response's input + cache_read + cache_creation + output tokens (0 before the first response; for a server-side tool loop, its last iteration's window, not the summed totals)
+   */
+  context_tokens: number;
+  /**
+   * Whether the current model's prompt cache is likely still warm (a switch then forfeits it)
+   */
+  prompt_cache_warm: boolean;
+  cache_ttl: "5m" | "1h";
+  /**
+   * Estimated cost of re-caching context_tokens on to_model at its cache-write rate — the managed modelPricing when set, otherwise list price; excludes the response
+   */
+  estimated_cache_write_usd: number;
+  /**
+   * configured: priced at the managed modelPricing setting; catalog: list price; default: to_model unknown, the default tier was assumed
+   */
+  pricing: "configured" | "catalog" | "default";
+};
+
+export declare type PostModelSwitchHookSpecificOutput = {
+  hookEventName: "PostModelSwitch";
+  /**
+   * Reaches the model with the next request the new model serves
+   */
+  additionalContext?: string;
+};
+
 /**
  * Hook input for the PostToolBatch event. Fired once after every tool call in a batch has resolved, before the next model request. PostToolUse fires per-tool and may run concurrently for parallel tool calls; PostToolBatch fires exactly once with the full batch.
  */
@@ -2599,6 +2655,53 @@ export declare type PreCompactHookInput = BaseHookInput & {
   hook_event_name: "PreCompact";
   trigger: "manual" | "auto";
   custom_instructions: string | null;
+};
+
+export declare type PreModelSwitchHookInput = (BaseHookInput & {
+  hook_event_name: "PreModelSwitch";
+}) & {
+  /**
+   * Resolved model id the session was running before the switch
+   */
+  from_model: string;
+  /**
+   * Resolved model id the session runs after the switch
+   */
+  to_model: string;
+  /**
+   * What was asked for (alias such as "opus", a full id, or null for "default")
+   */
+  requested_model: string | null;
+  /**
+   * command: /model <name>, the /config Model row, or enabling fast mode when that promotes the model; picker: an interactive model picker; sdk: headless set_model (SDK, Remote Control, IDE)
+   */
+  source: "command" | "picker" | "sdk";
+  /**
+   * Prompt tokens the next request re-sends: the last main-thread response's input + cache_read + cache_creation + output tokens (0 before the first response; for a server-side tool loop, its last iteration's window, not the summed totals)
+   */
+  context_tokens: number;
+  /**
+   * Whether the current model's prompt cache is likely still warm (a switch then forfeits it)
+   */
+  prompt_cache_warm: boolean;
+  cache_ttl: "5m" | "1h";
+  /**
+   * Estimated cost of re-caching context_tokens on to_model at its cache-write rate — the managed modelPricing when set, otherwise list price; excludes the response
+   */
+  estimated_cache_write_usd: number;
+  /**
+   * configured: priced at the managed modelPricing setting; catalog: list price; default: to_model unknown, the default tier was assumed
+   */
+  pricing: "configured" | "catalog" | "default";
+};
+
+export declare type PreModelSwitchHookSpecificOutput = {
+  hookEventName: "PreModelSwitch";
+  /**
+   * Same contract as PreToolUse: allow proceeds (skipping the interactive cache-miss confirm), deny cancels the switch, ask asks the user to confirm (a headless session refuses instead)
+   */
+  permissionDecision?: "allow" | "deny" | "ask";
+  permissionDecisionReason?: string;
 };
 
 export declare type PreToolUseHookInput = BaseHookInput & {
@@ -5703,6 +5806,22 @@ export declare type SessionStartHookInput = BaseHookInput & {
   agent_type?: string;
   model?: string;
   session_title?: string;
+  /**
+   * resume/fork: seconds since the resumed transcript's last assistant response
+   */
+  seconds_since_last_response?: number;
+  /**
+   * resume/fork: the resumed transcript's last response input + cache_read + cache_creation + output tokens (for a server-side tool loop, its last iteration's window, not the summed totals)
+   */
+  context_tokens?: number;
+  /**
+   * resume/fork: seconds_since_last_response exceeds the prompt-cache TTL, so the first request re-caches context_tokens
+   */
+  prompt_cache_likely_expired?: boolean;
+  /**
+   * resume/fork: estimated cost of re-caching context_tokens on the session model — the managed modelPricing when set, otherwise list price; excludes the response
+   */
+  estimated_cache_write_usd?: number;
 };
 
 export declare type SessionStartHookSpecificOutput = {
@@ -8741,6 +8860,8 @@ export declare type SyncHookJSONOutput = {
     | UserPromptExpansionHookSpecificOutput
     | SessionStartHookSpecificOutput
     | SetupHookSpecificOutput
+    | PreModelSwitchHookSpecificOutput
+    | PostModelSwitchHookSpecificOutput
     | SubagentStartHookSpecificOutput
     | PostToolUseHookSpecificOutput
     | PostToolUseFailureHookSpecificOutput
