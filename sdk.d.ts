@@ -525,8 +525,9 @@ declare namespace coreTypes {
  * Creates an MCP server instance that can be used with the SDK transport.
  * This allows SDK users to define custom tools that run in the same process.
  *
- * Tool calls are bounded by the MCP tool-call timeout — the MCP_TOOL_TIMEOUT
- * env var (ms), effectively unbounded by default.
+ * Tool calls are bounded by the MCP tool-call timeout — `options.timeout`
+ * (ms) for this server, else the MCP_TOOL_TIMEOUT env var, effectively
+ * unbounded by default.
  */
 export declare function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,
@@ -551,6 +552,15 @@ declare type CreateSdkMcpServerOptions = {
    * works and is OR'd with this.
    */
   alwaysLoad?: boolean;
+  /**
+   * Per-server tool-call timeout in milliseconds. Overrides the
+   * MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock
+   * limit per call; progress notifications do not extend it. Values below
+   * 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default).
+   * Applies when the server is first registered; changing it for an
+   * already-registered server has no effect until it is removed and re-added.
+   */
+  timeout?: number;
 };
 
 export declare type CwdChangedHookInput = BaseHookInput & {
@@ -1258,6 +1268,10 @@ export declare type McpHttpServerConfig = {
 export declare type McpSdkServerConfig = {
   type: "sdk";
   name: string;
+  /**
+   * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default). Applies when the server is first registered; changing it for an already-registered server has no effect until it is removed and re-added.
+   */
+  timeout?: number;
 };
 
 /**
@@ -4111,6 +4125,18 @@ declare type SDKControlInitializeRequest = {
   subtype: "initialize";
   hooks?: Partial<Record<coreTypes.HookEvent, SDKHookCallbackMatcher[]>>;
   sdkMcpServers?: string[];
+  /**
+   * Settings for the SDK-hosted MCP servers named in sdkMcpServers, keyed by server name. Sent as a separate field so a CLI that predates it ignores it; entries whose name is not in sdkMcpServers, and values that do not match this shape, are ignored rather than rejected. Applied when the server is first registered.
+   */
+  sdkMcpServerConfigs?: Record<
+    string,
+    {
+      /**
+       * Per-server tool-call timeout in milliseconds. Overrides the MCP_TOOL_TIMEOUT environment variable for this server. Hard wall-clock limit per call; progress notifications do not extend it. Values below 1000ms are ignored (falls through to MCP_TOOL_TIMEOUT or the default). Applies when the server is first registered; changing it for an already-registered server has no effect until it is removed and re-added.
+       */
+      timeout?: number;
+    }
+  >;
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string[];
   appendSystemPrompt?: string;
@@ -5356,6 +5382,7 @@ export declare type SDKSystemMessage = {
 
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
+
   /**
    * The effort level the session will send on its next request — after env overrides, session state, org caps and model-support downgrades; the same value get_settings reports as applied.effort. null when no effort parameter will be sent (a model without effort, CLAUDE_CODE_EFFORT_LEVEL=unset, or an internal numeric budget). Present on Remote Control bridge init frames (terminal- and Desktop/VS Code-hosted sessions); absent on hosts that do not publish it and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
    */
@@ -5909,6 +5936,10 @@ export declare interface Settings {
    * Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely.
    */
   cleanupPeriodDays?: number;
+  /**
+   * Retention ceiling in days for session transcripts created or last written by a desktop-host surface (Claude Desktop, Cowork), which are otherwise exempt from the cleanupPeriodDays sweep. 0 (the default) means no ceiling: such transcripts are kept until deleted another way. Unlike cleanupPeriodDays, 0 is allowed because this setting never disables writes — it only bounds an exemption from deletion. The ceiling is a hard cap: it also bounds an active archive grace, so the grace window of a release marker never keeps files past the ceiling. Ignored when cleanupPeriodDays is managed by org policy. A ceiling at or below cleanupPeriodDays effectively disables the exemption: those transcripts age out on the regular cleanupPeriodDays schedule, so the effective retention is whichever of the two periods is longer.
+   */
+  desktopSessionCleanupPeriodDays?: number;
   /**
    * Set to false to turn off syncing of the skills you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced skills (~/.claude/skills/synced) can no longer be run, are hidden from every session started afterwards, and are moved to ~/.claude/skills/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced skills are blocked and hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored — the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced skills are available in every session, re-synced every 10 minutes, and removed when you disable them on claude.ai. Only applies when signed in with your Claude account.
    */

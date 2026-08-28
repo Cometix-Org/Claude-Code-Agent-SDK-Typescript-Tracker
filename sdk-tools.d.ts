@@ -448,6 +448,7 @@ export type ArtifactOutput =
       artifacts: {
         title: string;
         url: string;
+        favicon?: string;
         updatedAt?: string;
         rel?: "mine" | "shared";
       }[];
@@ -3089,7 +3090,7 @@ export interface ArtifactInput {
    */
   file_path?: string;
   /**
-   * Browser-tab icon: one or two emoji (e.g. "📊"). No markup. Required to publish. Keep stable across redeploys; change only on a hard topic pivot.
+   * Browser-tab icon: one or two emoji (e.g. "📊"). No markup. Required on a page's first publish; omit on a redeploy (same file path this session, or `url`) to keep the artifact's icon — pass a new one only when the user asks.
    */
   favicon?: string;
   /**
