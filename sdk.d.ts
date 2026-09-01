@@ -11,7 +11,7 @@ import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import type { UUID } from "crypto";
 import type { Writable } from "stream";
 import * as z from "zod/v4";
-import type { ZodRawShape } from "zod";
+import type { ZodRawShape } from "zod/v3";
 import type { ZodRawShape as ZodRawShape_2 } from "zod/v4";
 
 export declare class AbortError extends Error {}
@@ -456,6 +456,7 @@ declare namespace coreTypes {
     SDKHookStartedMessage,
     SDKInformationalMessage,
     SDKLocalCommandOutputMessage,
+    SDKMcpResourceLink,
     SDKMemoryRecallMessage,
     SDKMessageOrigin,
     SDKMessage,
@@ -1499,6 +1500,10 @@ export declare type ModelInfo = {
 export declare type ModelUsage = {
   inputTokens: number;
   outputTokens: number;
+  /**
+   * Thinking tokens, already counted inside outputTokens. Counts only turns run on CLI versions that record this field: absent when none did, and partial for a resumed session that began on an older version.
+   */
+  thinkingTokens?: number;
   cacheReadInputTokens: number;
   cacheCreationInputTokens: number;
   webSearchRequests: number;
@@ -2332,7 +2337,7 @@ export declare type Options = {
    *
    * @example Custom prompt with cache boundary
    * ```typescript
-   * import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from '@anthropic-ai/claude-code'
+   * import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from '@anthropic-ai/claude-agent-sdk'
    * systemPrompt: [
    *   staticInstructions,
    *   SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
@@ -2357,15 +2362,66 @@ export declare type Options = {
    *   excludeDynamicSections: true,
    * }
    * ```
+   *
+   * `snapshot` — whether the conversation's system prompt is recorded once (in
+   * the session transcript) and reused verbatim on every later request and
+   * `resume` / `continue`, instead of being rendered fresh each time.
+   * **Recommended: `snapshot: true`.** A system prompt that changes
+   * mid-conversation (a CLI upgrade between launches, a flag flip, a different
+   * `append`) invalidates the prompt prefix and, with extended thinking,
+   * discards the model's earlier reasoning; a recorded prompt cannot change
+   * until the conversation is compacted. (It also keeps the API prompt-cache
+   * prefix stable.)
+   *
+   * How it interacts with `append` (and a custom `prompt`):
+   * - **Omitted (default):** passing an `append` or a custom prompt turns the
+   *   recording off, so your appended text is applied fresh on every launch —
+   *   today's behavior. Only the bare `claude_code` preset is recorded by
+   *   default.
+   * - **`snapshot: true`:** if the conversation already has a recorded prompt,
+   *   that record is sent as-is (a different `append` or `prompt` passed on a
+   *   later launch of the same session is ignored until compaction or a new
+   *   session); otherwise Claude Code renders its prompt with your `append`
+   *   included, sends that, and records it for the rest of the conversation.
+   * - **`snapshot: false`:** never record; render fresh every request.
+   * A bare string / `string[]` prompt is always `false`; use
+   * `{ type: 'custom', prompt, snapshot: true }` to opt a custom prompt in.
+   * With a recorded prompt, a mid-session model switch or `set_settings`
+   * agent/system-prompt change does not change the prompt either; it takes
+   * effect at the next compaction or in a new session. System-prompt
+   * recording is rolling out: where it is not yet enabled for the account
+   * (and on Bedrock / Vertex / Foundry today) `snapshot` is accepted and has no
+   * effect, so it is safe to set now.
+   *
+   * @example Recommended: preset with an append, recorded for the conversation
+   * ```typescript
+   * systemPrompt: {
+   *   type: 'preset',
+   *   preset: 'claude_code',
+   *   append: 'Always explain your reasoning.',
+   *   snapshot: true,
+   * }
+   * ```
+   *
+   * @example Custom prompt, recorded for the conversation
+   * ```typescript
+   * systemPrompt: { type: 'custom', prompt: 'You are a release bot.', snapshot: true }
+   * ```
    */
   systemPrompt?:
     | string
     | string[]
     | {
+        type: "custom";
+        prompt: string | string[];
+        snapshot?: boolean;
+      }
+    | {
         type: "preset";
         preset: "claude_code";
         append?: string;
         excludeDynamicSections?: boolean;
+        snapshot?: boolean;
       };
   /**
    * Custom title for a new session. When provided, the session uses this title
@@ -2841,6 +2897,20 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
       : Settings[K] | null;
   }): Promise<void>;
   /**
+   * Merge settings into a settings FILE through the CLI's own writer — the
+   * same path /config uses (canonical store root, gitignore upkeep,
+   * hardened write) — and live-apply them. Unlike applyFlagSettings, which
+   * only touches the session-scoped flag layer. The handler accepts only an
+   * explicit key allowlist (currently just outputStyle) with string values
+   * — deletion is not supported — and refuses remote transports and
+   * sessions whose --setting-sources exclude the target source. Rejects
+   * with the gate's or writer's error otherwise.
+   */
+  updateSettings(
+    source: "localSettings",
+    settings: Record<string, unknown>,
+  ): Promise<void>;
+  /**
    * Get the full initialization result, including supported commands, models,
    * account info, and output style configuration.
    *
@@ -2901,9 +2971,15 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * Get a breakdown of current context window usage by category
    * (system prompt, tools, messages, MCP tools, memory files, etc.).
    *
+   * `detail: 'full'` counts each category with the token-count API;
+   * `'summary'` answers from the last response's usage and local estimates
+   * without the per-category token-count calls. Defaults to `'full'`.
+   *
    * @returns Context usage breakdown including token counts per category and total usage
    */
-  getContextUsage(): Promise<SDKControlGetContextUsageResponse>;
+  getContextUsage(opts?: {
+    detail?: "summary" | "full";
+  }): Promise<SDKControlGetContextUsageResponse>;
   /**
    * Get the structured data behind the `/usage` command: session cost and
    * token usage totals plus claude.ai plan rate-limit utilization windows
@@ -3044,6 +3120,8 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * @param toolUseId - Optional tool_use block id to target a single task
    * @returns true when at least one task was backgrounded; false only
    *   when `toolUseId` was given and it matched no foreground task
+   * @throws when background tasks are disabled for the session
+   *   (`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`) — nothing is backgrounded
    */
   backgroundTasks(toolUseId?: string): Promise<boolean>;
   /**
@@ -3190,8 +3268,7 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
     {
       files: z.ZodOptional<
         z.ZodArray<
-          z.ZodPipe<
-            z.ZodTransform<unknown, unknown>,
+          z.ZodPreprocess<
             z.ZodObject<
               {
                 path: z.ZodString;
@@ -3223,8 +3300,7 @@ declare const SandboxCredentialsConfigSchema: () => z.ZodOptional<
       >;
       envVars: z.ZodOptional<
         z.ZodArray<
-          z.ZodPipe<
-            z.ZodTransform<unknown, unknown>,
+          z.ZodPreprocess<
             z.ZodObject<
               {
                 name: z.ZodString;
@@ -3412,8 +3488,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
         {
           files: z.ZodOptional<
             z.ZodArray<
-              z.ZodPipe<
-                z.ZodTransform<unknown, unknown>,
+              z.ZodPreprocess<
                 z.ZodObject<
                   {
                     path: z.ZodString;
@@ -3445,8 +3520,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
           >;
           envVars: z.ZodOptional<
             z.ZodArray<
-              z.ZodPipe<
-                z.ZodTransform<unknown, unknown>,
+              z.ZodPreprocess<
                 z.ZodObject<
                   {
                     name: z.ZodString;
@@ -3533,16 +3607,8 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
         z.core.$strip
       >
     >;
-    bwrapPath: z.ZodCatch<
-      z.ZodOptional<
-        z.ZodPipe<z.ZodTransform<string | undefined, unknown>, z.ZodString>
-      >
-    >;
-    socatPath: z.ZodCatch<
-      z.ZodOptional<
-        z.ZodPipe<z.ZodTransform<string | undefined, unknown>, z.ZodString>
-      >
-    >;
+    bwrapPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString>>>;
+    socatPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString>>>;
   },
   z.core.$loose
 >;
@@ -3880,6 +3946,10 @@ declare type SDKControlGetBinaryVersionRequest = {
  */
 declare type SDKControlGetContextUsageRequest = {
   subtype: "get_context_usage";
+  /**
+   * 'full' counts each category with the token-count API; 'summary' answers from the last response's usage and local estimates without the per-category token-count calls. Defaults to 'full'.
+   */
+  detail?: "summary" | "full";
 };
 
 /**
@@ -4243,6 +4313,10 @@ declare type SDKControlInitializeRequest = {
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string[];
   appendSystemPrompt?: string;
+  /**
+   * Record the conversation's system prompt once and reuse it verbatim on every later request and resume (recommended: true). Omitted: setting systemPrompt or appendSystemPrompt turns recording off so the appended text applies fresh each launch; only the bare claude_code preset is recorded. true: an existing record in the conversation is sent as-is (a later launch's different systemPrompt/appendSystemPrompt is ignored until compaction); otherwise the prompt is rendered with appendSystemPrompt included, sent, and recorded. false: never record. With a record, a mid-session model switch or set_settings agent/system-prompt change does not alter the prompt until compaction or a new session.
+   */
+  systemPromptSnapshot?: boolean;
   /**
    * Custom workflow body for the plan-mode system reminder. Replaces the default code-implementation phases; the CLI still wraps it with the read-only enforcement preamble and the ExitPlanMode protocol footer.
    */
@@ -4619,6 +4693,7 @@ declare type SDKControlRequestInner =
   | SDKControlBackgroundTasksRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
+  | SDKControlUpdateSettingsRequest
   | SDKControlElicitationRequest
   | SDKControlRequestUserDialogRequest;
 
@@ -4728,6 +4803,18 @@ declare type SDKControlSetPermissionModeRequest = {
 declare type SDKControlStopTaskRequest = {
   subtype: "stop_task";
   task_id: string;
+};
+
+/**
+ * Merges the provided settings into a settings file through the CLI's own writer (canonical store root, gitignore upkeep, hardened write) and live-applies them — the same path /config uses. Unlike apply_flag_settings, which only touches the session-scoped flag layer. The handler accepts an explicit key allowlist only (currently just outputStyle — the file feeds hook and permission-rule loading, so each key is a security decision), requires string values (key deletion is not supported), and refuses remote transports and sessions whose --setting-sources exclude the target source.
+ */
+declare type SDKControlUpdateSettingsRequest = {
+  subtype: "update_settings";
+  /**
+   * Which settings file to write. Only the project's local settings file for now — the scope host UIs need so their writes land exactly where /config's do.
+   */
+  source: "localSettings";
+  settings: Record<string, unknown>;
 };
 
 /**
@@ -4873,6 +4960,16 @@ export declare type SDKLocalCommandOutputMessage = {
   content: string;
   uuid: UUID;
   session_id: string;
+};
+
+export declare type SDKMcpResourceLink = {
+  uri: string;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+  size?: number;
+  annotations?: Record<string, unknown>;
 };
 
 /**
@@ -5512,6 +5609,10 @@ export declare type SDKTaskNotificationMessage = {
     tool_uses: number;
     duration_ms: number;
   };
+  /**
+   * CLI-owned: for a backgrounded MCP task (task_type mcp_task) that completed, the `resource_link` content blocks of its final result — the files it returned by reference — collected from the raw result before the CLI renders it as the text the model reads. A backgrounded task's tool_result is the placeholder text and its real result arrives as this notification, so this is where a host learns which files that tool call produced; join to the originating call via tool_use_id. Same fields and caps as tool_use_result.resourceLinks (at most 50 links, 64 KiB serialized), absent when the result had none or the task is any other type. Never populated from the server's _meta.
+   */
+  resource_links?: SDKMcpResourceLink[];
   skip_transcript?: boolean;
   /**
    * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
@@ -6142,6 +6243,10 @@ export declare interface Settings {
      */
     disableBypassPermissionsMode?: "disable";
     /**
+     * Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks "block" on the one-time auto-mode prompt for a read outside the working directories.
+     */
+    blockReadsOutsideWorkingDirectories?: boolean;
+    /**
      * Additional directories to include in the permission scope
      */
     additionalDirectories?: string[];
@@ -6189,6 +6294,10 @@ export declare interface Settings {
        * Row subtitle. Defaults to a generic description.
        */
       description?: string;
+      /**
+       * For a model this version of Claude Code does not know: the ID of a model it does know (e.g. "claude-opus-4-8") whose client-side handling — prompt profile, capability and effort defaults — applies to it. Changes neither the row's label nor the model ID sent. Without it, a model-catalog row for a model this version does not know is not offered until Claude Code is updated.
+       */
+      behavesAs?: string;
     }[];
     /**
      * When true, the picker shows only the Default row and these options — the built-in lineup, gateway-discovered models and ANTHROPIC_CUSTOM_MODEL_OPTION are hidden. When false or unset, these options are added after the built-in lineup.
@@ -6553,7 +6662,7 @@ export declare interface Settings {
    */
   httpHookAllowedEnvVars?: string[];
   /**
-   * When true (and set in managed settings), only permission rules (allow/deny/ask) from managed settings are respected. User, project, local, and CLI argument permission rules are ignored.
+   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. --disallowedTools and other deny and ask rules from the command line or the current session still apply.
    */
   allowManagedPermissionRulesOnly?: boolean;
   /**
@@ -7931,7 +8040,7 @@ export declare interface Settings {
    */
   parentSettingsBehavior?: "first-wins" | "merge";
   /**
-   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value and arrays union, except fallbackModel and the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins (the highest source that sets one owns it whole) and the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl (highest source only). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
+   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole) and the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl (highest source only). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
    */
   managedSourcesBehavior?: "first-wins" | "merge";
   /**
@@ -8411,6 +8520,14 @@ export declare interface Settings {
    * Reduce or disable animations for accessibility (spinner shimmer, flash effects, etc.)
    */
   prefersReducedMotion?: boolean;
+  /**
+   * Clock format for times shown in the UI: "auto" (default, follows the locale), "12-hour", "24-hour", "24-hour-utc" ("18:05Z"), or a strftime pattern such as "%H:%M" (any value containing "%"; other values read as "auto"). A pattern replaces the time everywhere; message timestamps show only the pattern, so include %Y-%m-%d for the date. /config offers the presets; a pattern is set here.
+   */
+  timeFormat?: ("auto" | "12-hour" | "24-hour" | "24-hour-utc") | string;
+  /**
+   * IANA time zone for times shown in the UI, e.g. "UTC" or "Europe/Dublin". Default: the system time zone. An unknown name falls back to the system time zone.
+   */
+  timeZone?: string;
 
   /**
    * Enable auto-memory for this project. When false, Claude will not read from or write to the auto-memory directory.

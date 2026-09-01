@@ -2927,11 +2927,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -2939,7 +2939,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -2952,11 +2952,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -2964,7 +2964,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -2975,11 +2975,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -2987,7 +2987,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -3000,11 +3000,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -3012,7 +3012,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -3023,11 +3023,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -3035,7 +3035,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -3046,11 +3046,11 @@ export interface ProposeSkillsInput {
           name: string;
           kind: "new" | "improvement";
           /**
-           * Existing skill name to amend. Required when kind is 'improvement'; omit for 'new'.
+           * Name of the existing skill to update. Required when kind is 'improvement'; omit for 'new'.
            */
           target?: string;
           /**
-           * one line shown on the card
+           * One line saying when to use this skill. Shown on the review card and saved as the skill's description, which is what decides when the skill is used; for an improvement, restate or update the existing skill's description.
            */
           description: string;
           /**
@@ -3058,7 +3058,7 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * complete SKILL.md draft (frontmatter + Trigger/Steps/Verification body)
+           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
            */
           skillMd: string;
         },
@@ -3114,13 +3114,9 @@ export interface ArtifactInput {
    */
   description?: string;
   /**
-   * Short human-readable name for this version, max 60 chars (e.g. "fixed-background"). Shown in the version picker. Not a description — keep it to a few words.
+   * A short name for the version this publish makes, max 60 chars (e.g. "Draft to legal"). Shown in the version picker. Optional — a few words, not a description.
    */
   label?: string;
-  /**
-   * publish only: what changed in this version — a few sentences on what is new or reworked, shown beside `label` in the version picker. Optional; leave it out when nothing is worth noting.
-   */
-  note?: string;
   /**
    * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns. For 'read' and the other url-addressed actions: the artifact to act on.
    */
@@ -4028,7 +4024,7 @@ export interface REPLOutput {
   /**
    * Return value from the code execution
    */
-  result: {
+  result?: {
     [k: string]: unknown;
   };
   /**
