@@ -2050,6 +2050,15 @@ export declare type Options = {
    */
   permissionPromptToolName?: string;
   /**
+   * Who answers permission prompts. `'host'` (default): this process, through
+   * `canUseTool` or `permissionPromptToolName`. `'none'`: nobody — the
+   * permission mode (including auto mode's classifier), rules and hooks still
+   * decide, and anything that would otherwise prompt is denied immediately
+   * with a message telling Claude the session has no approval surface;
+   * `canUseTool` is never called.
+   */
+  permissionPrompts?: "host" | "none";
+  /**
    * Load plugins for this session. Plugins provide custom commands, agents,
    * skills, and hooks that extend Claude Code's capabilities.
    *
@@ -3663,6 +3672,10 @@ export declare type SDKAssistantMessage = {
    */
   user_message_uuid?: string;
   /**
+   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same first reply frame only; absent from older producers (fall back to user_message_uuid).
+   */
+  user_message_uuids?: string[];
+  /**
    * This turn continued the preceding truncated assistant turn inside its trailing signed thinking block (max-output-tokens recovery). Its thinking signatures are cumulative over that preceding thinking-only turn, so a history replayed through the bridge must carry this flag back for the normalizer to keep the run's prefix on the wire. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
    */
   resumed_from_incomplete_thinking?: true;
@@ -5226,6 +5239,10 @@ export declare type SDKPartialAssistantMessage = {
    * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on the turn's FIRST non-ping stream event only (the frame that triggers the turn's initial ack) so a consumer can bind the reply stream to the send it answers without waiting for the result. Absent on every later stream event of the turn, on synthetic/scheduled (meta) turns, on turns without a client uuid, and from older producers.
    */
   user_message_uuid?: string;
+  /**
+   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same first non-ping stream event only; absent from older producers (fall back to user_message_uuid).
+   */
+  user_message_uuids?: string[];
 };
 
 export declare type SDKPermissionDenial = {
@@ -5391,6 +5408,10 @@ export declare type SDKResultError = {
    * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. Absent on synthetic/scheduled (meta) turns, on turns without a client uuid, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
    */
   user_message_uuid?: string;
+  /**
+   * Client uuids of every user message whose prompt this turn consumed, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any queued user message folded into the running turn between tool rounds, once taken off the queue — so a consumer that sent any of them can bind this result to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries; can be longer than the list on the turn's first reply frame. Present when a headless turn that ran echoes user_message_uuid; absent on delivery-failure and zeroed results and from older producers (fall back to user_message_uuid).
+   */
+  user_message_uuids?: string[];
   terminal_reason?: TerminalReason;
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
@@ -5413,6 +5434,7 @@ export declare type SDKResultSuccess = {
   ttft_stream_ms?: number;
   time_to_request_ms?: number;
   user_message_uuid?: string;
+  user_message_uuids?: string[];
   request_sent_wall_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
@@ -5638,6 +5660,9 @@ export declare type SDKTaskProgressMessage = {
     duration_ms: number;
   };
   last_tool_name?: string;
+  /**
+   * A one-line status for the task's row. For a local_agent task it is the model-generated progress summary (only when the agentProgressSummaries option is on); for a backgrounded mcp_task it is the MCP server's own bounded status message, emitted once per change without any option. Render it when present regardless of task type.
+   */
   summary?: string;
 
   uuid: UUID;
@@ -6345,7 +6370,15 @@ export declare interface Settings {
    */
   disableBundledSkills?: boolean;
   /**
-   * Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied.
+   * MCP servers the organization provides to every user, keyed by server name, each with the .mcp.json entry shape; only "http" and "sse" servers are accepted (nothing that names a program to run, no ${VAR} references). Honored from managed settings only; users cannot remove them, deniedMcpServers still applies, and they need no allowedMcpServers entry. Not read in Claude Desktop's Code tab on a third-party deployment or in Cowork sessions, where Claude Desktop supplies and locks the session's MCP servers itself.
+   */
+  managedMcpServers?: {
+    [k: string]: {
+      [k: string]: unknown;
+    };
+  };
+  /**
+   * Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries that use no ${VAR} expansion) are allowed without being listed; a managed-mcp.json entry that uses ${VAR} expansion is still checked against this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied.
    */
   allowedMcpServers?: {
     /**
@@ -8040,7 +8073,7 @@ export declare interface Settings {
    */
   parentSettingsBehavior?: "first-wins" | "merge";
   /**
-   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole) and the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl (highest source only). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
+   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry) and the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl (highest source only). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
    */
   managedSourcesBehavior?: "first-wins" | "merge";
   /**
@@ -8554,6 +8587,7 @@ export declare interface Settings {
    * Disable auto mode
    */
   disableAutoMode?: "disable";
+
   /**
    * SSH connection configurations for remote environments. Typically set in managed settings by enterprise administrators to pre-configure SSH connections for team members.
    */
