@@ -577,6 +577,7 @@ export type ArtifactOutput =
           max_bytes: number;
         };
         next?: string;
+        cowritten?: true;
       };
     }
   | {
@@ -586,6 +587,7 @@ export type ArtifactOutput =
         size_bytes: number;
         content_type: string;
         sha256: string;
+        cowritten?: true;
       };
     }
   | {
@@ -3084,6 +3086,7 @@ export interface ArtifactInput {
     | "publish"
     | "list"
     | "read"
+    | "list_types"
     | "watch"
     | "unwatch"
     | "status"

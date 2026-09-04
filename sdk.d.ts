@@ -3263,7 +3263,7 @@ export declare type RewindFilesResult = {
   insertions?: number;
   deletions?: number;
   /**
-   * Count of tracked files NOT restored or deleted because a symlink, hard link, or other non-regular file was detected at the tracked path, its parent directory no longer resolves to where it pointed when the checkpoint was taken, or its backup could not be safely read. Only populated by a real (non-dryRun) rewind — on a dryRun response the field is never set and the preview counts do not reflect link-safety refusals. Absent or 0 on a real rewind means no link-safety refusals occurred; other per-file failures (for example a missing backup file) are logged and reported in telemetry but are not counted here.
+   * Count of tracked files NOT restored or deleted because a symlink, hard link, or other non-regular file was detected at the tracked path, its parent directory no longer resolves to where it pointed when the checkpoint was taken, or its backup could not be safely read. Only populated by a real (non-dryRun) rewind — on a dryRun response the field is never set and the preview counts do not reflect link-safety refusals. Absent or 0 on a real rewind means no link-safety refusals occurred; other per-file failures (for example a missing backup file) are not counted here; they are reported in telemetry, and when every differing file fails to restore the rewind itself fails (canRewind: false).
    */
   skippedLinks?: number;
 };
@@ -5436,6 +5436,10 @@ export declare type SDKResultSuccess = {
   user_message_uuid?: string;
   user_message_uuids?: string[];
   request_sent_wall_ms?: number;
+  first_content_frame_ms?: number;
+  first_stream_post_ms?: number;
+  first_stream_post_ack_ms?: number;
+  first_stream_post_wall_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
   time_origin_ms?: number;
@@ -5733,6 +5737,10 @@ export declare type SDKThinkingTokensMessage = {
   subtype: "thinking_tokens";
   estimated_tokens: number;
   estimated_tokens_delta: number;
+  /**
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on every thinking_tokens frame of a headless (stream-json / Agent SDK) turn so a consumer can attribute thinking progress to the send it answers before any reply frame arrives. Absent on synthetic/scheduled (meta) turns, on turns without a client uuid, on Remote Control (interactive terminal) sessions, and from older producers.
+   */
+  user_message_uuid?: string;
   uuid: UUID;
   session_id: string;
 };
@@ -8724,6 +8732,7 @@ export declare interface Settings {
    * Start Remote Control bridge automatically each session
    */
   remoteControlAtStartup?: boolean;
+
   /**
    * Require explicit approval before SendMessage can reach a peer session on another machine via Remote Control
    */
