@@ -2073,6 +2073,21 @@ export declare type Options = {
    * ```
    */
   plugins?: SdkPluginConfig[];
+  /**
+   * How `plugins` reach the Claude Code process.
+   * - `'argv'` (default) - One `--plugin-dir <path>` flag per plugin. Works
+   *   with any Claude Code version, but the command line grows with the
+   *   plugin count and Windows refuses to start a process whose command line
+   *   exceeds 32,767 characters.
+   * - `'initialize'` - The list is sent over stdin in the initialize request
+   *   and Claude Code is started with `--await-initialize`, so the command
+   *   line does not depend on the plugin count. Loading is otherwise
+   *   identical. Requires Claude Code 2.1.261 or newer (the binary bundled
+   *   with this SDK qualifies); an older binary exits at startup with an
+   *   unknown-option error. `initializationResult().plugins_applied` reports
+   *   whether every listed plugin is loaded in the process.
+   */
+  pluginDelivery?: "argv" | "initialize";
 
   /**
    * Enable prompt suggestions. When true, the agent emits a `prompt_suggestion`
@@ -2996,13 +3011,19 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * false (and `rate_limits` null) for API key, Bedrock, Vertex, and other
    * sessions where plan limits do not apply.
    *
+   * `skipBehaviors: true` skips the scan of local transcripts that fills the
+   * response's `behaviors` section (it is null in the answer), for callers
+   * that need only the plan rate limits. Defaults to scanning.
+   *
    * EXPERIMENTAL: this API is unstable and may change or be removed in any
    * release without notice — do not rely on it yet. The method name will
    * change when the API is stabilized.
    *
    * @returns Structured session cost/usage data and plan rate-limit utilization
    */
-  usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET(): Promise<SDKControlGetUsageResponse>;
+  usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET(opts?: {
+    skipBehaviors?: boolean;
+  }): Promise<SDKControlGetUsageResponse>;
   /**
    * Read a file from the session's filesystem for the remote sidebar
    * viewer. Path is resolved against cwd and gated by the same
@@ -3033,6 +3054,16 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * @returns The refreshed skill commands after reload
    */
   reloadSkills(): Promise<SDKControlReloadSkillsResponse>;
+  /**
+   * Re-read the output-style directories from disk and return the refreshed
+   * style names. A style file written while the session runs is otherwise
+   * invisible to it until the next session. Also drops the shared
+   * markdown-file scan cache, so agents, skills and routines re-read their
+   * directories on their next use.
+   *
+   * @returns The refreshed output style names (built-in and custom)
+   */
+  reloadOutputStyles(): Promise<SDKControlReloadOutputStylesResponse>;
   /**
    * Get information about the authenticated account.
    *
@@ -3649,6 +3680,13 @@ export declare type SDKAPIRetryMessage = {
   retry_delay_ms: number;
   error_status: number | null;
   error: SDKAssistantMessageError;
+  /**
+   * Present only when the API sent no response headers within the first-byte window (CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS): waited_ms is how long the failed attempt waited for headers, retry_wait_ms how long the retry will wait for them. For this cause max_retries is its own cap (normally one retry), not the session budget.
+   */
+  no_response?: {
+    waited_ms: number;
+    retry_wait_ms: number;
+  };
   uuid: UUID;
   session_id: string;
 };
@@ -3743,7 +3781,7 @@ export declare type SDKBackgroundTasksChangedMessage = {
     task_type: string;
     description: string;
     /**
-     * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+     * True for tasks that are not activity (every skip_transcript task, plus every live-update watcher, requested or auto-started); hosts should exclude them from activity indicators.
      */
     ambient?: boolean;
   }[];
@@ -4079,6 +4117,10 @@ declare type SDKControlGetSettingsRequest = {
  */
 declare type SDKControlGetUsageRequest = {
   subtype: "get_usage";
+  /**
+   * Skip the scan of local transcripts that produces the response's behaviors section (it is null in the answer). For callers that need only the plan rate limits, such as a usage meter; the scan reads every transcript touched in the last seven days.
+   */
+  skip_behaviors?: boolean;
 };
 
 /**
@@ -4364,6 +4406,10 @@ declare type SDKControlInitializeRequest = {
    * Declares that this consumer renders a per-task stop control wired to the `stop_task` control request, so the user can stop an individual background task. When declared, an interrupt on an open-input (interactive stream-json) session spares running background agents/workflows (Stop only aborts the turn). Closed-input exception: a one-shot run (string prompt / -p closes stdin) still kills hold-back tasks at the held-result release regardless of the declaration — with stdin closed, a stop_task control could never be delivered, so the fail-closed kill stands. ABSENCE also fails closed: the interrupt kills background tasks, since the user would otherwise have no way to stop a runaway one. First-attached-client-wins on multi-client sessions; later initializes do not change it.
    */
   perTaskStopAffordance?: boolean;
+  /**
+   * Plugins to load for the session, in the same shape as the SDK `plugins` option: the stdin form of one --plugin-dir flag per entry (--plugin-dir-no-mcp when skipMcpDiscovery is set), so the launch command line does not grow with the plugin count. Loaded only by a CLI launched with --await-initialize, which reads this request during startup before any plugin work. Without that flag, on a repeated initialize, or over a remote session transport the field loads nothing; plugins_applied in the response reports whether the listed plugins are in fact loaded.
+   */
+  plugins?: coreTypes.SdkPluginConfig[];
 };
 
 /**
@@ -4385,6 +4431,10 @@ export declare type SDKControlInitializeResponse = {
    * Whether the `hooks` this initialize carried were registered: true on a session's first initialize, and on a repeated initialize from the process that owns the CLI's stdin (its set replaces the one registered earlier); false when a repeated initialize's hooks were ignored (a client joining a remote session another client configured). Absent when the request carried no hooks, and on CLIs that predate the field — those ignored `hooks` on every repeated initialize.
    */
   hooks_applied?: boolean;
+  /**
+   * Whether every plugin this initialize listed is loaded: true when each one is among the plugins the process loaded at launch (from `plugins` under --await-initialize, or from --plugin-dir), so a re-sent initialize naming the launch set also reads true; false otherwise. The `plugins` field never loads anything after launch. Absent when the request listed no plugins, and on CLIs that predate the field (those never read `plugins`).
+   */
+  plugins_applied?: boolean;
 
   fast_mode_state?: coreTypes.FastModeState;
   fast_mode_disabled_reason?: coreTypes.FastModeDisabledReason;
@@ -4397,7 +4447,7 @@ declare type SDKControlInterruptRequest = {
   subtype: "interrupt";
 
   /**
-   * When true, the interrupt also cancels every uuid-stamped main-thread command still in the queue or already dequeued for the imminent turn but not yet reachable by the abort (the first-command prewait window) — the same set the response would otherwise list under `still_queued`. Each is closed with a terminal 'cancelled' lifecycle and listed on the response's `cancelled` field. `still_queued` is then empty, except that a client driving a hosted session lists there what it can no longer recall (a send already in flight to that session, or the first prompt the session was created with) and, when the session's own sweep then cancels one of those or a send it had already delivered, follows up with a command_lifecycle 'cancelled' frame for it. (The isFoldInFlight guard cancel_async_message uses does not apply here: this request also aborts the running turn, so a fold-in-flight uuid is never delivered and is swept with the rest. A fold-in-flight uuid's queued_command attachment may already appear in the aborted turn's transcript if the abort landed after the fold's attachment yield — pre-existing leave-queued semantics; it never runs as its own turn.) Uuid-less commands (task notifications) still in the queue are also dequeued but cannot be listed; a uuid-less command already in the prewait window is unreachable by either leg and still runs. When false or absent, queued commands survive the interrupt and are listed under `still_queued` — the interrupt_receipt_v1 contract is unchanged. A Stop-means-stop-everything client (a remote UI's Stop button) sets this true so one round-trip halts the session; a wrapper that wants per-uuid control leaves it false and follows up with cancel_async_message. Advertised by the `interrupt_cancel_queued_v1` capability on system/init; older CLIs ignore the field and behave as if false.
+   * When true, the interrupt also cancels every uuid-stamped main-thread command still in the queue or already dequeued for the imminent turn but not yet reachable by the abort (the first-command prewait window) — the same set the response would otherwise list under `still_queued`. Each is closed with a terminal 'cancelled' lifecycle and listed on the response's `cancelled` field. `still_queued` is then empty, except that a client driving a hosted session lists there what it can no longer recall (a send already in flight to that session, or the first prompt the session was created with) and, when the session's own sweep then cancels one of those or a send it had already delivered, follows up with a command_lifecycle 'cancelled' frame for it. (The isFoldInFlight guard cancel_async_message uses does not apply here: this request also aborts the running turn, so a fold-in-flight uuid is never delivered and is swept with the rest. A fold-in-flight uuid's queued_command attachment may already appear in the aborted turn's transcript if the abort landed after the fold's attachment yield — pre-existing leave-queued semantics; it never runs as its own turn.) Uuid-less commands (task notifications) still in the queue are also dequeued but cannot be listed; a uuid-less command already in the prewait window is unreachable by either cancel leg — the first-command prewait latch covers it (this request latches exactly like a plain interrupt; see still_queued): its turn starts aborted. When false or absent, queued commands survive the interrupt and are listed under `still_queued` — the interrupt_receipt_v1 contract is unchanged. A Stop-means-stop-everything client (a remote UI's Stop button) sets this true so one round-trip halts the session; a wrapper that wants per-uuid control leaves it false and follows up with cancel_async_message. Advertised by the `interrupt_cancel_queued_v1` capability on system/init; older CLIs ignore the field and behave as if false.
    */
   cancel_queued?: boolean;
 };
@@ -4407,7 +4457,7 @@ declare type SDKControlInterruptRequest = {
  */
 export declare type SDKControlInterruptResponse = {
   /**
-   * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. These WILL run unless cancelled first (or unless the request set cancel_queued:true, in which case every uuid-stamped survivor this process holds is removed, emitted a terminal `cancelled` synchronously, and listed under `cancelled` instead — leaving here only what a client driving a hosted session can no longer recall: a send already in flight to that session, or the first prompt the session was created with; a send that client still holds on its own machine behind a send gate (today: waiting for the session to take the initial upload from that machine) has not gone out, so it is withdrawn and listed under `cancelled` like a queued one, and cancel_async_message can withdraw it too, while a plain interrupt leaves it held and lists it here). Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
+   * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. An interrupt — plain or cancel_queued:true — that lands during the FIRST-command prewait window (before the first turn of the session has armed a controller) is additionally LATCHED, scoped to the user-intent work pending at that instant — the batch already dequeued and parked for the imminent turn, plus the user-intent main-thread commands then in the queue (the work this list enumerates): the first turn to arm that carries any of that doomed work starts already aborted, exactly once, so the listed prewait batch is delivered into an immediately-aborted turn, its frames and result flowing through the normal abort path, instead of running to completion. A turn carrying none of it arms live and leaves the latch waiting: a system delivery turn (for example a replayed host event), or a prompt enqueued after the interrupt — post-interrupt work is never coalesced with the doomed work and never dies to the latch, so the Stop kills exactly what this receipt listed. The latch is released when the doomed work is retired without arming: if a parked prewait batch is entirely cancelled, the latch is released even when other queued commands remain (those arm and run normally); with nothing parked, it is released once none of the doomed commands remains queued — work enqueued after the interrupt neither holds it up nor is aborted by it. Survivors that ride any later turn run normally. These WILL run (subject to that latch) unless cancelled first (or unless the request set cancel_queued:true, in which case every uuid-stamped survivor this process holds is removed, emitted a terminal `cancelled` synchronously, and listed under `cancelled` instead — leaving here only what a client driving a hosted session can no longer recall: a send already in flight to that session, or the first prompt the session was created with; a send that client still holds on its own machine behind a send gate (today: waiting for the session to take the initial upload from that machine) has not gone out, so it is withdrawn and listed under `cancelled` like a queued one, and cancel_async_message can withdraw it too, while a plain interrupt leaves it held and lists it here). Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
    */
   still_queued: string[];
   /**
@@ -4614,6 +4664,20 @@ declare type SDKControlRegisterRepoRootRequest = {
 };
 
 /**
+ * Re-reads the output-style directories from disk (a style file written mid-session is otherwise invisible until the next session) and returns the refreshed style names. Also drops the shared markdown-file scan cache, so agents, skills and routines re-read their directories on their next use.
+ */
+declare type SDKControlReloadOutputStylesRequest = {
+  subtype: "reload_output_styles";
+};
+
+/**
+ * Refreshed output style names after reload, built-in and custom, in the order the initialize response lists them.
+ */
+export declare type SDKControlReloadOutputStylesResponse = {
+  available_output_styles: string[];
+};
+
+/**
  * Reloads plugins from disk and returns the refreshed session components.
  */
 declare type SDKControlReloadPluginsRequest = {
@@ -4700,6 +4764,7 @@ declare type SDKControlRequestInner =
   | SDKControlRegisterRepoRootRequest
   | SDKControlReloadPluginsRequest
   | SDKControlReloadSkillsRequest
+  | SDKControlReloadOutputStylesRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
   | SDKControlStopTaskRequest
@@ -5641,7 +5706,7 @@ export declare type SDKTaskNotificationMessage = {
   resource_links?: SDKMcpResourceLink[];
   skip_transcript?: boolean;
   /**
-   * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+   * True for tasks that are not activity (every skip_transcript task, plus every live-update watcher, requested or auto-started); hosts should exclude them from activity indicators.
    */
   ambient?: boolean;
   uuid: UUID;
@@ -5702,7 +5767,7 @@ export declare type SDKTaskStartedMessage = {
    */
   skip_transcript?: boolean;
   /**
-   * True for housekeeping tasks the CLI does not surface as user work (every skip_transcript task, plus auto-started live-update watchers); hosts should exclude them from activity indicators.
+   * True for tasks that are not activity (every skip_transcript task, plus every live-update watcher, requested or auto-started); hosts should exclude them from activity indicators.
    */
   ambient?: boolean;
   uuid: UUID;
@@ -6686,6 +6751,14 @@ export declare interface Settings {
    * Default shell for input-box ! commands. Defaults to 'bash' on all platforms (no Windows auto-flip).
    */
   defaultShell?: "bash" | "powershell";
+  /**
+   * How many characters of a successful Bash or PowerShell command's output Claude receives inline (default 30000; values clamp to 4000-128000). Output past this is saved to a file and Claude receives a short preview plus the path. When set, this also replaces BASH_MAX_OUTPUT_LENGTH, which on its own only sizes the read-back window.
+   */
+  bashOutputMaxChars?: number;
+  /**
+   * How many characters of a background task's output the TaskOutput tool hands Claude inline (default 32000; values clamp to 4000-128000). Longer output is cut to its most recent characters with the path of the full output file, except that a shell command still running returns its first characters up to this size. When set, this also replaces TASK_MAX_OUTPUT_LENGTH, which on its own only sizes that window.
+   */
+  taskOutputMaxChars?: number;
   /**
    * Whether Claude responds after an input-box ! bash command runs. Set to false to add the command output to context without a response. Default: true.
    */
@@ -8656,7 +8729,7 @@ export declare interface Settings {
    */
   editorMode?: "normal" | "vim";
   /**
-   * Which conventions the prompt's word-editing keys follow: "readline" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); "classic" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)
+   * Deprecated: no longer has any effect. The prompt's word-editing keys always follow Bash (readline) conventions.
    */
   keybindingFlavor?: "classic" | "readline";
   /**
