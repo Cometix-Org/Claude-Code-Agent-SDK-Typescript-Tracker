@@ -657,6 +657,27 @@ export type ProjectsOutput =
       notice?: string;
       path: string;
       deleted: boolean;
+    }
+  | {
+      method: "project_memory_list";
+      notice?: string;
+      files: {
+        path: string;
+        size_bytes: number;
+        updated_at: string | null;
+        truncated: boolean;
+      }[];
+      truncated: boolean;
+    }
+  | {
+      method: "project_memory_read";
+      notice?: string;
+      path: string;
+      content?: string;
+      local_file?: string;
+      size_bytes: number;
+      updated_at: string | null;
+      truncated: boolean;
     };
 
 export interface AgentInput {
@@ -2674,9 +2695,11 @@ export interface ProjectsInput {
     | "project_read"
     | "project_search"
     | "project_write"
-    | "project_delete";
+    | "project_delete"
+    | "project_memory_list"
+    | "project_memory_read";
   /**
-   * project_read/project_write/project_delete: doc path. project_write: an existing path is replaced in place; a new bare filename (no "/") is namespaced to "claude/<name>".
+   * project_read/project_write/project_delete: doc path. project_write: an existing path is replaced in place; a new bare filename (no "/") is namespaced to "claude/<name>". project_memory_read: memory file path as listed by project_memory_list.
    */
   path?: string;
   /**

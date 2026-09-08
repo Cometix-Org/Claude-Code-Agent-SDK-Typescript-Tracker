@@ -1871,6 +1871,7 @@ export declare type Options = {
    * wins on multi-client sessions; later initializes do not change it.
    */
   perTaskStopAffordance?: boolean;
+
   /**
    * When false, disables session persistence to disk. Sessions will not be
    * saved to ~/.claude/projects/ and cannot be resumed later. Useful for
@@ -2398,18 +2399,17 @@ export declare type Options = {
    * prefix stable.)
    *
    * How it interacts with `append` (and a custom `prompt`):
-   * - **Omitted (default):** passing an `append` or a custom prompt turns the
-   *   recording off, so your appended text is applied fresh on every launch —
-   *   today's behavior. Only the bare `claude_code` preset is recorded by
-   *   default.
-   * - **`snapshot: true`:** if the conversation already has a recorded prompt,
-   *   that record is sent as-is (a different `append` or `prompt` passed on a
-   *   later launch of the same session is ignored until compaction or a new
-   *   session); otherwise Claude Code renders its prompt with your `append`
-   *   included, sends that, and records it for the rest of the conversation.
-   * - **`snapshot: false`:** never record; render fresh every request.
-   * A bare string / `string[]` prompt is always `false`; use
-   * `{ type: 'custom', prompt, snapshot: true }` to opt a custom prompt in.
+   * - **Omitted or `snapshot: true` (the default):** Claude Code renders its
+   *   prompt with your `append` (or your custom `prompt`) on the
+   *   conversation's first request, sends that, and records it; every later
+   *   request and `resume` / `continue` sends the record as-is — a different
+   *   `append` or `prompt` passed on a later launch of the same session is
+   *   ignored until compaction or a new session.
+   * - **`snapshot: false`:** never record; render fresh every request — for
+   *   iterating on prompt text, or a host that must change its append within
+   *   a session.
+   * A bare string / `string[]` prompt follows the default; use
+   * `{ type: 'custom', prompt, snapshot: false }` to opt it out.
    * With a recorded prompt, a mid-session model switch or `set_settings`
    * agent/system-prompt change does not change the prompt either; it takes
    * effect at the next compaction or in a new session. System-prompt
@@ -3703,14 +3703,15 @@ export declare type SDKAssistantMessage = {
   parent_tool_use_id: string | null;
   error?: SDKAssistantMessageError;
   uuid: UUID;
+
   session_id: string;
   request_id?: string;
   /**
-   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on the turn's FIRST reply frame only — the first assistant message in complete-message mode; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every later frame of the turn, on subagent frames (parent_tool_use_id set), on synthetic/scheduled (meta) turns, on turns without a client uuid, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a reply frame each time that send changes — the turn's FIRST reply frame, and then, for a turn started by a synthetic (meta) prompt, the first reply frame after each queued user message folded in mid-turn takes the echo over. In complete-message mode the frame is the first assistant message; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps its first reply frame only. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself such as the boot-time rescue turn; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
-   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same first reply frame only; absent from older producers (fall back to user_message_uuid).
+   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any user message folded into the turn before this frame — so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same frames; absent from older producers (fall back to user_message_uuid).
    */
   user_message_uuids?: string[];
   /**
@@ -4365,11 +4366,27 @@ declare type SDKControlInitializeRequest = {
       timeout?: number;
     }
   >;
+  /**
+   * Optional, keyed by sdk server name (each key should also appear in sdkMcpServers; other keys are ignored). Unlike sdkMcpServerConfigs — host-declared settings the CLI keeps for the server's lifetime, same shape inline on mcp_set_servers — this is a one-shot cache of the servers' own handshake output: sent on initialize only, consumed by the connect that follows it, never retained. MCP handshake results the host already obtained from its in-process servers by delivering initialize + notifications/initialized (+ tools/list) to them itself before writing this request. For each such server the CLI answers its own MCP client's initialize and first tools/list from these results and skips the notifications/initialized round trip, so registering N in-process servers costs no mcp_message control round trips before the first turn; tools/call and everything after the handshake still flow as mcp_message exactly as before. The host MUST keep answering mcp_message for every server as if this field were absent: a CLI that predates the field ignores it and performs the full per-server handshake over the control channel, and a newer CLI does the same for any server whose entry is missing or malformed, whose initializeResult.protocolVersion differs from the MCP protocol version the CLI's client requests, or that the CLI had already connected. Entries apply only to the connect that follows this initialize; they are never retained for later reconnects. Absent (older hosts, the Python SDK, browser clients): unchanged behaviour.
+   */
+  sdkMcpServerManifests?: Record<
+    string,
+    {
+      /**
+       * The server's verbatim JSON-RPC `initialize` result object (protocolVersion, capabilities, serverInfo, instructions, ...), exactly as the in-process server produced it when the host initialized it with no client capabilities — not re-serialized or schema-parsed by the host.
+       */
+      initializeResult: Record<string, unknown>;
+      /**
+       * The server's verbatim JSON-RPC `tools/list` result object. Omit when the initialize result does not advertise the tools capability, when the listing is paginated (nextCursor present), or when it could not be captured — the CLI then lists over the control channel as before.
+       */
+      toolsListResult?: Record<string, unknown>;
+    }
+  >;
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string[];
   appendSystemPrompt?: string;
   /**
-   * Record the conversation's system prompt once and reuse it verbatim on every later request and resume (recommended: true). Omitted: setting systemPrompt or appendSystemPrompt turns recording off so the appended text applies fresh each launch; only the bare claude_code preset is recorded. true: an existing record in the conversation is sent as-is (a later launch's different systemPrompt/appendSystemPrompt is ignored until compaction); otherwise the prompt is rendered with appendSystemPrompt included, sent, and recorded. false: never record. With a record, a mid-session model switch or set_settings agent/system-prompt change does not alter the prompt until compaction or a new session.
+   * Record the conversation's system prompt once and reuse it verbatim on every later request and resume. Omitted or true (the default): the prompt is rendered on the first request, systemPrompt or appendSystemPrompt included, and the record is sent as-is afterwards — even when a later launch passes different text — until compaction. false: never record; the prompt is rendered fresh every request. No effect where system-prompt recording is not yet enabled.
    */
   systemPromptSnapshot?: boolean;
   /**
@@ -5301,11 +5318,11 @@ export declare type SDKPartialAssistantMessage = {
   session_id: string;
   ttft_ms?: number;
   /**
-   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on the turn's FIRST non-ping stream event only (the frame that triggers the turn's initial ack) so a consumer can bind the reply stream to the send it answers without waiting for the result. Absent on every later stream event of the turn, on synthetic/scheduled (meta) turns, on turns without a client uuid, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a non-ping stream event each time that send changes: the turn's FIRST non-ping stream event (normally the frame that triggers the turn's initial ack), and, for a turn started by a synthetic (meta) prompt, the first non-ping stream event after each queued user message folded in mid-turn takes the echo over (see SDKAssistantMessage.user_message_uuid for the rule) — so a consumer can bind the reply stream to the send it answers without waiting for the result. A turn started by a typed prompt stamps its first non-ping stream event only. Absent on every other stream event of the turn, on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
-   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same first non-ping stream event only; absent from older producers (fall back to user_message_uuid).
+   * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any user message folded into the turn before this frame — so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same frames; absent from older producers (fall back to user_message_uuid).
    */
   user_message_uuids?: string[];
 };
@@ -5469,8 +5486,9 @@ export declare type SDKResultError = {
    */
   queued_turn_count?: number;
   errors: string[];
+
   /**
-   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. Absent on synthetic/scheduled (meta) turns, on turns without a client uuid, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. A synthetic/scheduled (meta) turn's own uuid is echoed only when the host vouches it is the client event's own (delivered content such as a Slack owner ping or a Slack-bot observation); a meta turn that folded queued user messages in mid-turn, vouched or not, echoes the LAST of them. Absent on turns that neither had a client uuid nor folded a user message in, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
    */
   user_message_uuid?: string;
   /**
@@ -5641,6 +5659,7 @@ export declare type SDKSystemMessage = {
    * Where the credential used for API requests came from: 'ANTHROPIC_API_KEY' (environment variable), 'apiKeyHelper' (the configured helper command), '/login managed key' (an API key created and stored by /login with an Anthropic Console account), or 'none' (no API key in use - e.g. claude.ai OAuth login, a bearer token, or a third-party cloud provider). 'user' | 'project' | 'org' | 'temporary' | 'oauth' are legacy members that current CLIs never emit; they remain only so the type stays backward compatible.
    */
   apiKeySource: ApiKeySource;
+
   betas?: string[];
   claude_code_version: string;
   cwd: string;
@@ -5803,7 +5822,7 @@ export declare type SDKThinkingTokensMessage = {
   estimated_tokens: number;
   estimated_tokens_delta: number;
   /**
-   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on every thinking_tokens frame of a headless (stream-json / Agent SDK) turn so a consumer can attribute thinking progress to the send it answers before any reply frame arrives. Absent on synthetic/scheduled (meta) turns, on turns without a client uuid, on Remote Control (interactive terminal) sessions, and from older producers.
+   * Client uuid of the user message that triggered this turn (submitMessage options.uuid), stamped on every thinking_tokens frame of a headless (stream-json / Agent SDK) turn so a consumer can attribute thinking progress to the send it answers before any reply frame arrives. On a synthetic/scheduled (meta) turn it names the last user message folded into the turn so far once one has been, else the turn's own uuid when the host vouches it is the client event's own (delivered content such as a Slack owner ping). Absent on turns that neither had a client uuid nor folded a user message in, on Remote Control (interactive terminal) sessions, and from older producers.
    */
   user_message_uuid?: string;
   uuid: UUID;
@@ -8154,7 +8173,7 @@ export declare interface Settings {
    */
   parentSettingsBehavior?: "first-wins" | "merge";
   /**
-   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry) and the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl (highest source only). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
+   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value (a restrictive boolean or enum — the allowManaged*Only locks, the disable* switches, the sandbox lock family — takes the strictest value any source sets) and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), modelOverrides (the whole map of the highest source that sets it, dropped when that source sits below the one that sets availableModels), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry), and the keys taken from the highest source only: the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl, the credential helpers apiKeyHelper, awsAuthRefresh, awsCredentialExport, gcpAuthRefresh, otelHeadersHelper and proxyAuthHelper, modelPicker, permissions.defaultMode, parentSettingsBehavior and the policyHelper configuration (env keeps its own per-key union). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
    */
   managedSourcesBehavior?: "first-wins" | "merge";
   /**
