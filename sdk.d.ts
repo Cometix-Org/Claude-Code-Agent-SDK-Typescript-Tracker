@@ -3757,7 +3757,8 @@ export declare type SDKAssistantMessageError =
   | "model_not_found"
   | "server_error"
   | "unknown"
-  | "max_output_tokens";
+  | "max_output_tokens"
+  | "cloud_credential_error";
 
 export declare type SDKAuthStatusMessage = {
   type: "auth_status";
@@ -6880,6 +6881,7 @@ export declare interface Settings {
           [k: string]: unknown;
         };
   };
+
   /**
    * Additional marketplaces to make available for this repository. Typically used in repository .claude/settings.json to ensure team members have required plugin sources.
    */
@@ -8505,6 +8507,10 @@ export declare interface Settings {
    */
   effortLevel?: "low" | "medium" | "high" | "xhigh";
   /**
+   * Maximum effort level. Anything above it (an /effort or /model pick, --effort, CLAUDE_CODE_EFFORT_LEVEL, a model default) is clamped to it, on every provider including Bedrock, Vertex and Foundry. Combines with an organization's per-model effort cap by taking the lower of the two; across settings files the lowest value wins, and modelSettings.<model>.maxEffortLevel replaces it per model. Enforced client-side: an effort supplied through CLAUDE_CODE_EXTRA_BODY is not clamped.
+   */
+  maxEffortLevel?: "low" | "medium" | "high" | "xhigh" | "max";
+  /**
    * Per-model settings keyed by canonical model name.
    */
   modelSettings?: {
@@ -8513,6 +8519,10 @@ export declare interface Settings {
        * Persisted effort level for this model.
        */
       effortLevel?: "low" | "medium" | "high" | "xhigh";
+      /**
+       * Maximum effort level for this model. Within one settings file it replaces the top-level maxEffortLevel for the model ("max" exempts it); across settings files the lowest applicable value wins. Keyed like effortLevel: the canonical model name also matches its dated, [1m], Bedrock and Vertex spellings.
+       */
+      maxEffortLevel?: "low" | "medium" | "high" | "xhigh" | "max";
       [k: string]: unknown;
     };
   };
@@ -9307,6 +9317,14 @@ export declare interface Transport {
    * control_responses matching this id — only the worker may answer.
    */
   expectControlResponse?(requestId: string): void;
+  /**
+   * Called by Query immediately before it yields `message` to the SDK
+   * consumer. Transports that keep a consumer-facing delivery cursor
+   * (BrowserSSETransport's getLastSequenceNum()) advance it here, so the
+   * cursor covers exactly the messages the consumer was handed — not ones
+   * still buffered between the transport and the consumer.
+   */
+  markDelivered?(message: object): void;
   /**
    * End the input stream
    */

@@ -448,6 +448,8 @@ export type ArtifactOutput =
       contract?: string;
       updated?: boolean;
       audience?: string;
+      seq?: number;
+      unchanged?: true;
       liveSubscription?: string;
     }
   | {
@@ -735,6 +737,8 @@ export interface BashInput {
   timeout?: number;
   /**
    * Clear, concise description of what this command does in active voice. Never use words like "complex" or "risk" in the description - just describe what it does.
+   *
+   * Say what the command does in plain words: do not echo the command's text, its flags, or file paths - the user reads this description, often without seeing the command.
    *
    * For simple commands (git, npm, standard CLI tools), keep it brief (5-10 words):
    * - ls → "List files in current directory"
@@ -3142,7 +3146,7 @@ export interface ArtifactInput {
    */
   description?: string;
   /**
-   * A short name for the version this publish makes, max 60 chars (e.g. "Draft to legal"). Shown in the version picker. Optional — a few words, not a description.
+   * A short name for this publish, max 60 chars (e.g. "Draft to legal"). Optional — a few words, not a description.
    */
   label?: string;
   /**
