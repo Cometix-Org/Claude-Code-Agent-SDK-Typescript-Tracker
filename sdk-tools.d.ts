@@ -2962,7 +2962,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -2987,7 +2987,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -3010,7 +3010,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -3035,7 +3035,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -3058,7 +3058,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -3081,7 +3081,7 @@ export interface ProposeSkillsInput {
            */
           target?: string;
           /**
-           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
+           * One short sentence saying when to use this skill: aim for under 200 characters, never more than 1024, and no angle brackets. Shown on the review card and saved as the skill's description, which is what decides when the skill is used. For an improvement, reuse the existing skill's description unless the change alters when the skill applies.
            */
           description: string;
           /**
@@ -3126,9 +3126,13 @@ export interface ArtifactInput {
    */
   file_path?: string;
   /**
-   * Browser-tab icon: one or two emoji (e.g. "📊"). No markup. Required on a page's first publish; omit on a redeploy (same file path this session, or `url`) to keep the artifact's icon — pass a new one only when the user asks.
+   * The artifact's emoji: one or two emoji (e.g. "📊"). No markup. Required on a page's first publish; omit on a redeploy (same file path this session, or `url`) to keep the artifact's emoji — pass a new one only when the user asks.
    */
   favicon?: string;
+  /**
+   * Optional. One short generic word for the artifact's tab icon, such as chart, calendar, recipe, code or map — a plain signifier, not a product or brand name. Omit when republishing to keep the current icon.
+   */
+  icon?: string;
   /**
    * list only: maximum artifacts to return (default 25).
    */

@@ -262,6 +262,16 @@ export declare type CanUseTool = (
      */
     description?: string;
     /**
+     * The ask must not be approvable by a single stray keystroke: open the
+     * prompt on its decline option and offer no one-key approve shortcut.
+     */
+    defaultToNo?: boolean;
+    /**
+     * The ask must not offer a persistent "don't ask again" choice: the
+     * rule it would write grants more than this ask's own action.
+     */
+    suppressAlwaysAllowRule?: boolean;
+    /**
      * Unique identifier for this specific tool call within the assistant message.
      * Multiple tool calls in the same assistant message will have different toolUseIDs.
      */
@@ -319,11 +329,11 @@ declare type ControlErrorResponse = {
    */
   error: string;
   /**
-   * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
+   * can_use_tool requests this CLI process has issued and not yet resolved, so a client joining an already-initialized session learns about in-flight prompts. Always present (possibly empty) on a success `initialize` response from Claude Code v2.1.268 or later; earlier versions could omit it, so treat absence as an older CLI rather than as "nothing pending". A prompt inherited from a previous worker of the same session can remain answerable without appearing here and without a control_cancel_request; session_state "requires_action" on the same reply signals one the CLI is holding, but not every inherited prompt is signalled.
    */
   pending_permission_requests?: SDKControlRequest[];
   /**
-   * request_user_dialog requests still awaiting a response. Sent on the `initialize` response (sibling of pending_permission_requests) so a client joining an already-initialized session can re-arm in-flight dialogs. Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
+   * request_user_dialog requests this CLI process has issued and not yet resolved (sibling of pending_permission_requests, with the same inherited-prompt caveat), so a client joining an already-initialized session can re-arm in-flight dialogs. Always present (possibly empty) on a success `initialize` response from Claude Code v2.1.268 or later; earlier versions could omit it, so treat absence as an older CLI rather than as "nothing pending". Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
    */
   pending_user_dialog_requests?: SDKControlRequest[];
 };
@@ -342,11 +352,11 @@ declare type ControlResponse = {
    */
   response?: Record<string, unknown>;
   /**
-   * Permission requests still awaiting a response. Sent on the `initialize` response so a client joining an already-initialized session learns about in-flight prompts.
+   * can_use_tool requests this CLI process has issued and not yet resolved, so a client joining an already-initialized session learns about in-flight prompts. Always present (possibly empty) on a success `initialize` response from Claude Code v2.1.268 or later; earlier versions could omit it, so treat absence as an older CLI rather than as "nothing pending". A prompt inherited from a previous worker of the same session can remain answerable without appearing here and without a control_cancel_request; session_state "requires_action" on the same reply signals one the CLI is holding, but not every inherited prompt is signalled.
    */
   pending_permission_requests?: SDKControlRequest[];
   /**
-   * request_user_dialog requests still awaiting a response. Sent on the `initialize` response (sibling of pending_permission_requests) so a client joining an already-initialized session can re-arm in-flight dialogs. Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
+   * request_user_dialog requests this CLI process has issued and not yet resolved (sibling of pending_permission_requests, with the same inherited-prompt caveat), so a client joining an already-initialized session can re-arm in-flight dialogs. Always present (possibly empty) on a success `initialize` response from Claude Code v2.1.268 or later; earlier versions could omit it, so treat absence as an older CLI rather than as "nothing pending". Receivers must tolerate the same request_id also arriving as a live or replayed control_request frame and render it once.
    */
   pending_user_dialog_requests?: SDKControlRequest[];
 };
@@ -3045,9 +3055,19 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * Reload plugins from disk and return the refreshed commands, agents,
    * plugins, and MCP server status.
    *
-   * @returns The refreshed session components after plugin reload
+   * With `holdOnCacheImpact`, the CLI first runs the check the interactive
+   * /reload-plugins makes: when applying would change the session's tool
+   * list while the conversation's prompt cache depends on it, nothing is
+   * applied and the response carries `held: true` with `cache_impact`
+   * describing what applying would change; call again without the option
+   * to apply anyway.
+   *
+   * @returns The refreshed session components after plugin reload, or the
+   * unchanged ones with `held: true` when the reload was held
    */
-  reloadPlugins(): Promise<SDKControlReloadPluginsResponse>;
+  reloadPlugins(options?: {
+    holdOnCacheImpact?: boolean;
+  }): Promise<SDKControlReloadPluginsResponse>;
   /**
    * Reload skills from disk and return the refreshed skill list.
    *
@@ -3707,13 +3727,17 @@ export declare type SDKAssistantMessage = {
   session_id: string;
   request_id?: string;
   /**
-   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a reply frame each time that send changes — the turn's FIRST reply frame, and then, for a turn started by a synthetic (meta) prompt, the first reply frame after each queued user message folded in mid-turn takes the echo over. In complete-message mode the frame is the first assistant message; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps its first reply frame only. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself such as the boot-time rescue turn; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a reply frame each time that send changes — the turn's FIRST reply frame, and then, for a turn started by a synthetic (meta) prompt, the first reply frame after each queued user message folded in mid-turn takes the echo over. In complete-message mode the frame is the first assistant message; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps its first reply frame only. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself — except that the boot-time rescue turn re-running a turn a worker restart interrupted mid-way stamps the interrupted turn's own last user prompt (with resume_reason), the send that re-run answers; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
    * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any user message folded into the turn before this frame — so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same frames; absent from older producers (fall back to user_message_uuid).
    */
   user_message_uuids?: string[];
+  /**
+   * Why this frame's turn is the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a re-run names the interrupted turn's own last user prompt), so a consumer can tell the re-run's first reply from the interrupted attempt's. Absent on every other turn, on thinking_tokens frames, and from older producers.
+   */
+  resume_reason?: string;
   /**
    * This turn continued the preceding truncated assistant turn inside its trailing signed thinking block (max-output-tokens recovery). Its thinking signatures are cumulative over that preceding thinking-only turn, so a history replayed through the bridge must carry this flag back for the normalizer to keep the run's prefix on the wire. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
    */
@@ -3750,6 +3774,7 @@ export declare type SDKAssistantMessageError =
   | "authentication_failed"
   | "oauth_org_not_allowed"
   | "account_on_hold"
+  | "verification_required"
   | "billing_error"
   | "rate_limit"
   | "overloaded"
@@ -4014,6 +4039,10 @@ export declare type SDKControlGetContextUsageResponse = {
     tokens: number;
     color: string;
     isDeferred?: boolean;
+    /**
+     * What the row is, the same classification the /context result's context_usage rows carry: 'used' content occupies the window; 'free' is the remaining window; 'buffer' is the compaction reserve; 'deferred' rows are out-of-window tool schemas. Classify on this, never on the English name.
+     */
+    kind: "used" | "free" | "buffer" | "deferred";
   }[];
   totalTokens: number;
   maxTokens: number;
@@ -4438,6 +4467,7 @@ export declare type SDKControlInitializeResponse = {
   agents: coreTypes.AgentInfo[];
   output_style: string;
   available_output_styles: string[];
+
   models: coreTypes.ModelInfo[];
 
   /**
@@ -4700,6 +4730,10 @@ export declare type SDKControlReloadOutputStylesResponse = {
  */
 declare type SDKControlReloadPluginsRequest = {
   subtype: "reload_plugins";
+  /**
+   * When true, the reload is not applied if applying it would change the session's tool list while the conversation's prompt cache depends on that list (the same check the interactive /reload-plugins makes before it asks for --force): the response then carries held: true and cache_impact, and the session keeps its current plugins. Default false: apply unconditionally.
+   */
+  hold_on_cache_impact?: boolean;
 };
 
 /**
@@ -4719,6 +4753,18 @@ export declare type SDKControlReloadPluginsResponse = {
   }[];
   mcpServers: coreTypes.McpServerStatus[];
   error_count: number;
+  /**
+   * Present only when the request asked to hold on cache impact and this CLI ran the check. True: the reload was not applied, the lists above describe the session as it still is, and cache_impact says what applying would change. False: the check found no impact and the reload was applied. Absent: the request did not ask, or the CLI predates the option and applied the reload unchecked.
+   */
+  held?: boolean;
+  /**
+   * What applying the held reload would change in the session's tool list: plugin MCP servers it would register or drop (scoped plugin:<plugin>:<server> names, plugin-authored — validate before showing) and whether it would add or remove the LSP tool (the may- forms mean the preview could not fully see the pending plugin set). Present only with held: true.
+   */
+  cache_impact?: {
+    mcp_servers_added: string[];
+    mcp_servers_removed: string[];
+    lsp_tool_change: ("adds" | "may-add" | "removes" | "may-remove") | null;
+  };
 };
 
 /**
@@ -5326,6 +5372,10 @@ export declare type SDKPartialAssistantMessage = {
    * Client uuids of every user message whose prompt this turn has consumed so far, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any user message folded into the turn before this frame — so a consumer that sent any of them can bind this reply to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries. Present exactly when user_message_uuid is, on the same frames; absent from older producers (fall back to user_message_uuid).
    */
   user_message_uuids?: string[];
+  /**
+   * Why this frame's turn is the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a re-run names the interrupted turn's own last user prompt), so a consumer can tell the re-run's first reply from the interrupted attempt's. Absent on every other turn, on thinking_tokens frames, and from older producers.
+   */
+  resume_reason?: string;
 };
 
 export declare type SDKPermissionDenial = {
@@ -5451,6 +5501,10 @@ export declare type SDKRateLimitInfo = {
   overageInUse?: boolean;
   surpassedThreshold?: number;
 
+  /**
+   * Which spend limit blocked the request when it is not the member's own cap: 'group_pool' means a pooled group budget shared by the member's team is used up (the denial otherwise looks like the member's own monthly cap). Absent on a plain member denial and from older CLIs.
+   */
+  limitScope?: "service" | "channel" | "group_pool";
   errorCode?: "credits_required";
   canUserPurchaseCredits?: boolean;
   hasChargeableSavedPaymentMethod?: boolean;
@@ -5496,7 +5550,15 @@ export declare type SDKResultError = {
    * Client uuids of every user message whose prompt this turn consumed, in consumption order — all members of a prompt batch the host merged into this one turn (several messages sent close together run as one turn whose user_message_uuid is the LAST member's), then any queued user message folded into the running turn between tool rounds, once taken off the queue — so a consumer that sent any of them can bind this result to its own send by finding its uuid anywhere in the list. Always contains user_message_uuid; at most 64 entries; can be longer than the list on the turn's first reply frame. Present when a headless turn that ran echoes user_message_uuid; absent on delivery-failure and zeroed results and from older producers (fall back to user_message_uuid).
    */
   user_message_uuids?: string[];
+  /**
+   * Why this turn was the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Present on a headless re-run's result, success or error, with or without an echo (a re-run whose opener could not be vouched still carries the reason); absent on every other turn, on the Remote Control bridge's per-turn synthetic results, and from older producers.
+   */
+  resume_reason?: string;
   terminal_reason?: TerminalReason;
+  /**
+   * Delivery sequence of this result within the run: how many results the run numbered before this one, starting at 0, in the order the process writes them. A result held back while background work finishes is numbered when it is finally written, not when its text was produced; a result whose write fails still consumes its number, so a gap in a stream-json sequence means a result was lost. Distinct from num_turns, which counts model round-trips within one turn. Numbered by the process that hosts the run (`claude -p`, stream-json): a local client relaying a cloud session passes the cloud session's numbering through and its own locally built error results carry none; the in-process engine surface does not number yet. Absent from older producers.
+   */
+  result_index?: number;
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
   origin?: SDKMessageOrigin;
@@ -5519,6 +5581,8 @@ export declare type SDKResultSuccess = {
   time_to_request_ms?: number;
   user_message_uuid?: string;
   user_message_uuids?: string[];
+  resume_reason?: string;
+  local_command?: string;
   request_sent_wall_ms?: number;
   first_content_frame_ms?: number;
   first_stream_post_ms?: number;
@@ -5553,6 +5617,10 @@ export declare type SDKResultSuccess = {
   structured_output?: unknown;
   deferred_tool_use?: SDKDeferredToolUse;
   terminal_reason?: TerminalReason;
+  /**
+   * Delivery sequence of this result within the run: how many results the run numbered before this one, starting at 0, in the order the process writes them. A result held back while background work finishes is numbered when it is finally written, not when its text was produced; a result whose write fails still consumes its number, so a gap in a stream-json sequence means a result was lost. Distinct from num_turns, which counts model round-trips within one turn. Numbered by the process that hosts the run (`claude -p`, stream-json): a local client relaying a cloud session passes the cloud session's numbering through and its own locally built error results carry none; the in-process engine surface does not number yet. Absent from older producers.
+   */
+  result_index?: number;
   fast_mode_state?: FastModeState;
   fast_mode_disabled_reason?: FastModeDisabledReason;
   origin?: SDKMessageOrigin;
@@ -6881,7 +6949,14 @@ export declare interface Settings {
           [k: string]: unknown;
         };
   };
-
+  /**
+   * Managed plugins (plugin\@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled sec-default\@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list sec-default\@builtin where it should sit or leave it out. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.
+   */
+  prependPlugins?: string[];
+  /**
+   * Managed plugins (plugin\@marketplace ids that managed enabledPlugins sets true) whose hooks run last among plugins, innermost, in the listed order: the last id listed sits just above the built-in plugins and sees each event as every other plugin left it. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.
+   */
+  appendPlugins?: string[];
   /**
    * Additional marketplaces to make available for this repository. Typically used in repository .claude/settings.json to ensure team members have required plugin sources.
    */
@@ -8171,11 +8246,15 @@ export declare interface Settings {
    */
   forceLoginGatewayUrl?: string;
   /**
+   * IPv4 CIDR blocks (at most 4, each /8 to /32, not overlapping) your Cloud gateway sits in: the public block your organization numbers its internal network from, which lets /login reach a gateway there. A block must lie entirely outside private space, where /login accepts a gateway without this key. /login accepts a gateway inside a listed block over a direct connection only, and only when this machine's own address on that connection is inside the same block, so /login must happen from a machine whose own address is inside the block (not through a proxy, VPN pool, container or NAT segment outside it). A bar against copied settings files, not proof of location. Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings.
+   */
+  gatewayInternalNetworks?: string[];
+  /**
    * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (default): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
    */
   parentSettingsBehavior?: "first-wins" | "merge";
   /**
-   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value (a restrictive boolean or enum — the allowManaged*Only locks, the disable* switches, the sandbox lock family — takes the strictest value any source sets) and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), modelOverrides (the whole map of the highest source that sets it, dropped when that source sits below the one that sets availableModels), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry), and the keys taken from the highest source only: the auth pins forceLoginOrgUUID, forceLoginMethod and forceLoginGatewayUrl, the credential helpers apiKeyHelper, awsAuthRefresh, awsCredentialExport, gcpAuthRefresh, otelHeadersHelper and proxyAuthHelper, modelPicker, permissions.defaultMode, parentSettingsBehavior and the policyHelper configuration (env keeps its own per-key union). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
+   * Controls how the managed settings sources compose. "first-wins" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. "merge": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value (a restrictive boolean or enum — the allowManaged*Only locks, the disable* switches, the sandbox lock family — takes the strictest value any source sets) and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), modelOverrides (the whole map of the highest source that sets it, dropped when that source sits below the one that sets availableModels), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry), and the keys taken from the highest source only: the auth pins forceLoginOrgUUID, forceLoginMethod, forceLoginGatewayUrl and gatewayInternalNetworks, the credential helpers apiKeyHelper, awsAuthRefresh, awsCredentialExport, gcpAuthRefresh, otelHeadersHelper and proxyAuthHelper, modelPicker, permissions.defaultMode, parentSettingsBehavior and the policyHelper configuration (env keeps its own per-key union). Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.
    */
   managedSourcesBehavior?: "first-wins" | "merge";
   /**
