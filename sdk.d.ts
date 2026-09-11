@@ -2904,26 +2904,26 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
     thinkingDisplay?: "summarized" | "omitted" | null,
   ): Promise<void>;
   /**
-   * Merge the provided settings into the flag settings layer, dynamically
-   * updating the active configuration. Equivalent to the inline `settings`
-   * option of `query()`, but applies mid-session. Flag settings sit above
-   * user/project/local settings and below managed policy settings in the
-   * precedence order.
+   * Merge settings into the flag settings layer. This is the inline `settings`
+   * option of `query()`, applied mid-session. Flag settings sit above
+   * user/project/local and below managed policy settings in precedence order.
    *
    * Successive calls shallow-merge top-level keys — a second call with
    * `{permissions: {...}}` replaces the entire `permissions` object from a
    * prior call. Pass `null` for a key to clear it from the flag layer and
    * fall back to lower-precedence sources (`undefined` is dropped by JSON
-   * serialization and has no effect).
-   *
+   * serialization and has no effect). Four keys instead reset session state
+   * and restore neither a `query()` option nor a settings-file value.
+   * `effortLevel` goes to the model's default effort, `model` to Claude Code's
+   * default model (not `ANTHROPIC_MODEL` or `settings.model`), `agent` to no
+   * main-thread agent, and `ultracode` to off with the current effort kept.
    * Only available in streaming input mode.
    *
-   * @param settings - A partial settings object to merge into the flag settings.
-   * Each top-level key also accepts `null` to clear it from the flag layer.
-   * `effortLevel` additionally accepts `'max'`, which is session-scoped: it
-   * applies for the rest of the session on models that support it and is
-   * never persisted to settings files (the persisted
-   * {@link Settings.effortLevel} excludes it for that reason).
+   * @param settings - A partial settings object to merge into the flag
+   * settings. `effortLevel` also accepts `'max'` (never written to settings
+   * files, so the persisted {@link Settings.effortLevel} excludes it): it is
+   * session-only, runs as `'high'` on a model without `'max'` support, and
+   * runs no higher than the organization's effort limit for the model.
    */
   applyFlagSettings(settings: {
     [K in keyof Settings]?: K extends "effortLevel"
@@ -3034,6 +3034,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
   usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET(opts?: {
     skipBehaviors?: boolean;
   }): Promise<SDKControlGetUsageResponse>;
+
   /**
    * Read a file from the session's filesystem for the remote sidebar
    * viewer. Path is resolved against cwd and gated by the same
@@ -3727,7 +3728,7 @@ export declare type SDKAssistantMessage = {
   session_id: string;
   request_id?: string;
   /**
-   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a reply frame each time that send changes — the turn's FIRST reply frame, and then, for a turn started by a synthetic (meta) prompt, the first reply frame after each queued user message folded in mid-turn takes the echo over. In complete-message mode the frame is the first assistant message; with --include-partial-messages the stamp normally rides the first non-ping stream event instead (see SDKPartialAssistantMessage), and a turn that produces no stream events still stamps its first assistant message — so a consumer can bind the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps its first reply frame only. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself — except that the boot-time rescue turn re-running a turn a worker restart interrupted mid-way stamps the interrupted turn's own last user prompt (with resume_reason), the send that re-run answers; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on an assistant message each time that send changes — the turn's FIRST top-level assistant message (which may carry only a thinking block, or be a synthetic API-error message), and then, for a turn started by a synthetic (meta) prompt, the first assistant message after each queued user message folded in mid-turn (the fold takes the echo over); with --include-partial-messages the turn's first non-ping stream event is stamped too, independently (see SDKPartialAssistantMessage), so the same uuid may appear on both — either binds the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps once per frame kind. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself — except that the boot-time rescue turn re-running a turn a worker restart interrupted mid-way stamps the interrupted turn's own last user prompt (with resume_reason), the send that re-run answers; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame of each kind after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
@@ -4130,6 +4131,151 @@ export declare type SDKControlGetContextUsageResponse = {
 };
 
 /**
+ * Returns the hooks listing the CLI's read-only /hooks menu renders: settings-file, session, and plugin hooks grouped by event and matcher, with display-ready strings (control characters revealed) and the policy and safe-mode state the menu banners on. A snapshot at request time; hosts re-request when their surface opens.
+ */
+declare type SDKControlGetHooksListingRequest = {
+  subtype: "get_hooks_listing";
+};
+
+/**
+ * The hooks listing the CLI's /hooks menu renders, with display-ready strings.
+ */
+declare type SDKControlGetHooksListingResponse = {
+  /**
+   * Events that have at least one listed hook, in the /hooks menu’s lifecycle order.
+   */
+  events: {
+    /**
+     * Hook event name.
+     */
+    name: string;
+    /**
+     * One-line summary, as the /hooks event list shows.
+     */
+    summary: string;
+    /**
+     * Whether hooks on this event can carry a matcher.
+     */
+    supportsMatcher: boolean;
+    /**
+     * Number of listed hooks.
+     */
+    hookCount: number;
+  }[];
+  /**
+   * One row per listed hook: events in lifecycle order, matchers in the menu’s priority order.
+   */
+  hooks: {
+    event: string;
+    /**
+     * Matcher with control characters revealed; '' when the entry has none.
+     */
+    matcher: string;
+    /**
+     * Raw source name (userSettings, sessionHook, pluginHook, …).
+     */
+    source: string;
+    /**
+     * User-facing source description.
+     */
+    sourceLabel: string;
+    pluginName?: string;
+    /**
+     * Hook type (command, prompt, agent, http, mcp_tool, …).
+     */
+    type: string;
+    /**
+     * List-row label: statusMessage when set, else the identity text; one line, control characters revealed.
+     */
+    displayText: string;
+    /**
+     * Identity text — the literal command/prompt/URL that runs, control characters revealed.
+     */
+    commandText: string;
+    /**
+     * Label for commandText (Command, Prompt, URL, …).
+     */
+    contentLabel: string;
+    /**
+     * If-condition, revealed, when set.
+     */
+    condition?: string;
+    /**
+     * Timeout in seconds.
+     */
+    timeout?: number;
+    statusMessage?: string;
+    runsOnce?: boolean;
+    runsInBackground?: boolean;
+    /**
+     * True when the session's mode or policy keeps this hook from running (the policy block and safeMode/bareMode say why); absent on rows that run.
+     */
+    disabled?: true;
+    /**
+     * The entry as stored (raw matcher, '' when none, and raw hook object; no display escaping) for a host's edit form and as the target it names to `claude edit-hook`. Only on rows from a settings file this session reads and may write. HTTP header values are blanked (headersRedacted); a replace that sends no headers keeps the stored ones.
+     */
+    editable?: {
+      matcher: string;
+      config: Record<string, unknown>;
+      headersRedacted?: true;
+    };
+  }[];
+  /**
+   * Every hook event in lifecycle order (name, the /hooks summary, whether its hooks take a matcher), for an add-hook form.
+   */
+  eventCatalog: {
+    name: string;
+    summary: string;
+    supportsMatcher: boolean;
+  }[];
+  policy: {
+    /**
+     * Managed disableAllHooks — nothing runs at all.
+     */
+    disabledByPolicy: boolean;
+    /**
+     * Managed allowManagedHooksOnly — non-managed hooks are blocked and managed hooks are intentionally not listed.
+     */
+    managedOnly: boolean;
+    /**
+     * Managed strictPluginOnlyCustomization locks the hooks surface.
+     */
+    pluginOnly: boolean;
+    /**
+     * Effective disableAllHooks, whatever source set it.
+     */
+    allDisabled: boolean;
+    /**
+     * Hooks configured in managed settings (they run even under a non-managed disableAllHooks).
+     */
+    policyHookCount: number;
+  };
+  /**
+   * Present only when the session runs under --safe-mode.
+   */
+  safeMode?: {
+    managedHooksStillApply: boolean;
+    /**
+     * How to leave safe mode, per its activation source.
+     */
+    exitHint: string;
+  };
+  /**
+   * Present only under --bare / CLAUDE_CODE_SIMPLE with the hooks surface gated off: settings-file, flag, policy, and plugin hooks never fire there; session hooks still run.
+   */
+  bareMode?: {
+    /**
+     * How to leave bare mode, per its activation source.
+     */
+    exitHint: string;
+  };
+  /**
+   * Settings files skipped by the merge — their hooks are neither listed nor running.
+   */
+  errors?: coreTypes.SDKSettingsParseError[];
+};
+
+/**
  * Requests the formatted session cost summary (the same text /usage prints in non-interactive mode). Used by the thin-client /usage dialog to show the remote container cost instead of the local $0.00.
  */
 declare type SDKControlGetSessionCostRequest = {
@@ -4232,7 +4378,7 @@ export declare type SDKControlGetUsageResponse = {
       resets_at: string | null;
     } | null;
     /**
-     * Per-model weekly windows from the server limits[] array, filtered by the overage-included-models allowlist. Additive — present only when the server emits them.
+     * Per-model weekly windows from the server limits[] array, filtered by the overage-included-models allowlist. Additive: absent when nothing is known about them (an answer served from cached data, or rows the allowlist hides); an empty array means the endpoint itself answered and listed no per-model weekly window at all for this account, before the allowlist was applied.
      */
     model_scoped?: {
       /**
@@ -4522,6 +4668,23 @@ declare type SDKControlListModelsRequest = {
 };
 
 /**
+ * Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source.
+ */
+declare type SDKControlListPermissionRulesRequest = {
+  subtype: "list_permission_rules";
+};
+
+/**
+ * Success payload of list_permission_rules.
+ */
+export declare type SDKControlListPermissionRulesResponse = {
+  /**
+   * The session's live permission rules state, as list_permission_rules reports it.
+   */
+  state: SDKControlPermissionRulesState;
+};
+
+/**
  * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call. STAGED calls (input_files/output_files declared) additionally stage lane rows in/out around the call — see the input_files describe. Staged failures come back as a success-subtype response whose staging field carries a typed error_code; subtype:error is emitted only when the call could not be attempted at all (server not connected, kill switch, dispatch failure) and means nothing ran. A target server that is not yet connected is brought up on demand: dispatch runs the deferred plugin/MCP startup resolution (the work a first model turn would have done) and waits up to 30s — shortened by expires_at when that is sooner — for the server to connect before answering "MCP server not connected", so a dispatch that races plugin startup (e.g. after an idle-wake reattach) succeeds instead of failing until a turn runs. Standard RPC semantics: a redelivered request_id supersedes the in-flight run (it is aborted and its response suppressed — exactly one response per request_id); conversion is idempotent, so re-running is safe. Cancellable via control_cancel_request.
  */
 declare type SDKControlMcpCallRequest = {
@@ -4675,6 +4838,26 @@ declare type SDKControlPermissionRequest = {
 };
 
 /**
+ * The session's live permission rules state, as list_permission_rules reports it.
+ */
+export declare type SDKControlPermissionRulesState = {
+  rules: SDKPermissionRuleEntry[];
+  workspaceDirectories: SDKPermissionWorkspaceDirectory[];
+  /**
+   * The session's original working directory.
+   */
+  originalCwd: string;
+  /**
+   * True when enterprise managed settings pin allowManagedPermissionRulesOnly: the session applies policy rules only, and rules from other settings files appear with notInEffect set.
+   */
+  managedOnly: boolean;
+  /**
+   * Settings parse and validation errors, as get_settings reports them. When non-empty, the listed files were skipped — their rules are not in the session and not listed above.
+   */
+  errors?: coreTypes.SDKSettingsParseError[];
+};
+
+/**
  * Read a file from the session filesystem for the remote sidebar viewer. Path is resolved against cwd and gated by the same read-permission rules as the Read tool.
  */
 declare type SDKControlReadFileRequest = {
@@ -4787,6 +4970,14 @@ export declare type SDKControlReloadSkillsResponse = {
 declare type SDKControlRenameSessionRequest = {
   subtype: "rename_session";
   title: string;
+  /**
+   * Who chose the title: 'remote' (the default) for a rename made on claude.ai and relayed to this process, 'host' for one the user made in the hosting application (an IDE), which the CLI counts as a user rename.
+   */
+  source?: "remote" | "host";
+  /**
+   * The session the title is for. When given and this process has since moved to another session (/clear, an in-session resume), the request is refused instead of naming the new session.
+   */
+  session_id?: string;
 };
 
 /**
@@ -4835,9 +5026,11 @@ declare type SDKControlRequestInner =
   | SDKControlBackgroundTasksRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
+  | SDKControlGetHooksListingRequest
   | SDKControlUpdateSettingsRequest
   | SDKControlElicitationRequest
-  | SDKControlRequestUserDialogRequest;
+  | SDKControlRequestUserDialogRequest
+  | SDKControlListPermissionRulesRequest;
 
 /**
  * Progress for a long-running client-originated control_request (currently only side_question), correlated by request_id. status 'started' means the worker accepted the request and launched the work; 'api_retry' carries the same retry counters as SDKAPIRetryMessage and is present only for that status.
@@ -5365,7 +5558,7 @@ export declare type SDKPartialAssistantMessage = {
   session_id: string;
   ttft_ms?: number;
   /**
-   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a non-ping stream event each time that send changes: the turn's FIRST non-ping stream event (normally the frame that triggers the turn's initial ack), and, for a turn started by a synthetic (meta) prompt, the first non-ping stream event after each queued user message folded in mid-turn takes the echo over (see SDKAssistantMessage.user_message_uuid for the rule) — so a consumer can bind the reply stream to the send it answers without waiting for the result. A turn started by a typed prompt stamps its first non-ping stream event only. Absent on every other stream event of the turn, on turns that neither had a client uuid nor folded a user message in, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on a non-ping stream event each time that send changes: the turn's FIRST non-ping stream event (normally the frame that triggers the turn's initial ack), and, for a turn started by a synthetic (meta) prompt, the first non-ping stream event after each queued user message folded in mid-turn takes the echo over (see SDKAssistantMessage.user_message_uuid for the rule) — so a consumer can bind the reply stream to the send it answers without waiting for the result. A turn started by a typed prompt stamps only its first non-ping stream event; independently, its first complete assistant message is stamped as well (see SDKAssistantMessage.user_message_uuid), so the same uuid may appear on both. Absent on every other stream event of the turn, on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
@@ -5385,7 +5578,7 @@ export declare type SDKPermissionDenial = {
 };
 
 /**
- * Emitted when a tool call is auto-denied without an interactive permission prompt (e.g. auto-mode classifier, dontAsk mode, headless-agent auto-deny, or a deny rule). With a permission prompt surface (stdio/SDK canUseTool), the 'ask' path surfaces via a can_use_tool control_request and this event covers the 'deny' short-circuit. Without one (bare -p / SDK query() with no canUseTool), 'ask' decisions are terminal, so this event also covers those implicit denials. Best-effort advisory: in rare races a denial can book without a frame or a frame can lack a booking twin — result.permission_denials is the authoritative record. Denials that resolve before canUseTool runs — PreToolUse hook denies, and deny-rule overrides of hook allow/ask decisions — are not covered here, and neither is the MCP --permission-prompt-tool surface (the prompt tool is the host there).
+ * Emitted when a tool call is auto-denied without an interactive permission prompt (e.g. auto-mode classifier, dontAsk mode, headless-agent auto-deny, or a deny rule). With a permission prompt surface (stdio/SDK canUseTool), the 'ask' path surfaces via a can_use_tool control_request and this event covers the 'deny' short-circuit. Without one (bare -p / SDK query() with no canUseTool), 'ask' decisions are terminal, so this event also covers those implicit denials. Best-effort advisory: in rare races a denial can book without a frame or a frame can lack a booking twin — result.permission_denials is the authoritative record. Denials that resolve before canUseTool runs — PreToolUse hook denies, deny-rule overrides of hook allow/ask decisions, and file-tool calls (Read, Edit, Write) refused by a path-scoped deny rule — are not covered here, and neither is the MCP --permission-prompt-tool surface (the prompt tool is the host there).
  */
 export declare type SDKPermissionDeniedMessage = {
   type: "system";
@@ -5410,6 +5603,64 @@ export declare type SDKPermissionDeniedMessage = {
   message: string;
   uuid: UUID;
   session_id: string;
+};
+
+/**
+ * The CLI's plain-language reading of a rule (e.g. "Any Bash command starting with npm run"), split into parts so hosts can render the rule-derived fragment the way the terminal does (bold). prefix and suffix are fixed words; emphasis is rule content — apply display hygiene (invisible-character escaping) before rendering it.
+ */
+export declare type SDKPermissionRuleDescription = {
+  prefix: string;
+  emphasis?: string;
+  suffix?: string;
+};
+
+/**
+ * One permission rule with its provenance and where it lives.
+ */
+export declare type SDKPermissionRuleEntry = {
+  behavior: "allow" | "deny" | "ask";
+  /**
+   * Where the rule comes from. Mirrors PermissionRuleSource (permissionRuleLookup.ts PERMISSION_RULE_SOURCES); the parity test in test/cli/headlessControl/listPermissionRules.test.ts keeps the two aligned.
+   */
+  source:
+    | "userSettings"
+    | "projectSettings"
+    | "localSettings"
+    | "flagSettings"
+    | "policySettings"
+    | "cliArg"
+    | "command"
+    | "session"
+    | "toolsNarrowing"
+    | "mcpServerPolicy"
+    | "hostCredential";
+  /**
+   * The stored rule string VERBATIM, exactly as the session holds it. Two stored spellings that parse identically each get their own entry. Can carry invisible or control characters by design — escape at display.
+   */
+  rule: string;
+  /**
+   * Plain-language reading of the rule; absent where the terminal shows no subtitle either.
+   */
+  description?: SDKPermissionRuleDescription;
+  /**
+   * Where the rule lives: 'persistent' (userSettings/projectSettings/localSettings — saved in a settings file), 'session' (cliArg/session — in memory only, for the rest of this session), or 'readonly' (policySettings/flagSettings/command and every other source — the set the terminal's /permissions treats as read-only). Informational for hosts; this request never changes rules.
+   */
+  editability: "persistent" | "session" | "readonly";
+  /**
+   * Present (true) when enterprise managed settings pin allowManagedPermissionRulesOnly and this rule, read from a non-policy settings file, is ignored by the session. Such rows are readonly.
+   */
+  notInEffect?: boolean;
+};
+
+/**
+ * One additional working directory in the permission scope.
+ */
+export declare type SDKPermissionWorkspaceDirectory = {
+  path: string;
+  /**
+   * Where the directory grant came from: a settings source (e.g. 'localSettings'), 'cliArg' (--add-dir), or 'session' (/add-dir, IDE workspace folders).
+   */
+  source: string;
 };
 
 /**
@@ -6839,6 +7090,10 @@ export declare interface Settings {
    * Default shell for input-box ! commands. Defaults to 'bash' on all platforms (no Windows auto-flip).
    */
   defaultShell?: "bash" | "powershell";
+  /**
+   * Whether the Bash tool shows a diff of the files a Bash command changed (PostToolUse Bash hooks get the changed-file list in tool_response). Set to false to turn that off. Default: on when the Bash tool handles file edits. Only user, flag or policy settings can turn it on outside auto and bypassPermissions modes.
+   */
+  bashEditDiffEnabled?: boolean;
   /**
    * How many characters of a successful Bash or PowerShell command's output Claude receives inline (default 30000; values clamp to 4000-128000). Output past this is saved to a file and Claude receives a short preview plus the path. When set, this also replaces BASH_MAX_OUTPUT_LENGTH, which on its own only sizes the read-back window.
    */

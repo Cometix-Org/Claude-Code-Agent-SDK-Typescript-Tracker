@@ -549,6 +549,9 @@ export type ArtifactOutput =
       }[];
     }
   | {
+      written?: {
+        url: string;
+      };
       asset_upload: {
         id: string;
         url: string;
@@ -590,9 +593,13 @@ export type ArtifactOutput =
         content_type: string;
         sha256: string;
         cowritten?: true;
+        foreign?: true;
       };
     }
   | {
+      written?: {
+        url: string;
+      };
       asset_delete: {
         id: string;
         deleted: boolean;
@@ -3122,7 +3129,7 @@ export interface ArtifactInput {
     | "read_asset"
     | "delete_asset";
   /**
-   * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, font, or text (CSV, Markdown, JSON, plain text) file to upload.
+   * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, font, stylesheet (CSS), script (JS), or text (CSV, Markdown, JSON, plain text) file to upload.
    */
   file_path?: string;
   /**
@@ -3395,6 +3402,10 @@ export interface FileEditOutput {
      */
     repository?: string | null;
   };
+  /**
+   * True when the edit was held for the machine owner to review instead of written; the file is unchanged
+   */
+  staged?: boolean;
 }
 export interface FileWriteOutput {
   /**
@@ -3439,6 +3450,10 @@ export interface FileWriteOutput {
    * True when the user edited the proposed content in the permission dialog before accepting
    */
   userModified?: boolean;
+  /**
+   * True when the write was held for the machine owner to review instead of written; the file is unchanged
+   */
+  staged?: boolean;
 }
 export interface GlobOutput {
   /**
