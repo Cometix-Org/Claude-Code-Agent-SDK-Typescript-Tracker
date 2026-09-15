@@ -501,6 +501,7 @@ declare namespace coreTypes {
     SDKThinkingTokensMessage,
     SDKToolProgressMessage,
     SDKToolUseSummaryMessage,
+    SDKUsageReport,
     SDKUserMessageReplay,
     SDKUserMessage,
     SDKWorkerShuttingDownMessage,
@@ -3773,6 +3774,10 @@ export declare type SDKAssistantMessage = {
    * Structured twin of the /context report, carried on the synthetic assistant message that delivers the markdown table. Present only on /context results from CLIs new enough to attach it; the markdown in message.content remains the canonical fallback. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
    */
   context_usage?: SDKContextUsage;
+  /**
+   * Structured twin of the /usage report, carried on the synthetic assistant message that delivers its text: the session totals, the plan's usage rows and extra-usage spend, for remote clients that render a card from data. Present only on /usage results from CLIs new enough to attach it and from claude.ai-subscriber sessions; the text in message.content remains the canonical fallback. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model.
+   */
+  usage_report?: SDKUsageReport;
 };
 
 export declare type SDKAssistantMessageError =
@@ -6041,6 +6046,10 @@ export declare type SDKTaskNotificationMessage = {
   task_id: string;
   tool_use_id?: string;
   status: "completed" | "failed" | "stopped";
+  /**
+   * Machine-readable cause, set only when the task did not end through an ordinary completion, failure, or stop. 'worker_restart': the worker process restarted and the resumed process found the task orphaned (always with status 'stopped').
+   */
+  reason?: "worker_restart";
   output_file: string;
   summary: string;
   usage?: {
@@ -6185,6 +6194,80 @@ export declare type SDKToolUseSummaryMessage = {
   preceding_tool_use_ids: string[];
   uuid: UUID;
   session_id: string;
+};
+
+/**
+ * Structured twin of a /usage result, carried beside its text: the session's totals, the plan's usage rows as the server sent them and the extra-usage spend, and nothing else from the usage body (the get_usage control reply carries the rest). Experimental — the shape may change.
+ */
+export declare type SDKUsageReport = {
+  /**
+   * Cost and usage accumulated by the current session.
+   */
+  session: {
+    total_cost_usd: number;
+    total_api_duration_ms: number;
+    total_duration_ms: number;
+    total_lines_added: number;
+    total_lines_removed: number;
+    model_usage: Record<string, ModelUsage>;
+  };
+  /**
+   * The plan's usage rows and extra-usage spend from the claude.ai usage endpoint; null when the CLI could not fetch them (no plan on this lane, or a token without the profile scope).
+   */
+  rate_limits: {
+    /**
+     * The server's usage rows (the usage endpoint's limits[]), as sent: which meters apply, their scope, labels, severity and order are the server's, so a client renders them verbatim and a new meter needs no client release. Empty when the server reported no meters; null when the body carried no rows at all (a server that predates them). When the usage fetch failed and the CLI fell back to rate-limit response headers, this holds at most the one row it synthesizes from them (the overage-included weekly window, shaped like the server's), or null when the headers carried none.
+     */
+    limits:
+      | {
+          /**
+           * The server's meter kind, e.g. 'session', 'weekly_all' or 'weekly_scoped'. Classify a row on this, never on a label.
+           */
+          kind: string;
+          /**
+           * The server's row group, e.g. 'session' or 'weekly'; rows render grouped under it, in the server's order.
+           */
+          group: string;
+          /**
+           * Share of the window used, 0-100.
+           */
+          percent: number;
+          /**
+           * ISO 8601 timestamp when the window resets.
+           */
+          resets_at: string | null;
+          /**
+           * What a scoped row is for, a model or a surface, with the server's display label.
+           */
+          scope?: {
+            model?: {
+              display_name: string;
+            } | null;
+            surface?: {
+              display_name: string;
+            } | null;
+          } | null;
+          /**
+           * The server's reading of the row for a meter's colour, e.g. 'normal', 'warning' or 'critical'; a client falls back to its own thresholds without it.
+           */
+          severity?: string | null;
+          /**
+           * The server's headline pick: the row a single-value indicator shows.
+           */
+          is_active?: boolean | null;
+        }[]
+      | null;
+    /**
+     * Extra-usage (overage) spend for the billing period, when the plan has it. Amounts are in minor units of `currency` (cents for USD); is_enabled is false while extra usage cannot cover sends.
+     */
+    extra_usage?: {
+      is_enabled: boolean;
+      monthly_limit: number | null;
+      used_credits: number | null;
+      utilization: number | null;
+      currency?: string | null;
+    } | null;
+  } | null;
 };
 
 /**

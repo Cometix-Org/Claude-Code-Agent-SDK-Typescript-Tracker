@@ -583,6 +583,7 @@ export type ArtifactOutput =
         };
         next?: string;
         cowritten?: true;
+        outside_writer?: true;
       };
     }
   | {
@@ -593,6 +594,7 @@ export type ArtifactOutput =
         content_type: string;
         sha256: string;
         cowritten?: true;
+        outside_writer?: true;
         foreign?: true;
       };
     }
