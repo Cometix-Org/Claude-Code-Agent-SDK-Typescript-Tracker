@@ -2932,13 +2932,9 @@ export interface MonitorInput {
    */
   description: string;
   /**
-   * Kill the monitor after this deadline. Default 300000ms, max 3600000ms. Ignored when persistent is true.
+   * Kill the monitor after this deadline. Default 300000ms. Deadlines above 1800000ms are capped to 1800000ms. You are notified at expiry and can re-arm.
    */
   timeout_ms: number;
-  /**
-   * Run for the lifetime of the session (no timeout). Use for session-length watches like PR monitoring or log tails. Stop with TaskStop.
-   */
-  persistent: boolean;
   /**
    * Shell command or script. Each stdout line is an event; exit ends the watch.
    */
@@ -3114,7 +3110,7 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **To read an existing artifact's content**. 'watch', 'unwatch', and 'status' manage live-update subscriptions that notify a session when an artifact is republished elsewhere, and those aren't available in this session: 'watch' only reports that — no republish notification reaches this session — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions that notify a session when an artifact is republished elsewhere, and those aren't available in this session: 'watch' only reports that — no republish notification reaches this session — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
    */
   action?:
     | "publish"
@@ -3173,7 +3169,7 @@ export interface ArtifactInput {
    */
   force?: boolean;
   /**
-   * read_asset: directory to save the file into (default: the working directory); the file is named by the asset id plus the extension for its type.
+   * read_asset: directory to save into — default: this artifact’s folder in your scratchpad directory, where saving needs no approval and which you can Read from. read_asset names the file by the asset id plus the extension for its type; saving to any directory other than the default is an ordinary file save the user may be asked to approve.
    */
   out_dir?: string;
   /**
