@@ -247,6 +247,21 @@ export declare type CanUseTool = (
      * For example, when a Bash command tries to access a path outside allowed directories.
      */
     blockedPath?: string;
+    /**
+     * For `mcp__*` tools: the MCP server serving the tool and where its
+     * definition came from. `source: 'sdk'` means one of the in-process
+     * servers this SDK host registered (its `name` is the key you registered;
+     * only the host can register one); any other value (`plugin`, `user`,
+     * `project`, `local`, `dynamic`, `managed`, …) is a server from
+     * configuration, whose `name` is the key as authored there — untrusted
+     * text, escape it before display. Key trust decisions on `source`, not on
+     * the name or the tool-name prefix. Absent for non-MCP tools and on CLIs
+     * that predate the field.
+     */
+    mcpServer?: {
+      name: string;
+      source: string;
+    };
     /** Explains why this permission request was triggered. */
     decisionReason?: string;
     /**
@@ -410,6 +425,7 @@ declare namespace coreTypes {
     McpSSEServerConfig,
     McpSdkServerConfig,
     McpServerConfigForProcessTransport,
+    McpServerProvenance,
     McpServerStatusConfig,
     McpServerStatus,
     McpServerToolPolicy,
@@ -491,6 +507,7 @@ declare namespace coreTypes {
     SDKSessionInfo,
     SDKSessionStateChangedMessage,
     SDKSettingsParseError,
+    SDKStartupFailureReason,
     SDKStatusMessage,
     SDKStatus,
     SDKSystemMessage,
@@ -1324,6 +1341,17 @@ export declare type McpServerConfigForProcessTransport =
   | McpSdkServerConfig;
 
 /**
+ * The MCP server serving this tool, for `mcp__*` tools: `name` is the server's config key (for `source: "sdk"`, exactly the name the SDK host registered in `sdkMcpServers` / `mcp_set_servers`; for any other source, the key as authored in that configuration — untrusted text, the same value `mcp_status` and system/init report, to be escaped before display), `source` is where its definition came from — `sdk` (an in-process server the SDK host runs; only the host can register one, so a configured server of the same name never reads `sdk`), `plugin` (a server a plugin ships or registers at runtime), or a config scope (`user`, `project`, `local`, `dynamic` for --mcp-config / `mcp_set_servers` process servers, `managed`, `enterprise`, `claudeai`, `agent`). Key trust on `source`, not on the name or the tool-name prefix. Absent for non-MCP tools.
+ */
+export declare type McpServerProvenance = {
+  name: string;
+  /**
+   * sdk | plugin | user | project | local | dynamic | managed | enterprise | claudeai | agent — an open set; treat unknown values as an unrecognized configured source, never as sdk.
+   */
+  source: string;
+};
+
+/**
  * Status information for an MCP server connection.
  */
 export declare type McpServerStatus = {
@@ -1354,6 +1382,10 @@ export declare type McpServerStatus = {
    * Configuration scope (e.g., project, user, local, claudeai, managed)
    */
   scope?: string;
+  /**
+   * Where the server definition came from: sdk (an in-process server the SDK host registered — only the host can register one), plugin (a server a plugin ships or registers at runtime), or the config scope (user, project, local, dynamic, managed, enterprise, claudeai, agent). Key trust on this, not on the name. Absent on CLIs that predate the field.
+   */
+  source?: string;
   /**
    * Tools provided by this server (available when connected)
    */
@@ -2523,6 +2555,7 @@ export declare type PermissionDeniedHookInput = BaseHookInput & {
   tool_input: unknown;
   tool_use_id: string;
   reason: string;
+  mcp_server?: McpServerProvenance;
 };
 
 export declare type PermissionDeniedHookSpecificOutput = {
@@ -2541,6 +2574,7 @@ export declare type PermissionRequestHookInput = BaseHookInput & {
   tool_name: string;
   tool_input: unknown;
   permission_suggestions?: PermissionUpdate[];
+  mcp_server?: McpServerProvenance;
 };
 
 export declare type PermissionRequestHookSpecificOutput = {
@@ -2710,6 +2744,7 @@ export declare type PostToolUseFailureHookInput = BaseHookInput & {
    * Tool execution time in milliseconds. Excludes permission-prompt and hook time.
    */
   duration_ms?: number;
+  mcp_server?: McpServerProvenance;
 };
 
 export declare type PostToolUseFailureHookSpecificOutput = {
@@ -2727,6 +2762,7 @@ export declare type PostToolUseHookInput = BaseHookInput & {
    * Tool execution time in milliseconds. Excludes permission-prompt and hook time.
    */
   duration_ms?: number;
+  mcp_server?: McpServerProvenance;
 };
 
 export declare type PostToolUseHookSpecificOutput = {
@@ -2804,6 +2840,7 @@ export declare type PreToolUseHookInput = BaseHookInput & {
   tool_name: string;
   tool_input: unknown;
   tool_use_id: string;
+  mcp_server?: McpServerProvenance;
 };
 
 export declare type PreToolUseHookSpecificOutput = {
@@ -4798,6 +4835,7 @@ declare type SDKControlMcpToggleRequest = {
 declare type SDKControlPermissionRequest = {
   subtype: "can_use_tool";
   tool_name: string;
+  mcp_server?: coreTypes.McpServerProvenance;
   input: Record<string, unknown>;
   permission_suggestions?: coreTypes.PermissionUpdate[];
   blocked_path?: string;
@@ -5808,6 +5846,10 @@ export declare type SDKResultError = {
   errors: string[];
 
   /**
+   * Set on the zeroed error_during_execution result a stream-json run writes before exiting on a known startup failure; errors carries the same text as stderr. Failures that used to end with stderr alone write that result only when the host sets CLAUDE_CODE_STARTUP_FAILURE_RESULTS. Absent on every other result, on startup failures without a known cause, and from older producers.
+   */
+  startup_failure_reason?: SDKStartupFailureReason;
+  /**
    * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. A synthetic/scheduled (meta) turn's own uuid is echoed only when the host vouches it is the client event's own (delivered content such as a Slack owner ping or a Slack-bot observation); a meta turn that folded queued user messages in mid-turn, vouched or not, echoes the LAST of them. Absent on turns that neither had a client uuid nor folded a user message in, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
    */
   user_message_uuid?: string;
@@ -5858,6 +5900,7 @@ export declare type SDKResultSuccess = {
   time_origin_ms?: number;
   is_error: boolean;
   api_error_status?: number | null;
+
   num_turns: number;
   result: string;
   stop_reason: string | null;
@@ -5968,6 +6011,27 @@ export declare type SDKSettingsParseError = {
   message: string;
 };
 
+/**
+ * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, or the pin names no organization. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root.
+ */
+export declare type SDKStartupFailureReason =
+  | "org_pin_api_key_conflict"
+  | "org_verify_failed"
+  | "org_pin_mismatch"
+  | "managed_settings_invalid"
+  | "remote_settings_required_unavailable"
+  | "gateway_signin_required"
+  | "gateway_access_denied"
+  | "proxy_invalid"
+  | "temp_dir_unusable"
+  | "cwd_unavailable"
+  | "shell_tool_missing"
+  | "session_held_by_background"
+  | "worktree_resume_refused"
+  | "worktree_unverified"
+  | "cli_version_too_old"
+  | "bypass_root";
+
 export declare type SDKStatus = "compacting" | "requesting" | null;
 
 export declare type SDKStatusMessage = {
@@ -6001,6 +6065,10 @@ export declare type SDKSystemMessage = {
   mcp_servers: {
     name: string;
     status: string;
+    /**
+     * Where the server definition came from — same values as McpServerStatus.source (sdk | plugin | a config scope). Absent on CLIs that predate the field.
+     */
+    source?: string;
   }[];
   model: string;
   /**
@@ -7349,7 +7417,7 @@ export declare interface Settings {
              */
             sparsePaths?: string[];
             /**
-             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
              */
             skipLfs?: boolean;
           }
@@ -7372,7 +7440,7 @@ export declare interface Settings {
              */
             sparsePaths?: string[];
             /**
-             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
              */
             skipLfs?: boolean;
           }
@@ -7611,7 +7679,7 @@ export declare interface Settings {
              */
             sparsePaths?: string[];
             /**
-             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
              */
             skipLfs?: boolean;
           }
@@ -7634,7 +7702,7 @@ export declare interface Settings {
              */
             sparsePaths?: string[];
             /**
-             * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+             * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
              */
             skipLfs?: boolean;
           }
@@ -7868,7 +7936,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
@@ -7891,7 +7959,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
@@ -8116,7 +8184,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
@@ -8139,7 +8207,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
@@ -8364,7 +8432,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
@@ -8387,7 +8455,7 @@ export declare interface Settings {
          */
         sparsePaths?: string[];
         /**
-         * Skip Git LFS smudge during clone and update (sets GIT_LFS_SKIP_SMUDGE=1) so LFS pointer files stay as pointers instead of downloading their content. Use for marketplaces hosted in repos with large LFS objects.
+         * Has no effect; accepted so existing settings keep working. Claude Code's own git never downloads Git LFS content: LFS-tracked files in the marketplace repository are checked out as pointer files whether or not this is set, and adding or updating the marketplace says how many were. To fetch their content, run `git lfs pull` in the marketplace's checkout under ~/.claude/plugins/marketplaces/.
          */
         skipLfs?: boolean;
       }
