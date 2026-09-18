@@ -447,6 +447,9 @@ export type ArtifactOutput =
       publishesResetAt?: number;
       contract?: string;
       updated?: boolean;
+      icon?: string;
+      faviconSent?: true;
+      iconDropped?: true;
       audience?: string;
       seq?: number;
       unchanged?: true;
@@ -459,9 +462,12 @@ export type ArtifactOutput =
         favicon?: string;
         updatedAt?: string;
         rel?: "mine" | "shared";
+        external?: true;
+        role?: "editor" | "commenter" | "reader" | "viewer";
       }[];
       truncated?: boolean;
       scope?: "shared" | "all";
+      external_listed?: true;
     }
   | {
       read: {
@@ -559,6 +565,58 @@ export type ArtifactOutput =
         content_type: string;
         sha256?: string;
         file_name: string;
+      };
+    }
+  | {
+      written?: {
+        url: string;
+      };
+      asset_uploads: {
+        url: string;
+        /**
+         * @minItems 1
+         * @maxItems 25
+         */
+        results: [
+          (
+            | {
+                file_path: string;
+                status: "uploaded";
+                id: string;
+                url: string;
+                size_bytes: number;
+                content_type: string;
+                sha256?: string;
+                file_name: string;
+              }
+            | {
+                file_path: string;
+                status: "failed" | "not_attempted";
+                reason: string;
+                message: string;
+                may_be_stored?: true;
+              }
+          ),
+          ...(
+            | {
+                file_path: string;
+                status: "uploaded";
+                id: string;
+                url: string;
+                size_bytes: number;
+                content_type: string;
+                sha256?: string;
+                file_name: string;
+              }
+            | {
+                file_path: string;
+                status: "failed" | "not_attempted";
+                reason: string;
+                message: string;
+                may_be_stored?: true;
+              }
+          )[],
+        ];
       };
     }
   | {
@@ -3113,7 +3171,7 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one shared with them, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path`. 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one someone else owns, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path` (or `file_paths` for several in one call). 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
    */
   action?:
     | "publish"
@@ -3132,11 +3190,11 @@ export interface ArtifactInput {
    */
   file_path?: string;
   /**
-   * The artifact's emoji: one or two emoji (e.g. "📊"). No markup. Required on a page's first publish; omit on a redeploy (same file path this session, or `url`) to keep the artifact's emoji — pass a new one only when the user asks.
+   * Deprecated; omit it. Use `icon`.
    */
   favicon?: string;
   /**
-   * Optional. One short generic word for the artifact's tab icon, such as chart, calendar, recipe, code or map — a plain signifier, not a product or brand name. Omit when republishing to keep the current icon.
+   * One short generic word for the artifact's browser-tab icon, such as chart, calendar, recipe, code or map — a plain signifier, not a product or brand name. Include it on every page's first publish; omit when republishing to keep the current icon, and pass a new one only when the user asks.
    */
   icon?: string;
   /**
@@ -3144,7 +3202,7 @@ export interface ArtifactInput {
    */
   limit?: number;
   /**
-   * list only: 'mine' (default) lists artifacts the user owns — the only ones the update flow can target; 'shared' lists artifacts other people shared with the user (read-only); 'all' lists both. Rows are labeled (mine)/(shared) whenever scope is not 'mine'.
+   * list only: 'mine' (default) lists artifacts the user owns; 'shared' lists artifacts other people shared with the user; 'all' lists both. Rows are labeled (mine)/(shared) whenever scope is not 'mine'.
    */
   scope?: "mine" | "shared" | "all";
   /**
@@ -3160,7 +3218,7 @@ export interface ArtifactInput {
    */
   label?: string;
   /**
-   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns. For 'read' and the other url-addressed actions: the artifact to act on.
+   * Existing artifact URL to update in place. Pass whenever the user wants to update an artifact this conversation did not publish — "update my artifact", "keep the same link", a pasted artifact URL — and find the URL with action: "list" or ask the user for the link if you don't have it; without this, the publish creates a separate artifact instead of updating the existing one. Omit for new artifacts and same-conversation redeploys. Must be an artifact the user owns or was given edit access to (a read of it says "writer"). For 'read' and the other url-addressed actions: the artifact to act on.
    */
   url?: string;
   /**
@@ -3175,6 +3233,13 @@ export interface ArtifactInput {
    * read_asset: directory to save into — default: this artifact’s folder in your scratchpad directory, where saving needs no approval and which you can Read from. read_asset names the file by the asset id plus the extension for its type; saving to any directory other than the default is an ordinary file save the user may be asked to approve.
    */
   out_dir?: string;
+  /**
+   * upload_asset: several local image, video, PDF, font, stylesheet or script files in place of `file_path`, up to 25 in one call, all into the artifact that `url` names; one approval covers the call, and the result lists each file's id and url, or why it was not uploaded. A CSV, Markdown, JSON or plain-text file, a symbolic or hard link, and a file outside the working directory each go in a call of their own with `file_path`.
+   *
+   * @minItems 1
+   * @maxItems 25
+   */
+  file_paths?: [string, ...string[]];
   /**
    * read_asset and delete_asset: the asset's id (32 hex characters), from a list_assets or upload_asset result.
    */
@@ -4093,10 +4158,6 @@ export interface REPLOutput {
    * True on an async-dispatch receipt or refusal: the script was handed to the async dispatcher (queued — outcome arrives later as a poll event — or refused at the queue cap), so this Output carries no execution output and resume replay must skip the block
    */
   asyncDispatched?: boolean;
-  /**
-   * Names of tools registered during this execution
-   */
-  registeredTools?: string[];
   /**
    * Images returned by inner Read calls — surfaced as image content blocks
    */

@@ -831,7 +831,12 @@ export declare function forkSession(
  * Options for forking a session into a new branch.
  */
 export declare type ForkSessionOptions = SessionMutationOptions & {
-  /** Slice transcript up to this message UUID (inclusive). If omitted, full copy. */
+  /**
+   * Slice transcript up to the message whose `uuid` field equals this value
+   * (inclusive). If omitted, full copy. Obtain the value from
+   * {@link SessionMessage.uuid} via `getSessionMessages()`, or from the
+   * `uuid` you supplied on a streamed {@link SDKUserMessage}.
+   */
   upToMessageId?: string;
   /** Custom title for the fork. If omitted, derives from original title + " (fork)". */
   title?: string;
@@ -1374,6 +1379,7 @@ export declare type McpServerStatus = {
    * Error message (available when status is 'failed')
    */
   error?: string;
+
   /**
    * Server configuration (includes URL for HTTP/SSE servers)
    */
@@ -1650,6 +1656,16 @@ export declare type Options = {
    * Paths should be absolute.
    */
   additionalDirectories?: string[];
+  /**
+   * The trusted checkout `cwd` is a worktree of. Project settings (hooks,
+   * permissions), `.mcp.json`, the `.claude` config trees (commands, agents,
+   * skills, workflows, routines, output-styles; a routine cannot be
+   * activated with it)
+   * and `CLAUDE_PROJECT_DIR` come from here instead of `cwd`, so whatever
+   * the branch checked out in `cwd` carries is not what the session runs.
+   * Absolute path.
+   */
+  projectConfigRoot?: string;
   /**
    * Agent name for the main thread. When specified, the agent's system prompt,
    * tool restrictions, and model will be applied to the main conversation.
@@ -4858,6 +4874,7 @@ declare type SDKControlPermissionRequest = {
     | "safetyCheck"
     | "classifier"
     | "other";
+
   /**
    * Set when a safetyCheck is present anywhere in the decision reason (including nested inside subcommandResults for compound bash). false = at least one safety check requires manual approval (e.g. Windows path bypass, dangerous rm); true = all safety checks MAY be classifier-approved (e.g. sensitive-file paths). Absent when no safetyCheck is involved.
    */
@@ -5645,6 +5662,7 @@ export declare type SDKPermissionDeniedMessage = {
    * Discriminator from PermissionDecisionReason (e.g. 'classifier', 'asyncAgent', 'mode', 'rule').
    */
   decision_reason_type?: string;
+
   /**
    * Human-readable reason from the deciding component, when available.
    */
@@ -7447,9 +7465,17 @@ export declare interface Settings {
         | {
             source: "npm";
             /**
-             * NPM package containing marketplace.json
+             * npm package containing marketplace.json (e.g. "\@acme/claude-marketplace"). In strictKnownMarketplaces / blockedMarketplaces an entry also governs plugins installed straight from the npm marketplace (`<package>\@npm`): an exact package name matches that package, and "\@acme/*" matches every package under the scope.
              */
             package: string;
+            /**
+             * Version or range to fetch (e.g. "1.4.0", "^1.4"); defaults to the latest dist-tag
+             */
+            version?: string;
+            /**
+             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+             */
+            registry?: string;
           }
         | {
             source: "file";
@@ -7709,9 +7735,17 @@ export declare interface Settings {
         | {
             source: "npm";
             /**
-             * NPM package containing marketplace.json
+             * npm package containing marketplace.json (e.g. "\@acme/claude-marketplace"). In strictKnownMarketplaces / blockedMarketplaces an entry also governs plugins installed straight from the npm marketplace (`<package>\@npm`): an exact package name matches that package, and "\@acme/*" matches every package under the scope.
              */
             package: string;
+            /**
+             * Version or range to fetch (e.g. "1.4.0", "^1.4"); defaults to the latest dist-tag
+             */
+            version?: string;
+            /**
+             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+             */
+            registry?: string;
           }
         | {
             source: "file";
@@ -7966,9 +8000,17 @@ export declare interface Settings {
     | {
         source: "npm";
         /**
-         * NPM package containing marketplace.json
+         * npm package containing marketplace.json (e.g. "\@acme/claude-marketplace"). In strictKnownMarketplaces / blockedMarketplaces an entry also governs plugins installed straight from the npm marketplace (`<package>\@npm`): an exact package name matches that package, and "\@acme/*" matches every package under the scope.
          */
         package: string;
+        /**
+         * Version or range to fetch (e.g. "1.4.0", "^1.4"); defaults to the latest dist-tag
+         */
+        version?: string;
+        /**
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         */
+        registry?: string;
       }
     | {
         source: "file";
@@ -8214,9 +8256,17 @@ export declare interface Settings {
     | {
         source: "npm";
         /**
-         * NPM package containing marketplace.json
+         * npm package containing marketplace.json (e.g. "\@acme/claude-marketplace"). In strictKnownMarketplaces / blockedMarketplaces an entry also governs plugins installed straight from the npm marketplace (`<package>\@npm`): an exact package name matches that package, and "\@acme/*" matches every package under the scope.
          */
         package: string;
+        /**
+         * Version or range to fetch (e.g. "1.4.0", "^1.4"); defaults to the latest dist-tag
+         */
+        version?: string;
+        /**
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         */
+        registry?: string;
       }
     | {
         source: "file";
@@ -8462,9 +8512,17 @@ export declare interface Settings {
     | {
         source: "npm";
         /**
-         * NPM package containing marketplace.json
+         * npm package containing marketplace.json (e.g. "\@acme/claude-marketplace"). In strictKnownMarketplaces / blockedMarketplaces an entry also governs plugins installed straight from the npm marketplace (`<package>\@npm`): an exact package name matches that package, and "\@acme/*" matches every package under the scope.
          */
         package: string;
+        /**
+         * Version or range to fetch (e.g. "1.4.0", "^1.4"); defaults to the latest dist-tag
+         */
+        version?: string;
+        /**
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         */
+        registry?: string;
       }
     | {
         source: "file";
@@ -9638,10 +9696,11 @@ export declare type SyncHookJSONOutput = {
 /**
  * Marker string that splits a custom `systemPrompt` into a static prefix
  * (eligible for cross-session prompt caching) and a dynamic suffix
- * (session-specific, not globally cached). Include this literal as a
- * standalone element of a `string[]` `systemPrompt` to opt in; blocks
- * before it get global cache scope, blocks after do not. See
- * `splitSysPromptPrefix` in `src/utils/api.ts`.
+ * (session-specific, not globally cached). Include it as a standalone
+ * element of a `string[]` `systemPrompt`, or as a line of its own in a
+ * `--system-prompt` string, to opt in; content before it gets global
+ * cache scope, content after does not. See `splitSysPromptPrefix` in
+ * `src/utils/api.ts`.
  */
 export declare const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   "__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__";
