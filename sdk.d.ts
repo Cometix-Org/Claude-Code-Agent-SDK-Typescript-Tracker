@@ -2956,10 +2956,13 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * and when omitted the display mode from session start (`thinking.display`
    * / `--thinking-display`) is kept — a session started with thinking
    * disabled has none, so re-enabling without this param gets that default.
+   * `'highlights'` (the API's one-line thinking titles) is honored by the
+   * API only for Anthropic-hosted remote sessions; elsewhere the API rejects
+   * it and the session falls back to `'omitted'`.
    */
   setMaxThinkingTokens(
     maxThinkingTokens: number | null,
-    thinkingDisplay?: "summarized" | "omitted" | null,
+    thinkingDisplay?: "summarized" | "omitted" | "highlights" | null,
   ): Promise<void>;
   /**
    * Merge settings into the flag settings layer. This is the inline `settings`
@@ -2993,13 +2996,15 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * same path /config uses (canonical store root, gitignore upkeep,
    * hardened write) — and live-apply them. Unlike applyFlagSettings, which
    * only touches the session-scoped flag layer. The handler accepts only an
-   * explicit key allowlist (currently just outputStyle) with string values
-   * — deletion is not supported — and refuses remote transports and
-   * sessions whose --setting-sources exclude the target source. Rejects
-   * with the gate's or writer's error otherwise.
+   * explicit key allowlist per file (localSettings: outputStyle; userSettings:
+   * effortLevel, saved for the session's current model as /effort saves it,
+   * without setting the running session's level) with string values — deletion is not
+   * supported — and refuses remote transports and sessions whose
+   * --setting-sources exclude the target source. Rejects with the gate's or
+   * writer's error otherwise.
    */
   updateSettings(
-    source: "localSettings",
+    source: "localSettings" | "userSettings",
     settings: Record<string, unknown>,
   ): Promise<void>;
   /**
@@ -5171,12 +5176,12 @@ declare type SDKControlSetColorRequest = {
 };
 
 /**
- * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept.
+ * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept. 'highlights' returns one short title per stretch of thinking instead of a prose summary. The API allows it only for Claude Code sessions that Anthropic hosts; for any other client this request still succeeds and the session falls back to 'omitted' (no thinking text) once the API has rejected the value.
  */
 declare type SDKControlSetMaxThinkingTokensRequest = {
   subtype: "set_max_thinking_tokens";
   max_thinking_tokens?: number | null;
-  thinking_display?: ("summarized" | "omitted") | null;
+  thinking_display?: ("summarized" | "omitted" | "highlights") | null;
 };
 
 /**
@@ -5210,14 +5215,14 @@ declare type SDKControlStopTaskRequest = {
 };
 
 /**
- * Merges the provided settings into a settings file through the CLI's own writer (canonical store root, gitignore upkeep, hardened write) and live-applies them — the same path /config uses. Unlike apply_flag_settings, which only touches the session-scoped flag layer. The handler accepts an explicit key allowlist only (currently just outputStyle — the file feeds hook and permission-rule loading, so each key is a security decision), requires string values (key deletion is not supported), and refuses remote transports and sessions whose --setting-sources exclude the target source.
+ * Writes settings through the CLI's own writer. For localSettings, merges the given keys into the project's local settings file (canonical store root, gitignore upkeep, hardened write) and live-applies them — the same path /config uses; allowlist: outputStyle. For userSettings, takes effortLevel only and saves it as the default for the session's current model, under modelSettings as /effort saves it ('max' is session-only and is not written; the running session's level is not set here — send apply_flag_settings for that). Unlike apply_flag_settings, which only touches the session-scoped flag layer. Each file feeds hook and permission-rule loading, so each allowed key is a security decision. String values only (key deletion is not supported); refused on remote transports and in sessions whose --setting-sources exclude the target source.
  */
 declare type SDKControlUpdateSettingsRequest = {
   subtype: "update_settings";
   /**
-   * Which settings file to write. Only the project's local settings file for now — the scope host UIs need so their writes land exactly where /config's do.
+   * Which settings file to write: the project's local settings file, where /config's writes land, or the user's settings file, which takes effortLevel only.
    */
-  source: "localSettings";
+  source: "localSettings" | "userSettings";
   settings: Record<string, unknown>;
 };
 
@@ -5844,7 +5849,7 @@ export declare type SDKResultError = {
   num_turns: number;
   stop_reason: string | null;
   /**
-   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, resumed sessions start fresh, and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
    */
   total_cost_usd: number;
   /**
@@ -5852,7 +5857,7 @@ export declare type SDKResultError = {
    */
   usage: NonNullableUsage;
   /**
-   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
 
@@ -5912,7 +5917,13 @@ export declare type SDKResultSuccess = {
   first_content_frame_ms?: number;
   first_stream_post_ms?: number;
   first_stream_post_ack_ms?: number;
+  first_stream_post_queue_wait_ms?: number;
+  first_stream_post_queued_behind?:
+    "durable_post" | "ephemeral_post" | "retry_backoff" | "hold" | "none";
   first_stream_post_wall_ms?: number;
+
+  first_text_post_ms?: number;
+  first_text_post_wall_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
   time_origin_ms?: number;
@@ -5923,7 +5934,7 @@ export declare type SDKResultSuccess = {
   result: string;
   stop_reason: string | null;
   /**
-   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, resumed sessions start fresh, and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
    */
   total_cost_usd: number;
   /**
@@ -5931,7 +5942,7 @@ export declare type SDKResultSuccess = {
    */
   usage: NonNullableUsage;
   /**
-   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, resumed sessions start fresh, and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
 
@@ -6302,7 +6313,7 @@ export declare type SDKUsageReport = {
    */
   rate_limits: {
     /**
-     * The server's usage rows (the usage endpoint's limits[]), as sent: which meters apply, their scope, labels, severity and order are the server's, so a client renders them verbatim and a new meter needs no client release. Empty when the server reported no meters; null when the body carried no rows at all (a server that predates them). When the usage fetch failed and the CLI fell back to rate-limit response headers, this holds at most the one row it synthesizes from them (the overage-included weekly window, shaped like the server's), or null when the headers carried none.
+     * The server's usage rows (the usage endpoint's limits[]), as sent: which meters apply, their scope, labels, severity and order are the server's, so a client renders them verbatim and a new meter needs no client release. Empty when the server reported no meters; null when the body carried no rows at all (a server that predates them). Null too while the usage fetch is failing: the rows here are only ever the server's current reply, so neither the row the CLI builds from rate-limit response headers for its own screen nor its snapshot of an earlier reply appears here.
      */
     limits:
       | {
@@ -6334,13 +6345,13 @@ export declare type SDKUsageReport = {
             } | null;
           } | null;
           /**
-           * The server's reading of the row for a meter's colour, e.g. 'normal', 'warning' or 'critical'; a client falls back to its own thresholds without it.
+           * The server's reading of the row for a meter's colour, e.g. 'normal', 'warning' or 'critical'. Every row here is the server's, so a client never grades a row itself.
            */
-          severity?: string | null;
+          severity: string;
           /**
            * The server's headline pick: the row a single-value indicator shows.
            */
-          is_active?: boolean | null;
+          is_active: boolean;
         }[]
       | null;
     /**
@@ -6384,6 +6395,10 @@ export declare type SDKUserMessage = {
   timestamp?: string;
 
   uuid?: UUID;
+  /**
+   * Content the user pasted into the prompt rather than typed: each entry a string or an array of content blocks. The CLI appends the text of each entry after the typed text, in order, and may wrap it in `<pasted_content>` tags. Blocks other than text are ignored; send images and documents in `message.content`.
+   */
+  pasted_content?: MessageParam["content"][];
   session_id?: string;
   /**
    * Subagent type that produced this message.
@@ -7277,7 +7292,7 @@ export declare interface Settings {
    */
   bashOutputMaxChars?: number;
   /**
-   * How many characters of a background task's output the TaskOutput tool hands Claude inline (default 32000; values clamp to 4000-128000). Longer output is cut to its most recent characters with the path of the full output file, except that a shell command still running returns its first characters up to this size. When set, this also replaces TASK_MAX_OUTPUT_LENGTH, which on its own only sizes that window.
+   * Deprecated: no longer has any effect (the TaskOutput tool was removed). Read a background task's output file with the Read tool instead.
    */
   taskOutputMaxChars?: number;
   /**
@@ -9461,6 +9476,10 @@ export declare type SlashCommand = {
    * Alternate names that resolve to this command (e.g., /cost and /stats both resolve to /usage)
    */
   aliases?: string[];
+  /**
+   * True when the command is Claude Code's own; absent for a command defined by a user, project, plugin or MCP server. Rows can share a name: when a marked row carries it, /name runs that one, and an unmarked row is the one /name runs only when no marked row shares its name. The marker describes the row's name, not its aliases: a typed alias runs a command that has it as its name, when one exists, whatever this marker says.
+   */
+  builtin?: boolean;
 };
 
 /**

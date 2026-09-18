@@ -11,7 +11,6 @@
 export type ToolInputSchemas =
   | AgentInput
   | BashInput
-  | TaskOutputInput
   | ExitPlanModeInput
   | FileEditInput
   | FileReadInput
@@ -38,7 +37,6 @@ export type ToolInputSchemas =
   | TaskGetInput
   | TaskUpdateInput
   | TaskListInput
-  | REPLInput
   | WorkflowInput
   | CronCreateInput
   | CronDeleteInput
@@ -92,7 +90,6 @@ export type ToolOutputSchemas =
   | ProposeSkillsOutput
   | ProposeGoalOutput
   | EnterPlanModeOutput
-  | REPLOutput
   | WorkflowOutput
   | CronCreateOutput
   | CronDeleteOutput
@@ -827,20 +824,6 @@ export interface BashInput {
    * Set this to true to dangerously override sandbox mode and run commands without sandboxing.
    */
   dangerouslyDisableSandbox?: boolean;
-}
-export interface TaskOutputInput {
-  /**
-   * The task ID to get output from
-   */
-  task_id: string;
-  /**
-   * Whether to wait for completion
-   */
-  block: boolean;
-  /**
-   * Max wait time in ms
-   */
-  timeout: number;
 }
 export interface ExitPlanModeInput {
   /**
@@ -2863,20 +2846,6 @@ export interface TaskUpdateInput {
   };
 }
 export interface TaskListInput {}
-export interface REPLInput {
-  /**
-   * JavaScript code to execute. Supports top-level await. State persists across calls.
-   */
-  code: string;
-  /**
-   * Clear, concise description of what this script does in active voice (5-10 words). E.g. "Trace upgrade message to its GrowthBook flag"
-   */
-  description?: string;
-  /**
-   * Optional timeout in milliseconds (default 30000, max 600000)
-   */
-  timeout?: number;
-}
 export interface WorkflowInput {
   /**
    * Self-contained workflow script. Must begin with `export const meta = { name, description, phases }` (pure literal, no computed values) followed by the script body using agent()/parallel()/pipeline()/phase().
@@ -4130,67 +4099,6 @@ export interface EnterPlanModeOutput {
    * Confirmation that plan mode was entered
    */
   message: string;
-}
-export interface REPLOutput {
-  /**
-   * The code that was executed
-   */
-  code: string;
-  /**
-   * Return value from the code execution
-   */
-  result?: {
-    [k: string]: unknown;
-  };
-  /**
-   * Captured console.log output
-   */
-  stdout: string;
-  /**
-   * Captured console.error output
-   */
-  stderr: string;
-  /**
-   * Error message if execution failed
-   */
-  error?: string;
-  /**
-   * True on an async-dispatch receipt or refusal: the script was handed to the async dispatcher (queued — outcome arrives later as a poll event — or refused at the queue cap), so this Output carries no execution output and resume replay must skip the block
-   */
-  asyncDispatched?: boolean;
-  /**
-   * Images returned by inner Read calls — surfaced as image content blocks
-   */
-  images?: {
-    base64: string;
-    mediaType: string;
-  }[];
-  /**
-   * Count of inner-Read images dropped by the per-result image cap; surfaced as a note in the tool_result
-   */
-  imagesOmitted?: number;
-  /**
-   * Pages of inner page-range Reads that could not be processed as an image; surfaced as one note each in the tool_result
-   */
-  imagePagesFailed?: {
-    page: number;
-    file?: string;
-    error?: string;
-  }[];
-  /**
-   * Count of failed-page notes dropped by the per-result note cap; surfaced as a note in the tool_result
-   */
-  imagePagesFailedOmitted?: number;
-  /**
-   * PDFs returned by inner Read calls — surfaced as document content blocks
-   */
-  documents?: {
-    base64: string;
-  }[];
-  /**
-   * Count of inner-Read PDFs dropped by the per-result document cap; surfaced as a note in the tool_result
-   */
-  documentsOmitted?: number;
 }
 export interface WorkflowOutput {
   status: "async_launched" | "remote_launched";
