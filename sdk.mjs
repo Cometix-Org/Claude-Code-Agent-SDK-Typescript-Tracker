@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.277
+// Version: 0.3.278
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -33237,8 +33237,8 @@ class Zx {
   #m = !1;
   #g = null;
   #h = !1;
+  #_ = !1;
   #S = !1;
-  #b = !1;
   #y = !1;
   #E = !1;
   #v = void 0;
@@ -33379,16 +33379,16 @@ class Zx {
     this.#A = e;
   }
   accountSkillsSyncEnabled() {
-    return this.#S;
+    return this.#_;
   }
   replaceAccountSkillsSyncEnabled(e) {
-    this.#S = e;
+    this.#_ = e;
   }
   skillsSyncVetoed() {
-    return this.#b;
+    return this.#S;
   }
   replaceSkillsSyncVetoed(e) {
-    this.#b = e;
+    this.#S = e;
   }
   accountPluginsSyncEnabled() {
     return this.#y;
@@ -33413,8 +33413,8 @@ class Zx {
     this.#v = void 0;
   }
   reset() {
-    ((this.#S = !1),
-      (this.#b = !1),
+    ((this.#_ = !1),
+      (this.#S = !1),
       (this.#y = !1),
       (this.#E = !1),
       (this.#e = !1),
@@ -33459,8 +33459,8 @@ class Yx {
   #m = new Set();
   #g = void 0;
   #h = void 0;
+  #_ = void 0;
   #S = void 0;
-  #b = void 0;
   #y = void 0;
   planSlugCache() {
     return this.#e;
@@ -33529,16 +33529,16 @@ class Yx {
     this.#h = e;
   }
   pendingGoalReprompt() {
-    return this.#S;
+    return this.#_;
   }
   replacePendingGoalReprompt(e) {
-    this.#S = e;
+    this.#_ = e;
   }
   goalInterruptionStreak() {
-    return this.#b;
+    return this.#S;
   }
   replaceGoalInterruptionStreak(e) {
-    this.#b = e;
+    this.#S = e;
   }
   workerCheckin() {
     return this.#y;
@@ -33565,9 +33565,9 @@ class Yx {
       (this.#g = void 0),
       clearTimeout(this.#h),
       (this.#h = void 0),
-      clearTimeout(this.#S),
+      clearTimeout(this.#_),
+      (this.#_ = void 0),
       (this.#S = void 0),
-      (this.#b = void 0),
       clearInterval(this.#y?.timer),
       (this.#y = void 0));
   }
@@ -34914,8 +34914,8 @@ class CA {
   #m = "cli";
   #g = "fresh";
   #h = void 0;
+  #_ = !1;
   #S = !1;
-  #b = !1;
   #y = [];
   #E = !1;
   #v = !1;
@@ -34934,7 +34934,7 @@ class CA {
   #F = !0;
   #L = null;
   #M = !1;
-  #_ = null;
+  #b = null;
   #$ = !1;
   #I = !1;
   #k = {};
@@ -35042,16 +35042,16 @@ class CA {
     this.#h = e;
   }
   extendedQuestionsEnabled() {
-    return this.#S;
+    return this.#_;
   }
   replaceExtendedQuestionsEnabled(e) {
-    this.#S = e;
+    this.#_ = e;
   }
   questionOptionDescriptionsOptional() {
-    return this.#b;
+    return this.#S;
   }
   replaceQuestionOptionDescriptionsOptional(e) {
-    this.#b = e;
+    this.#S = e;
   }
   replConfigArgv() {
     return this.#y;
@@ -35162,10 +35162,10 @@ class CA {
     this.#M = e;
   }
   initJsonSchema() {
-    return this.#_;
+    return this.#b;
   }
   replaceInitJsonSchema(e) {
-    this.#_ = e;
+    this.#b = e;
   }
   cliSessionConfigCarried() {
     return this.#$;
@@ -35209,8 +35209,8 @@ class CA {
       (this.#m = "cli"),
       (this.#g = "fresh"),
       (this.#h = void 0),
+      (this.#_ = !1),
       (this.#S = !1),
-      (this.#b = !1),
       (this.#y = []),
       (this.#E = !1),
       (this.#v = !1),
@@ -35229,7 +35229,7 @@ class CA {
       (this.#F = !0),
       (this.#L = null),
       (this.#M = !1),
-      (this.#_ = null),
+      (this.#b = null),
       (this.#$ = !1),
       (this.#I = !1),
       (this.#k = {}),
@@ -35527,8 +35527,8 @@ class PA {
   #m = null;
   #g = q1();
   #h = null;
+  #_ = null;
   #S = null;
-  #b = null;
   #y = { direct: null, proxied: null };
   #E = null;
   #v = null;
@@ -35638,16 +35638,16 @@ class PA {
     this.#h = e;
   }
   tracerProvider() {
-    return this.#S;
+    return this.#_;
   }
   replaceTracerProvider(e) {
-    this.#S = e;
+    this.#_ = e;
   }
   cachedTelemetryResource() {
-    return this.#b;
+    return this.#S;
   }
   replaceCachedTelemetryResource(e) {
-    this.#b = e;
+    this.#S = e;
   }
   cachedOtlpHttpAgentFactory(e) {
     return this.#y[e ? "proxied" : "direct"];
@@ -35685,8 +35685,8 @@ class PA {
       (this.#m = null),
       (this.#g = q1()),
       (this.#h = null),
+      (this.#_ = null),
       (this.#S = null),
-      (this.#b = null),
       (this.#y = { direct: null, proxied: null }),
       (this.#E = null),
       (this.#v = null));
@@ -35886,8 +35886,11 @@ class LA {
   #f = !1;
   #d = !1;
   #m = !1;
-  #g = new Map();
-  #h = new Map();
+  #g = !1;
+  #h = void 0;
+  #_ = void 0;
+  #S = new Map();
+  #y = new Map();
   promptCache1hAllowlist() {
     return this.#e;
   }
@@ -35978,14 +35981,33 @@ class LA {
   markThirdPartyServerClassifierRefused() {
     this.#m = !0;
   }
+  observedGateway() {
+    return this.#h;
+  }
+  serverClassifierFallbackChoice() {
+    return this.#_;
+  }
+  setServerClassifierFallbackChoice(e) {
+    this.#_ = e;
+  }
+  clearServerClassifierFallbackChoice() {
+    this.#_ = void 0;
+  }
+  noteObservedGateway(e) {
+    this.#h ??= e;
+  }
+  takeServerClassifierFallbackAnnouncement() {
+    if (!this.#m || this.#g) return !1;
+    return ((this.#g = !0), !0);
+  }
   inferenceProfileBackingModels() {
-    return this.#g;
+    return this.#S;
   }
   recordInferenceProfileBackingModel(e, t) {
-    this.#g.set(e, t);
+    this.#S.set(e, t);
   }
   foundryDeploymentCapabilities() {
-    return this.#h;
+    return this.#y;
   }
   reset() {
     ((this.#e = null),
@@ -36003,8 +36025,11 @@ class LA {
       (this.#f = !1),
       (this.#d = !1),
       (this.#m = !1),
-      (this.#g = new Map()),
-      (this.#h = new Map()));
+      (this.#g = !1),
+      (this.#h = void 0),
+      (this.#_ = void 0),
+      (this.#S = new Map()),
+      (this.#y = new Map()));
   }
 }
 class MA {
@@ -45405,7 +45430,7 @@ var KAe = d.triBool(),
   URe = d.triBool(),
   FRe = d.triBool(),
   $Re = d.triBool(),
-  zRe = d.triBool(),
+  zRe = d.str(),
   jRe = d.bool(),
   HRe = d.bool(),
   BRe = d.bool(),
@@ -62413,17 +62438,17 @@ class EE {
   #m;
   #g;
   #h;
+  #_;
   #S;
-  #b;
   #y;
   #E;
   #v;
   #x;
   static unsafeExposeInternals(e) {
     return {
-      starts: e.#b,
+      starts: e.#S,
       ttls: e.#y,
-      sizes: e.#S,
+      sizes: e.#_,
       keyMap: e.#s,
       keyList: e.#a,
       valList: e.#r,
@@ -62436,7 +62461,7 @@ class EE {
         return e.#m;
       },
       free: e.#g,
-      isBackgroundFetch: (t) => e.#_(t),
+      isBackgroundFetch: (t) => e.#b(t),
       backgroundFetch: (t, n, r, o) => e.#M(t, n, r, o),
       moveToTail: (t) => e.#I(t),
       indexes: (t) => e.#T(t),
@@ -62585,7 +62610,7 @@ class EE {
     let e = new xh(this.#e),
       t = new xh(this.#e);
     ((this.#y = e),
-      (this.#b = t),
+      (this.#S = t),
       (this.#N = (o, s, i = ud.now()) => {
         if (
           ((t[o] = s !== 0 ? i : 0), (e[o] = s), s !== 0 && this.ttlAutopurge)
@@ -62641,12 +62666,12 @@ class EE {
   #j() {
     let e = new xh(this.#e);
     ((this.#u = 0),
-      (this.#S = e),
+      (this.#_ = e),
       (this.#P = (t) => {
         ((this.#u -= e[t]), (e[t] = 0));
       }),
       (this.#U = (t, n, r, o) => {
-        if (this.#_(n)) return 0;
+        if (this.#b(n)) return 0;
         if (!Ji(r))
           if (o) {
             if (typeof o !== "function")
@@ -62705,7 +62730,7 @@ class EE {
       if (
         this.#r[e] !== void 0 &&
         this.#a[e] !== void 0 &&
-        !this.#_(this.#r[e])
+        !this.#b(this.#r[e])
       )
         yield [this.#a[e], this.#r[e]];
   }
@@ -62714,29 +62739,29 @@ class EE {
       if (
         this.#r[e] !== void 0 &&
         this.#a[e] !== void 0 &&
-        !this.#_(this.#r[e])
+        !this.#b(this.#r[e])
       )
         yield [this.#a[e], this.#r[e]];
   }
   *keys() {
     for (let e of this.#T()) {
       let t = this.#a[e];
-      if (t !== void 0 && !this.#_(this.#r[e])) yield t;
+      if (t !== void 0 && !this.#b(this.#r[e])) yield t;
     }
   }
   *rkeys() {
     for (let e of this.#R()) {
       let t = this.#a[e];
-      if (t !== void 0 && !this.#_(this.#r[e])) yield t;
+      if (t !== void 0 && !this.#b(this.#r[e])) yield t;
     }
   }
   *values() {
     for (let e of this.#T())
-      if (this.#r[e] !== void 0 && !this.#_(this.#r[e])) yield this.#r[e];
+      if (this.#r[e] !== void 0 && !this.#b(this.#r[e])) yield this.#r[e];
   }
   *rvalues() {
     for (let e of this.#R())
-      if (this.#r[e] !== void 0 && !this.#_(this.#r[e])) yield this.#r[e];
+      if (this.#r[e] !== void 0 && !this.#b(this.#r[e])) yield this.#r[e];
   }
   [Symbol.iterator]() {
     return this.entries();
@@ -62745,7 +62770,7 @@ class EE {
   find(e, t = {}) {
     for (let n of this.#T()) {
       let r = this.#r[n],
-        o = this.#_(r) ? r.__staleWhileFetching : r;
+        o = this.#b(r) ? r.__staleWhileFetching : r;
       if (o === void 0) continue;
       if (e(o, this.#a[n], this)) return this.get(this.#a[n], t);
     }
@@ -62753,7 +62778,7 @@ class EE {
   forEach(e, t = this) {
     for (let n of this.#T()) {
       let r = this.#r[n],
-        o = this.#_(r) ? r.__staleWhileFetching : r;
+        o = this.#b(r) ? r.__staleWhileFetching : r;
       if (o === void 0) continue;
       e.call(t, o, this.#a[n], this);
     }
@@ -62761,7 +62786,7 @@ class EE {
   rforEach(e, t = this) {
     for (let n of this.#R()) {
       let r = this.#r[n],
-        o = this.#_(r) ? r.__staleWhileFetching : r;
+        o = this.#b(r) ? r.__staleWhileFetching : r;
       if (o === void 0) continue;
       e.call(t, o, this.#a[n], this);
     }
@@ -62776,18 +62801,18 @@ class EE {
     let t = this.#s.get(e);
     if (t === void 0) return;
     let n = this.#r[t],
-      r = this.#_(n) ? n.__staleWhileFetching : n;
+      r = this.#b(n) ? n.__staleWhileFetching : n;
     if (r === void 0) return;
     let o = { value: r };
-    if (this.#y && this.#b) {
+    if (this.#y && this.#S) {
       let s = this.#y[t],
-        i = this.#b[t];
+        i = this.#S[t];
       if (s && i) {
         let a = s - (ud.now() - i);
         ((o.ttl = a), (o.start = Date.now()));
       }
     }
-    if (this.#S) o.size = this.#S[t];
+    if (this.#_) o.size = this.#_[t];
     return o;
   }
   dump() {
@@ -62795,15 +62820,15 @@ class EE {
     for (let t of this.#T({ allowStale: !0 })) {
       let n = this.#a[t],
         r = this.#r[t],
-        o = this.#_(r) ? r.__staleWhileFetching : r;
+        o = this.#b(r) ? r.__staleWhileFetching : r;
       if (o === void 0 || n === void 0) continue;
       let s = { value: o };
-      if (this.#y && this.#b) {
+      if (this.#y && this.#S) {
         s.ttl = this.#y[t];
-        let i = ud.now() - this.#b[t];
+        let i = ud.now() - this.#S[t];
         s.start = Math.floor(Date.now() - i);
       }
-      if (this.#S) s.size = this.#S[t];
+      if (this.#_) s.size = this.#_[t];
       e.unshift([n, s]);
     }
     return e;
@@ -62860,7 +62885,7 @@ class EE {
       this.#I(u);
       let p = this.#r[u];
       if (t !== p) {
-        if (this.#v && this.#_(p)) {
+        if (this.#v && this.#b(p)) {
           p.__abortController.abort(Error("replaced"));
           let { __staleWhileFetching: f } = p;
           if (f !== void 0 && !s) {
@@ -62873,7 +62898,7 @@ class EE {
         }
         if ((this.#P(u), this.#D(u, l, a), (this.#r[u] = t), a)) {
           a.set = "replace";
-          let f = p && this.#_(p) ? p.__staleWhileFetching : p;
+          let f = p && this.#b(p) ? p.__staleWhileFetching : p;
           if (f !== void 0) a.oldValue = f;
         }
       } else if (a) a.set = "update";
@@ -62894,7 +62919,7 @@ class EE {
     try {
       while (this.#c) {
         let e = this.#r[this.#d];
-        if ((this.#L(!0), this.#_(e))) {
+        if ((this.#L(!0), this.#b(e))) {
           if (e.__staleWhileFetching) return e.__staleWhileFetching;
         } else if (e !== void 0) return e;
       }
@@ -62910,7 +62935,7 @@ class EE {
     let t = this.#d,
       n = this.#a[t],
       r = this.#r[t];
-    if (this.#v && this.#_(r)) r.__abortController.abort(Error("evicted"));
+    if (this.#v && this.#b(r)) r.__abortController.abort(Error("evicted"));
     else if (this.#E || this.#x) {
       if (this.#E) this.#n?.(r, n, "evict");
       if (this.#x) this.#h?.push([r, n, "evict"]);
@@ -62926,7 +62951,7 @@ class EE {
       o = this.#s.get(e);
     if (o !== void 0) {
       let s = this.#r[o];
-      if (this.#_(s) && s.__staleWhileFetching === void 0) return !1;
+      if (this.#b(s) && s.__staleWhileFetching === void 0) return !1;
       if (!this.#C(o)) {
         if (n) this.#w(o);
         if (r) ((r.has = "hit"), this.#A(r, o));
@@ -62940,11 +62965,11 @@ class EE {
       r = this.#s.get(e);
     if (r === void 0 || (!n && this.#C(r))) return;
     let o = this.#r[r];
-    return this.#_(o) ? o.__staleWhileFetching : o;
+    return this.#b(o) ? o.__staleWhileFetching : o;
   }
   #M(e, t, n, r) {
     let o = t === void 0 ? void 0 : this.#r[t];
-    if (this.#_(o)) return o;
+    if (this.#b(o)) return o;
     let s = new bE(),
       { signal: i } = n;
     i?.addEventListener("abort", () => s.abort(i.reason), { signal: s.signal });
@@ -63016,7 +63041,7 @@ class EE {
     else this.#r[t] = m;
     return m;
   }
-  #_(e) {
+  #b(e) {
     if (!this.#v) return !1;
     let t = e;
     return (
@@ -63077,7 +63102,7 @@ class EE {
       return (x.__returned = x);
     } else {
       let x = this.#r[S];
-      if (this.#_(x)) {
+      if (this.#b(x)) {
         let N = n && x.__staleWhileFetching !== void 0;
         if (y) {
           if (((y.fetch = "inflight"), N)) y.returnedStale = !0;
@@ -63123,7 +63148,7 @@ class EE {
       i = this.#s.get(e);
     if (i !== void 0) {
       let a = this.#r[i],
-        c = this.#_(a);
+        c = this.#b(a);
       if (s) this.#A(s, i);
       if (this.#C(i)) {
         if (s) s.get = "stale";
@@ -63165,7 +63190,7 @@ class EE {
         else {
           this.#P(r);
           let o = this.#r[r];
-          if (this.#_(o)) o.__abortController.abort(Error("deleted"));
+          if (this.#b(o)) o.__abortController.abort(Error("deleted"));
           else if (this.#E || this.#x) {
             if (this.#E) this.#n?.(o, e, t);
             if (this.#x) this.#h?.push([o, e, t]);
@@ -63200,7 +63225,7 @@ class EE {
   #z(e) {
     for (let t of this.#R({ allowStale: !0 })) {
       let n = this.#r[t];
-      if (this.#_(n)) n.__abortController.abort(Error("deleted"));
+      if (this.#b(n)) n.__abortController.abort(Error("deleted"));
       else {
         let r = this.#a[t];
         if (this.#E) this.#n?.(n, r, e);
@@ -63211,10 +63236,10 @@ class EE {
       (this.#s.clear(),
       this.#r.fill(void 0),
       this.#a.fill(void 0),
-      this.#y && this.#b)
+      this.#y && this.#S)
     )
-      (this.#y.fill(0), this.#b.fill(0));
-    if (this.#S) this.#S.fill(0);
+      (this.#y.fill(0), this.#S.fill(0));
+    if (this.#_) this.#_.fill(0);
     if (
       ((this.#d = 0),
       (this.#m = 0),
@@ -74679,7 +74704,7 @@ function H0(e, t) {
   else if (s.type === "custom") ((p = s.prompt), (h = s.snapshot));
   else if (s.type === "preset")
     ((f = s.append), (m = s.excludeDynamicSections), (h = s.snapshot));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.277";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.278";
   let {
       abortController: g = nf(),
       additionalDirectories: y = [],
@@ -74792,7 +74817,7 @@ function H0(e, t) {
   let eM = G0?.type === "json_schema" ? G0.schema : void 0,
     cn = fe ? { ...fe } : { ...process.env };
   if (!cn.CLAUDE_CODE_ENTRYPOINT) cn.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!cn.CLAUDE_AGENT_SDK_VERSION) cn.CLAUDE_AGENT_SDK_VERSION = "0.3.277";
+  if (!cn.CLAUDE_AGENT_SDK_VERSION) cn.CLAUDE_AGENT_SDK_VERSION = "0.3.278";
   if (Oe) cn.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (W0) cn.CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH = "1";
   if (V0) cn.CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH = "1";
