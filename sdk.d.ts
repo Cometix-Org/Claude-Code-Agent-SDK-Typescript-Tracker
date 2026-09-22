@@ -1403,6 +1403,10 @@ export declare type McpServerStatus = {
       destructive?: boolean;
       openWorld?: boolean;
     };
+    /**
+     * The MCP Apps (SEP-1865) members of the tool's `_meta`, for a host that renders the tool's `ui://` resource, under the keys the server used: `ui` (an object: `resourceUri`, a `ui://` string; `visibility`, an array of 'model' | 'app'; and any other member the server sent) and the deprecated flat `ui/resourceUri` (a `ui://` string). Validated and size-bounded; every other `_meta` key is withheld. Present only on a tool that declares one, from CLIs that advertise `mcp_tool_ui_meta_v1`.
+     */
+    _meta?: Record<string, unknown>;
   }[];
 };
 
@@ -1995,6 +1999,30 @@ export declare type Options = {
    * subagent conversation is forwarded so consumers can render a nested transcript.
    */
   forwardSubagentText?: boolean;
+  /**
+   * Send every user message with `client_composed: true`, so the CLI delivers
+   * the prompt text as written: no `@path` file-mention expansion and no
+   * slash-command dispatch. Use when prompt text is assembled from content
+   * the end user did not type. Covers string prompts, streamed messages and
+   * `Query.streamInput()`. While the option is on there is no per-message
+   * opt-out; for per-turn control, leave it off and set `client_composed: true`
+   * on individual streamed messages instead.
+   *
+   * On current CLIs a turn delivered this way also skips the CLI's turn-start
+   * attachment pass as a whole: `@server:resource` MCP mentions are not
+   * expanded either, and the prompt is sent without the context the CLI
+   * normally attaches alongside it (nested `CLAUDE.md` and rules files, skill
+   * and tool listings, and the CLI's other per-turn reminders). The pass the
+   * CLI runs between tool calls is unaffected, so most of that context arrives
+   * after the turn's first tool call rather than with the prompt. Narrowing
+   * the skip to `@path` expansion and slash-command dispatch alone is
+   * CLI-side follow-up work.
+   *
+   * Requires Claude Code 2.1.248 or later; older CLIs ignore the field.
+   *
+   * @default false
+   */
+  verbatimPrompts?: boolean;
   /**
    * Controls Claude's thinking/reasoning behavior.
    *
@@ -3115,6 +3143,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
       encoding?: "utf-8" | "base64";
     },
   ): Promise<SDKControlReadFileResponse | null>;
+
   /**
    * Reload plugins from disk and return the refreshed commands, agents,
    * plugins, and MCP server status.
@@ -3195,6 +3224,22 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * @param enabled - Whether the server should be enabled
    */
   toggleMcpServer(serverName: string, enabled: boolean): Promise<void>;
+  /**
+   * Read one MCP Apps (SEP-1865) UI resource from a connected MCP server the
+   * CLI itself dialed, so the host can render a tool's widget. `uri` must use
+   * the `ui://` scheme, typically the `_meta.ui.resourceUri` a tool
+   * declares. The contents are untrusted third-party HTML: render them
+   * sandboxed. Requires a CLI that advertises `mcp_read_resource_v1` in
+   * `system/init.capabilities`. Throws on failure.
+   *
+   * @param serverName - The server's name, as `mcpServerStatus()` reports it
+   * @param uri - A `ui://` resource URI
+   * @alpha
+   */
+  readMcpResource(
+    serverName: string,
+    uri: string,
+  ): Promise<SDKControlMcpReadResourceResponse>;
 
   /**
    * Dynamically set the MCP servers for this session.
@@ -4819,6 +4864,40 @@ declare type SDKControlMcpMessageRequest = {
 };
 
 /**
+ * Reads one MCP Apps (SEP-1865) UI resource — a `ui://` URI, typically the `_meta.ui.resourceUri` a tool declares — from a connected MCP server the CLI itself dialed, with `resources/read`, for a host that renders it. Read-only and no model turn. The reply is untrusted third-party content (HTML): render it sandboxed. SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can read them directly. Errors name the cause: a non-ui:// URI, an unknown server, a server that managed policy blocks, that is disabled or that the project has not approved (the refusals mcp_reconnect gives), a server that is not connected (failed, pending or needs-auth: send mcp_reconnect; a connected server, or one still listed from the discovery cache, is read through the same connect path a tool call takes), a response over the size limit, or the server's own resources/read error. Refused on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker) and by the client of a cloud-hosted session. Advertised as `mcp_read_resource_v1` in system/init.capabilities.
+ */
+declare type SDKControlMcpReadResourceRequest = {
+  subtype: "mcp_read_resource";
+  /**
+   * Server name, as mcp_status reports it (not normalized).
+   */
+  serverName: string;
+  /**
+   * The resource to read. Must use the ui:// scheme; any other URI is refused.
+   */
+  uri: string;
+};
+
+/**
+ * The server's resources/read result for an mcp_read_resource request.
+ */
+export declare type SDKControlMcpReadResourceResponse = {
+  contents: {
+    uri: string;
+    mimeType?: string;
+    text?: string;
+    /**
+     * Base64, for a binary item.
+     */
+    blob?: string;
+    /**
+     * The content item's own `_meta`, as the server sent it (MCP Apps puts the resource's `ui.csp` and `ui.permissions` here).
+     */
+    _meta?: Record<string, unknown>;
+  }[];
+};
+
+/**
  * Reconnects a disconnected or failed MCP server.
  */
 declare type SDKControlMcpReconnectRequest = {
@@ -5104,7 +5183,8 @@ declare type SDKControlRequestInner =
   | SDKControlUpdateSettingsRequest
   | SDKControlElicitationRequest
   | SDKControlRequestUserDialogRequest
-  | SDKControlListPermissionRulesRequest;
+  | SDKControlListPermissionRulesRequest
+  | SDKControlMcpReadResourceRequest;
 
 /**
  * Progress for a long-running client-originated control_request (currently only side_question), correlated by request_id. status 'started' means the worker accepted the request and launched the work; 'api_retry' carries the same retry counters as SDKAPIRetryMessage and is present only for that status.
@@ -5512,9 +5592,13 @@ export declare type SDKMessageOrigin =
   | {
       kind: "task-notification";
       /**
-       * Present when the delivery is the fired stored prompt of a scheduled task/routine ('scheduled-trigger', stamped from server-asserted provenance; the schedule attests storage, not authorship) or a coordinator co-member SendMessage delivery ('peer-send-message': model-authored text from another of the same user's sessions, verified by the server-stamped receiver co-membership — task-notification for prompt authority, but distinguishable so the receive-side crossSessionInbound setting can apply to it). The harness frames a scheduled-trigger delivery as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
+       * Present when the delivery is the fired stored prompt of a scheduled task/routine ('scheduled-trigger', stamped from server-asserted provenance, or declared by a local host for its own scheduled runs; the schedule attests storage, not authorship) or a coordinator co-member SendMessage delivery ('peer-send-message': model-authored text from another of the same user's sessions, verified by the server-stamped receiver co-membership — task-notification for prompt authority, but distinguishable so the receive-side crossSessionInbound setting can apply to it). The harness frames a scheduled-trigger delivery as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
        */
       subkind?: "scheduled-trigger" | "peer-send-message" | "projects-relay";
+      /**
+       * On a 'scheduled-trigger' delivery, why it fired: a short lowercase token such as 'scheduled', 'manual', 'retry', 'catch_up' or 'api'. Set by the server for cloud routines, or declared by a local host for its own scheduled runs, which is honored only in a process the host started with CLAUDE_CODE_HOST_SCHEDULED_RUN=1 (a local host's value is kept only if it is 1 to 32 lowercase letters or underscores); absent when neither sent one.
+       */
+      fireReason?: string;
     }
   | {
       kind: "coordinator";
@@ -6394,11 +6478,20 @@ export declare type SDKUserMessage = {
    */
   timestamp?: string;
 
+  /**
+   * The client composed this turn from content the user did not type; the CLI delivers its text as written, with no `@path` file-mention expansion and no slash-command dispatch. On current CLIs the turn-start attachment pass is skipped as a whole: `@server:resource` MCP mentions are not expanded either, and the prompt is sent without the context the CLI normally attaches alongside it (nested `CLAUDE.md` and rules files, skill and tool listings, reminders); the pass the CLI runs between tool calls is unaffected.
+   */
+  client_composed?: true;
+
   uuid?: UUID;
   /**
    * Content the user pasted into the prompt rather than typed: each entry a string or an array of content blocks. The CLI appends the text of each entry after the typed text, in order, and may wrap it in `<pasted_content>` tags. Blocks other than text are ignored; send images and documents in `message.content`.
    */
   pasted_content?: MessageParam["content"][];
+  /**
+   * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block. For a paste the host took out of `message`, use `pasted_content` instead.
+   */
+  inline_pastes?: string[];
   session_id?: string;
   /**
    * Subagent type that produced this message.
@@ -6433,6 +6526,11 @@ export declare type SDKUserMessageReplay = {
    * ISO timestamp when the message was created on the originating process. Older emitters omit it; consumers should fall back to receive time.
    */
   timestamp?: string;
+
+  /**
+   * The client composed this turn from content the user did not type; the CLI delivers its text as written, with no `@path` file-mention expansion and no slash-command dispatch. On current CLIs the turn-start attachment pass is skipped as a whole: `@server:resource` MCP mentions are not expanded either, and the prompt is sent without the context the CLI normally attaches alongside it (nested `CLAUDE.md` and rules files, skill and tool listings, reminders); the pass the CLI runs between tool calls is unaffected.
+   */
+  client_composed?: true;
 
   uuid: UUID;
   session_id: string;
@@ -7240,7 +7338,7 @@ export declare interface Settings {
     location?: string;
   };
   /**
-   * Disable all hooks and statusLine execution
+   * Disable all hooks and statusLine execution: the hooks defined in settings files and by installed plugins. Features built into Claude Code are not hooks in this sense and keep working; each has its own switch.
    */
   disableAllHooks?: boolean;
   /**
@@ -7300,7 +7398,7 @@ export declare interface Settings {
    */
   respondToBashCommands?: boolean;
   /**
-   * When true (and set in managed settings), only hooks from managed settings run. User, project, and local hooks are ignored.
+   * When true (and set in managed settings), only hooks from managed settings and from plugins that managed settings enable run. User, project, and local hooks and the hooks of plugins the user installed are ignored. Features built into Claude Code are not hooks in this sense and keep working.
    */
   allowManagedHooksOnly?: boolean;
   /**
@@ -9719,7 +9817,7 @@ export declare type SyncHookJSONOutput = {
  * element of a `string[]` `systemPrompt`, or as a line of its own in a
  * `--system-prompt` string, to opt in; content before it gets global
  * cache scope, content after does not. See `splitSysPromptPrefix` in
- * `src/utils/api.ts`.
+ * `src/services/api/requestAttribution.ts`.
  */
 export declare const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   "__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__";
