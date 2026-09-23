@@ -2986,7 +2986,7 @@ export interface ProposeSkillsInput {
     | [
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";
@@ -3011,7 +3011,7 @@ export interface ProposeSkillsInput {
     | [
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";
@@ -3034,7 +3034,7 @@ export interface ProposeSkillsInput {
         },
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";
@@ -3059,7 +3059,7 @@ export interface ProposeSkillsInput {
     | [
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";
@@ -3082,7 +3082,7 @@ export interface ProposeSkillsInput {
         },
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";
@@ -3105,7 +3105,7 @@ export interface ProposeSkillsInput {
         },
         {
           /**
-           * kebab-case skill slug
+           * kebab-case skill slug; must not contain "claude" or "anthropic"; at most 64 characters for a new skill
            */
           name: string;
           kind: "new" | "improvement";

@@ -347,6 +347,7 @@ declare type ControlErrorResponse = {
    * Human-readable failure description.
    */
   error: string;
+
   /**
    * can_use_tool requests this CLI process has issued and not yet resolved, so a client joining an already-initialized session learns about in-flight prompts. Always present (possibly empty) on a success `initialize` response from Claude Code v2.1.268 or later; earlier versions could omit it, so treat absence as an older CLI rather than as "nothing pending". A prompt inherited from a previous worker of the same session can remain answerable without appearing here and without a control_cancel_request; session_state "requires_action" on the same reply signals one the CLI is holding, but not every inherited prompt is signalled.
    */
@@ -2343,7 +2344,9 @@ export declare type Options = {
    * IT-controlled managed-settings tier (server / MDM / managed-settings.json)
    * exists on the user's machine, these are **dropped by default** — they only
    * layer in if that admin opts in via `parentSettingsBehavior: 'merge'` in
-   * their managed settings. Even when opted in, the value is filtered
+   * their managed settings (a gateway-mode session that Claude Desktop's Code
+   * tab launches merges them by default; `'first-wins'` in the highest-priority
+   * managed source turns that off). Even when opted in, the value is filtered
    * restrictive-only: permissive arrays (`permissions.allow`,
    * `additionalDirectories`, `allowedMcpServers`, …) that would widen an
    * existing admin lock are silently dropped. With no admin tier present,
@@ -5307,13 +5310,25 @@ declare type SDKControlUpdateSettingsRequest = {
 };
 
 /**
- * Emitted by /clear, plan-mode exit, and fresh-session flows. The surface should mount a fresh transcript under new_conversation_id and reset any cached session title. From internal QueryEvent 'conversation_reset'.
+ * Emitted by /clear, plan-mode exit, fresh-session, and onboarding flows. The surface should mount a fresh transcript under new_conversation_id and reset any cached session title. From internal QueryEvent 'conversation_reset'.
  */
 export declare type SDKConversationResetMessage = {
   type: "conversation_reset";
   new_conversation_id: UUID;
   uuid: UUID;
   session_id: string;
+  /**
+   * What discarded the conversation: 'clear' is the /clear command (or its /reset and /new aliases), 'plan_mode_exit' is leaving plan mode with the clear-context option, 'fresh_session' is a flow that starts a fresh session to implement an approved plan, 'onboarding' is an onboarding flow re-run inside an existing session. Informational: a consumer should reset on every conversation_reset frame whatever this says, and treat an absent (older emitter) or unrecognized value as an unspecified reset.
+   */
+  trigger?: "clear" | "plan_mode_exit" | "fresh_session" | "onboarding";
+  /**
+   * Only with trigger 'clear': the uuid of the user message whose /clear was executed (the client's own uuid for that message when it came from a Remote Control or stream-json client, otherwise the uuid the CLI assigned to the typed command). Lets a consumer match this frame to a /clear message it has already seen, wiping once whichever arrives first, instead of relying on arrival order. Absent for the other triggers, when that uuid is not a canonical UUID, and from older emitters.
+   */
+  user_message_uuid?: string;
+  /**
+   * When the reset happened, as an ISO 8601 string in UTC read from the clock of the process that performed it. Meant for display, such as the time on a "conversation cleared" row, not for ordering frames. Absent from older emitters; a consumer can fall back to the time it received the frame.
+   */
+  timestamp?: string;
 };
 
 export declare type SDKDeferredToolUse = {
@@ -6212,6 +6227,11 @@ export declare type SDKSystemMessage = {
    * The effort level the session will send on its next request — after env overrides, session state, org caps and model-support downgrades; the same value get_settings reports as applied.effort. null when no effort parameter will be sent (a model without effort, CLAUDE_CODE_EFFORT_LEVEL=unset, or an internal numeric budget). Present on Remote Control bridge init frames (terminal- and Desktop/VS Code-hosted sessions); absent on hosts that do not publish it and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
    */
   effort?: ("low" | "medium" | "high" | "xhigh" | "max") | null;
+
+  /**
+   * Whether the session's transcript is in focus view ('focus': the model is told the user sees only its final message per turn, so clients may collapse each turn to the prompt and the final response; 'default' otherwise). Toggled by /focus, including over Remote Control. Present on Remote Control bridge init frames and on the per-turn init of headless stream-json runs (`claude rc` workers, -p, the SDK's subprocess transport); absent on hosts that do not publish it (the in-process engine) and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
+   */
+  view_mode?: "focus" | "default";
   /**
    * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is then empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it — except that a client driving a hosted session lists there what it can no longer recall: a send already in flight to that session, or the first prompt the session was created with). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the cloud session backend reads this from the persisted init event to decide whether it may send them). Absent on older CLIs.
    */
@@ -6915,23 +6935,25 @@ export declare interface Settings {
     [k: string]: string;
   };
   /**
-   * Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set.
+   * Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set. Set to false to hide all attribution, the same as { "commit": "", "pr": "", "sessionUrl": false }. Setting it to true is the same as leaving it out. Older Claude Code versions reject true or false here, so use the object form in settings files shared across versions.
    */
-  attribution?: {
-    /**
-     * Attribution text for git commits, including any trailers. Empty string hides attribution.
-     */
-    commit?: string;
-    /**
-     * Attribution text for pull request descriptions. Empty string hides attribution.
-     */
-    pr?: string;
-    /**
-     * Whether to append the claude.ai session link to commits and PRs created from web or Remote Control sessions (default: true). Set to false to omit the Claude-Session trailer and PR-body link.
-     */
-    sessionUrl?: boolean;
-    [k: string]: unknown;
-  };
+  attribution?:
+    | boolean
+    | {
+        /**
+         * Attribution text for git commits, including any trailers. Empty string hides attribution.
+         */
+        commit?: string;
+        /**
+         * Attribution text for pull request descriptions. Empty string hides attribution.
+         */
+        pr?: string;
+        /**
+         * Whether to append the claude.ai session link to commits and PRs created from web or Remote Control sessions (default: true). Set to false to omit the Claude-Session trailer and PR-body link.
+         */
+        sessionUrl?: boolean;
+        [k: string]: unknown;
+      };
   /**
    * Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)
    */
@@ -8836,7 +8858,7 @@ export declare interface Settings {
    */
   gatewayInternalNetworks?: string[];
   /**
-   * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (default): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
+   * Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. "first-wins" (the default, except in a gateway session Claude Desktop's Code tab launched, where "merge" is): parent is dropped — admin tiers are the only policy source. "merge": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).
    */
   parentSettingsBehavior?: "first-wins" | "merge";
   /**
