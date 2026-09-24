@@ -318,6 +318,66 @@ export declare type CanUseTool = (
   },
 ) => Promise<PermissionResult | null>;
 
+/**
+ * The per-session half of {@link Options}: what a host only knows once the
+ * user has picked a folder and started the session. Everything else (the
+ * executable, settings sources, tools, plugins, host-level MCP servers, hooks,
+ * canUseTool, environment that the process reads during start-up) is given to
+ * {@link prewarm} and is fixed for the life of the spare. A host whose
+ * host-level options changed since it prewarmed must discard the spare and
+ * start normally.
+ * @alpha
+ */
+export declare type ClaimOptions = {
+  /**
+   * The session's working directory (required). A relative path resolves
+   * against this process, as for `query()`; `~/…` is expanded by Claude Code.
+   */
+  cwd: string;
+  /**
+   * Per-session environment additions. Only variables the CLI accepts at
+   * claim time (fresh OAuth/session tokens, the host's session id) — anything
+   * the process reads during start-up belongs in the prewarm options' env,
+   * and the claim is refused if it appears here.
+   */
+  env?: Record<string, string>;
+  /** As `--add-dir`; relative entries resolve against `cwd`, missing ones are skipped. */
+  additionalDirectories?: string[];
+  model?: string;
+  /**
+   * As `Options.permissionMode`, sent as part of the claim itself: a mode
+   * the process cannot take (`bypassPermissions` on a spare prewarmed without
+   * `allowDangerouslySkipPermissions`, one the folder's settings disable)
+   * refuses the claim — `claimed` rejects with `permission_mode_not_claimable`
+   * (or `claim_failed`) and the prompt gets the `not_claimed` error result —
+   * so a session never runs under a different mode than the one asked for.
+   */
+  permissionMode?: PermissionMode;
+  maxThinkingTokens?: number | null;
+  /**
+   * Flag-tier settings overlay (e.g. `{ fastMode: true, effortLevel: 'high' }`),
+   * applied as `applyFlagSettings` does. Because an overlay can carry
+   * permission rules, a claim that has one holds the prompt until the process
+   * has accepted the overlay (one round trip) and does not send it if the
+   * overlay is refused: `claimed` then rejects with `settings_not_applied`
+   * and the process is closed — start the session with `query()`. One limit
+   * in this version: keys that govern hooks (`hooks`, `disableAllHooks`,
+   * `allowManagedHooksOnly`, `allowedHttpHookUrls`, `httpHookAllowedEnvVars`)
+   * are refused — `claim()` throws before sending anything and the spare stays
+   * parked — because the claimed folder's SessionStart hooks start with the
+   * claim, before the overlay lands; give those to `prewarm()` in
+   * `Options.settings`, where they are in force before any hook as on a cold
+   * start. The rest of the overlay is in force before the prompt you pass to
+   * `claim()` is read; the claimed folder's own SessionStart hooks, and a
+   * first message such a hook hands the session, start with the claim and do
+   * not wait for the overlay.
+   */
+  settings?: Parameters<Query["applyFlagSettings"]>[0];
+  appendSystemPrompt?: string;
+  title?: string;
+  agents?: Record<string, AgentDefinition>;
+};
+
 export declare type ConfigChangeHookInput = BaseHookInput & {
   hook_event_name: "ConfigChange";
   source:
@@ -2348,10 +2408,13 @@ export declare type Options = {
    * tab launches merges them by default; `'first-wins'` in the highest-priority
    * managed source turns that off). Even when opted in, the value is filtered
    * restrictive-only: permissive arrays (`permissions.allow`,
-   * `additionalDirectories`, `allowedMcpServers`, …) that would widen an
-   * existing admin lock are silently dropped. With no admin tier present,
-   * these apply as the sole policy tier (still filtered restrictive-only —
-   * non-allowlisted keys are dropped regardless).
+   * `additionalDirectories`, …) that would widen an existing admin lock are
+   * silently dropped; the only-listed-allowed lists (`allowedMcpServers`,
+   * `availableModels`, `strictKnownMarketplaces`) apply only where the admin
+   * tier sets none, while denylists (`deniedMcpServers`,
+   * `blockedMarketplaces`) are kept and union with the admin's. With no admin
+   * tier present, these apply as the sole policy tier (still filtered
+   * restrictive-only — non-allowlisted keys are dropped regardless).
    *
    * Intended for embedding applications (e.g. desktop apps) that derive
    * lockdown settings from their own enterprise configuration and need to
@@ -2899,6 +2962,80 @@ export declare type PreToolUseHookSpecificOutput = {
 };
 
 /**
+ * Start a Claude Code process as a parked **spare** before the session it
+ * will serve is known, and bind it later with {@link SpareProcess.claim}.
+ *
+ * What runs now, at `prewarm()`: process start, module load, config, auth,
+ * tools, user-level skills/plugins/commands, the host-level MCP servers in
+ * `options.mcpServers` (including in-process SDK servers and their
+ * handshakes), hooks and `canUseTool` registration, the initialize handshake —
+ * everything `startup()` does, in a private parking directory under the
+ * user's config home (or `options.cwd` if given, which is never the
+ * session's folder). A host whose `spawnClaudeCodeProcess` runs Claude Code on
+ * another machine or in a container must pass `options.cwd`: a directory that
+ * exists there (the default one is created on this machine). What waits
+ * for the claim: the working directory, SessionStart hooks, session
+ * registration, CLAUDE.md and git context, the transcript location. While
+ * parked the process holds roughly 230–260 MB and is otherwise idle.
+ *
+ * What a claim can set ({@link ClaimOptions}): `cwd`, `additionalDirectories`,
+ * `model`, `permissionMode`, `maxThinkingTokens`, a flag-settings overlay
+ * (`settings`, e.g. effort or permission rules — but not hook settings, which
+ * would land after the claimed folder's SessionStart hooks have started; those
+ * go in `Options.settings` here), `appendSystemPrompt`, `title`, `agents`, and
+ * three environment variables (`CLAUDE_CODE_OAUTH_TOKEN`,
+ * `CLAUDE_CODE_SESSION_ACCESS_TOKEN`, `CLAUDE_CODE_HOST_SESSION_ID`). Everything
+ * else — the executable, `settingSources`, `env` the process reads at
+ * start-up, `systemPrompt` presets, `mcpServers`, `hooks`, `canUseTool`,
+ * `skills`, `allowedTools`/`disallowedTools`, a main-thread `agent`, plugins —
+ * is fixed at `prewarm()`: keep one spare per distinct set of those, and when
+ * they change (sign-out, settings that alter them, an updated executable)
+ * `close()` the spare and prewarm again.
+ *
+ * Not every claim can be honoured: the process refuses a folder whose project
+ * settings set `env`, `agent`, `model` (or `permissions.defaultMode` when no
+ * `permissionMode` was given at prewarm), a `permissionMode` it cannot take
+ * (it travels inside the claim so this fails closed), a `settings` overlay it
+ * cannot apply (the prompt is held until the overlay is accepted, so this
+ * fails closed too), an environment key outside the three above, a network
+ * path, or a missing folder; a parked process can also die. In all of those
+ * {@link SpareProcess.claimed} rejects, the process goes away on its own
+ * (`close()` only releases its in-process MCP servers and callbacks sooner),
+ * and this version leaves the fallback to the host: start that session with
+ * `query()` as before. One rejection is different: `option_not_applied`
+ * means only `model` or `maxThinkingTokens` was refused — the prompt was
+ * sent and the session is running, so do not start it again. A CLI too old
+ * to know `--await-claim` makes `prewarm()` itself reject.
+ *
+ * Compared with `startup()`: `startup()` needs the session's folder and
+ * options up front and saves only the spawn; `prewarm()` needs neither and
+ * also keeps tools, plugins and MCP handshakes off the first message.
+ *
+ * After a claim the Query's `initializationResult()`, `supportedAgents()`,
+ * `supportedCommands()` and `accountInfo()` describe the claimed session,
+ * not the parking directory ({@link SpareProcess.claim} names the one limit:
+ * the snapshot predates `model`/`settings`).
+ *
+ * @example
+ * ```typescript
+ * const spare = await prewarm({ options: hostLevelOptions })
+ * // …later, when the user starts a session in `folder`:
+ * const q = spare.claim({ prompt, options: { cwd: folder, model } })
+ * spare.claimed.catch((e: Error) => {
+ *   // refused, died or overlay refused: fall back to query(); on
+ *   // option_not_applied the session is already running without that option
+ *   if (!e.message.startsWith('option_not_applied')) startNormally()
+ * })
+ * for await (const message of q) { … }
+ * ```
+ * @alpha
+ */
+export declare function prewarm(_params?: {
+  options?: Options;
+  initializeTimeoutMs?: number;
+}): Promise<SpareProcess>;
+
+/**
  * Per-key provenance entry.
  * @alpha
  */
@@ -2987,9 +3124,9 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * and when omitted the display mode from session start (`thinking.display`
    * / `--thinking-display`) is kept — a session started with thinking
    * disabled has none, so re-enabling without this param gets that default.
-   * `'highlights'` (the API's one-line thinking titles) is honored by the
-   * API only for Anthropic-hosted remote sessions; elsewhere the API rejects
-   * it and the session falls back to `'omitted'`.
+   * `'highlights'` (the API's one-line thinking titles) is honored by the API
+   * only for Anthropic-hosted remote sessions; the promise rejects, changing
+   * nothing, when the session cannot send it to the API.
    */
   setMaxThinkingTokens(
     maxThinkingTokens: number | null,
@@ -3040,7 +3177,9 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
   ): Promise<void>;
   /**
    * Get the full initialization result, including supported commands, models,
-   * account info, and output style configuration.
+   * account info, and output style configuration: the first-connect answer,
+   * or, on a Query returned by a pre-warmed spare's `claim()`, the claimed
+   * session's.
    *
    * @returns The complete initialization response
    */
@@ -3066,7 +3205,7 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * re-send if the call races an unanswered hook.
    *
    * Unlike {@link Query.initializationResult}, this always sends a fresh request
-   * rather than returning the cached first-connect result.
+   * rather than returning the cached result.
    *
    * @returns A fresh initialization response
    */
@@ -4894,7 +5033,7 @@ export declare type SDKControlMcpReadResourceResponse = {
      */
     blob?: string;
     /**
-     * The content item's own `_meta`, as the server sent it (MCP Apps puts the resource's `ui.csp` and `ui.permissions` here).
+     * The content item's own `_meta` as the server sent it (MCP Apps puts the resource's `ui.csp` and `ui.permissions` here), minus keys under the CLI-reserved `com.anthropic/` prefix.
      */
     _meta?: Record<string, unknown>;
   }[];
@@ -5259,7 +5398,7 @@ declare type SDKControlSetColorRequest = {
 };
 
 /**
- * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept. 'highlights' returns one short title per stretch of thinking instead of a prose summary. The API allows it only for Claude Code sessions that Anthropic hosts; for any other client this request still succeeds and the session falls back to 'omitted' (no thinking text) once the API has rejected the value.
+ * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is omitted or null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept. 'highlights' returns one short title per stretch of thinking instead of a prose summary. The API accepts it only from Claude Code sessions that Anthropic hosts; if the API rejects it, the session sends 'omitted' (no thinking text) in its place from then on. A request for 'highlights' fails, and changes neither the budget nor the display, after such a rejection, on Amazon Bedrock, Google Vertex AI or another provider without Anthropic's first-party beta features, when experimental betas are off (CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS or organization policy), or on a Claude 3 model (except on Microsoft Foundry).
  */
 declare type SDKControlSetMaxThinkingTokensRequest = {
   subtype: "set_max_thinking_tokens";
@@ -5609,7 +5748,11 @@ export declare type SDKMessageOrigin =
       /**
        * Present when the delivery is the fired stored prompt of a scheduled task/routine ('scheduled-trigger', stamped from server-asserted provenance, or declared by a local host for its own scheduled runs; the schedule attests storage, not authorship) or a coordinator co-member SendMessage delivery ('peer-send-message': model-authored text from another of the same user's sessions, verified by the server-stamped receiver co-membership — task-notification for prompt authority, but distinguishable so the receive-side crossSessionInbound setting can apply to it). The harness frames a scheduled-trigger delivery as the session's assigned task instead of the generic background-notification frame. Absent on webhook, PR-steward, plugin, and background-event deliveries.
        */
-      subkind?: "scheduled-trigger" | "peer-send-message" | "projects-relay";
+      subkind?:
+        | "scheduled-trigger"
+        | "peer-send-message"
+        | "projects-relay"
+        | "session-inbox";
       /**
        * On a 'scheduled-trigger' delivery, why it fired: a short lowercase token such as 'scheduled', 'manual', 'retry', 'catch_up' or 'api'. Set by the server for cloud routines, or declared by a local host for its own scheduled runs, which is honored only in a process the host started with CLAUDE_CODE_HOST_SCHEDULED_RUN=1 (a local host's value is kept only if it is 1 to 32 lowercase letters or underscores); absent when neither sent one.
        */
@@ -7432,7 +7575,7 @@ export declare interface Settings {
    */
   httpHookAllowedEnvVars?: string[];
   /**
-   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. --disallowedTools and other deny and ask rules from the command line or the current session still apply.
+   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins Claude Code adopts from a .claude-plugin manifest inside those skills directories, is ignored too; other plugins and managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply.
    */
   allowManagedPermissionRulesOnly?: boolean;
   /**
@@ -7443,6 +7586,10 @@ export declare interface Settings {
    * When true (and set in managed settings), claude.ai cloud MCP connectors load alongside managed-mcp.json instead of being suppressed by its exclusive-control lockdown. Default off preserves the lockdown. Read from managed settings only.
    */
   allowAllClaudeAiMcps?: boolean;
+  /**
+   * When true (and set in device managed settings: MDM, the managed-settings.json file, or a policy helper those configure), the built-in Claude in Chrome MCP server can run alongside managed-mcp.json instead of being blocked by its exclusive-control lockdown. deniedMcpServers and the organization's Claude in Chrome setting still block it. Default off preserves the lockdown.
+   */
+  allowClaudeInChromeWithManagedMcp?: boolean;
   /**
    * When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. ["skills", "hooks"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control — plugins gated by marketplace allowlist, everything else blocked here.
    */
@@ -9089,6 +9236,9 @@ export declare interface Settings {
      * macOS only: Allow sandboxed commands to send Apple Events (and look up the appleeventsd Mach service). Needed for `open`, `osascript`, and browser-based auth flows that open URLs. **Removes code-execution isolation** — sandboxed commands can launch other applications unsandboxed with no user prompt, and can script running apps (e.g. Terminal) subject to the user's per-app TCC automation consent. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. Default: false
      */
     allowAppleEvents?: boolean;
+    /**
+     * Command patterns (Bash permission-rule syntax) that always run outside the sandbox. A convenience, not a security boundary: excluded commands still go through the permission flow. Merged across settings sources. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, values from project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+     */
     excludedCommands?: string[];
     /**
      * Custom ripgrep configuration for bundled ripgrep support. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
@@ -9151,6 +9301,10 @@ export declare interface Settings {
    * Whether to disable syntax highlighting in diffs
    */
   syntaxHighlightingDisabled?: boolean;
+  /**
+   * Maximum width, in terminal columns, of the prose in Claude's responses (paragraphs, headings, lists, blockquotes). In a wider terminal the prose wraps at this width while tables and code blocks keep the full width; only the display wraps, the response text itself gains no line breaks. Minimum 40. Unset (the default) uses the full terminal width.
+   */
+  maxProseWidth?: number;
   /**
    * Underline misspelled words in the prompt input as you type, using an installed aspell, hunspell or ispell (off unless "enabled" is true; does nothing if none is installed). Read from user, flag and managed settings only (the whole block from the highest-precedence of those applies); ignored in project .claude/settings.json and .claude/settings.local.json.
    */
@@ -9601,6 +9755,89 @@ export declare type SlashCommand = {
    */
   builtin?: boolean;
 };
+
+/**
+ * A parked, fully started Claude Code process that is not yet any session
+ * (see {@link prewarm}). `claim()` binds it to a session and sends the first
+ * message; `close()` discards it. Single use.
+ * @alpha
+ */
+export declare interface SpareProcess extends AsyncDisposable {
+  /**
+   * Bind the spare to a session and send its first message. Synchronous, like
+   * `query()`: it writes the claim, the per-session settings and the prompt
+   * to the waiting process and returns the Query; consume the Query's messages
+   * as usual (a claim with a `settings` overlay sends the prompt one round
+   * trip later, once the overlay is accepted — see {@link ClaimOptions}). Can
+   * only be called once.
+   *
+   * If the process cannot honour the claim (see {@link ClaimOptions}),
+   * {@link SpareProcess.claimed} rejects with the reason, a prompt already
+   * sent is answered with an error result whose text starts with
+   * `not_claimed` (the Query then ends as any query with an error result
+   * does), and the process is let go: it exits once it has answered. Start
+   * the session with `query()` instead. `close()` is not needed for the
+   * process to go away, but it releases what the spare holds in this process
+   * — in-process (`type: 'sdk'`) MCP server instances, hook and tool
+   * callbacks — at once rather than at exit, so call it first if the
+   * fallback `query()` reuses those same objects.
+   *
+   * The returned Query's `initializationResult()`, `supportedCommands()`,
+   * `supportedAgents()`, `supportedModels()` and `accountInfo()` wait for the
+   * claim's answer and then describe the claimed session — the folder's
+   * agents, commands and output styles, the claimed permission mode — as they
+   * would after a cold `query()` in that folder (the folder's `availableModels`
+   * narrows the model list as it does there). One limit: that snapshot is
+   * taken as part of the claim, before `model` and `settings` are applied, so
+   * fields the model or the settings overlay decide (for example
+   * `fast_mode_state`, `output_style`, the remote-control defaults, an
+   * `availableModels` in the overlay) may not reflect them yet. After a refused claim the reads
+   * keep describing the parked process; after `option_not_applied` or
+   * `settings_not_applied` (the claim itself took) they describe the claimed
+   * session.
+   *
+   * @throws when called a second time, when the spare was closed or has
+   * exited, or when `options.settings` carries a key that governs hooks (see
+   * {@link ClaimOptions}) — in that last case nothing has been sent and the
+   * spare stays parked, so it can still be claimed.
+   */
+  claim(params: {
+    prompt: string | AsyncIterable<SDKUserMessage>;
+    options: ClaimOptions;
+  }): Query;
+  /**
+   * Settles once the process has answered the claim AND the per-session
+   * settings sent with it: resolves with the canonical working directory, the
+   * session id and how long the spare was parked. Rejects — and the host
+   * should start the session with `query()` instead — when the claim is
+   * refused (`not_a_spare`, `env_key_not_claimable`, `cwd_not_found`,
+   * `project_settings_not_claimable`, `permission_mode_not_claimable`, …; a
+   * prompt already sent gets the `not_claimed` error result and the process
+   * exits), when the claim broke after it began (`claim_failed`; likewise),
+   * when the spare exited or was closed before a claim (`spare_exited` /
+   * `spare_closed`), or when the `settings` overlay was refused
+   * (`settings_not_applied: …`; the prompt was never sent and the process
+   * was closed). In all of those your prompt has not run. The one rejection
+   * after which it does run is `option_not_applied: …`: `model` or
+   * `maxThinkingTokens` was not accepted and the session runs without it.
+   * Both `…_not_applied` errors carry `.claim` with the claim info.
+   * `permissionMode` is part of the claim itself and fails closed: see
+   * {@link ClaimOptions}.
+   */
+  readonly claimed: Promise<{
+    cwd: string;
+    sessionId: string;
+    parkedMs?: number;
+    sdkMcpSettled: boolean;
+  }>;
+  /** Settles when the spare's process exits, claimed or not — a parked spare that dies should be replaced. */
+  readonly exited: Promise<void>;
+  /**
+   * Terminate the process. Before a claim this discards the spare (and
+   * rejects `claimed`); after one it is the same as closing the Query.
+   */
+  close(): void;
+}
 
 /**
  * Represents a spawned process with stdin/stdout streams and lifecycle management.
