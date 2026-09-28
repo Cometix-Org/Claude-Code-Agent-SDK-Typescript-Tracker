@@ -706,11 +706,7 @@ export declare type DirectoryAddedHookInput = BaseHookInput & {
 /**
  * Effort level for controlling how much thinking/reasoning Claude applies.
  *
- * - `'low'` — Minimal thinking, fastest responses
- * - `'medium'` — Moderate thinking
- * - `'high'` — Deep reasoning (default)
- * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+, Sonnet 5; falls back to `'high'` elsewhere)
- * - `'max'` — Maximum effort (select models only)
+ * @see https://platform.claude.com/docs/en/build-with-claude/effort
  */
 export declare type EffortLevel = "low" | "medium" | "high" | "xhigh" | "max";
 
@@ -2101,12 +2097,6 @@ export declare type Options = {
    * Controls how much effort Claude puts into its response.
    * Works with adaptive thinking to guide thinking depth.
    *
-   * - `'low'` — Minimal thinking, fastest responses
-   * - `'medium'` — Moderate thinking
-   * - `'high'` — Deep reasoning (default)
-   * - `'xhigh'` — Deeper than high (Fable 5, Opus 4.7+, Sonnet 5)
-   * - `'max'` — Maximum effort (Fable 5, Opus 4.6+, Sonnet 4.6+)
-   *
    * @see https://platform.claude.com/docs/en/build-with-claude/effort
    */
   effort?: EffortLevel;
@@ -3147,6 +3137,11 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * default model (not `ANTHROPIC_MODEL` or `settings.model`), `agent` to no
    * main-thread agent, and `ultracode` to off with the current effort kept.
    * Only available in streaming input mode.
+   *
+   * `ultracode: true` or `false` turns ultracode on or off and leaves the
+   * effort level alone. An `effortLevel` that moves the session to a
+   * different level, sent without an `ultracode` key, also turns ultracode
+   * off; send both keys to change the level and keep it on.
    *
    * @param settings - A partial settings object to merge into the flag
    * settings. `effortLevel` also accepts `'max'` (never written to settings
@@ -7596,7 +7591,7 @@ export declare interface Settings {
    */
   httpHookAllowedEnvVars?: string[];
   /**
-   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins Claude Code adopts from a .claude-plugin manifest inside those skills directories, is ignored too; other plugins and managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply.
+   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins no managed setting vouches for, is ignored too. Plugins keep theirs only on an admin-backed channel: host-delivered --plugin-dir plugins, the official marketplace registered from its unpinned anthropics source, claude.ai-synced plugins Anthropic attests, the saved login organization's claude.ai-hosted marketplaces, marketplaces whose registered source managed extraKnownMarketplaces declares or an exact or owner-pinned (owner/*) strictKnownMarketplaces entry names at the path it pins (an npm marketplace source only when the registration and the declared entry pin the same registry, and a settings marketplace source only when every nested npm plugin entry pins one on a bare package name — unpinned, the package resolves through the member's own npm config, and a non-bare spelling packs as an exotic spec the pin does not bind, so nothing an entry names is what was fetched), and npm-direct (package\@npm) plugins whose recorded resolution a registry-pinned managed npm strictKnownMarketplaces entry names (host and path patterns and enabledPlugins ids do not vouch); managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply.
    */
   allowManagedPermissionRulesOnly?: boolean;
   /**
@@ -7776,7 +7771,7 @@ export declare interface Settings {
              */
             version?: string;
             /**
-             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/"); under allowManagedPermissionRulesOnly, an npm marketplace keeps plugin allowed-tools only when both the entry and the registration pin this same registry.
              */
             registry?: string;
           }
@@ -7826,7 +7821,7 @@ export declare interface Settings {
                */
               name: string;
               /**
-               * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+               * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against. Under allowManagedPermissionRulesOnly, a settings marketplace keeps its plugins' allowed-tools only when every npm entry here pins a `registry` on a bare package name; unpinned, the package resolves through the member's own npm config, and a non-bare spelling (an `npm:` alias, a `name\@range`, a URL or git spec) packs as an exotic spec the pin does not bind — either way the marketplace vouches no tool grants.
                */
               source:
                 | string
@@ -8046,7 +8041,7 @@ export declare interface Settings {
              */
             version?: string;
             /**
-             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+             * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/"); under allowManagedPermissionRulesOnly, an npm marketplace keeps plugin allowed-tools only when both the entry and the registration pin this same registry.
              */
             registry?: string;
           }
@@ -8096,7 +8091,7 @@ export declare interface Settings {
                */
               name: string;
               /**
-               * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+               * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against. Under allowManagedPermissionRulesOnly, a settings marketplace keeps its plugins' allowed-tools only when every npm entry here pins a `registry` on a bare package name; unpinned, the package resolves through the member's own npm config, and a non-bare spelling (an `npm:` alias, a `name\@range`, a URL or git spec) packs as an exotic spec the pin does not bind — either way the marketplace vouches no tool grants.
                */
               source:
                 | string
@@ -8311,7 +8306,7 @@ export declare interface Settings {
          */
         version?: string;
         /**
-         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/"); under allowManagedPermissionRulesOnly, an npm marketplace keeps plugin allowed-tools only when both the entry and the registration pin this same registry.
          */
         registry?: string;
       }
@@ -8361,7 +8356,7 @@ export declare interface Settings {
            */
           name: string;
           /**
-           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against. Under allowManagedPermissionRulesOnly, a settings marketplace keeps its plugins' allowed-tools only when every npm entry here pins a `registry` on a bare package name; unpinned, the package resolves through the member's own npm config, and a non-bare spelling (an `npm:` alias, a `name\@range`, a URL or git spec) packs as an exotic spec the pin does not bind — either way the marketplace vouches no tool grants.
            */
           source:
             | string
@@ -8567,7 +8562,7 @@ export declare interface Settings {
          */
         version?: string;
         /**
-         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/"); under allowManagedPermissionRulesOnly, an npm marketplace keeps plugin allowed-tools only when both the entry and the registration pin this same registry.
          */
         registry?: string;
       }
@@ -8617,7 +8612,7 @@ export declare interface Settings {
            */
           name: string;
           /**
-           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against. Under allowManagedPermissionRulesOnly, a settings marketplace keeps its plugins' allowed-tools only when every npm entry here pins a `registry` on a bare package name; unpinned, the package resolves through the member's own npm config, and a non-bare spelling (an `npm:` alias, a `name\@range`, a URL or git spec) packs as an exotic spec the pin does not bind — either way the marketplace vouches no tool grants.
            */
           source:
             | string
@@ -8823,7 +8818,7 @@ export declare interface Settings {
          */
         version?: string;
         /**
-         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/").
+         * Registry URL. When adding a marketplace: a one-off registry override (otherwise your npm configuration decides). In a policy entry: the origin and path prefix the package's RESOLVED tarball URL must fall under (e.g. "https://npm.example.com/api/npm/internal/"); under allowManagedPermissionRulesOnly, an npm marketplace keeps plugin allowed-tools only when both the entry and the registration pin this same registry.
          */
         registry?: string;
       }
@@ -8873,7 +8868,7 @@ export declare interface Settings {
            */
           name: string;
           /**
-           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against.
+           * Where to fetch the plugin from. Must be a remote source — relative paths have no marketplace repository to resolve against. Under allowManagedPermissionRulesOnly, a settings marketplace keeps its plugins' allowed-tools only when every npm entry here pins a `registry` on a bare package name; unpinned, the package resolves through the member's own npm config, and a non-bare spelling (an `npm:` alias, a `name\@range`, a URL or git spec) packs as an exotic spec the pin does not bind — either way the marketplace vouches no tool grants.
            */
           source:
             | string
@@ -9389,7 +9384,7 @@ export declare interface Settings {
     };
   };
   /**
-   * Enable ultracode for the session: xhigh effort plus standing dynamic-workflow orchestration. Session-scoped — typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and an xhigh-capable model.
+   * Enable ultracode for the session: standing dynamic-workflow orchestration at any effort level. Session-scoped — typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and a model that supports ultracode.
    */
   ultracode?: boolean;
   /**
