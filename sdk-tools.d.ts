@@ -131,6 +131,7 @@ export type AgentOutput =
         output_tokens_details?: {
           thinking_tokens?: number | null;
         } | null;
+        fallback_credit?: unknown;
       };
       toolStats?: {
         readCount: number;
@@ -451,6 +452,7 @@ export type ArtifactOutput =
       seq?: number;
       unchanged?: true;
       liveSubscription?: string;
+      pinned?: boolean;
     }
   | {
       artifacts: {
@@ -461,8 +463,10 @@ export type ArtifactOutput =
         rel?: "mine" | "shared";
         external?: true;
         role?: "editor" | "commenter" | "reader" | "viewer";
+        pinned?: boolean;
       }[];
       truncated?: boolean;
+      pins_enabled?: boolean;
       scope?: "shared" | "all";
       external_listed?: true;
     }
@@ -474,6 +478,7 @@ export type ArtifactOutput =
         codeText: string;
         result: string;
         durationMs: number;
+        title?: string;
       };
       artifactRead?: {
         slug: string;
@@ -662,6 +667,14 @@ export type ArtifactOutput =
         id: string;
         deleted: boolean;
       };
+    }
+  | {
+      pin: {
+        action: "pin" | "unpin";
+        url: string;
+        pinned: boolean;
+        title?: string;
+      };
     };
 export type ProjectsOutput =
   | {
@@ -797,7 +810,7 @@ export interface BashInput {
    */
   command: string;
   /**
-   * Optional timeout in milliseconds (max 600000)
+   * Optional timeout in milliseconds (max 600000 for a foreground command)
    */
   timeout?: number;
   /**
@@ -817,7 +830,7 @@ export interface BashInput {
    */
   description?: string;
   /**
-   * Set to true to run this command in the background.
+   * Set to true to run this command in the background. With it, `timeout` limits how long the command may run in the background before it is stopped (default 1800000 ms, max 7200000 ms).
    */
   run_in_background?: boolean;
   /**
@@ -3140,7 +3153,7 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one someone else owns, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path` (or `file_paths` for several in one call). 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one someone else owns, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path` (or `file_paths` for several in one call). 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above. 'pin' adds the artifact at `url` to the user's pinned list in their claude.ai sidebar and 'unpin' removes it (nothing else may accompany either) — private to the user, reversible, and no change to who can see the artifact.
    */
   action?:
     | "publish"
@@ -3153,7 +3166,9 @@ export interface ArtifactInput {
     | "upload_asset"
     | "list_assets"
     | "read_asset"
-    | "delete_asset";
+    | "delete_asset"
+    | "pin"
+    | "unpin";
   /**
    * Path to the .html file to render. Required to publish (the default action). Use a short, distinctive basename — it is the last-resort title when the HTML has no <title> and no `title` parameter is given. For 'upload_asset', the local image, video, PDF, font, stylesheet (CSS), script (JS), or text (CSV, Markdown, JSON, plain text) file to upload.
    */
@@ -3198,6 +3213,10 @@ export interface ArtifactInput {
    * Last-resort overwrite that DISCARDS the newer published version's page — another session's publish, or someone's save from a page that can publish new versions of itself. On a conflict the fix is to merge your changes onto the newer content (handed to you in the rejection, or re-read) and publish again — not force. Pass force:true only when the user has explicitly said to discard that specific version; never to get past a conflict on your own judgment. The tracked baseVersion is still sent; with force:true the server treats it as informational and overwrites, unless it refuses force over a version saved from inside the page. Omit (or false) so a concurrent write conflicts instead of being silently clobbered.
    */
   force?: boolean;
+  /**
+   * publish only: true also pins the published artifact to the user's claude.ai sidebar once it is published — pass it only when the user asked for that; a pin that fails never fails the publish (the result says so).
+   */
+  pin?: boolean;
   /**
    * read_asset: directory to save into — default: this artifact’s folder in your scratchpad directory, where saving needs no approval and which you can Read from. read_asset names the file by the asset id plus the extension for its type; saving to any directory other than the default is an ordinary file save the user may be asked to approve.
    */
