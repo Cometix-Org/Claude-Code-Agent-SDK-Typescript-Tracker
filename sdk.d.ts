@@ -626,6 +626,11 @@ declare namespace coreTypes {
  * Tool calls are bounded by the MCP tool-call timeout — `options.timeout`
  * (ms) for this server, else the MCP_TOOL_TIMEOUT env var, effectively
  * unbounded by default.
+ *
+ * A tool in `options.tools` whose input schema cannot be converted to JSON
+ * Schema is left out of the server's tool list, with one warning naming it (a
+ * process warning with code CLAUDE_SDK_MCP_TOOL_SCHEMA_UNCONVERTIBLE, or
+ * console.warn where there is no process.emitWarning); its other tools load.
  */
 export declare function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,
@@ -2169,12 +2174,18 @@ export declare type Options = {
    */
   pathToClaudeCodeExecutable?: string;
   /**
-   * Permission mode for the session.
+   * Permission mode for the session. When omitted, Claude Code picks the
+   * starting mode as it does for `claude -p`: a `permissions.defaultMode`
+   * from the settings the session loads, else `'auto'` where that is the
+   * default (and `'default'` where auto mode is unavailable). Pass
+   * `'default'` to keep manual approvals through `canUseTool` (on a cloud
+   * create or attach, `'default'` leaves the session's own mode).
    * - `'default'` - Standard permission behavior, prompts for dangerous operations
    * - `'acceptEdits'` - Auto-accept file edit operations
    * - `'bypassPermissions'` - Bypass all permission checks (requires `allowDangerouslySkipPermissions`)
    * - `'plan'` - Planning mode, no execution of tools
    * - `'dontAsk'` - Don't prompt for permissions, deny if not pre-approved
+   * - `'auto'` - A model classifier approves or denies each call, prompting through `canUseTool` when it cannot decide
    */
   permissionMode?: PermissionMode;
   /**
@@ -4803,7 +4814,7 @@ declare type SDKControlInitializeRequest = {
     }
   >;
   /**
-   * Optional, keyed by sdk server name (each key should also appear in sdkMcpServers; other keys are ignored). Unlike sdkMcpServerConfigs — host-declared settings the CLI keeps for the server's lifetime, same shape inline on mcp_set_servers — this is a one-shot cache of the servers' own handshake output: sent on initialize only, consumed by the connect that follows it, never retained. MCP handshake results the host already obtained from its in-process servers by delivering initialize + notifications/initialized (+ tools/list) to them itself before writing this request. For each such server the CLI answers its own MCP client's initialize and first tools/list from these results and skips the notifications/initialized round trip, so registering N in-process servers costs no mcp_message control round trips before the first turn; tools/call and everything after the handshake still flow as mcp_message exactly as before. The host MUST keep answering mcp_message for every server as if this field were absent: a CLI that predates the field ignores it and performs the full per-server handshake over the control channel, and a newer CLI does the same for any server whose entry is missing or malformed, whose initializeResult.protocolVersion differs from the MCP protocol version the CLI's client requests, or that the CLI had already connected. Entries apply only to the connect that follows this initialize; they are never retained for later reconnects. Absent (older hosts, the Python SDK, browser clients): unchanged behaviour.
+   * Optional, keyed by sdk server name (each key should also appear in sdkMcpServers; other keys are ignored). Unlike sdkMcpServerConfigs — host-declared settings the CLI keeps for the server's lifetime, same shape inline on mcp_set_servers — this is a one-shot cache of the servers' own handshake output: sent on initialize only, consumed by the connect that follows it, never retained. MCP handshake results the host already obtained from its in-process servers by delivering initialize + notifications/initialized (+ tools/list) to them itself before writing this request. For each such server the CLI answers its own MCP client's initialize and first tools/list from these results and skips the notifications/initialized round trip, so registering N in-process servers costs no mcp_message control round trips before the first turn; tools/call and everything after the handshake still flow as mcp_message exactly as before. The host MUST keep answering mcp_message for every server as if this field were absent: a CLI that predates the field ignores it and performs the full per-server handshake over the control channel, and a newer CLI does the same for any server whose entry is missing or malformed, whose initializeResult.protocolVersion differs from the MCP protocol version the CLI's client requests, or that the CLI had already connected. Entries apply only to the connect that follows this initialize; they are never retained for later reconnects. Over a remote session transport the CLI uses the field only when sdkMcpServerManifestsOrigin is set (see that field); a host on the CLI's own stream-json stdio transport needs no marker. sdk_mcp_manifests_parked in the response reports what became of each entry. Absent (older hosts, the Python SDK, browser clients): unchanged behaviour.
    */
   sdkMcpServerManifests?: Record<
     string,
@@ -4818,6 +4829,10 @@ declare type SDKControlInitializeRequest = {
       toolsListResult?: Record<string, unknown>;
     }
   >;
+  /**
+   * The host's statement that it composed this request's sdkMcpServerManifests for this very send, from its servers' current state. Needed only by a host that reaches the CLI over a remote session transport, where an unmarked sdkMcpServerManifests is not used (a recorded registration could be handed to a later worker). The CLI also refuses a marked manifest whose session-stream frame is more than five minutes old, so capture the manifests when writing the request, not earlier; and it may still decline them when remote manifests are switched off in that CLI, or on any session where the session service has not told the CLI in the last five minutes that only the account owning the session can send events to it. sdk_mcp_manifests_parked in the response says what became of each entry. A value this CLI does not know counts as no marker. A host on the CLI's own stream-json stdio transport may omit this field; a host writing to the stdin of a remote-session worker cannot use manifests at all.
+   */
+  sdkMcpServerManifestsOrigin?: "host_per_send";
   jsonSchema?: Record<string, unknown>;
   systemPrompt?: string[];
   appendSystemPrompt?: string;
@@ -4890,6 +4905,18 @@ export declare type SDKControlInitializeResponse = {
    * Whether every plugin this initialize listed is loaded: true when each one is among the plugins the process loaded at launch (from `plugins` under --await-initialize, or from --plugin-dir), so a re-sent initialize naming the launch set also reads true; false otherwise. The `plugins` field never loads anything after launch. Absent when the request listed no plugins, and on CLIs that predate the field (those never read `plugins`).
    */
   plugins_applied?: boolean;
+
+  /**
+   * What became of each entry of this initialize's sdkMcpServerManifests, keyed by sdk server name, for the entries whose name is in sdkMcpServers. 'parked': kept for the connect that follows this reply, which answers the server's MCP initialize and first tools/list from it (a later failure to replay shows up as live mcp_message frames, as when no entry was sent). 'already_connected': this CLI already had a live client for the server. 'protocol_version_mismatch': initializeResult.protocolVersion is not the version this CLI's client requests. 'malformed': the entry is not of the documented shape, reported whether or not manifests were honoured (every name in sdkMcpServers gets this when the field itself is not an object). 'not_honoured': the CLI did not use the entry: manifests or remote manifests are switched off in this CLI, the session service has not told this remote-session worker in the last five minutes that only the account owning the session can send events to it, or the request reached such a worker other than over its session stream (nothing for the host to change in any of these cases); or it came over the session stream without sdkMcpServerManifestsOrigin or on a frame too old to trust (the host's to fix). Absent when the request carried no sdkMcpServerManifests or named no sdkMcpServers, and on CLIs that predate the field.
+   */
+  sdk_mcp_manifests_parked?: Record<
+    string,
+    | "parked"
+    | "already_connected"
+    | "protocol_version_mismatch"
+    | "malformed"
+    | "not_honoured"
+  >;
 
   fast_mode_state?: coreTypes.FastModeState;
   fast_mode_disabled_reason?: coreTypes.FastModeDisabledReason;
@@ -5400,7 +5427,7 @@ declare type SDKControlSetColorRequest = {
 };
 
 /**
- * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. When max_thinking_tokens is omitted, the budget is left as it is, so a request that only changes thinking_display can leave the field out. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept. 'highlights' returns one short title per stretch of thinking instead of a prose summary. The API accepts it only from Claude Code sessions that Anthropic hosts; if the API rejects it, the session sends 'omitted' (no thinking text) in its place from then on. A request for 'highlights' gets an error reply after such a rejection, on Amazon Bedrock, Google Vertex AI or another provider without Anthropic's first-party beta features, when experimental betas are off (CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS or organization policy), or on a Claude 3 model (except on Microsoft Foundry). The error names which of these it was; the display stays as it was, and max_thinking_tokens still applies when the request has it.
+ * Sets the maximum number of thinking tokens for extended thinking. When max_thinking_tokens is null, thinking resets to the session default: any mid-session budget override is cleared (back to the spawn-time budget, if one was set), and thinking stays off for sessions that have it disabled. When max_thinking_tokens is omitted, the budget is left as it is, so a request that only changes thinking_display can leave the field out. thinking_display optionally sets the thinking display mode for the rest of the session: a value replaces the session display mode, null clears that override so Claude Code's default display handling applies again, and when omitted the display mode from session start (--thinking-display) is kept. 'highlights' returns one short title per stretch of thinking instead of a prose summary. The API accepts it only from Claude Code sessions that Anthropic hosts; if the API rejects it, the session sends 'omitted' (no thinking text) in its place from then on. A request for 'highlights' gets an error reply after such a rejection, on Amazon Bedrock, Google Vertex AI or another provider to which Claude Code sends no first-party-only beta features, when experimental betas are off (CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS or organization policy), or on a Claude 3 model (except on Microsoft Foundry). The error names which of these it was; the display stays as it was, and max_thinking_tokens still applies when the request has it.
  */
 declare type SDKControlSetMaxThinkingTokensRequest = {
   subtype: "set_max_thinking_tokens";
@@ -6160,6 +6187,7 @@ export declare type SDKResultSuccess = {
   resume_reason?: string;
   local_command?: string;
   request_sent_wall_ms?: number;
+
   first_content_frame_ms?: number;
   first_stream_post_ms?: number;
   first_stream_post_ack_ms?: number;
