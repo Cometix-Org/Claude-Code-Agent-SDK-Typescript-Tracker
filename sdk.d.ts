@@ -1370,7 +1370,7 @@ export declare type McpHttpServerConfig = {
   timeout?: number;
 
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. When false, all tools from this server are deferred behind tool search. Default: tools are deferred when tool search is enabled. As a side effect, true also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1516,7 +1516,7 @@ export declare type McpSSEServerConfig = {
   timeout?: number;
 
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. When false, all tools from this server are deferred behind tool search. Default: tools are deferred when tool search is enabled. As a side effect, true also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -1531,7 +1531,7 @@ export declare type McpStdioServerConfig = {
    */
   timeout?: number;
   /**
-   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. Default: tools are deferred when tool search is enabled. As a side effect this also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
+   * When true, all tools from this server are always included in the prompt and never deferred behind tool search, except a tool the server itself lists with _meta anthropic/alwaysLoad set to false. Equivalent to setting defer_loading: false on the API. When false, all tools from this server are deferred behind tool search. Default: tools are deferred when tool search is enabled. As a side effect, true also blocks startup until the server is connected (capped at the standard 5s connect timeout) even though MCP startup is otherwise non-blocking by default, since the tools must be present when the turn-1 prompt is built.
    */
   alwaysLoad?: boolean;
 };
@@ -4561,6 +4561,35 @@ declare type SDKControlGetSettingsRequest = {
 };
 
 /**
+ * Reads the end of one background shell or Monitor task's output: at most the last 8 KiB the command wrote, the same tail the terminal's /tasks detail view reads. Read-only and no model turn; a host polls it while the task runs, and can read it once more after the task ends. The output is whatever the command printed, escape sequences included: render it as plain text. Refused for a task_id that is neither a shell or Monitor task of this session nor shaped like one (an ended task's id whose file is gone reads as empty), and on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker).
+ */
+declare type SDKControlGetTaskOutputRequest = {
+  subtype: "get_task_output";
+  /**
+   * A shell or Monitor task of this session, running or ended: the task_id from task_started or background_tasks_changed.
+   */
+  task_id: string;
+};
+
+/**
+ * Success payload answering get_task_output.
+ */
+declare type SDKControlGetTaskOutputResponse = {
+  /**
+   * The end of the output, decoded as UTF-8; empty when the command has written nothing yet.
+   */
+  output: string;
+  /**
+   * The size of the whole output in bytes.
+   */
+  total_bytes: number;
+  /**
+   * Whether output holds only the end of a longer output (the last 8 KiB).
+   */
+  truncated: boolean;
+};
+
+/**
  * Requests the structured /usage data: session cost/usage totals plus claude.ai plan rate-limit utilization when available. Experimental — the response shape may change.
  */
 declare type SDKControlGetUsageRequest = {
@@ -4942,6 +4971,7 @@ export declare type SDKControlInterruptResponse = {
    * Uuids of async user messages that survive this interrupt: commands still in the queue, plus any batch already dequeued for the imminent turn but not yet reachable by the abort. An interrupt — plain or cancel_queued:true — that lands during the FIRST-command prewait window (before the first turn of the session has armed a controller) is additionally LATCHED, scoped to the user-intent work pending at that instant — the batch already dequeued and parked for the imminent turn, plus the user-intent main-thread commands then in the queue (the work this list enumerates): the first turn to arm that carries any of that doomed work starts already aborted, exactly once, so the listed prewait batch is delivered into an immediately-aborted turn, its frames and result flowing through the normal abort path, instead of running to completion. A turn carrying none of it arms live and leaves the latch waiting: a system delivery turn (for example a replayed host event), or a prompt enqueued after the interrupt — post-interrupt work is never coalesced with the doomed work and never dies to the latch, so the Stop kills exactly what this receipt listed. The latch is released when the doomed work is retired without arming: if a parked prewait batch is entirely cancelled, the latch is released even when other queued commands remain (those arm and run normally); with nothing parked, it is released once none of the doomed commands remains queued — work enqueued after the interrupt neither holds it up nor is aborted by it. Survivors that ride any later turn run normally. These WILL run (subject to that latch) unless cancelled first (or unless the request set cancel_queued:true, in which case every uuid-stamped survivor this process holds is removed, emitted a terminal `cancelled` synchronously, and listed under `cancelled` instead — leaving here only what a client driving a hosted session can no longer recall: a send already in flight to that session, or the first prompt the session was created with; a send that client still holds on its own machine behind a send gate (it waits there until that session is ready to take it) has not gone out, so it is withdrawn and listed under `cancelled` like a queued one, and cancel_async_message can withdraw it too, while a plain interrupt leaves it held and lists it here). Cancellation granularity: uuids still in the queue are individually cancellable via cancel_async_message; once a batch is dequeued and coalesced into one turn, cancelling a NON-representative member uuid is a no-op (its content still runs), while cancelling the batch-representative uuid drops the WHOLE coalesced batch — in both cases the cancel response reports cancelled:false because the message was no longer in the queue. Coverage caveats: only uuid-STAMPED messages appear (a message enqueued without a uuid still runs but is never listed, so [] does not mean "nothing will run"); only main-thread messages are listed (subagent-addressed messages are out of scope); and the list may include internally-enqueued uuids the client never sent (cron triggers, auto-resume continuations) — ignore unknown uuids rather than treating them as an error. Ordering: on a clean interrupt this receipt is written before the interrupted turn result; a turn that crashes during interrupt handling emits its error result on a direct-write path that may precede the receipt. Snapshot is taken synchronously with abort processing — probing the queue after the interrupted result instead always loses the race against the drain loop, which starts the next queued turn immediately.
    */
   still_queued: string[];
+
   /**
    * Present only when the request set cancel_queued:true — uuids of main-thread commands cancelled by this interrupt: every survivor that would otherwise have appeared under `still_queued`, including any uuid that was mid-fold at the interrupt instant (this request also aborts, so the fold never delivers it). Each listed uuid has been removed (queue-resident) or marked cancel-pending (the first-command prewait window, closed by the drain loop's backstop) and emits a terminal 'cancelled' lifecycle synchronously at the first such interrupt (a repeat interrupt over the same parked batch re-lists the uuid idempotently without re-emitting); none will run. Same coverage caveats as `still_queued` (uuid-stamped main-thread only; internally-enqueued uuids may appear). Advertised by the `interrupt_cancel_queued_v1` capability.
    */
@@ -5348,6 +5378,7 @@ declare type SDKControlRequestInner =
   | SDKControlMcpToggleRequest
   | SDKControlStopTaskRequest
   | SDKControlBackgroundTasksRequest
+  | SDKControlGetTaskOutputRequest
   | SDKControlApplyFlagSettingsRequest
   | SDKControlGetSettingsRequest
   | SDKControlGetHooksListingRequest
@@ -6197,6 +6228,9 @@ export declare type SDKResultSuccess = {
   first_stream_post_wall_ms?: number;
 
   first_text_post_ms?: number;
+  first_text_post_queue_wait_ms?: number;
+  first_text_post_queued_behind?:
+    "durable_post" | "ephemeral_post" | "retry_backoff" | "hold" | "none";
   first_text_post_wall_ms?: number;
   time_to_request_from_spawn_ms?: number;
   warm_spare_claimed?: boolean;
@@ -6671,7 +6705,7 @@ export declare type SDKUserMessage = {
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
   /**
-   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text. A call that stepped aside for a message the user sent (today a WebFetch or WebSearch call) carries `{ detachedToolCall: true }` in place of its Output: the call is still running, and its result reaches the model in a later turn.
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
@@ -6720,7 +6754,7 @@ export declare type SDKUserMessageReplay = {
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
   /**
-   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text.
+   * Structured tool output — the tool's full Output object, not the string content sent to the model. The shape is per-tool, keyed by the matching tool_use block's name (see the *Output types in toolTypes); MCP and dynamic tools carry their own shapes, so the field stays unknown-typed. For the Agent/Task tool the completed shape is the subagent's final report without the model-directed agentId/usage trailer, plus run totals — render from it instead of parsing the tool_result text. A call that stepped aside for a message the user sent (today a WebFetch or WebSearch call) carries `{ detachedToolCall: true }` in place of its Output: the call is still running, and its result reaches the model in a later turn.
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
@@ -7914,7 +7948,7 @@ export declare interface Settings {
                      */
                     url: string;
                     /**
-                     * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                     * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Checked out sparsely — over https or ssh as a partial clone (--filter=tree:0) — to minimize bandwidth for monorepos.
                      */
                     path: string;
                     /**
@@ -8184,7 +8218,7 @@ export declare interface Settings {
                      */
                     url: string;
                     /**
-                     * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                     * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Checked out sparsely — over https or ssh as a partial clone (--filter=tree:0) — to minimize bandwidth for monorepos.
                      */
                     path: string;
                     /**
@@ -8449,7 +8483,7 @@ export declare interface Settings {
                  */
                 url: string;
                 /**
-                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Checked out sparsely — over https or ssh as a partial clone (--filter=tree:0) — to minimize bandwidth for monorepos.
                  */
                 path: string;
                 /**
@@ -8705,7 +8739,7 @@ export declare interface Settings {
                  */
                 url: string;
                 /**
-                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Checked out sparsely — over https or ssh as a partial clone (--filter=tree:0) — to minimize bandwidth for monorepos.
                  */
                 path: string;
                 /**
@@ -8961,7 +8995,7 @@ export declare interface Settings {
                  */
                 url: string;
                 /**
-                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.
+                 * Subdirectory within the repo containing the plugin (e.g., "tools/claude-plugin"). Checked out sparsely — over https or ssh as a partial clone (--filter=tree:0) — to minimize bandwidth for monorepos.
                  */
                 path: string;
                 /**
