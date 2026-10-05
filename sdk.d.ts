@@ -3992,7 +3992,7 @@ export declare type SDKAssistantMessage = {
   session_id: string;
   request_id?: string;
   /**
-   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on an assistant message each time that send changes — the turn's FIRST top-level assistant message (which may carry only a thinking block, or be a synthetic API-error message), and then, for a turn started by a synthetic (meta) prompt, the first assistant message after each queued user message folded in mid-turn (the fold takes the echo over); with --include-partial-messages the turn's first non-ping stream event is stamped too, independently (see SDKPartialAssistantMessage), so the same uuid may appear on both — either binds the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps once per frame kind. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself — except that the boot-time rescue turn re-running a turn a worker restart interrupted mid-way stamps the interrupted turn's own last user prompt (with resume_reason), the send that re-run answers; either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame of each kind after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
+   * Client uuid of the user message this turn is answering (submitMessage options.uuid), stamped on an assistant message each time that send changes — the turn's FIRST top-level assistant message (which may carry only a thinking block, or be a synthetic API-error message), and then, for a turn started by a synthetic (meta) prompt, the first assistant message after each queued user message folded in mid-turn (the fold takes the echo over); with --include-partial-messages the turn's first non-ping stream event is stamped too, independently (see SDKPartialAssistantMessage), so the same uuid may appear on both — either binds the reply to the send it answers without waiting for the result; the server keeps the first stamp it sees per uuid. A turn started by a typed prompt keeps that uuid for its whole turn, so it stamps once per frame kind. A meta turn's own uuid is stamped only when the host vouches it is the client event's own (on a hosted session, the uuid the session server persisted: delivered content such as a Slack owner ping, a Slack-bot observation or a client-injected synthetic turn), never for a prompt the CLI minted itself — except that a turn carrying resume_reason, such as the boot-time rescue turn re-running a turn a worker restart interrupted mid-way, stamps the interrupted turn's own last user prompt, the send it answers, where that can be vouched for (a turn that goes on from a permission answer or from in-flight tool calls may first re-send, unstamped, the assistant message that made those calls); either way a user message folded into a meta turn takes the echo over from it (the rescue turn absorbing messages sent while the session was down; a bot-observation turn absorbing a human's post), and the first reply frame of each kind after that fold carries the folded message's uuid — the first reply that message got. Wrapper-level sibling — never inside `message.content` — so it is not replayed to the model. Absent on every other frame of the turn, on subagent frames (parent_tool_use_id set), on turns that neither had a client uuid nor folded a user message in, and from older producers.
    */
   user_message_uuid?: string;
   /**
@@ -4000,7 +4000,7 @@ export declare type SDKAssistantMessage = {
    */
   user_message_uuids?: string[];
   /**
-   * Why this frame's turn is the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a re-run names the interrupted turn's own last user prompt), so a consumer can tell the re-run's first reply from the interrupted attempt's. Absent on every other turn, on thinking_tokens frames, and from older producers.
+   * Why this frame's turn continues one that a worker restart interrupted. Such a turn is the automatic re-run of the interrupted turn (CLAUDE_CODE_RESUME_INTERRUPTED_TURN), or one that goes on from the answer to the permission prompt the new worker took over, or from that turn's tool calls still in flight. The value is the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a turn names the interrupted turn's own last user prompt), so a consumer can tell its first reply from the interrupted attempt's. Absent on every other turn (also one that goes on from the answer to any other permission prompt), on thinking_tokens frames, and from older producers.
    */
   resume_reason?: string;
   /**
@@ -4900,6 +4900,7 @@ declare type SDKControlInitializeRequest = {
    * Dialog kinds (request_user_dialog `dialog_kind` values) this consumer's onUserDialog can actually render. The CLI treats ABSENCE as 'cannot display' and fails closed: without the kind declared here, a dialog-gated flow degrades to its no-dialog behavior (for 'refusal_fallback_prompt', the classic refusal error) instead of parking a dialog the consumer may mishandle. First-attached-client-wins on multi-client sessions; later initializes do not change it.
    */
   supportedDialogKinds?: string[];
+
   /**
    * Declares that this consumer renders a per-task stop control wired to the `stop_task` control request, so the user can stop an individual background task. When declared, an interrupt on an open-input (interactive stream-json) session spares running background agents/workflows (Stop only aborts the turn). Closed-input exception: a one-shot run (string prompt / -p closes stdin) still kills hold-back tasks at the held-result release regardless of the declaration — with stdin closed, a stop_task control could never be delivered, so the fail-closed kill stands. ABSENCE also fails closed: the interrupt kills background tasks, since the user would otherwise have no way to stop a runaway one. First-attached-client-wins on multi-client sessions; later initializes do not change it.
    */
@@ -5948,7 +5949,7 @@ export declare type SDKPartialAssistantMessage = {
    */
   user_message_uuids?: string[];
   /**
-   * Why this frame's turn is the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a re-run names the interrupted turn's own last user prompt), so a consumer can tell the re-run's first reply from the interrupted attempt's. Absent on every other turn, on thinking_tokens frames, and from older producers.
+   * Why this frame's turn continues one that a worker restart interrupted. Such a turn is the automatic re-run of the interrupted turn (CLAUDE_CODE_RESUME_INTERRUPTED_TURN), or one that goes on from the answer to the permission prompt the new worker took over, or from that turn's tool calls still in flight. The value is the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Stamped on the same reply frames as user_message_uuid (which on such a turn names the interrupted turn's own last user prompt), so a consumer can tell its first reply from the interrupted attempt's. Absent on every other turn (also one that goes on from the answer to any other permission prompt), on thinking_tokens frames, and from older producers.
    */
   resume_reason?: string;
 };
@@ -6189,7 +6190,7 @@ export declare type SDKResultError = {
    */
   user_message_uuids?: string[];
   /**
-   * Why this turn was the automatic re-run of a turn a worker restart interrupted (CLAUDE_CODE_RESUME_INTERRUPTED_TURN): the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Present on a headless re-run's result, success or error, with or without an echo (a re-run whose opener could not be vouched still carries the reason); absent on every other turn, on the Remote Control bridge's per-turn synthetic results, and from older producers.
+   * Why this turn continued one that a worker restart interrupted. Such a turn is the automatic re-run of the interrupted turn (CLAUDE_CODE_RESUME_INTERRUPTED_TURN), or one that goes on from the answer to the permission prompt the new worker took over, or from that turn's tool calls still in flight. The value is the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Present on such a headless turn's result, success or error, with or without an echo (a turn whose opening user prompt could not be vouched for still carries the reason); absent on every other turn (also one that goes on from the answer to any other permission prompt), on the Remote Control bridge's per-turn synthetic results, and from older producers.
    */
   resume_reason?: string;
   terminal_reason?: TerminalReason;
@@ -7317,7 +7318,7 @@ export declare interface Settings {
    */
   disabledMcpjsonServers?: string[];
   /**
-   * When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected. Only gates auto-fetched connectors — a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) still follows the normal MCP config trust flow. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.
+   * When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected, and a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) does not connect either. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.
    */
   disableClaudeAiConnectors?: boolean;
   /**
@@ -9762,6 +9763,10 @@ export declare interface Settings {
    * Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on.
    */
   precomputeCompactionEnabled?: boolean;
+  /**
+   * Set to false to stop Claude Code from compacting a long conversation while the session is idle. Setting it to true does not turn idle compaction on.
+   */
+  idleCompaction?: boolean;
   /**
    * When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead.
    */

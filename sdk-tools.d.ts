@@ -44,6 +44,7 @@ export type ToolInputSchemas =
   | ScheduleWakeupInput
   | RemoteTriggerInput
   | ShowOnboardingRolePickerInput
+  | OfferChromeSetupInput
   | ReadNotificationsInput
   | MonitorInput
   | ProposeSkillsInput
@@ -84,6 +85,7 @@ export type ToolOutputSchemas =
   | ArtifactOutput
   | RemoteTriggerOutput
   | ShowOnboardingRolePickerOutput
+  | OfferChromeSetupOutput
   | ReadNotificationsOutput
   | ScheduleWakeupOutput
   | MonitorOutput
@@ -1103,6 +1105,10 @@ export interface WebFetchInput {
    * The prompt to run on the fetched content
    */
   prompt: string;
+  /**
+   * Character position in the page text to start reading from. Use it to read on through a page too long for one call, with the value the previous result gave.
+   */
+  offset?: number;
 }
 export interface WebSearchInput {
   /**
@@ -2968,6 +2974,12 @@ export interface RemoteTriggerInput {
   };
 }
 export interface ShowOnboardingRolePickerInput {}
+export interface OfferChromeSetupInput {
+  /**
+   * A short phrase naming what the task needs the user's own browser for.
+   */
+  reason?: string;
+}
 export interface ReadNotificationsInput {}
 export interface MonitorInput {
   /**
@@ -4036,6 +4048,9 @@ export interface RemoteTriggerOutput {
 export interface ShowOnboardingRolePickerOutput {
   role?: string;
   dismissed?: boolean;
+}
+export interface OfferChromeSetupOutput {
+  outcome: "connected" | "not_now" | "no_attempt_yet";
 }
 export interface ReadNotificationsOutput {
   notifications: {
