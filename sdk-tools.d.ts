@@ -468,6 +468,8 @@ export type ArtifactOutput =
         pinned?: boolean;
       }[];
       truncated?: boolean;
+      total?: number;
+      total_at_least?: true;
       pins_enabled?: boolean;
       scope?: "shared" | "all";
       external_listed?: true;
@@ -779,6 +781,10 @@ export interface AgentInput {
    * Optional model override for this agent. Takes precedence over the agent definition's model frontmatter and the configured default subagent model. If omitted, uses the agent definition's model, else the default (inherits from the parent unless a default subagent model is configured). Ignored for subagent_type: "fork" — forks always inherit the parent model.
    */
   model?: "sonnet" | "opus" | "haiku" | "fable";
+  /**
+   * Reasoning effort for this agent. Set this ONLY when the user, or instructions such as CLAUDE.md or a skill, explicitly ask that this agent or delegated work run at a specific effort level, never on your own judgment; otherwise omit it and the agent runs at its usual effort.
+   */
+  effort?: "low" | "medium" | "high" | "xhigh" | "max";
   /**
    * Agents run in the background by default; you will be notified when one completes. Set to false only when your very next action depends on this agent's result and nothing else could usefully happen while it runs — otherwise leave it in the background so the user can hand you other work.
    */
@@ -3324,7 +3330,7 @@ export interface BashOutput {
    */
   backgroundCwdHint?: string;
   /**
-   * True when this backgrounded command is owned by a synchronous subagent and is therefore terminated when that agent gives its final response; absent when the command survives (main loop, async subagents)
+   * True when this backgrounded command is terminated at its caller's final response, so no completion notification can follow (a synchronous subagent's command, or a headless session that takes no further input and is not waiting for background commands); absent when the command survives
    */
   backgroundEndsWithFinalResponse?: true;
   /**
@@ -4070,11 +4076,19 @@ export interface ReadNotificationsOutput {
      * Verbatim notification body.
      */
     content: string;
+    /**
+     * RFC3339 timestamp, by this machine's clock, of when the notification reached this session's queue. Missing from results saved before this field existed.
+     */
+    arrived_at?: string;
   }[];
   /**
    * Notifications still queued after this drain (drains are size-budgeted); call the tool again to read them.
    */
   remaining: number;
+  /**
+   * RFC3339 timestamp, by this machine's clock, of when this call read the queue. Missing from results saved before this field existed.
+   */
+  read_at?: string;
 }
 export interface ScheduleWakeupOutput {
   /**

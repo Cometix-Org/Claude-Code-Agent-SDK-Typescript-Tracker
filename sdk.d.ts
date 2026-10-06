@@ -4016,6 +4016,10 @@ export declare type SDKAssistantMessage = {
    */
   aborted?: true;
   /**
+   * ID of the subagent that produced this message: the `task_id` of its task events, unchanged when the subagent is resumed. Absent on main-thread messages.
+   */
+  agent_id?: string;
+  /**
    * Subagent type that produced this message.
    */
   subagent_type?: string;
@@ -4064,7 +4068,7 @@ export declare type SDKAuthStatusMessage = {
 };
 
 /**
- * The full set of live background tasks, emitted whenever membership changes (start, completion, kill, a foreground agent being backgrounded) or an entry's `ambient` flag flips. A level signal, unlike the task_started/task_notification edge bookends: consumers that only need 'is background work running' should replace their set with each payload rather than pairing edges, so a missed bookend cannot wedge a stale running indicator. Ordering relative to the bookends for the same transition is unspecified (in practice the level precedes them) and the payload carries ids only, so do not correlate it with the edge stream. The level is per-process: nothing is emitted at startup, so consumers must reset to the empty set whenever the session's CLI process (re)starts and let the next membership change repopulate it. A host that re-initializes an already-running process (a repeated `initialize` control request, e.g. after reconnecting) is sent a snapshot of the current set right behind the success response to that request, even when it is empty, so it need not wait for a change; CLIs that predate this send nothing there.
+ * The full set of live background tasks, emitted whenever membership changes (start, completion, kill, a foreground agent being backgrounded) or an entry's `ambient` flag or `parent_task_id` changes. A level signal, unlike the task_started/task_notification edge bookends: consumers that only need 'is background work running' should replace their set with each payload rather than pairing edges, so a missed bookend cannot wedge a stale running indicator. Ordering relative to the bookends for the same transition is unspecified (in practice a task that starts in the background joins the level before its task_started, and a finishing task leaves it after its task_updated and task_notification) and the payload carries ids only, so do not correlate it with the edge stream. The level is per-process: nothing is emitted at startup, so consumers must reset to the empty set whenever the session's CLI process (re)starts and let the next membership change repopulate it. A host that re-initializes an already-running process (a repeated `initialize` control request, e.g. after reconnecting) is sent a snapshot of the current set right behind the success response to that request, even when it is empty, so it need not wait for a change; CLIs that predate this send nothing there.
  */
 export declare type SDKBackgroundTasksChangedMessage = {
   type: "system";
@@ -4074,8 +4078,16 @@ export declare type SDKBackgroundTasksChangedMessage = {
    */
   tasks: {
     task_id: string;
+    /**
+     * Id of one run of the task: equal on every task_* event, background_tasks_changed entry and saved notification (its origin.runId) of that run. A resumed task keeps its task_id and gets a new one. The run ids of one task sort, by plain string comparison, in the order the runs opened; a frame that names a run sorting before the one a reader shows is late. Nothing else about the format is promised. Absent for a task this process did not register, and from CLIs that predate it.
+     */
+    run_id?: string;
     task_type: string;
     description: string;
+    /**
+     * task_id of the subagent (local_agent) task whose agent launched this subagent, shell, monitor or workflow task. Absent when the launcher is the main thread, has no task_id of its own (a teammate, an agent inside a workflow), or is no longer tracked. A resumed subagent keeps its original parent. The parent may be a foreground or already-ended task, so treat an unknown id as no parent.
+     */
+    parent_task_id?: string;
     /**
      * True for tasks that are not activity (every skip_transcript task, plus every live-update watcher, requested or auto-started); hosts should exclude them from activity indicators.
      */
@@ -5214,7 +5226,7 @@ export declare type SDKControlPermissionRulesState = {
 };
 
 /**
- * Read a file from the session filesystem for the remote sidebar viewer. Path is resolved against cwd and gated by the same read-permission rules as the Read tool.
+ * Read a file from the session filesystem for the remote sidebar viewer. Path is resolved against cwd by default and gated by the same read-permission rules as the Read tool.
  */
 declare type SDKControlReadFileRequest = {
   subtype: "read_file";
@@ -5823,6 +5835,11 @@ export declare type SDKMessageOrigin =
        * On a 'scheduled-trigger' delivery, why it fired: a short lowercase token such as 'scheduled', 'manual', 'retry', 'catch_up' or 'api'. Set by the server for cloud routines, or declared by a local host for its own scheduled runs, which is honored only in a process the host started with CLAUDE_CODE_HOST_SCHEDULED_RUN=1 (a local host's value is kept only if it is 1 to 32 lowercase letters or underscores); absent when neither sent one.
        */
       fireReason?: string;
+
+      /**
+       * On a background task's own notification: the run_id its task_* events carried, as of when the notification was queued. Not part of the text the model reads.
+       */
+      runId?: string;
     }
   | {
       kind: "coordinator";
@@ -6474,6 +6491,10 @@ export declare type SDKTaskNotificationMessage = {
   type: "system";
   subtype: "task_notification";
   task_id: string;
+  /**
+   * Id of one run of the task: equal on every task_* event, background_tasks_changed entry and saved notification (its origin.runId) of that run. A resumed task keeps its task_id and gets a new one. The run ids of one task sort, by plain string comparison, in the order the runs opened; a frame that names a run sorting before the one a reader shows is late. Nothing else about the format is promised. Absent for a task this process did not register, and from CLIs that predate it.
+   */
+  run_id?: string;
   tool_use_id?: string;
   status: "completed" | "failed" | "stopped";
   /**
@@ -6491,6 +6512,7 @@ export declare type SDKTaskNotificationMessage = {
    * CLI-owned: for a backgrounded MCP task (task_type mcp_task) that completed, the `resource_link` content blocks of its final result — the files it returned by reference — collected from the raw result before the CLI renders it as the text the model reads. A backgrounded task's tool_result is the placeholder text and its real result arrives as this notification, so this is where a host learns which files that tool call produced; join to the originating call via tool_use_id. Same fields and caps as tool_use_result.resourceLinks (at most 50 links, 64 KiB serialized), absent when the result had none or the task is any other type. Never populated from the server's _meta.
    */
   resource_links?: SDKMcpResourceLink[];
+
   skip_transcript?: boolean;
   /**
    * True for tasks that are not activity (every skip_transcript task, plus every live-update watcher, requested or auto-started); hosts should exclude them from activity indicators.
@@ -6504,6 +6526,10 @@ export declare type SDKTaskProgressMessage = {
   type: "system";
   subtype: "task_progress";
   task_id: string;
+  /**
+   * Id of one run of the task: equal on every task_* event, background_tasks_changed entry and saved notification (its origin.runId) of that run. A resumed task keeps its task_id and gets a new one. The run ids of one task sort, by plain string comparison, in the order the runs opened; a frame that names a run sorting before the one a reader shows is late. Nothing else about the format is promised. Absent for a task this process did not register, and from CLIs that predate it.
+   */
+  run_id?: string;
   tool_use_id?: string;
   description: string;
   /**
@@ -6529,6 +6555,10 @@ export declare type SDKTaskStartedMessage = {
   type: "system";
   subtype: "task_started";
   task_id: string;
+  /**
+   * Id of one run of the task: equal on every task_* event, background_tasks_changed entry and saved notification (its origin.runId) of that run. A resumed task keeps its task_id and gets a new one. The run ids of one task sort, by plain string comparison, in the order the runs opened; a frame that names a run sorting before the one a reader shows is late. Nothing else about the format is promised. Absent for a task this process did not register, and from CLIs that predate it.
+   */
+  run_id?: string;
   tool_use_id?: string;
   description: string;
   /**
@@ -6543,6 +6573,10 @@ export declare type SDKTaskStartedMessage = {
    * Nesting depth of a spawned subagent (local_agent) task: 1 for a top-level spawn, N+1 when spawned from inside a depth-N agent. Not set on other tasks.
    */
   spawn_depth?: number;
+  /**
+   * task_id of the subagent (local_agent) task whose agent launched this subagent, shell, monitor or workflow task. Absent when the launcher is the main thread, has no task_id of its own (a teammate, an agent inside a workflow), or is no longer tracked. A resumed subagent keeps its original parent. The parent may be a foreground or already-ended task, so treat an unknown id as no parent.
+   */
+  parent_task_id?: string;
   task_type?: string;
   /**
    * meta.name from the workflow script (e.g. 'spec'). Only set when task_type is 'local_workflow'.
@@ -6565,6 +6599,10 @@ export declare type SDKTaskUpdatedMessage = {
   type: "system";
   subtype: "task_updated";
   task_id: string;
+  /**
+   * Id of one run of the task: equal on every task_* event, background_tasks_changed entry and saved notification (its origin.runId) of that run. A resumed task keeps its task_id and gets a new one. The run ids of one task sort, by plain string comparison, in the order the runs opened; a frame that names a run sorting before the one a reader shows is late. Nothing else about the format is promised. Absent for a task this process did not register, and from CLIs that predate it.
+   */
+  run_id?: string;
   /**
    * Wire-safe subset of TaskState fields that changed. Excludes abortController, messages, result. Clients merge into their local task map.
    */
@@ -6742,6 +6780,10 @@ export declare type SDKUserMessage = {
    */
   inline_pastes?: string[];
   session_id?: string;
+  /**
+   * ID of the subagent that produced this message: the `task_id` of its task events, unchanged when the subagent is resumed. Absent on main-thread messages.
+   */
+  agent_id?: string;
   /**
    * Subagent type that produced this message.
    */
@@ -10414,7 +10456,7 @@ export declare interface Transport {
 /**
  * Messages meaning "a usage limit was genuinely reached" — the error-path
  * outputs of getLimitReachedText (rateLimitMessages.ts) and
- * getFableCreditsRequiredContent (api/errors.ts).
+ * getUsageCreditsOnlyModelRejectionContent (api/errors.ts).
  *
  * @alpha
  */
