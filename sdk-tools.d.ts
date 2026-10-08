@@ -3792,6 +3792,10 @@ export interface WebSearchOutput {
            * The URL of the search result
            */
           url: string;
+          /**
+           * Page text. PostToolUse hooks get it; tool_use_result does not.
+           */
+          snippet?: string;
         }[];
       }
     | string

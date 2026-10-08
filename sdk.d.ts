@@ -6155,6 +6155,7 @@ export declare type SDKRateLimitInfo = {
     | "unknown";
   isUsingOverage?: boolean;
   overageInUse?: boolean;
+  overageEnabled?: boolean;
   surpassedThreshold?: number;
 
   /**
@@ -6779,11 +6780,11 @@ export declare type SDKUserMessage = {
 
   uuid?: UUID;
   /**
-   * Content the user pasted into the prompt rather than typed: each entry a string or an array of content blocks. The CLI appends the text of each entry after the typed text, in order, and may wrap it in `<pasted_content>` tags. Blocks other than text are ignored; send images and documents in `message.content`.
+   * Content the user pasted into the prompt rather than typed: each entry a string or an array of content blocks. The CLI appends the text of each entry after the typed text, in order, and may wrap it in `<pasted_content>` tags. Blocks other than text are ignored; send images and documents in `message.content`. A list of over 1,000 entries and blocks in all is ignored.
    */
   pasted_content?: MessageParam["content"][];
   /**
-   * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block. For a paste the host took out of `message`, use `pasted_content` instead.
+   * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block. It looks for the first 100 entries that are not blank. For a paste the host took out of `message`, use `pasted_content` instead.
    */
   inline_pastes?: string[];
   session_id?: string;
@@ -7465,6 +7466,10 @@ export declare interface Settings {
              */
             timeout?: number;
             /**
+             * What a failure of this hook does: it could not start (a missing script or plugin directory), timed out, exited with a code other than 0 or 2, or printed JSON that is invalid or fails validation. 'continue' (default): the failure is reported and the action goes ahead. 'block': the failure counts as exit code 2, so the action the event guards (a tool call, a permission request, a prompt) is blocked. Ignored for async hooks and on Stop, SubagentStop, TaskCompleted and TeammateIdle.
+             */
+            onFailure?: "continue" | "block";
+            /**
              * Custom status message to display in spinner while hook runs
              */
             statusMessage?: string;
@@ -7562,6 +7567,10 @@ export declare interface Settings {
              * Timeout in seconds for this specific request
              */
             timeout?: number;
+            /**
+             * What a failure of this hook does: it could not start (a missing script or plugin directory), timed out, exited with a code other than 0 or 2, or printed JSON that is invalid or fails validation. 'continue' (default): the failure is reported and the action goes ahead. 'block': the failure counts as exit code 2, so the action the event guards (a tool call, a permission request, a prompt) is blocked. Ignored for async hooks and on Stop, SubagentStop, TaskCompleted and TeammateIdle.
+             */
+            onFailure?: "continue" | "block";
             /**
              * Additional headers to include in the request. Values may reference environment variables using $VAR_NAME or ${VAR_NAME} syntax (e.g., "Authorization": "Bearer $MY_TOKEN"). Only variables listed in allowedEnvVars will be interpolated.
              */
@@ -9140,7 +9149,7 @@ export declare interface Settings {
    */
   forceLoginMethod?: "claudeai" | "console" | "gateway";
   /**
-   * Cloud gateway URL to pre-fill and auto-connect to during login, alongside forceLoginMethod: "gateway". Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings.
+   * Cloud gateway URL to pre-fill during login, alongside forceLoginMethod: "gateway". Honored from admin-controlled managed settings (MDM / managed-settings.json / policy helper) and, on a machine with none of those, from your own user settings; ignored in project, local, flag, and remote-delivered settings.
    */
   forceLoginGatewayUrl?: string;
   /**
