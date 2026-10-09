@@ -81,6 +81,10 @@ export declare type AgentDefinition = {
    */
   maxTurns?: number;
   /**
+   * Token count at which this agent compacts its own conversation when it runs as a subagent. It only lowers the window the subagent would otherwise inherit. No effect on the main session agent.
+   */
+  autoCompactWindow?: number;
+  /**
    * Run this agent as a background task (non-blocking, fire-and-forget) when invoked
    */
   background?: boolean;
@@ -2349,19 +2353,33 @@ export declare type Options = {
    * When enabled, commands are executed in a sandboxed environment that restricts
    * filesystem and network access. This provides an additional security layer.
    *
-   * **Important:** Filesystem and network restrictions are configured via permission
-   * rules, not via these sandbox settings:
-   * - Filesystem access: Use `Read` and `Edit` permission rules
-   * - Network access: Use `WebFetch` permission rules
+   * Access restrictions can be set here (`filesystem`, `network`, `credentials`);
+   * filesystem and network restrictions also come from `Read`, `Edit` and
+   * `WebFetch` permission rules, and Claude Code applies both.
    *
-   * These sandbox settings control sandbox behavior (enabled, auto-allow, etc.),
-   * while the actual access restrictions come from your permission configuration.
+   * **Dependency check:** When this option sets `enabled: true`,
+   * `failIfUnavailable` defaults to `true` unless this option or an inline
+   * `settings` sandbox block sets it: if sandbox dependencies are missing (e.g.
+   * `bubblewrap` on Linux) or the platform is unsupported, `query()` emits an
+   * error result and exits rather than silently running commands unsandboxed.
+   * Set `failIfUnavailable: false` to allow graceful degradation.
    *
-   * **Dependency check:** When `enabled: true` is passed via this option,
-   * `failIfUnavailable` defaults to `true` — if sandbox dependencies are missing
-   * (e.g. `bubblewrap` on Linux) or the platform is unsupported, `query()` will
-   * emit an error result and exit rather than silently running commands
-   * unsandboxed. Set `failIfUnavailable: false` to allow graceful degradation.
+   * **With `settings`:** when `settings` is given inline (an object or JSON string,
+   * not a file path) and has its own `sandbox` block, this option is merged into
+   * it. A value this option sets replaces the value at the same path, and a
+   * value it does not set is kept, with two exceptions: a
+   * `filesystem.disabled: true` is dropped when this option sets `filesystem` or
+   * a `credentials.files` deny entry, since it would switch those off; and a
+   * `network.httpProxyPort` or `network.socksProxyPort` is dropped when this
+   * option sets `network.allowedDomains`, a `network.deniedDomains` entry or
+   * `network.strictAllowlist: true` and does not set that port itself, since
+   * traffic through your own proxy is not checked against those lists. Nested
+   * objects merge key by key, except `ripgrep` and
+   * `network.tlsTerminate`, which this option replaces whole; and the restriction
+   * lists (`filesystem.denyRead`, `filesystem.denyWrite`, `network.deniedDomains`,
+   * `credentials.files`, `credentials.envVars`) from both are combined instead, a
+   * `deny` from either side winning over a `mask` for the same credential path or
+   * variable. A `settings` file path cannot be combined with this option.
    *
    * @example Enable sandboxing with auto-allow
    * ```typescript
@@ -2371,7 +2389,7 @@ export declare type Options = {
    * }
    * ```
    *
-   * @example Configure network options (not restrictions)
+   * @example Configure network options
    * ```typescript
    * sandbox: {
    *   enabled: true,
@@ -4965,6 +4983,10 @@ export declare type SDKControlInitializeResponse = {
     | "not_honoured"
   >;
 
+  /**
+   * Claude Code version of the process that runs this session's turns (the same value its system/init carries). Absent on CLIs that predate the field, and when the responder is not that process and does not know its version.
+   */
+  claude_code_version?: string;
   fast_mode_state?: coreTypes.FastModeState;
   fast_mode_disabled_reason?: coreTypes.FastModeDisabledReason;
 };
