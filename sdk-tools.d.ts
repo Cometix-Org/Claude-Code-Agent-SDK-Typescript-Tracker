@@ -447,6 +447,7 @@ export type ArtifactOutput =
       publishesResetAt?: number;
       contract?: string;
       updated?: boolean;
+      owned?: boolean;
       icon?: string;
       faviconSent?: true;
       iconDropped?: true;
@@ -484,6 +485,7 @@ export type ArtifactOutput =
         durationMs: number;
         title?: string;
       };
+      owned?: boolean;
       artifactRead?: {
         slug: string;
         ver?: string;
@@ -564,6 +566,7 @@ export type ArtifactOutput =
       written?: {
         url: string;
       };
+      owned?: boolean;
       asset_upload: {
         id: string;
         url: string;
@@ -577,6 +580,7 @@ export type ArtifactOutput =
       written?: {
         url: string;
       };
+      owned?: boolean;
       asset_uploads: {
         url: string;
         /**
@@ -667,6 +671,7 @@ export type ArtifactOutput =
       written?: {
         url: string;
       };
+      owned?: boolean;
       asset_delete: {
         id: string;
         deleted: boolean;
@@ -4198,6 +4203,10 @@ export interface CronCreateOutput {
   humanSchedule: string;
   recurring: boolean;
   durable?: boolean;
+  /**
+   * Epoch ms of the job's next run, the scheduler's per-job offset included
+   */
+  nextFireAt?: number;
 }
 export interface CronDeleteOutput {
   id: string;
@@ -4210,6 +4219,10 @@ export interface CronListOutput {
     prompt: string;
     recurring?: boolean;
     durable?: boolean;
+    /**
+     * Epoch ms of the job's next run, the scheduler's per-job offset included
+     */
+    nextFireAt?: number;
   }[];
 }
 export interface PushNotificationOutput {
