@@ -787,7 +787,7 @@ export interface AgentInput {
    */
   model?: "sonnet" | "opus" | "haiku" | "fable";
   /**
-   * Reasoning effort for this agent. Set this ONLY when the user, or instructions such as CLAUDE.md or a skill, explicitly ask that this agent or delegated work run at a specific effort level, never on your own judgment; otherwise omit it and the agent runs at its usual effort.
+   * Reasoning effort for this agent. Set this ONLY when the user, or instructions such as CLAUDE.md or a skill, explicitly ask that this agent or delegated work run at a specific effort level, never on your own judgment; otherwise omit it and the agent runs at its usual effort. Ignored for subagent_type: "fork": a fork runs at your own effort.
    */
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
   /**
