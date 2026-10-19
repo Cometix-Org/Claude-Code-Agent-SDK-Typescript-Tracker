@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.302
+// Version: 0.3.303
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -58085,7 +58085,7 @@ class cy {
                 params: {
                   protocolVersion: Y4,
                   capabilities: V4,
-                  clientInfo: { ...q4, version: "0.3.302" },
+                  clientInfo: { ...q4, version: "0.3.303" },
                 },
               },
             },
@@ -59965,7 +59965,7 @@ function Zx(e, t) {
   else if (s.type === "custom") ((p = s.prompt), (g = s.snapshot));
   else if (s.type === "preset")
     ((f = s.append), (m = s.excludeDynamicSections), (g = s.snapshot));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.302";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.303";
   let {
       abortController: _ = kp(),
       additionalDirectories: S = [],
@@ -60069,7 +60069,7 @@ function Zx(e, t) {
   let av = Qx?.type === "json_schema" ? Qx.schema : void 0,
     Ct = v ? { ...v } : { ...process.env };
   if (!Ct.CLAUDE_CODE_ENTRYPOINT) Ct.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!Ct.CLAUDE_AGENT_SDK_VERSION) Ct.CLAUDE_AGENT_SDK_VERSION = "0.3.302";
+  if (!Ct.CLAUDE_AGENT_SDK_VERSION) Ct.CLAUDE_AGENT_SDK_VERSION = "0.3.303";
   if (H) Ct.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (
     !Object.keys(Ct).some(
