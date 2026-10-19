@@ -1909,6 +1909,7 @@ export declare type Options = {
    * ```
    */
   toolAliases?: Record<string, string>;
+
   /**
    * Specify the base set of available built-in tools.
    * - `string[]` - Array of specific tool names (e.g., `['Bash', 'Read', 'Edit']`)
@@ -3135,6 +3136,10 @@ export declare type PreToolUseHookSpecificOutput = {
  */
 export declare function prewarm(_params?: {
   options?: Options;
+  /**
+   * The most time, in milliseconds, to wait for the spare process to
+   * initialize; it counts throughout. Defaults to 60000.
+   */
   initializeTimeoutMs?: number;
 }): Promise<SpareProcess>;
 
@@ -4429,6 +4434,23 @@ declare type SDKControlGetContextUsageRequest = {
  */
 export declare type SDKControlGetContextUsageResponse = {
   categories: {
+    /**
+     * Which row this is. Stable where the English name is not: match a particular row on this. Absent from a CLI that predates it. A later CLI may add values: treat an unknown value as absent.
+     */
+    id?:
+      | "system_prompt"
+      | "system_tools"
+      | "mcp_tools"
+      | "mcp_instructions"
+      | "mcp_tools_deferred"
+      | "system_tools_deferred"
+      | "custom_agents"
+      | "memory_files"
+      | "skills"
+      | "messages"
+      | "autocompact_buffer"
+      | "compact_buffer"
+      | "free_space";
     name: string;
     tokens: number;
     color: string;
@@ -4462,6 +4484,16 @@ export declare type SDKControlGetContextUsageResponse = {
     tokens: number;
     isLoaded?: boolean;
   }[];
+  /**
+   * The 'mcp_instructions' row by server. Only the row's total is counted: each server's share of it is estimated from the length of its text. Present only where the CLI answers on its own stdio and no server stores or forwards the reply.
+   */
+  mcpInstructions?: {
+    /**
+     * Server name, as mcp_status reports it and mcp_toggle takes it (not normalized, unlike mcpTools[].serverName).
+     */
+    serverName: string;
+    tokens: number;
+  }[];
   deferredBuiltinTools?: {
     name: string;
     tokens: number;
@@ -4478,6 +4510,14 @@ export declare type SDKControlGetContextUsageResponse = {
   agents: {
     agentType: string;
     source: string;
+    /**
+     * Id of the providing plugin (its name and marketplace), when there is one. Present only where the CLI answers on its own stdio and no server stores or forwards the reply.
+     */
+    pluginId?: string;
+    /**
+     * Absolute path of the agent's file on the machine the CLI runs on, which over SSH or WSL is not the host's. Present only where the CLI answers on its own stdio and no server stores or forwards the reply: absent on cloud, self-hosted runner and Remote Control connections, and for an agent with no file.
+     */
+    path?: string;
     tokens: number;
   }[];
   slashCommands?: {
@@ -4492,6 +4532,18 @@ export declare type SDKControlGetContextUsageResponse = {
     skillFrontmatter: {
       name: string;
       source: string;
+      /**
+       * Name of the providing plugin, when there is one. Not unique across marketplaces: pluginId is.
+       */
+      pluginName?: string;
+      /**
+       * Id of the providing plugin (its name and marketplace), when there is one. Present only where the CLI answers on its own stdio and no server stores or forwards the reply.
+       */
+      pluginId?: string;
+      /**
+       * Absolute path of the skill's file on the machine the CLI runs on, which over SSH or WSL is not the host's. Present only where the CLI answers on its own stdio and no server stores or forwards the reply: absent on cloud, self-hosted runner and Remote Control connections, and for a skill with no file.
+       */
+      path?: string;
       tokens: number;
     }[];
   };
@@ -5017,6 +5069,7 @@ declare type SDKControlInitializeRequest = {
    * Map of tool-name aliases applied before name resolution. When the model emits a tool_use whose name is a key in this map, the tool execution path resolves the mapped name instead. Single-hop (no chains). See Options.toolAliases.
    */
   toolAliases?: Record<string, string>;
+
   /**
    * When true, omit per-user dynamic sections (working directory, auto-memory path) from the cached system prompt and re-inject them as the first user message. Lets cross-user prompt caching hit on a static system prompt prefix. Tradeoff: the model sees this context slightly later in the prompt, so steering on the working directory and memory location is marginally less authoritative. Has no effect when a custom (non-preset) system prompt is in use.
    */
@@ -5070,6 +5123,7 @@ export declare type SDKControlInitializeResponse = {
    * Whether the `hooks` this initialize carried were registered: true on a session's first initialize, and on a repeated initialize from the process that owns the CLI's stdin (its set replaces the one registered earlier); false when a repeated initialize's hooks were ignored (a client joining a remote session another client configured). Absent when the request carried no hooks, and on CLIs that predate the field — those ignored `hooks` on every repeated initialize.
    */
   hooks_applied?: boolean;
+
   /**
    * Whether every plugin this initialize listed is loaded: true when each one is among the plugins the process loaded at launch (from `plugins` under --await-initialize, or from --plugin-dir), so a re-sent initialize naming the launch set also reads true; false otherwise. The `plugins` field never loads anything after launch. Absent when the request listed no plugins, and on CLIs that predate the field (those never read `plugins`).
    */
@@ -5566,7 +5620,7 @@ export declare type SDKControlRequestProgressMessage = {
 declare type SDKControlRequestUserDialogRequest = {
   subtype: "request_user_dialog";
   /**
-   * Identifier for the dialog the host should render. Open string union — new kinds may be added without bumping the protocol. A kind is only sent in sessions where some attached client declared it in initialize.supportedDialogKinds (declare exactly the kinds you can render); on multi-client transports the request still reaches every attached client. A host that receives a kind it did not declare must not answer it (an error-subtype response is discarded and the dialog stays pending) — never with {behavior: "cancelled"}, which is a real settlement treated as the user dismissing the dialog. An unanswered dialog is cancelled by the CLI after its dialog deadline.
+   * Identifier for the dialog the host should render. Open string union — new kinds may be added without bumping the protocol. A kind is only sent in sessions where some attached client declared it in initialize.supportedDialogKinds (declare exactly the kinds you can render); on multi-client transports the request still reaches every attached client. A host that receives a kind it did not declare must not answer it (an error-subtype response is discarded and the dialog stays pending) — never with {behavior: "cancelled"}, which is a real settlement treated as the user dismissing the dialog. An unanswered dialog is cancelled by the CLI after its dialog deadline; the CLI may send one that has no deadline, which stays up until it is answered or the CLI withdraws it with a control_cancel_request.
    */
   dialog_kind: string;
   /**
@@ -5806,7 +5860,7 @@ export declare type SDKInformationalMessage = {
 };
 
 /**
- * Liveness heartbeat with no payload. Either side may send it at any time (the CLI emits it periodically, for example while a long-running control request is in progress); receivers must ignore it.
+ * Liveness heartbeat. Either side may send it at any time (the CLI emits it periodically, for example while a long-running control request is in progress); receivers must ignore it. It has no payload. One use is not part of this schema: for startup() and prewarm() of the Agent SDK, which set CLAUDE_CODE_SDK_READS_STARTUP_MARKS, the CLI writes lines of this type with a `startup_mark` field, the name of a start-up checkpoint that it has passed, before the initialize response.
  */
 declare type SDKKeepAliveMessage = {
   type: "keep_alive";
@@ -10279,6 +10333,14 @@ export declare interface SpawnOptions {
  */
 export declare function startup(_params?: {
   options?: Options;
+  /**
+   * The most time, in milliseconds, that startup() counts while it waits for
+   * the subprocess to initialize; when that time is used up, the promise
+   * rejects with a timeout error. Defaults to 60000. When no value is passed,
+   * time in which the subprocess reports a SessionStart or Setup hook running
+   * is not counted, for at most 10 minutes in total. A value that is passed
+   * counts throughout.
+   */
   initializeTimeoutMs?: number;
 }): Promise<WarmQuery>;
 
