@@ -4029,6 +4029,7 @@ declare const SandboxSettingsSchema: () => z.ZodObject<
       z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString>>
     >;
     enableWeakerNestedSandbox: z.ZodOptional<z.ZodBoolean>;
+    allowNestedUserNamespaces: z.ZodOptional<z.ZodBoolean>;
     enableWeakerNetworkIsolation: z.ZodOptional<z.ZodBoolean>;
     allowAppleEvents: z.ZodOptional<z.ZodBoolean>;
     excludedCommands: z.ZodOptional<z.ZodArray<z.ZodString>>;
@@ -4913,6 +4914,40 @@ export declare type SDKControlGetUsageResponse = {
          */
         count: number;
       }[];
+      /**
+       * One recommended change per notable behavior or source, largest share first, worded for display.
+       */
+      recommendations?: {
+        /**
+         * The behavior key, or 'agent', 'skill', 'plugin' or 'mcp_server' for a named source.
+         */
+        key: string;
+        /**
+         * Share of the weighted local usage this touches, 0-100.
+         */
+        pct: number;
+        /**
+         * What to do, verb first.
+         */
+        title: string;
+        /**
+         * A few words: what the scan saw, or the command to run.
+         */
+        detail?: string;
+      }[];
+      /**
+       * What one "fix" action does. Absent when nothing can be fixed in the session that answered.
+       */
+      fix?: {
+        /**
+         * The recommendations it covers.
+         */
+        keys: string[];
+        /**
+         * User messages to send for the person, one each and in order, at priority 'later' so a running turn cannot reorder them: any /effort commands first, then one prompt for the rest, which goes with client_composed set.
+         */
+        messages: string[];
+      };
       agents: {
         name: string;
         /**
@@ -4977,6 +5012,40 @@ export declare type SDKControlGetUsageResponse = {
          */
         count: number;
       }[];
+      /**
+       * One recommended change per notable behavior or source, largest share first, worded for display.
+       */
+      recommendations?: {
+        /**
+         * The behavior key, or 'agent', 'skill', 'plugin' or 'mcp_server' for a named source.
+         */
+        key: string;
+        /**
+         * Share of the weighted local usage this touches, 0-100.
+         */
+        pct: number;
+        /**
+         * What to do, verb first.
+         */
+        title: string;
+        /**
+         * A few words: what the scan saw, or the command to run.
+         */
+        detail?: string;
+      }[];
+      /**
+       * What one "fix" action does. Absent when nothing can be fixed in the session that answered.
+       */
+      fix?: {
+        /**
+         * The recommendations it covers.
+         */
+        keys: string[];
+        /**
+         * User messages to send for the person, one each and in order, at priority 'later' so a running turn cannot reorder them: any /effort commands first, then one prompt for the rest, which goes with client_composed set.
+         */
+        messages: string[];
+      };
       agents: {
         name: string;
         /**
@@ -7426,6 +7495,19 @@ export declare interface Settings {
         [k: string]: unknown;
       };
   /**
+   * The claude.ai Project this session names for your organization's usage reports: the Project's UUID, or its ID starting with "claude_proj_". An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT.
+   */
+  attributionProject?: string;
+  /**
+   * Your organization's default for attributionProject. Only honored from managed settings (server-managed, MDM / OS policy, or managed-settings.json); ignored in user, project, local and --settings sources.
+   */
+  attributionProjectPolicy?: {
+    /**
+     * The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its UUID, or its ID starting with "claude_proj_".
+     */
+    default?: string;
+  };
+  /**
    * Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)
    */
   includeCoAuthoredBy?: boolean;
@@ -7582,7 +7664,7 @@ export declare interface Settings {
     };
   };
   /**
-   * Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries that use no ${VAR} expansion) are allowed without being listed; a managed-mcp.json entry that uses ${VAR} expansion is still checked against this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied.
+   * Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries with no ${VAR} in their command, args, url or header values) are allowed without being listed; a managed-mcp.json entry with ${VAR} in any of those must match this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied.
    */
   allowedMcpServers?: {
     /**
@@ -7919,7 +8001,7 @@ export declare interface Settings {
    */
   httpHookAllowedEnvVars?: string[];
   /**
-   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins no managed setting vouches for, is ignored too. Plugins keep theirs only on an admin-backed channel: host-delivered --plugin-dir plugins, the official marketplace registered from its unpinned anthropics source, claude.ai-synced plugins Anthropic attests, the saved login organization's claude.ai-hosted marketplaces, marketplaces whose registered source managed extraKnownMarketplaces declares or an exact or owner-pinned (owner/*) strictKnownMarketplaces entry names at the path it pins (an npm marketplace source only when the registration and the declared entry pin the same registry, and a settings marketplace source only when every nested npm plugin entry pins one on a bare package name — unpinned, the package resolves through the member's own npm config, and a non-bare spelling packs as an exotic spec the pin does not bind, so nothing an entry names is what was fetched), and npm-direct (package\@npm) plugins whose recorded resolution a registry-pinned managed npm strictKnownMarketplaces entry names (host and path patterns and enabledPlugins ids do not vouch); managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply.
+   * When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins no managed setting vouches for, is ignored too. Plugins keep theirs only on an admin-backed channel: host-delivered --plugin-dir plugins (in Claude Desktop, only while this is not set by the organization's own managed settings), the official marketplace registered from its unpinned anthropics source, claude.ai-synced plugins Anthropic attests, the saved login organization's claude.ai-hosted marketplaces, marketplaces whose registered source managed extraKnownMarketplaces declares or an exact or owner-pinned (owner/*) strictKnownMarketplaces entry names at the path it pins (an npm marketplace source only when the registration and the declared entry pin the same registry, and a settings marketplace source only when every nested npm plugin entry pins one on a bare package name — unpinned, the package resolves through the member's own npm config, and a non-bare spelling packs as an exotic spec the pin does not bind, so nothing an entry names is what was fetched), and npm-direct (package\@npm) plugins whose recorded resolution a registry-pinned managed npm strictKnownMarketplaces entry names (host and path patterns and enabledPlugins ids do not vouch); managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply.
    */
   allowManagedPermissionRulesOnly?: boolean;
   /**
@@ -9606,6 +9688,10 @@ export declare interface Settings {
      * Linux only: Run without the fresh /proc mount, for hosts such as unprivileged Docker containers that cannot create one. **Reduces security** — the host /proc stays readable by sandboxed commands. Default: false. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).
      */
     enableWeakerNestedSandbox?: boolean;
+    /**
+     * Linux/WSL only: Let sandboxed commands create user namespaces of their own, which the sandbox refuses by default. Needed by tools that sandbox themselves that way, such as Chromium's and Electron's sandbox, rootless podman or buildah, a nested bubblewrap, and `unshare`. **Removes code-execution isolation** — in any folder a hostile command may write, it can then bypass filesystem.denyWrite, filesystem.denyRead, credentials.files entries and the paths the sandbox always write-protects (such as .claude/settings.json, git hooks and git config), and so plant code that later runs outside the sandbox; while autoAllowBashIfSandboxed is on, the command that plants it needs no approval. Default: false. Only honored from user, managed/policy, or CLI (--settings) settings — true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).
+     */
+    allowNestedUserNamespaces?: boolean;
     /**
      * macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** — opens a potential data exfiltration vector through the trustd service. Default: false. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).
      */
