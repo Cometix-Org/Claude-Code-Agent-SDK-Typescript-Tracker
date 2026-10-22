@@ -7023,6 +7023,7 @@ export declare type SDKUserMessage = {
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
+
   origin?: SDKMessageOrigin;
 
   /**
@@ -7076,6 +7077,7 @@ export declare type SDKUserMessageReplay = {
    */
   tool_use_result?: unknown;
   priority?: "now" | "next" | "later";
+
   origin?: SDKMessageOrigin;
 
   /**
@@ -9689,7 +9691,7 @@ export declare interface Settings {
      */
     enableWeakerNestedSandbox?: boolean;
     /**
-     * Linux/WSL only: Let sandboxed commands create user namespaces of their own, which the sandbox refuses by default. Needed by tools that sandbox themselves that way, such as Chromium's and Electron's sandbox, rootless podman or buildah, a nested bubblewrap, and `unshare`. **Removes code-execution isolation** — in any folder a hostile command may write, it can then bypass filesystem.denyWrite, filesystem.denyRead, credentials.files entries and the paths the sandbox always write-protects (such as .claude/settings.json, git hooks and git config), and so plant code that later runs outside the sandbox; while autoAllowBashIfSandboxed is on, the command that plants it needs no approval. Default: false. Only honored from user, managed/policy, or CLI (--settings) settings — true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).
+     * Linux/WSL only: Let sandboxed commands create user namespaces of their own, which the sandbox refuses by default. Needed by tools that sandbox themselves that way, such as Chromium's and Electron's sandbox, a nested bubblewrap, and `unshare`. **Removes code-execution isolation** — in any folder a hostile command may write, it can then bypass filesystem.denyWrite, filesystem.denyRead, credentials.files entries and the paths the sandbox always write-protects (such as .claude/settings.json, git hooks and git config), and so plant code that later runs outside the sandbox; while autoAllowBashIfSandboxed is on, the command that plants it needs no approval. Default: false. Only honored from user, managed/policy, or CLI (--settings) settings — true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).
      */
     allowNestedUserNamespaces?: boolean;
     /**
@@ -10036,6 +10038,10 @@ export declare interface Settings {
      */
     startDirectory?: string;
   }[];
+  /**
+   * SSH connections in Claude Desktop on macOS and Linux whose host comes from a command. A list of entries, each with `id`, `name` and `command`, and optionally `sshIdentityFile` and `startDirectory`. When you ask Desktop to create or replace an entry's host, it runs `command` on this computer: a program name or absolute path, followed by plain arguments. There is no shell, so quotes, pipes, variables and a leading `~` do not work. The command must print only the host on standard output: `host` or `user\@host` on one line, or a JSON object with `sshHost` and, optionally, `sshPort` and `startDirectory`. Desktop reads this key only from user settings and from this computer's managed settings. Claude Code itself does not use it.
+   */
+  sshHostCommands?: unknown[];
   /**
    * CLAUDE.md-style instructions injected as organization-managed memory. Only honored from managed/policy settings.
    */
