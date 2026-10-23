@@ -1532,6 +1532,7 @@ export declare type McpServerStatus = {
    * Server configuration (includes URL for HTTP/SSE servers)
    */
   config?: McpServerStatusConfig;
+
   /**
    * Configuration scope (e.g., project, user, local, claudeai, managed)
    */
@@ -2519,6 +2520,18 @@ export declare type Options = {
    * `blockedMarketplaces`) are kept and union with the admin's. With no admin
    * tier present, these apply as the sole policy tier (still filtered
    * restrictive-only — non-allowlisted keys are dropped regardless).
+   *
+   * Two hook keys are filtered by value rather than kept as written:
+   * `disableAllHooks: true` binds as `allowManagedHooksOnly: true`, so the
+   * machine administrator's own hooks keep running where the embedder's tier
+   * cannot stop them — and because an enterprise configuration often yields
+   * a boolean as text, any value but `false` and `"false"` binds it the same
+   * way — and `allowedHttpHookUrls` / `httpHookAllowedEnvVars`
+   * bind only as the empty list (admit nothing) — a non-empty one is dropped,
+   * because these lists union across settings sources and would widen an
+   * admin's. For the same reason an empty list binds only where no other
+   * source sets one; pair it with `allowManagedHooksOnly` to stop a project's
+   * HTTP hooks outright.
    *
    * Intended for embedding applications (e.g. desktop apps) that derive
    * lockdown settings from their own enterprise configuration and need to
@@ -5390,6 +5403,10 @@ declare type SDKControlMcpSetServersRequest = {
  */
 declare type SDKControlMcpStatusRequest = {
   subtype: "mcp_status";
+  /**
+   * When true and the CLI writes to the session through CCR (a cloud session's worker, or a Remote Control worker), the success reply is published only to the clients attached at that moment, as a control_response marked live_only: true on the session's unsequenced event stream, and is not stored with the session's events; on a cloud session's worker its rows embed each server's configuration (URLs, headers, OAuth settings). Set it only if your client reads control_response frames from that stream; a reply sent while its stream is down is lost and the request must be sent again, and a reply over the live size limit comes back as a live error instead. Error replies other than that size-limit error, and every reply from hosts that do not send live replies (stdio hosts, and CLIs older than this field), are ordinary stored replies, so a client that sets it must accept either.
+   */
+  liveReply?: boolean;
 };
 
 /**
@@ -5458,7 +5475,7 @@ declare type SDKControlPermissionRequest = {
 
   description?: string;
   /**
-   * True when one-tap Approve/Deny must not be offered: the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction(): the user responds on the card itself), OR the pending ask is localDisplayOnly (its consent disclosure cannot ride this wire and only the local dialog renders it), OR the auto-mode classifier blocked the call and it was handed to a person (decision_reason_type 'classifier' on a person-only ask), which no stored grant or automatic approval may answer, OR the SDK host worded the ask (title and description are its consent copy, which a push cannot carry whole). In each case the user has to open the session to answer.
+   * True when one-tap Approve/Deny must not be offered: the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction(): the user responds on the card itself), OR the pending ask is localDisplayOnly (its consent disclosure cannot ride this wire and only the local dialog renders it), OR the auto-mode classifier blocked the call and it was handed to a person (decision_reason_type 'classifier' on a person-only ask), which no stored grant or automatic approval may answer, OR the MCP server's name spells a claude.ai connector's key and the server came from neither claude.ai nor whoever launched the session, so a grant keyed on the tool name must not answer it, OR the SDK host worded the ask (title and description are its consent copy, which a push cannot carry whole). In each case the user has to open the session to answer.
    */
   requires_user_interaction?: boolean;
 };
