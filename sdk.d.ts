@@ -1712,6 +1712,14 @@ export declare type ModelUsage = {
   thinkingTokens?: number;
   cacheReadInputTokens: number;
   cacheCreationInputTokens: number;
+  /**
+   * Cache writes with a 5-minute lifetime, already counted inside cacheCreationInputTokens. This and cacheCreationEphemeral1hInputTokens can add up to less than cacheCreationInputTokens, because a response that does not report how long its cache writes live adds to neither. costUSD prices those writes at the 5-minute rate. Counts only turns run on CLI versions that record this field: absent when none did, and an undercount when part of the session ran on an older version.
+   */
+  cacheCreationEphemeral5mInputTokens?: number;
+  /**
+   * Cache writes with a 1-hour lifetime, already counted inside cacheCreationInputTokens. costUSD prices them at the 1-hour rate when the model's price table has one. The built-in list prices do. A managed-settings modelPricing row does not: its one cache-write rate applies to both lifetimes. costUSD never uses the 1-hour rate for a response that a fallback model served after a refusal. Absent or an undercount in the same cases as cacheCreationEphemeral5mInputTokens.
+   */
+  cacheCreationEphemeral1hInputTokens?: number;
   webSearchRequests: number;
   costUSD: number;
   contextWindow: number;
@@ -6312,6 +6320,7 @@ export declare type SDKPermissionRuleEntry = {
     | "cliArg"
     | "command"
     | "session"
+    | "mcpMount"
     | "toolsNarrowing"
     | "mcpServerPolicy"
     | "hostCredential";
@@ -6491,6 +6500,7 @@ export declare type SDKResultError = {
    * Why this turn continued one that a worker restart interrupted. Such a turn is the automatic re-run of the interrupted turn (CLAUDE_CODE_RESUME_INTERRUPTED_TURN), or one that goes on from the answer to the permission prompt the new worker took over, or from that turn's tool calls still in flight. The value is the host's CLAUDE_CODE_RESUME_REASON when it set one (host_draining, checkpoint_restore, container_recreated, …), else 'interrupted_turn'. Present on such a headless turn's result, success or error, with or without an echo (a turn whose opening user prompt could not be vouched for still carries the reason); absent on every other turn (also one that goes on from the answer to any other permission prompt), on the Remote Control bridge's per-turn synthetic results, and from older producers.
    */
   resume_reason?: string;
+
   terminal_reason?: TerminalReason;
 
   /**
@@ -6541,6 +6551,7 @@ export declare type SDKResultSuccess = {
   warm_spare_claimed?: boolean;
 
   time_origin_ms?: number;
+
   is_error: boolean;
   api_error_status?: number | null;
 
@@ -8385,6 +8396,12 @@ export declare interface Settings {
        * Whether to automatically update this marketplace and its installed plugins on startup
        */
       autoUpdate?: boolean;
+      /**
+       * Managed settings only: the plugins of this marketplace that an organization delivers with its own tier, by plugin name, each with the digests of its releases. A plugin also enabled and listed in prependPlugins or appendPlugins by managed settings the session vouches for loads its hooks module only from a folder that proves one of them, and is then seated in that tier; any other copy does not load. A digest is sha256- and the base64 SHA-256 of, for every regular file in the folder in UTF-16 code unit order of its path, not normalized, "f PATH" NUL BYTE-LENGTH NUL BYTES, with / in paths; .git, .in_use, .orphaned_at, .claude-plugin-link and .links_materialized at the root are left out. The plugin keeps its manifest at .claude-plugin/plugin.json and names one module in hooks/hooks.json. A string of any other form, or a list that is empty or of any other shape, matches no folder. A symbolic link, or a surface module, proves nothing. A proved plugin ships bundled with no install step: the digest covers the whole folder, node_modules included. A checkout whose line endings were converted proves nothing.
+       */
+      pluginDigests?: {
+        [k: string]: string[];
+      };
     };
   };
   /**
@@ -8655,6 +8672,12 @@ export declare interface Settings {
        * Whether to automatically update this marketplace and its installed plugins on startup
        */
       autoUpdate?: boolean;
+      /**
+       * Managed settings only: the plugins of this marketplace that an organization delivers with its own tier, by plugin name, each with the digests of its releases. A plugin also enabled and listed in prependPlugins or appendPlugins by managed settings the session vouches for loads its hooks module only from a folder that proves one of them, and is then seated in that tier; any other copy does not load. A digest is sha256- and the base64 SHA-256 of, for every regular file in the folder in UTF-16 code unit order of its path, not normalized, "f PATH" NUL BYTE-LENGTH NUL BYTES, with / in paths; .git, .in_use, .orphaned_at, .claude-plugin-link and .links_materialized at the root are left out. The plugin keeps its manifest at .claude-plugin/plugin.json and names one module in hooks/hooks.json. A string of any other form, or a list that is empty or of any other shape, matches no folder. A symbolic link, or a surface module, proves nothing. A proved plugin ships bundled with no install step: the digest covers the whole folder, node_modules included. A checkout whose line endings were converted proves nothing.
+       */
+      pluginDigests?: {
+        [k: string]: string[];
+      };
     };
   };
   /**

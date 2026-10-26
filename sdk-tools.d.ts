@@ -135,6 +135,7 @@ export type AgentOutput =
         } | null;
         fallback_credit?: unknown;
       };
+      toolsUsed?: string[];
       toolStats?: {
         readCount: number;
         searchCount: number;
@@ -689,6 +690,7 @@ export type ProjectsOutput =
   | {
       method: "project_info";
       notice?: string;
+      local_file?: string;
       name: string;
       description: string;
       instructions: string;
