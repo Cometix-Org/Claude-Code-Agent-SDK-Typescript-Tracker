@@ -432,17 +432,23 @@ export declare type ClaimOptions = {
    * permission rules, a claim that has one holds the prompt until the process
    * has accepted the overlay (one round trip) and does not send it if the
    * overlay is refused: `claimed` then rejects with `settings_not_applied`
-   * and the process is closed — start the session with `query()`. One limit
-   * in this version: keys that govern hooks (`hooks`, `disableAllHooks`,
+   * and the process is let go — start the session with `query()`. The overlay
+   * is written ahead of the claim, so `disabledMcpjsonServers`,
+   * `deniedMcpServers` and `enabledPlugins` decide which of the folder's
+   * `.mcp.json` servers and plugins the claim starts, and a refusal stops the
+   * claim, as does an invalid value that would leave one of those keys out of
+   * force. `model`, `agent`, `fastMode`, `permissions`, `availableModels` and
+   * `disableAutoMode` follow it: they are in force before the prompt you pass
+   * to `claim()` is read, but the folder's SessionStart hooks, and a first
+   * message such a hook hands the session, do not wait for them, and a refusal
+   * of them comes after the folder's servers have started. One limit in this version:
+   * keys that govern hooks (`hooks`, `disableAllHooks`,
    * `allowManagedHooksOnly`, `allowedHttpHookUrls`, `httpHookAllowedEnvVars`)
    * are refused — `claim()` throws before sending anything and the spare stays
-   * parked — because the claimed folder's SessionStart hooks start with the
-   * claim, before the overlay lands; give those to `prewarm()` in
-   * `Options.settings`, where they are in force before any hook as on a cold
-   * start. The rest of the overlay is in force before the prompt you pass to
-   * `claim()` is read; the claimed folder's own SessionStart hooks, and a
-   * first message such a hook hands the session, start with the claim and do
-   * not wait for the overlay.
+   * parked; give those to `prewarm()` in `Options.settings`, where they are in
+   * force before any hook as on a cold start. Servers from the user's or
+   * managed configuration, and those running in the parked spare, are
+   * `prewarm()`'s to govern.
    */
   settings?: Parameters<Query["applyFlagSettings"]>[0];
   appendSystemPrompt?: string;
@@ -3105,9 +3111,9 @@ export declare type PreToolUseHookSpecificOutput = {
  *
  * What a claim can set ({@link ClaimOptions}): `cwd`, `additionalDirectories`,
  * `model`, `permissionMode`, `maxThinkingTokens`, a flag-settings overlay
- * (`settings`, e.g. effort or permission rules — but not hook settings, which
- * would land after the claimed folder's SessionStart hooks have started; those
- * go in `Options.settings` here), `appendSystemPrompt`, `title`, `agents`, and
+ * (`settings`, e.g. effort, permission rules or which of the folder's MCP
+ * servers may start — but not hook settings; those go in `Options.settings`
+ * here), `appendSystemPrompt`, `title`, `agents`, and
  * three environment variables (`CLAUDE_CODE_OAUTH_TOKEN`,
  * `CLAUDE_CODE_SESSION_ACCESS_TOKEN`, `CLAUDE_CODE_HOST_SESSION_ID`). Everything
  * else — the executable, `settingSources`, `env` the process reads at
@@ -6766,7 +6772,7 @@ export declare type SDKSystemMessage = {
   fast_mode_disabled_reason?: FastModeDisabledReason;
 
   /**
-   * The effort level the session will send on its next request — after env overrides, session state, org caps and model-support downgrades; the same value get_settings reports as applied.effort. null when no effort parameter will be sent (a model without effort, CLAUDE_CODE_EFFORT_LEVEL=unset, or an internal numeric budget). Present on Remote Control bridge init frames (terminal- and Desktop/VS Code-hosted sessions); absent on hosts that do not publish it and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
+   * The effort level set for the session's next message — after env overrides, session state, org caps and model-support downgrades; the same value get_settings reports as applied.effort. null when no effort parameter will be sent (a model without effort, CLAUDE_CODE_EFFORT_LEVEL=unset, or an internal numeric budget). Present on Remote Control bridge init frames (terminal- and Desktop/VS Code-hosted sessions); absent on hosts that do not publish it and on CLIs that predate the field. Re-emitted inits carry the current value — the newest frame wins.
    */
   effort?: ("low" | "medium" | "high" | "xhigh" | "max") | null;
 
@@ -6775,7 +6781,7 @@ export declare type SDKSystemMessage = {
    */
   view_mode?: "focus" | "default";
   /**
-   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is then empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it — except that a client driving a hosted session lists there what it can no longer recall: a send already in flight to that session, or the first prompt the session was created with). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the cloud session backend reads this from the persisted init event to decide whether it may send them). Absent on older CLIs.
+   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is then empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it — except that a client driving a hosted session lists there what it can no longer recall: a send already in flight to that session, or the first prompt the session was created with). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the cloud session backend reads this from the persisted init event to decide whether it may send them). 'ask_user_question_unanswered_v1' = an AskUserQuestion answer may set annotations[question].unanswered ('skipped' | 'replied_in_chat' | 'dismissed'), which the tool result echoes; send it only to a session that advertises this, since an older CLI on a strict host refuses the whole answer. A strict host also refuses an answer with a value outside these three; a new value will come with a new capability. Absent on older CLIs.
    */
   capabilities?: string[];
 
@@ -7579,6 +7585,10 @@ export declare interface Settings {
      * Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks "block" on the one-time auto-mode prompt for a read outside the working directories.
      */
     blockReadsOutsideWorkingDirectories?: boolean;
+    /**
+     * Disable auto mode
+     */
+    disableAutoMode?: "disable";
     /**
      * Additional directories to include in the permission scope
      */
@@ -9565,7 +9575,7 @@ export declare interface Settings {
        */
       allowLocalBinding?: boolean;
       /**
-       * macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., "com.apple.coresimulator.*"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright. Merged across settings sources. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, values from project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
+       * macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., "com.apple.CoreSimulator.*"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright. Merged across settings sources. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, values from project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
        */
       allowMachLookup?: string[];
       /**
@@ -10219,6 +10229,39 @@ export declare interface Settings {
    */
   agentPushNotifEnabled?: boolean;
   /**
+   * Whether the user has accepted the auto mode opt-in dialog
+   */
+  skipAutoPermissionPrompt?: boolean;
+  /**
+   * Whether plan mode uses auto mode semantics when auto mode is available (default: true)
+   */
+  useAutoModeDuringPlan?: boolean;
+  /**
+   * Auto mode classifier prompt customization
+   */
+  autoMode?: {
+    /**
+     * Rules for the auto mode classifier allow section. Include the literal string "$defaults" to inherit the built-in rules at that position.
+     */
+    allow?: string[];
+    /**
+     * Rules for the auto mode classifier SOFT BLOCK section — destructive/irreversible actions that user intent can clear. Include the literal string "$defaults" to inherit the built-in rules at that position.
+     */
+    soft_deny?: string[];
+    /**
+     * Rules for the auto mode classifier HARD BLOCK section — security boundaries that user intent does NOT clear. Include the literal string "$defaults" to inherit the built-in rules at that position.
+     */
+    hard_deny?: string[];
+    /**
+     * Entries for the auto mode classifier environment section. Include the literal string "$defaults" to inherit the built-in entries at that position.
+     */
+    environment?: string[];
+    /**
+     * When true, every Bash/PowerShell allow rule is suspended while auto mode is active so all shell commands are routed through the classifier (higher safety, more classifier calls). Default: false.
+     */
+    classifyAllShell?: boolean;
+  };
+  /**
    * Prevent claude-cli:// protocol handler registration with the OS
    */
   disableDeepLinkRegistration?: "disable";
@@ -10306,12 +10349,12 @@ export declare interface SpareProcess extends AsyncDisposable {
    * agents, commands and output styles, the claimed permission mode — as they
    * would after a cold `query()` in that folder (the folder's `availableModels`
    * narrows the model list as it does there). One limit: that snapshot is
-   * taken as part of the claim, before `model` and `settings` are applied, so
-   * fields the model or the settings overlay decide (for example
+   * taken as part of the claim, before `model` and the `settings` keys that
+   * follow it are applied, so fields they decide (for example
    * `fast_mode_state`, `output_style`, the remote-control defaults, an
    * `availableModels` in the overlay) may not reflect them yet. After a refused claim the reads
-   * keep describing the parked process; after `option_not_applied` or
-   * `settings_not_applied` (the claim itself took) they describe the claimed
+   * keep describing the parked process; after `option_not_applied`, or a
+   * `settings_not_applied` that carries `.claim`, they describe the claimed
    * session.
    *
    * @throws when called a second time, when the spare was closed or has
@@ -10335,10 +10378,12 @@ export declare interface SpareProcess extends AsyncDisposable {
    * when the spare exited or was closed before a claim (`spare_exited` /
    * `spare_closed`), or when the `settings` overlay was refused
    * (`settings_not_applied: …`; the prompt was never sent and the process
-   * was closed). In all of those your prompt has not run. The one rejection
+   * goes away). In all of those your prompt has not run. The one rejection
    * after which it does run is `option_not_applied: …`: `model` or
    * `maxThinkingTokens` was not accepted and the session runs without it.
-   * Both `…_not_applied` errors carry `.claim` with the claim info.
+   * `option_not_applied` carries `.claim` with the claim info, and so does a
+   * `settings_not_applied` for a key sent behind the claim; one that stopped
+   * the claim does not.
    * `permissionMode` is part of the claim itself and fails closed: see
    * {@link ClaimOptions}.
    */
@@ -10834,14 +10879,15 @@ export declare const USAGE_TRANSITION_PREFIXES: readonly [
   "You're now using your usage allocation",
   "Now using your usage allocation",
   "Now using usage credits",
+  "Now using credits",
   "You're now using extra usage",
   "Now using extra usage",
 ];
 
 /**
  * Approaching-limit warnings (severity:'warning'). Footer/toast only; these
- * never arrive as API errors. ("Approaching …" early warnings are
- * deliberately unregistered — they render in the footer without
+ * never arrive as API errors. ("Approaching …" and "Over N% of your … used"
+ * warnings are deliberately unregistered — they render in the footer without
  * <RateLimitMessage> styling; see the generator-coverage tests.)
  *
  * @alpha
