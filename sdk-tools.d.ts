@@ -467,6 +467,7 @@ export type ArtifactOutput =
         rel?: "mine" | "shared";
         external?: true;
         role?: "editor" | "commenter" | "reader" | "viewer";
+        outsidersMayHaveWritten?: true;
         pinned?: boolean;
       }[];
       truncated?: boolean;
@@ -3344,6 +3345,10 @@ export interface BashOutput {
    * True when this backgrounded command is terminated at its caller's final response, so no completion notification can follow (a synchronous subagent's command, or a headless session that takes no further input and is not waiting for background commands); absent when the command survives
    */
   backgroundEndsWithFinalResponse?: true;
+  /**
+   * True when the subagent that owns this backgrounded command parks for its end and is woken by it
+   */
+  backgroundWakesOwner?: true;
   /**
    * Flag to indicate if sandbox mode was overridden
    */
