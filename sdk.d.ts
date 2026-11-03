@@ -357,8 +357,8 @@ export declare type CanUseTool = (
      */
     defaultToNo?: boolean;
     /**
-     * The ask must not offer a persistent "don't ask again" choice: the
-     * rule it would write grants more than this ask's own action.
+     * The ask must not offer a persistent "don't ask again" choice: its rule
+     * grants more than this ask's action, or a plugin started this call.
      */
     suppressAlwaysAllowRule?: boolean;
     /**
@@ -653,6 +653,7 @@ declare namespace coreTypes {
     SDKResultSuccess,
     SDKSessionInfo,
     SDKSessionStateChangedMessage,
+    SDKSessionWritesLostMessage,
     SDKSettingsParseError,
     SDKStartupFailureReason,
     SDKStatusMessage,
@@ -1159,6 +1160,17 @@ export declare interface HookCallbackMatcher {
   hooks: HookCallback[];
   /** Timeout in seconds for all hooks in this matcher */
   timeout?: number;
+  /**
+   * What a failure of these hooks does: one throws, or returns output that
+   * fails validation. `'continue'` (default): the failure is reported in a
+   * warning message and the action goes ahead. `'block'`: the action the event
+   * guards (a tool call, a permission request, a prompt) is blocked. Ignored on
+   * Stop, SubagentStop, TaskCompleted and TeammateIdle. With `'block'`, the
+   * query fails at startup on a Claude Code that does not support the option
+   * and on a session already running that did not register these hooks, and
+   * the first prompt is sent only once those checks have passed.
+   */
+  onFailure?: "continue" | "block";
 }
 
 export declare type HookEvent =
@@ -3547,16 +3559,20 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * are managed by the CLI subprocess.
    *
    * Note: This only affects servers added dynamically via this method or the SDK.
-   * Servers configured via settings files are not affected. Servers introduced
-   * by plugins are also exempt: they are managed by the plugin system, so
-   * omitting them from the payload does NOT remove them — they keep running
-   * (unless enterprise policy denies the server) and are simply absent from
-   * the result's `removed` list. In particular, `setMcpServers({})` no longer
-   * guarantees a session has zero dynamic MCP surface when plugins are
-   * loaded. Naming a plugin server explicitly in the payload still replaces
-   * it (ownership is preserved CLI-side).
+   * Servers configured via settings files are not affected. A `.mcp.json` or
+   * local-scope server of the session's current folder stays up when omitted,
+   * unless enterprise policy denies it; once a payload has named such a server
+   * it is the host's, and a later payload that omits it removes it. Servers
+   * introduced by plugins are also exempt: they are managed by the plugin
+   * system, so omitting them from the payload does NOT remove them — they keep
+   * running (unless enterprise policy denies the server) and are simply absent
+   * from the result's `removed` list. In particular, `setMcpServers({})` no
+   * longer guarantees a session has zero dynamic MCP surface when plugins are
+   * loaded or its current folder has such servers. Naming a plugin server
+   * explicitly in the payload still replaces it (ownership is preserved
+   * CLI-side).
    *
-   * @param servers - Record of server name to configuration. Pass an empty object to remove all dynamic servers (except plugin-owned ones, which are retained).
+   * @param servers - Record of server name to configuration. Pass an empty object to remove all dynamic servers (except plugin-owned ones and those of the session's current folder, which are retained as above).
    * @returns Information about which servers were added, removed, and any connection errors
    */
   setMcpServers(
@@ -5227,6 +5243,10 @@ export declare type SDKControlInitializeResponse = {
    * Whether the `hooks` this initialize carried were registered: true on a session's first initialize, and on a repeated initialize from the process that owns the CLI's stdin (its set replaces the one registered earlier); false when a repeated initialize's hooks were ignored (a client joining a remote session another client configured). Absent when the request carried no hooks, and on CLIs that predate the field — those ignored `hooks` on every repeated initialize.
    */
   hooks_applied?: boolean;
+  /**
+   * True on every initialize reply from a CLI that honors `onFailure` on hook matchers. Absent on CLIs that predate the option, which ignore it (a failed callback set to "block" lets the action run), and from responders that do not run the host's hooks. A host that sets "block" must not go on without it; the TypeScript SDK refuses the session. It says nothing of this request's hooks: `hooks_applied` does, and the TypeScript SDK also refuses a first initialize that reads `hooks_applied: false` when a matcher sets "block".
+   */
+  hook_on_failure_supported?: boolean;
 
   /**
    * Whether every plugin this initialize listed is loaded: true when each one is among the plugins the process loaded at launch (from `plugins` under --await-initialize, or from --plugin-dir), so a re-sent initialize naming the launch set also reads true; false otherwise. The `plugins` field never loads anything after launch. Absent when the request listed no plugins, and on CLIs that predate the field (those never read `plugins`).
@@ -5371,7 +5391,7 @@ declare type SDKControlMcpMessageRequest = {
 };
 
 /**
- * Reads one MCP Apps (SEP-1865) UI resource — a `ui://` URI, typically the `_meta.ui.resourceUri` a tool declares — from a connected MCP server the CLI itself dialed, with `resources/read`, for a host that renders it. Read-only and no model turn. The reply is untrusted third-party content (HTML): render it sandboxed. SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can read them directly. Errors name the cause: a non-ui:// URI, an unknown server, a server that managed policy blocks, that is disabled or that the project has not approved (the refusals mcp_reconnect gives), a server that is not connected (failed, pending or needs-auth: send mcp_reconnect; a connected server, or one still listed from the discovery cache, is read through the same connect path a tool call takes), a response over the size limit, or the server's own resources/read error. Refused on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker) and by the client of a cloud-hosted session. Advertised as `mcp_read_resource_v1` in system/init.capabilities.
+ * Reads one MCP Apps (SEP-1865) UI resource — a `ui://` URI, typically the `_meta.ui.resourceUri` a tool declares — from a connected MCP server the CLI itself dialed, with `resources/read`, for a host that renders it. Read-only and no model turn. The reply is untrusted third-party content (HTML): render it sandboxed. SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can read them directly. Errors name the cause: a non-ui:// URI, an unknown server, a server that managed policy blocks, that is disabled or that the project has not approved (the refusals mcp_reconnect gives), a server that is not connected (failed, pending or needs-auth: send mcp_reconnect; a connected server, or one still listed from the discovery cache, is read through the same connect path a tool call takes), a response over the size limit, or the server's own resources/read error (over a transport that stores frames, one fixed sentence in its place). Refused on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker) and by the client of a cloud-hosted session. Advertised as `mcp_read_resource_v1` in system/init.capabilities.
  */
 declare type SDKControlMcpReadResourceRequest = {
   subtype: "mcp_read_resource";
@@ -5426,7 +5446,7 @@ declare type SDKControlMcpSetServersRequest = {
 declare type SDKControlMcpStatusRequest = {
   subtype: "mcp_status";
   /**
-   * When true and the CLI writes to the session through CCR (a cloud session's worker, or a Remote Control worker), the success reply is published only to the clients attached at that moment, as a control_response marked live_only: true on the session's unsequenced event stream, and is not stored with the session's events; on a cloud session's worker its rows embed each server's configuration (URLs, headers, OAuth settings). Set it only if your client reads control_response frames from that stream; a reply sent while its stream is down is lost and the request must be sent again, and a reply over the live size limit comes back as a live error instead. Error replies other than that size-limit error, and every reply from hosts that do not send live replies (stdio hosts, and CLIs older than this field), are ordinary stored replies, so a client that sets it must accept either.
+   * When true and the CLI writes to the session through CCR (a cloud session's worker, or a Remote Control worker), the success reply is published only to the clients attached at that moment, as a control_response marked live_only: true on the session's unsequenced event stream, and is not stored with the session's events; a cloud session's worker that does not advertise `mcp_status_no_config_v1` embeds each server's configuration (URLs, headers, OAuth settings) in its rows. Set it only if your client reads control_response frames from that stream; a reply sent while its stream is down is lost and the request must be sent again; a reply too large to send in full leaves out each server's `tools`, `serverInfo` and `capabilities` and sends only how many tools it has, and one still over the live size limit comes back as a live error instead. Error replies other than that size-limit error, and every reply from hosts that do not send live replies (stdio hosts, and CLIs older than this field), are ordinary stored replies, so a client that sets it must accept either.
    */
   liveReply?: boolean;
 };
@@ -5475,7 +5495,7 @@ declare type SDKControlPermissionRequest = {
    */
   classifier_approvable?: boolean;
   /**
-   * True when the dialog must not offer the persistent "don't ask again" row for this ask: accepting it would write a whole-tool allow rule broader than the ask's own verb (PermissionAskDecision.suppressAlwaysAllowRule). Hosts rendering approve options should omit any persistent-rule affordance when set.
+   * True when the dialog must not offer the persistent "don't ask again" row for this ask: accepting it would write a whole-tool allow rule broader than the ask's own verb (PermissionAskDecision.suppressAlwaysAllowRule), or the ask comes from a run a plugin started, where Claude Code saves no rule from the answer, not even for the session. Hosts rendering approve options should omit any persistent-rule affordance when set.
    */
   suppress_always_allow_rule?: boolean;
   /**
@@ -5516,6 +5536,7 @@ export declare type SDKControlPermissionRulesState = {
    * True when enterprise managed settings pin allowManagedPermissionRulesOnly: the session applies policy rules only, and rules from other settings files appear with notInEffect set.
    */
   managedOnly: boolean;
+
   /**
    * Settings parse and validation errors, as get_settings reports them. When non-empty, the listed files were skipped — their rules are not in the session and not listed above.
    */
@@ -5546,6 +5567,10 @@ export declare type SDKControlReadFileResponse = {
    * Set when the request asked for base64. Absent means utf-8 — including when an older CLI ignored the request's encoding field.
    */
   encoding?: "base64";
+  /**
+   * Present on every utf-8 answer. True when the bytes read were not all valid UTF-8, so `contents` has U+FFFD where bytes were replaced and is not the file's own text: a binary file, text in another encoding, or a read cut inside a character when `truncated` is set. False when `contents` is exactly the bytes read, decoded, even if the file itself contains U+FFFD. Absent on a base64 answer, which is exact, and from an older CLI or tool container: a client that sees neither this nor `encoding: 'base64'` cannot tell whether `contents` is exact.
+   */
+  lossy?: boolean;
 };
 
 /**
@@ -5889,6 +5914,10 @@ declare type SDKHookCallbackMatcher = {
    */
   hookCallbackIds: string[];
   timeout?: number;
+  /**
+   * What a failure of these callbacks does: the client answered the hook_callback request with an error, or with an answer that fails validation. 'continue' (default): the failure is reported and the action goes ahead. 'block': the failure counts as a block, as it does for a command hook, so the action the event guards (a tool call, a permission request, a prompt) is blocked. Ignored on Stop, SubagentStop, TaskCompleted and TeammateIdle.
+   */
+  onFailure?: "continue" | "block";
 };
 
 /**
@@ -6081,7 +6110,8 @@ export declare type SDKMessage =
   | SDKPromptSuggestionMessage
   | SDKMirrorErrorMessage
   | SDKInformationalMessage
-  | SDKConversationResetMessage;
+  | SDKConversationResetMessage
+  | SDKSessionWritesLostMessage;
 
 /**
  * Provenance of a user-role message (peer session, team lead, channel). A host wrapping keyboard input must stamp {kind:'human'} explicitly — absent origin is treated as unattributed and fails closed at strict isHuman() trust gates.
@@ -6201,6 +6231,7 @@ export declare type SDKModelRefusalFallbackMessage = {
    * stop_details.explanation from the refused API response (client lane only — the server-lane trigger carries no explanation). Unstable human prose — display only, never parse. null/absent when the response carried none, and always null on server-lane banners.
    */
   api_refusal_explanation?: string | null;
+
   /**
    * Wire uuids of the messages this fallback retracted — the refused partial as the consumer received it (one uuid per normalized SDK message; multi-block messages carry per-block derived uuids) plus any tombstoned tool_results. Emitted AFTER the retraction, so this is a resolution-time eviction signal: remove these messages from transcript state on receipt. Eviction is idempotent — unknown or already-removed uuids are a no-op. Absent when emitted by an older CLI.
    */
@@ -6664,6 +6695,28 @@ export declare type SDKSessionStateChangedMessage = {
 };
 
 /**
+ * The CLI could not save lines of a session transcript, changes to ~/.claude.json, or both, because the disk was full or its quota was used up. Sent at most once, as the CLI exits, after the last result if there was one. The results already received stand, and this message does not change the exit status. As on every message, session_id is the session the CLI is in; transcript_session_ids says whose transcript lost lines. Sent only with stream-json output on stdout, never under --sdk-url or a Claude Desktop entrypoint. Safe to ignore.
+ */
+export declare type SDKSessionWritesLostMessage = {
+  type: "system";
+  subtype: "session_writes_lost";
+  /**
+   * Why the writes failed. 'ENOSPC': the disk was full. 'EDQUOT': the disk quota was used up. When both kinds of write were lost for different reasons, the transcript's. More codes may be added.
+   */
+  error_code: "ENOSPC" | "EDQUOT";
+  /**
+   * What was not saved. 'transcript': lines of a session transcript, so resuming a session in transcript_session_ids may miss part of its conversation. 'global_config': changes this run made to ~/.claude.json. Never empty. More values may be added.
+   */
+  lost: ("transcript" | "global_config")[];
+  /**
+   * The sessions whose transcripts lost lines, in the order each first lost one. Present only when 'transcript' is listed; never empty. Usually session_id alone. A CLI that started a new session after the loss, as /clear does, lists the earlier session, and lists session_id only if that session lost lines too.
+   */
+  transcript_session_ids?: string[];
+  uuid: UUID;
+  session_id: string;
+};
+
+/**
  * A settings file parse or validation error. When a settings.json file fails to parse (invalid JSON, JSON comments, schema mismatch), the file is skipped and any rules it contained — including permission allow/deny lists — are not applied.
  */
 export declare type SDKSettingsParseError = {
@@ -6682,7 +6735,7 @@ export declare type SDKSettingsParseError = {
 };
 
 /**
- * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed.
+ * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed. initialize_not_first: Claude Code was started with --await-initialize, and its first stdin line was not the initialize control request (another message, or not valid JSON). Either the host wrote something else first, or a wrapper script between the host and Claude Code read or changed that line; the fix is in the host or the wrapper script, not a retry.
  */
 export declare type SDKStartupFailureReason =
   | "org_pin_api_key_conflict"
@@ -6704,7 +6757,8 @@ export declare type SDKStartupFailureReason =
   | "bypass_root"
   | "org_config_required_unavailable"
   | "org_config_refused"
-  | "sandbox_required_unavailable";
+  | "sandbox_required_unavailable"
+  | "initialize_not_first";
 
 export declare type SDKStatus = "compacting" | "requesting" | null;
 
@@ -7093,6 +7147,7 @@ export declare type SDKUserMessage = {
    * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block. It looks for the first 100 entries that are not blank. For a paste the host took out of `message`, use `pasted_content` instead.
    */
   inline_pastes?: string[];
+
   session_id?: string;
   /**
    * ID of the subagent that produced this message: the `task_id` of its task events, unchanged when the subagent is resumed. Absent on main-thread messages.
@@ -7603,6 +7658,10 @@ export declare interface Settings {
      * For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths, each a folder with all below it or one file, that blockReadsOutsideWorkingDirectories lets through beside the working directories. It allows nothing: an allow rule, the permission mode or the user still decides each read, as with that setting off, and a shell command that hands such a path to a program is still asked about unless a Read allow rule covers it. The paths do not become working directories, so blockWritesOutsideWorkingDirectories refuses writes to them, and they are not told to MCP servers or to the model. Each path counts as written: a link in it is not followed and a pattern is not expanded, so list every spelling that a read may arrive by. Ignored: an entry that starts with ~, has a ".." segment or has white space at either end (as written or once normalized), a relative or network path, and the root of a filesystem. Does not change what sandboxed commands may read (sandbox.filesystem.allowRead does).
      */
     blockReadsExemptPaths?: string[];
+    /**
+     * For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths of working directories, each spelled exactly as it is passed, letter case included (the session folder, --add-dir, permissions.additionalDirectories). To decide what lies inside a listed working directory, Claude Code takes it as written and follows no link at it, so a link that later stands in its place gives the file tools no access to where the link leads. List real paths: the files of a listed path that runs through a link count as outside the working directories, because where they really are lies outside it. List a mapped network drive by its drive-letter path: Claude Code still derives the UNC form of that path by itself and adds it, as for any mapped drive. A file path that is itself spelled as a UNC path is judged as written, so a link on the share is not seen by that spelling. It adds no working directory and allows nothing. Once listed, a path stays so until the process ends, also if later settings leave it out. Ignored: an entry that is not already normalized (a relative path, one that starts with ~, a ".." segment, a separator at its end unless it is a filesystem root, forward slashes on Windows, white space at either end). Does not change what sandboxed commands may write.
+     */
+    workingDirectoriesAsGiven?: string[];
     /**
      * Disable auto mode
      */
@@ -10850,7 +10909,7 @@ export declare interface Transport {
   /**
    * Await the underlying subprocess's exit. Only meaningful for
    * subprocess-backed transports (ProcessTransport); WebSocket / SSE /
-   * in-process transports leave this undefined. Query.performCleanup()
+   * Bun Worker transports leave this undefined. Query.performCleanup()
    * awaits it (bounded) so .return() / asyncDispose don't resolve while
    * the child is still draining the stdin EOF that close() just sent.
    */

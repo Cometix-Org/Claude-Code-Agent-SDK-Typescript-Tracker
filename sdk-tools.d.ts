@@ -352,19 +352,6 @@ export type FileReadOutput =
          */
         error?: string;
       }[];
-    }
-  | {
-      type: "file_unchanged";
-      file: {
-        /**
-         * The path to the file
-         */
-        filePath: string;
-      };
-      /**
-       * Set when the dedup matched a startup-seeded entry (CLAUDE.md / nested memory) rather than a prior Read tool_result
-       */
-      source?: "seeded";
     };
 export type ListMcpResourcesOutput = {
   /**
@@ -473,6 +460,7 @@ export type ArtifactOutput =
       truncated?: boolean;
       total?: number;
       total_at_least?: true;
+      next_page_token?: string;
       pins_enabled?: boolean;
       scope?: "shared" | "all";
       external_listed?: true;
@@ -3183,7 +3171,7 @@ export interface ProposeGoalInput {
 }
 export interface ArtifactInput {
   /**
-   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit` and `scope` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one someone else owns, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path` (or `file_paths` for several in one call). 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above. 'pin' adds the artifact at `url` to the user's pinned list in their claude.ai sidebar and 'unpin' removes it (nothing else may accompany either) — private to the user, reversible, and no change to who can see the artifact.
+   * Omit (or 'publish') to publish file_path. 'list' enumerates artifacts — the user's own by default, see `scope`; only `limit`, `scope` and `page_token` may accompany it. 'read' returns the content of the published artifact at `url` (raw HTML for the user's own; an isolated summary, steered by the optional `prompt`, for one someone else owns, though a page published in this session's own Slack channel can come back in full as untrusted content) — see **Calls**. 'watch', 'unwatch', and 'status' manage live-update subscriptions through which a session keeps track of new versions of an artifact published elsewhere, and those aren't available in this session: 'watch' only reports that — this session does not keep track of new versions — and 'status' lists this session's artifact watches (pass `url` to check one). 'upload_asset' adds one local media, PDF, font, or text file to an existing artifact — pass `url` and `file_path` (or `file_paths` for several in one call). 'list_assets' lists the files in an artifact's asset store (pass `url`; `after` continues a listing), 'read_asset' saves one of them to a local file named by its id (pass `url` and `asset_id`, optionally `out_dir`), and 'delete_asset' permanently removes one (pass `url` and `asset_id`). See **Artifact assets** above. 'pin' adds the artifact at `url` to the user's pinned list in their claude.ai sidebar and 'unpin' removes it (nothing else may accompany either) — private to the user, reversible, and no change to who can see the artifact.
    */
   action?:
     | "publish"
@@ -3215,6 +3203,10 @@ export interface ArtifactInput {
    * list only: maximum artifacts to return (default 25).
    */
   limit?: number;
+  /**
+   * list only: the `next_page_token` a listing of the same scope gave, to list the artifacts after it.
+   */
+  page_token?: string;
   /**
    * list only: 'mine' (default) lists artifacts the user owns; 'shared' lists artifacts other people shared with the user; 'all' lists both. Rows are labeled (mine)/(shared) whenever scope is not 'mine'.
    */
@@ -3566,6 +3558,10 @@ export interface GlobOutput {
    * Whether totalMatches is the exact total (true) or a floor because the underlying search truncated its own output (false). Absent on results persisted by CLI versions predating this field.
    */
   countIsComplete?: boolean;
+  /**
+   * True when the time limit stopped the search after these paths were read, so more matches may exist. Absent otherwise.
+   */
+  timedOut?: boolean;
 }
 export interface GrepOutput {
   mode?: "content" | "files_with_matches" | "count";
@@ -3578,6 +3574,7 @@ export interface GrepOutput {
   totalLines?: number;
   appliedLimit?: number;
   appliedOffset?: number;
+  timedOut?: boolean;
 }
 export interface TaskStopOutput {
   /**
@@ -4039,6 +4036,10 @@ export interface TaskCreateOutput {
   task: {
     id: string;
     subject: string;
+    /**
+     * The task's description as saved. It can differ from the tool_use input if Claude Code corrects a malformed call or a PreToolUse hook changes the input. Absent in results from older Claude Code versions.
+     */
+    description?: string;
   };
 }
 export interface TaskGetOutput {
