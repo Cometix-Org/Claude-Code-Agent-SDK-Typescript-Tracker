@@ -3274,7 +3274,7 @@ export interface PushNotificationInput {
    * The notification body. Keep it under 200 characters; mobile OSes truncate.
    */
   message: string;
-  status: "proactive";
+  status?: "proactive";
 }
 export interface EnterWorktreeInput {
   /**
