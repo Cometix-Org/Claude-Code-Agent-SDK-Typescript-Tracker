@@ -377,7 +377,10 @@ export declare type CanUseTool = (
     requestId: string;
     /**
      * Set when a user-configured ask RULE (permissions.ask) forced this
-     * prompt while the ask carries the tool's own decisionReason. Hosts
+     * prompt while the ask carries the tool's own decisionReason, or when
+     * an ask rule reaches an MCP tool only under another name of its server
+     * (such as a connector's id or its claude.ai name), not the one given
+     * here. Hosts
      * making policy on the reason (e.g. auto-deny a safetyCheck) or
      * running host-side auto-approval should treat asks carrying this
      * field as rule-forced: the user's stated intent is a human prompt.
@@ -774,7 +777,9 @@ export declare type CwdChangedHookSpecificOutput = {
  *
  * Without `sessionStore`: removes `{sessionId}.jsonl` and the `{sessionId}/`
  * subagent-transcript subdirectory from the local projects dir. Throws if the
- * session is not found.
+ * session is not found. If the subdirectory cannot be removed, throws after
+ * the transcript is already deleted. A repeat call then throws "not found",
+ * so delete the subdirectory yourself.
  *
  * @param sessionId - UUID of the session
  * @param options - `{ dir?, sessionStore? }`
@@ -5332,7 +5337,7 @@ export declare type SDKControlListPermissionRulesResponse = {
 };
 
 /**
- * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes). SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls, unless result_not_for_model is set. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call. STAGED calls (input_files/output_files declared) additionally stage lane rows in/out around the call — see the input_files describe. Staged failures come back as a success-subtype response whose staging field carries a typed error_code; subtype:error is emitted only when the call could not be attempted at all (server not connected, kill switch, dispatch failure) and means nothing ran. A target server that is not yet connected is brought up on demand: dispatch runs the deferred plugin/MCP startup resolution (the work a first model turn would have done) and waits up to 30s — shortened by expires_at when that is sooner — for the server to connect before answering "MCP server not connected", so a dispatch that races plugin startup (e.g. after an idle-wake reattach) succeeds instead of failing until a turn runs. Standard RPC semantics: a redelivered request_id supersedes the in-flight run (it is aborted and its response suppressed — exactly one response per request_id); conversion is idempotent, so re-running is safe. Cancellable via control_cancel_request.
+ * Invokes an MCP tool via the subprocess MCP client without a model turn. No permission check (control channel is trusted, same as other subtypes) unless check_permissions is set. SDK-type MCP servers (config.type === "sdk") are rejected — they are caller-provided, so the caller can invoke them directly without the subprocess round-trip. Result content passes through the same processing as model-turn MCP calls, unless result_not_for_model is set. Session expiry is not retried automatically; callers can mcp_reconnect and retry. UrlElicitationRequired (-32042) tries Elicitation hooks; if no hook resolves, the call errors with the URL in the message — open it out-of-band, then retry mcp_call. STAGED calls (input_files/output_files declared) additionally stage lane rows in/out around the call — see the input_files describe. Staged failures come back as a success-subtype response whose staging field carries a typed error_code; subtype:error is emitted only when the call could not be attempted at all (server not connected, kill switch, dispatch failure) and means nothing ran. A target server that is not yet connected is brought up on demand: dispatch runs the deferred plugin/MCP startup resolution (the work a first model turn would have done) and waits up to 30s — shortened by expires_at when that is sooner — for the server to connect before answering "MCP server not connected", so a dispatch that races plugin startup (e.g. after an idle-wake reattach) succeeds instead of failing until a turn runs. Standard RPC semantics: a redelivered request_id supersedes the in-flight run (it is aborted and its response suppressed — exactly one response per request_id); conversion is idempotent, so re-running is safe. Cancellable via control_cancel_request.
  */
 declare type SDKControlMcpCallRequest = {
   subtype: "mcp_call";
@@ -5349,13 +5354,17 @@ declare type SDKControlMcpCallRequest = {
    */
   expires_at?: string;
   /**
-   * Tool-execution timeout (staging and collection have their own transport timeouts). Clamped to [1000, 600000]; default 120000. Sending timeout_ms routes the call through the staging engine — so it is always enforced when present and the response carries a staging result; omit it for a plain call. Staged calls are POSIX-worker-only: on a Windows worker any staged-field call fails with a typed staging refusal.
+   * Tool-execution timeout (staging and collection have their own transport timeouts); with check_permissions it also bounds hooks and the wait for an answer. Clamped to [1000, 600000]; default 120000. Sending timeout_ms routes the call through the staging engine — so it is always enforced when present and the response carries a staging result; omit it for a plain call. Staged calls are POSIX-worker-only: on a Windows worker any staged-field call fails with a typed staging refusal.
    */
   timeout_ms?: number;
   /**
    * The caller hands the result to a program (a host that renders it, a script), not to a model, and bounds it itself. content is then the server's own content blocks as MCP defines them (the MCP SDK drops members it does not define), not what a model turn would be handed: no image is resized or put in the Messages API's shape, nothing is saved under tool-results, no embedded resource is flattened, and text blocks beside structuredContent stay. They are untrusted third-party data: any mimeType, images neither re-encoded nor bounded in pixels, each block's annotations and _meta unfiltered. The size check that protects a model's context is skipped too: no count_tokens request (which uploads the result), no truncation, no note in place of the content. Instead a result over 10485760 characters (content with its base64, structuredContent and _meta together) fails though the tool ran: a plain call answers the error subtype, a staged call staging.error_code tool_error with the text in detail, before its outputs are collected. A legacy toolResult still comes back as a string. Does not route the call through the staging engine. Absent or false: as before. Honoured only for a host on this process's own pipes, not over a remote transport nor on a lane that redacts what it persists. Feature-detected as `mcp_call_result_not_for_model_v1` in system/init.capabilities and in the initialize response's capabilities; where it is not said, and by a CLI without it, the member is ignored.
    */
   result_not_for_model?: boolean;
+  /**
+   * The call is someone else's (a page a host renders), so it is decided as the model's own call to this tool is: permission rules under every spelling, the permission mode, requiresUserInteraction, managed settings, and PreToolUse and PostToolUse hooks, which see the arguments and the result. An ask reaches the host as a can_use_tool control request; where no host can answer, and in dontAsk or plan mode, it is refused. A refused call never reaches the server: on a plain call the error subtype, on a staged call staging error_code=tool_error, each with text starting 'The tool did not run: '. The other refusals of mcp_call come first and keep their own words. A PostToolUse hook's rewrite replaces content and drops structuredContent and _meta. The result stays out of the model's context. Only a CLI that says mcp_call_check_permissions_v1 honours this member: an older one ignores it and runs the tool with no check. Honoured only on the pipes of the host that spawned the process; elsewhere the call is refused. A value that is not a boolean is refused.
+   */
+  check_permissions?: boolean;
   /**
    * Declaring input_files or output_files makes this a STAGED call: rows are fetched from the synced-file lane into a private per-request temp dir the WORKER chooses (random, per-UID — the caller never sees or computes paths; it references files via tokens in arguments), the tool runs, and declared outputs are written back as lane rows (durable-at-ack PUT). The response then carries a `staging` result the caller switches on.
    */
@@ -5425,7 +5434,7 @@ export declare type SDKControlMcpReadResourceResponse = {
      */
     blob?: string;
     /**
-     * The content item's own `_meta` as the server sent it (MCP Apps puts the resource's `ui.csp` and `ui.permissions` here), minus keys under the CLI-reserved `com.anthropic/` prefix.
+     * The content item's own `_meta` as the server sent it (MCP Apps puts the resource's `ui.csp` and `ui.permissions` here), minus keys under the CLI-reserved `com.anthropic/` prefix and `io.modelcontextprotocol/files` download targets: from a claude.ai connector, one that holds the download service's one-time token (every such target while connector downloads or their removal are on); from a server on a cloud session's MCP route, every such target.
      */
     _meta?: Record<string, unknown>;
   }[];
@@ -5510,7 +5519,7 @@ declare type SDKControlPermissionRequest = {
    */
   default_to_no?: boolean;
   /**
-   * Set when a user-configured ask RULE (permissions.ask) forced this prompt but the ask carries the tool's own decision_reason — the ask-rule substitution keeps the richer tool-minted ask, so the rule rides here instead of decision_reason_type 'rule'. Hosts making policy on decision_reason_type (e.g. auto-deny safetyCheck) or running host-side auto-approval should treat asks carrying this field as rule-forced: the user's stated intent is a human prompt. Values are producer-authored but render-unsafe like decision_reason; sanitize before display.
+   * Set when a user-configured ask RULE (permissions.ask) forced this prompt but the ask carries the tool's own decision_reason — the ask-rule substitution keeps the richer tool-minted ask, so the rule rides here instead of decision_reason_type 'rule'. May also be set, whatever the decision_reason, when an ask rule reaches an MCP tool only under another name of its server (such as a connector's id or its claude.ai name), not under the name in tool_name: a host that looks for the rule by that name does not find it. Hosts making policy on decision_reason_type (e.g. auto-deny safetyCheck) or running host-side auto-approval should treat asks carrying this field as rule-forced: the user's stated intent is a human prompt. Values are producer-authored but render-unsafe like decision_reason; sanitize before display.
    */
   matched_ask_rule?: {
     source: string;
@@ -5524,7 +5533,7 @@ declare type SDKControlPermissionRequest = {
 
   description?: string;
   /**
-   * True when one-tap Approve/Deny must not be offered: the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction(): the user responds on the card itself), OR the pending ask is localDisplayOnly (its consent disclosure cannot ride this wire and only the local dialog renders it), OR the auto-mode classifier blocked the call and it was handed to a person (decision_reason_type 'classifier' on a person-only ask), which no stored grant or automatic approval may answer, OR a grant keyed on the tool name must not answer it: the MCP server's name spells a claude.ai connector's key and the server came from neither claude.ai nor whoever launched the session, or, while Claude Code enforces grants, two tools of the server get that name, OR the SDK host worded the ask (title and description are its consent copy, which a push cannot carry whole), OR the ask is the one made before the first upload by file reference to a connector, which no stored grant or automatic approval may answer. In each case the user has to open the session to answer.
+   * True when one-tap Approve/Deny must not be offered: the tool's approval card IS the user-interaction surface (Tool.requiresUserInteraction(): the user responds on the card itself), OR the pending ask is localDisplayOnly (its consent disclosure cannot ride this wire and only the local dialog renders it), OR the auto-mode classifier blocked the call and it was handed to a person (decision_reason_type 'classifier' on a person-only ask), which no stored grant or automatic approval may answer, OR a grant keyed on the tool name must not answer it: the MCP server's name spells a claude.ai connector's key and the server came from neither claude.ai nor whoever launched the session, or, while Claude Code enforces grants, two tools of the server get that name, OR the SDK host worded the ask (title and description are its consent copy, which a push cannot carry whole), OR the ask stands in for the classifier's verdict on a call to Claude Desktop's Cowork shell, which no stored grant or automatic approval may answer. In each case the user has to open the session to answer.
    */
   requires_user_interaction?: boolean;
 };
@@ -5723,6 +5732,7 @@ declare type SDKControlRequestInner =
   | SDKControlReloadOutputStylesRequest
   | SDKControlMcpReconnectRequest
   | SDKControlMcpToggleRequest
+  | SDKControlSetHasSubscribersRequest
   | SDKControlStopTaskRequest
   | SDKControlBackgroundTasksRequest
   | SDKControlGetTaskOutputRequest
@@ -5802,6 +5812,17 @@ declare type SDKControlSeedReadStateRequest = {
 declare type SDKControlSetColorRequest = {
   subtype: "set_color";
   color: string;
+};
+
+/**
+ * Tells the CLI whether anybody is watching the output that the host reads from stream-json stdout and passes on. It matters only in a CLI started with CLAUDE_CODE_STREAM_EVENT_HOLD_MS, which holds most content_block_delta and thinking_tokens lines on stdout to join them, and with CLAUDE_CODE_STREAM_EVENT_NO_SUBSCRIBER_HOLD_MS: after false, each new wait of that hold lasts the second variable's time, if longer; after true or null, the first variable's time again. No line is dropped. The reply is an empty success, also where nothing changes, and like any other line it comes after the lines held so far, so each request ends the wait that is running: send one only when the answer changes, not after each message from your server. A new CLI process starts as watched, so send the answer again to each new process. An older CLI answers with the unsupported-subtype error, and a CLI that drives a cloud-hosted session refuses the request.
+ */
+declare type SDKControlSetHasSubscribersRequest = {
+  subtype: "set_has_subscribers";
+  /**
+   * false: nobody watches now. true: somebody does. null: the host does not know, which counts as true.
+   */
+  has_subscribers: boolean | null;
 };
 
 /**
@@ -6710,7 +6731,7 @@ export declare type SDKSessionStateChangedMessage = {
 };
 
 /**
- * The CLI could not save lines of a session transcript, changes to ~/.claude.json, or both, because the disk was full or its quota was used up. Sent at most once, as the CLI exits, after the last result if there was one. The results already received stand, and this message does not change the exit status. As on every message, session_id is the session the CLI is in; transcript_session_ids says whose transcript lost lines. Sent only with stream-json output on stdout, never under --sdk-url or a Claude Desktop entrypoint. Safe to ignore.
+ * The CLI could not save lines of a session transcript, changes to ~/.claude.json, or both, because the disk was full or its quota was used up. Sent at most once, as the CLI exits with status 0, after the last result if there was one. A run that exits 1, as after an error result, gets only the line on stderr; CLI 2.1.317 and some later releases sent this message there too. The results already received stand, and this message does not change the exit status. As on every message, session_id is the session the CLI is in; transcript_session_ids says whose transcript lost lines. Sent only with stream-json output on stdout, never under --sdk-url or a Claude Desktop entrypoint. Safe to ignore.
  */
 export declare type SDKSessionWritesLostMessage = {
   type: "system";
@@ -7683,6 +7704,10 @@ export declare interface Settings {
      */
     disableAutoMode?: "disable";
     /**
+     * Never wait for a person to answer a tool permission prompt: a call that would prompt is denied at once, the model is told, and the turn carries on. This is what --permission-prompts none does for -p, in every kind of session, subagents and agent teams included. Allow rules, the permission mode, auto mode's classifier and PermissionRequest hooks decide first, as they do without it; it only ever denies, and allows nothing. Claude's questions and plan mode's tools are not offered to the model, and an MCP server's request for input is cancelled unless an Elicitation hook answers it. An app or script that answers prompts through canUseTool or --permission-prompt-tool is not asked either: answer from a PermissionRequest hook instead. Read from user settings, --settings and managed settings; project and local settings are ignored, and true in any of those sources wins.
+     */
+    denyInsteadOfPrompting?: boolean;
+    /**
      * Additional directories to include in the permission scope
      */
     additionalDirectories?: string[];
@@ -8105,6 +8130,10 @@ export declare interface Settings {
    * Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.
    */
   disableSkillShellExecution?: boolean;
+  /**
+   * Windows only. Set to true to keep every Bash command in a single argument to bash, so that endpoint security tools that match text in process command lines see it whole. Otherwise Claude Code may split a long command over several arguments. With true, a command of about 7,000 characters or more, or fewer if it is full of quotes, may reach bash cut short, and then usually fails with a syntax error. Only honored from managed settings; ignored in user, project, local and --settings sources.
+   */
+  disableWindowsBashCommandSplit?: boolean;
   /**
    * Default shell for input-box ! commands. Defaults to 'bash' on all platforms (no Windows auto-flip).
    */
@@ -10186,7 +10215,7 @@ export declare interface Settings {
     startDirectory?: string;
   }[];
   /**
-   * SSH connections in Claude Desktop on macOS and Linux whose host comes from a command. A list of entries, each with `id`, `name` and `command`, and optionally `sshIdentityFile` and `startDirectory`. When you ask Desktop to create or replace an entry's host, it runs `command` on this computer: a program name or absolute path, followed by plain arguments. There is no shell, so quotes, pipes, variables and a leading `~` do not work. The command must print only the host on standard output: `host` or `user\@host` on one line, or a JSON object with `sshHost` and, optionally, `sshPort` and `startDirectory`. Desktop reads this key only from user settings and from this computer's managed settings. Claude Code itself does not use it.
+   * SSH connections in Claude Desktop whose host comes from a command. A list of entries, each with `id`, `name` and `command`, and optionally `sshIdentityFile` and `startDirectory`. Desktop runs `command` on this computer when you create the connection or another host for it, not each time you connect. `command` is a program name or absolute path (single-quote a path with spaces), then plain arguments. Nothing else can be quoted. For pipes, variables or a leading `~`, use a script. On Windows, the program must be a full path from a drive letter, such as `C:/tools/acme.exe`, ending in `.exe`, `.cmd` or `.bat`. Quoted paths and Windows need Claude Desktop v4.16336.0 or later. The command must print only the host on standard output: `host` or `user\@host` on one line, or a JSON object with `sshHost` and, optionally, `sshPort` and `startDirectory`. Desktop reads this key only from user settings and from this computer's managed settings. Claude Code itself does not use it.
    */
   sshHostCommands?: unknown[];
   /**

@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.3.318",
+  "version": "0.3.319",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -61,14 +61,14 @@
     "zod": "^4.0.0"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.318",
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.318"
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.319",
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.319"
   },
   "files": [
     "sdk.mjs",
@@ -85,10 +85,10 @@
     "extractFromBunfs.d.ts",
     "manifest.json",
     "manifest.zst.json",
-    "core-aydj4gn2.mjs",
-    "core-dx5t072s.mjs",
-    "core-gh89n9s3.mjs",
-    "core-z711jz48.mjs"
+    "core-5fx2pfbt.mjs",
+    "core-actjkrgm.mjs",
+    "core-ed8v4zmx.mjs",
+    "core-ytn251z7.mjs"
   ],
-  "claudeCodeVersion": "2.1.318"
+  "claudeCodeVersion": "2.1.319"
 }
