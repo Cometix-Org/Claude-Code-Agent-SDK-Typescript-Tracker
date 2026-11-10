@@ -4222,6 +4222,7 @@ export interface CronCreateOutput {
 }
 export interface CronDeleteOutput {
   id: string;
+  endedLoopWakeup?: true;
 }
 export interface CronListOutput {
   jobs: {
