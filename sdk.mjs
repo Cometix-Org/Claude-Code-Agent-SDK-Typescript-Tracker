@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
 
-// Version: 0.3.321
+// Version: 0.3.322
 
 // Want to see the unminified source? We're hiring!
 // https://job-boards.greenhouse.io/anthropic/jobs/4816199008
@@ -41620,7 +41620,7 @@ function VV(e, t, n) {
     level: e,
     event: t,
     data: n,
-    cc_version: typeof { VERSION: "0.3.321" } < "u" ? "0.3.321" : "unknown",
+    cc_version: typeof { VERSION: "0.3.322" } < "u" ? "0.3.322" : "unknown",
   };
   return (
     ce(r) +
@@ -51087,7 +51087,7 @@ function ZZ(e, { strictPolicyHelperKeys: t = !1 } = {}) {
       v()
         .optional()
         .describe(
-          "When true, fast mode is enabled. When absent or false, fast mode is off.",
+          "When true, fast mode is enabled. When absent or false, fast mode is off. On Vertex a saved value is ignored: use /fast each session.",
         ),
     fastModePerSessionOptIn: () =>
       v()
@@ -61861,7 +61861,7 @@ class fS {
                 params: {
                   protocolVersion: jJ,
                   capabilities: $J,
-                  clientInfo: { ...zJ, version: "0.3.321" },
+                  clientInfo: { ...zJ, version: "0.3.322" },
                 },
               },
             },
@@ -63807,7 +63807,7 @@ function Kk(e, t) {
   else if (i.type === "custom") ((f = i.prompt), (_ = i.snapshot));
   else if (i.type === "preset")
     ((m = i.append), (g = i.excludeDynamicSections), (_ = i.snapshot));
-  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.321";
+  process.env.CLAUDE_AGENT_SDK_VERSION = "0.3.322";
   let {
       abortController: y = Rf(),
       additionalDirectories: S = [],
@@ -63908,7 +63908,7 @@ function Kk(e, t) {
   let Zk = Lf?.type === "json_schema" ? Lf.schema : void 0,
     _t = M ? { ...M } : { ...process.env };
   if (!_t.CLAUDE_CODE_ENTRYPOINT) _t.CLAUDE_CODE_ENTRYPOINT = "sdk-ts";
-  if (!_t.CLAUDE_AGENT_SDK_VERSION) _t.CLAUDE_AGENT_SDK_VERSION = "0.3.321";
+  if (!_t.CLAUDE_AGENT_SDK_VERSION) _t.CLAUDE_AGENT_SDK_VERSION = "0.3.322";
   if (B) _t.CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING = "true";
   if (
     !Object.keys(_t).some(

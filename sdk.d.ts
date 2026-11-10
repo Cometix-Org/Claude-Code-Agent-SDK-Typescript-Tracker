@@ -10026,7 +10026,7 @@ export declare interface Settings {
    */
   advisorModel?: string;
   /**
-   * When true, fast mode is enabled. When absent or false, fast mode is off.
+   * When true, fast mode is enabled. When absent or false, fast mode is off. On Vertex a saved value is ignored: use /fast each session.
    */
   fastMode?: boolean;
   /**
