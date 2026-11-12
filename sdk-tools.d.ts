@@ -720,6 +720,8 @@ export type ProjectsOutput =
         name?: string;
         doc_uuid?: string;
         text?: string;
+        image_attached?: boolean;
+        page?: number;
       }[];
       docs?: string[];
     }
