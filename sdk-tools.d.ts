@@ -3036,9 +3036,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
       ]
     | [
@@ -3061,9 +3089,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
         {
           /**
@@ -3084,9 +3140,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
       ]
     | [
@@ -3109,9 +3193,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
         {
           /**
@@ -3132,9 +3244,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
         {
           /**
@@ -3155,9 +3295,37 @@ export interface ProposeSkillsInput {
            */
           evidence?: string[];
           /**
-           * The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           * For an improvement, in place of skillMd: your changes to the skill's SKILL.md, applied in order. They apply to that file as it is now, not to an earlier proposal of yours. The card shows the whole updated file. The name and description come from the fields above, not from the frontmatter.
+           *
+           * @minItems 1
+           * @maxItems 100
            */
-          skillMd: string;
+          edits?: [
+            {
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            },
+            ...{
+              /**
+               * Text to replace. It must occur exactly once in that SKILL.md
+               */
+              old_string: string;
+              /**
+               * Text to put in its place
+               */
+              new_string: string;
+            }[],
+          ];
+          /**
+           * For a new skill or a full rewrite. The complete SKILL.md exactly as it should be saved: frontmatter plus the full body. When the user saves, the body below the frontmatter becomes the skill's entire instructions and the name and description come from the fields above; other frontmatter keys are not kept. For an improvement this replaces the existing skill's SKILL.md entirely, so read that skill's current SKILL.md first and include everything worth keeping, not only the changes.
+           */
+          skillMd?: string;
         },
       ];
 }

@@ -151,6 +151,22 @@ export declare type ApiKeySource =
   | "temporary"
   | "oauth";
 
+/**
+ * Archive a session. It stays on disk, and `listSessions` still returns it,
+ * with `archived: true`. A prompt sent in the session later unarchives it.
+ * Does not change the transcript or stop a process that runs the session.
+ *
+ * Throws if the session is not found, or if `sessionStore` is passed: the mark
+ * is kept in a file beside the local transcript, which a store does not hold.
+ *
+ * @param sessionId - UUID of the session
+ * @param options - `{ dir?: string }` project path; omit to search all projects
+ */
+export declare function archiveSession(
+  _sessionId: string,
+  _options?: SessionMutationOptions,
+): Promise<void>;
+
 export declare type AsyncHookJSONOutput = {
   async: true;
   asyncTimeout?: number;
@@ -3360,6 +3376,12 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * main-thread agent, and `ultracode` to off with the current effort kept.
    * Only available in streaming input mode.
    *
+   * Rejects if a value would make Claude Code discard the flag settings layer:
+   * nothing in that call applies, including its valid keys, and settings from
+   * earlier calls stay in force. Catch the rejection. A value Claude Code ignores
+   * on its own does not reject, and its key still replaces the earlier value: a
+   * `permissions` object whose only deny rule is malformed leaves no deny rules.
+   *
    * `ultracode: true` or `false` turns ultracode on or off and leaves the
    * effort level alone. An `effortLevel` that moves the session to a
    * different level, sent without an `ultracode` key, also turns ultracode
@@ -3519,12 +3541,24 @@ export declare interface Query extends AsyncGenerator<SDKMessage, void> {
    * been in the `plugins` option at launch; plugins already loaded stay. Each
    * path must be absolute.
    *
+   * With `refuseIfBusy`, a request that finds the session busy reloads nothing:
+   * the promise rejects with an error whose `errorCode` is
+   * 'reload_plugins_busy', and the caller asks again once the session is idle.
+   * Busy: a turn is running or queued, a permission prompt taken over from an
+   * earlier process is unanswered, or background work such as an agent or a
+   * workflow, or an in-process teammate, is still at work; a background shell
+   * command alone is not busy.
+   * For a host whose request can arrive late. Only a CLI whose `system/init`
+   * lists the capability `reload_plugins_refuse_if_busy_v1` is sure to honor
+   * the option: any other may serve the request, in a turn too.
+   *
    * @returns The refreshed session components after plugin reload, or the
    * unchanged ones with `held: true` when the reload was held
    */
   reloadPlugins(options?: {
     holdOnCacheImpact?: boolean;
     addPlugins?: SdkPluginConfig[];
+    refuseIfBusy?: boolean;
   }): Promise<SDKControlReloadPluginsResponse>;
   /**
    * Reload skills from disk and return the refreshed skill list.
@@ -5398,7 +5432,7 @@ declare type SDKControlListModelsRequest = {
 };
 
 /**
- * Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source.
+ * Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source. A connection that stores its answers cuts these: see `withheld` on the state.
  */
 declare type SDKControlListPermissionRulesRequest = {
   subtype: "list_permission_rules";
@@ -5409,7 +5443,7 @@ declare type SDKControlListPermissionRulesRequest = {
  */
 export declare type SDKControlListPermissionRulesResponse = {
   /**
-   * The session's live permission rules state, as list_permission_rules reports it.
+   * The session's live permission rules state, as list_permission_rules reports it. Cut when `withheld` is true.
    */
   state: SDKControlPermissionRulesState;
 };
@@ -5441,7 +5475,7 @@ declare type SDKControlMcpCallRequest = {
    */
   result_not_for_model?: boolean;
   /**
-   * The call is someone else's (a page a host renders), so it is decided as the model's own call to this tool is: permission rules under every spelling, the permission mode, requiresUserInteraction, managed settings, and PreToolUse and PostToolUse hooks, which see the arguments and the result. An ask reaches the host as a can_use_tool control request; where no host can answer, and in dontAsk or plan mode, it is refused. A refused call never reaches the server: on a plain call the error subtype, on a staged call staging error_code=tool_error, each with text starting 'The tool did not run: '. The other refusals of mcp_call come first and keep their own words. A PostToolUse hook's rewrite replaces content and drops structuredContent and _meta. The result stays out of the model's context. Only a CLI that says mcp_call_check_permissions_v1 honours this member: an older one ignores it and runs the tool with no check. Honoured only on the pipes of the host that spawned the process; elsewhere the call is refused. A value that is not a boolean is refused.
+   * The call is someone else's (a page a host renders), so it is decided as the model's own call to this tool is, except that a slash command's allowed-tools and connector card answers never allow it, even during a turn: permission rules under every spelling, the permission mode, requiresUserInteraction, managed settings, and PreToolUse and PostToolUse hooks, which see the arguments and the result. An ask reaches the host as a can_use_tool control request; where no host can answer, and in dontAsk or plan mode, it is refused. A refused call never reaches the server: on a plain call the error subtype, on a staged call staging error_code=tool_error, each with text starting 'The tool did not run: '. The other refusals of mcp_call come first and keep their own words. A PostToolUse hook's rewrite replaces content and drops structuredContent and _meta. The result stays out of the model's context. Only a CLI that says mcp_call_check_permissions_v1 honours this member: an older one ignores it and runs the tool with no check. Honoured only on the pipes of the host that spawned the process; elsewhere the call is refused. A value that is not a boolean is refused.
    */
   check_permissions?: boolean;
   /**
@@ -5618,7 +5652,7 @@ declare type SDKControlPermissionRequest = {
 };
 
 /**
- * The session's live permission rules state, as list_permission_rules reports it.
+ * The session's live permission rules state, as list_permission_rules reports it. Cut when `withheld` is true.
  */
 export declare type SDKControlPermissionRulesState = {
   rules: SDKPermissionRuleEntry[];
@@ -5636,6 +5670,10 @@ export declare type SDKControlPermissionRulesState = {
    * Settings parse and validation errors, as get_settings reports them. When non-empty, the listed files were skipped — their rules are not in the session and not listed above.
    */
   errors?: coreTypes.SDKSettingsParseError[];
+  /**
+   * True when this answer was cut because the connection stores its answers (a cloud or self-hosted session): `rules` holds only rows from settings sources and `mcpServerPolicy`, `workspaceDirectories` only folders from settings sources, each entry of `errors` only a fixed `message` and an empty `path`, and `parentSettingsIncluded` is absent. Where session folders are withheld, `workspaceDirectories` is empty, `originalCwd` is an empty string, and each rule other than a bare tool name the session can send loses its `description` and goes as `Tool(withheld)`, or as `(withheld)` where its tool name cannot be sent. An `ask` or `deny` rule of that last kind goes as `*(withheld)`, so a client that matches rules by tool name treats it as covering every tool. Absent from an answer that was not cut.
+   */
+  withheld?: boolean;
 };
 
 /**
@@ -5706,6 +5744,10 @@ declare type SDKControlReloadPluginsRequest = {
    * Plugins for the reload to load as well, in the same shape as the SDK `plugins` option: each entry joins the session as one more --plugin-dir would (--plugin-dir-no-mcp when skipMcpDiscovery is set). Plugins already loaded stay; nothing is removed. A held or failed reload adds none of them. Refused for a malformed list or a path that is not absolute, when managed settings set disableSideloadFlags, on a connection whose frames persist server-side (any Remote Control or cloud worker), in a cloud-hosted session, and when a running sandbox cannot keep shell commands out of the folders (always on Windows).
    */
   add_plugins?: coreTypes.SdkPluginConfig[];
+  /**
+   * When true, a request that finds the session busy reloads nothing and gets an error whose error_code is reload_plugins_busy; ask again once the session is idle. Busy: a turn is running or still ending, a message is queued for one, a permission prompt taken over from an earlier process is unanswered, background work that keeps the session at running (an agent, a workflow and the like) is live, or an in-process teammate is at work; a session that only waits for a background shell command is not busy. For a host whose request can arrive late, such as one that reaches the session over SSH: a reload changes the commands, agents, hooks and servers under a running turn, agent or teammate. Default false: the request is served in a turn too. Only `claude -p` reads it, and says so in system/init.capabilities (reload_plugins_refuse_if_busy_v1) to a host on its pipes; a CLI that does not say so may ignore the field.
+   */
+  refuse_if_busy?: boolean;
 };
 
 /**
@@ -6477,7 +6519,7 @@ export declare type SDKPermissionRuleEntry = {
     | "mcpServerPolicy"
     | "hostCredential";
   /**
-   * The stored rule string VERBATIM, exactly as the session holds it. Two stored spellings that parse identically each get their own entry. Can carry invisible or control characters by design — escape at display.
+   * The stored rule string VERBATIM, exactly as the session holds it; where the state's `withheld` is true, the text may be cut. Two stored spellings that parse identically each get their own entry. Can carry invisible or control characters by design — escape at display.
    */
   rule: string;
   /**
@@ -6641,6 +6683,27 @@ export declare type SDKResultError = {
    */
   startup_failure_reason?: SDKStartupFailureReason;
   /**
+   * Set when startup_failure_reason is config_file_invalid: the config file that did not parse and its backup, as separate fields. Read paths from here, never from the text of errors. Each path is in the form that the machine running Claude Code uses, which can differ from the host's. Absent on every other result and from older producers.
+   */
+  invalid_config_file?: {
+    /**
+     * The file that is not valid JSON.
+     */
+    path: string;
+    /**
+     * Whether this is Claude Code's global config file. Only that file has backups, and only its message says how to repair it.
+     */
+    is_global: boolean;
+    /**
+     * Whether Claude Code knows the result of its search for a backup of the file. True with no backup_path: it found none. False: the result is not known, or this is not the global config file.
+     */
+    backup_searched: boolean;
+    /**
+     * The backup that the message in errors names. Usually it parses and shows use. Where the search finds none that does, it is the newest that it found with an account, then the newest that holds anything, or at last the newest that does not parse or could not be read, which a person may be able to mend. So show it to a person, or check that it parses before you copy it over the file at path.
+     */
+    backup_path?: string;
+  };
+  /**
    * Client uuid of the user message that triggered this turn (submitMessage options.uuid), echoed back so a consumer can link this error result to the send it answers — the same join key the success variant echoes, carried alone (error turns have no request_sent_wall_ms to report). A delivery-failure result from the remote-session client echoes the failed send's queue key, which is client-minted when the host sent no uuid of its own. A synthetic/scheduled (meta) turn's own uuid is echoed only when the host vouches it is the client event's own (delivered content such as a Slack owner ping or a Slack-bot observation); a meta turn that folded queued user messages in mid-turn, vouched or not, echoes the LAST of them. Absent on turns that neither had a client uuid nor folded a user message in, on session-scoped failures with no single triggering send (a crashed worker's zeroed result), and from older producers.
    */
   user_message_uuid?: string;
@@ -6796,6 +6859,10 @@ export declare type SDKSessionInfo = {
    * Creation time in integer milliseconds since epoch, extracted from the first entry's timestamp.
    */
   createdAt?: number;
+  /**
+   * Whether the session is archived: false if it was and has been unarchived, or a prompt was sent in it since. Absent if it never was, and with a sessionStore.
+   */
+  archived?: boolean;
 };
 
 /**
@@ -6850,7 +6917,7 @@ export declare type SDKSettingsParseError = {
 };
 
 /**
- * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed. initialize_not_first: Claude Code was started with --await-initialize, and its first stdin line was not the initialize control request (another message, or not valid JSON). Either the host wrote something else first, or a wrapper script between the host and Claude Code read or changed that line; the fix is in the host or the wrapper script, not a retry. config_file_invalid: a configuration file read at start-up is not valid JSON; errors names the file and, for the global configuration file, how to restore or repair it. The file is left unchanged, and every start without a terminal is refused until it is repaired, so a retry alone does not help. managed_settings_not_delivered: Claude Code was started with --managed-settings-in-initialize and could not use the managed settings in the initialize control request. Stdin ended or failed first, or its first line was too long; the request has no managedSettings object, that object could not be used, or the request's plugins field is malformed; or the launch does not read that request at start-up or also passes --managed-settings. errors says which. Claude Code starts no session without them; the fix is in the host or in a wrapper script between it and Claude Code, not a retry.
+ * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed. initialize_not_first: Claude Code was started with --await-initialize, and its first stdin line was not the initialize control request (another message, or not valid JSON). Either the host wrote something else first, or a wrapper script between the host and Claude Code read or changed that line; the fix is in the host or the wrapper script, not a retry. config_file_invalid: a configuration file read at start-up is not valid JSON; errors names the file and, for the global configuration file, how to restore or repair it, and invalid_config_file has the paths as fields. The file is left unchanged, and every start without a terminal is refused until it is repaired, so a retry alone does not help. managed_settings_not_delivered: Claude Code was started with --managed-settings-in-initialize and could not use the managed settings in the initialize control request. Stdin ended or failed first, or its first line was too long; the request has no managedSettings object, that object could not be used, or the request's plugins field is malformed; or the launch does not read that request at start-up or also passes --managed-settings. errors says which. Claude Code starts no session without them; the fix is in the host or in a wrapper script between it and Claude Code, not a retry.
  */
 export declare type SDKStartupFailureReason =
   | "org_pin_api_key_conflict"
@@ -6947,6 +7014,14 @@ export declare type SDKSystemMessage = {
      * Present only when a --plugin-dir, SDK `plugins` or synced directory entry did not load at all: the path of that entry, resolved against the cwd (for a directory, the value its `plugins[]` row would have carried; for a .zip, the archive; a --plugin-url entry carries none). `plugin` is then the positional `inline[N]` / `synced[N]` tag, so a host that mounts several directories pairs the error to its own by this path.
      */
     path?: string;
+    /**
+     * Present only when a managed-settings `enabledPlugins` entry dropped this --plugin-dir, SDK `plugins`, skills-directory or synced copy: the two halves of that entry, `name` and `marketplace`, and its value. `plugin_enabled` true: the entry turns that plugin on, and Claude Code does not accept this copy as that plugin. `plugin_enabled` false: the entry turns it off, and no directory copy of the name may load. Neither stops an install of the same name from another marketplace, which can load beside this row. `name` and `marketplace` are byte-exact, like `plugin`: control and bidi characters are not removed and the length is not bounded, so clean and bound them before showing them. `name` is as the entry spells it, which can differ from the copy (case, Unicode form, an earlier name of a built-in). `marketplace` is absent where the entry names no marketplace that an install could come from.
+     */
+    managed_lock?: {
+      plugin_enabled: boolean;
+      name: string;
+      marketplace?: string;
+    };
   }[];
 
   fast_mode_state?: FastModeState;
@@ -6962,7 +7037,7 @@ export declare type SDKSystemMessage = {
    */
   view_mode?: "focus" | "default";
   /**
-   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is then empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it — except that a client driving a hosted session lists there what it can no longer recall: a send already in flight to that session, or the first prompt the session was created with). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the cloud session backend reads this from the persisted init event to decide whether it may send them). 'ask_user_question_unanswered_v1' = an AskUserQuestion answer may set annotations[question].unanswered ('skipped' | 'replied_in_chat' | 'dismissed'), which the tool result echoes; send it only to a session that advertises this, since an older CLI on a strict host refuses the whole answer. A strict host also refuses an answer with a value outside these three; a new value will come with a new capability. Absent on older CLIs.
+   * Protocol capabilities this CLI supports, so SDK consumers can feature-detect instead of version-sniffing. Open set — ignore unknown values; check each capability for exactly the behavior you use. 'interrupt_receipt_v1' = the interrupt control_response success payload carries still_queued (uuids of async user messages that survive the interrupt). 'interrupt_cancel_queued_v1' = the interrupt control_request honors cancel_queued:true (queued and pending-dispatch commands are cancelled alongside the abort, listed on the response's cancelled field; still_queued is then empty — including any uuid that was mid-fold at the interrupt instant, since this request also aborts and the fold never delivers it — except that a client driving a hosted session lists there what it can no longer recall: a send already in flight to that session, or the first prompt the session was created with). 'queued_notifications' = the CLI accepts inbound queued_notification stream messages and drains them via ReadNotifications (the cloud session backend reads this from the persisted init event to decide whether it may send them). 'ask_user_question_unanswered_v1' = an AskUserQuestion answer may set annotations[question].unanswered ('skipped' | 'replied_in_chat' | 'dismissed'), which the tool result echoes; send it only to a session that advertises this, since an older CLI on a strict host refuses the whole answer. A strict host also refuses an answer with a value outside these three; a new value will come with a new capability. 'reload_plugins_refuse_if_busy_v1' = the reload_plugins control request honors refuse_if_busy; a CLI that does not advertise this may ignore the field and serve the request in a turn too. Absent on older CLIs.
    */
   capabilities?: string[];
 
@@ -7391,7 +7466,7 @@ export declare type SessionMessage = {
 
 /**
  * Options shared by session mutation functions (renameSession, tagSession,
- * deleteSession, forkSession).
+ * archiveSession, unarchiveSession, deleteSession, forkSession).
  */
 export declare type SessionMutationOptions = {
   /**
@@ -7401,7 +7476,7 @@ export declare type SessionMutationOptions = {
   dir?: string;
   /**
    * When provided, read/write session data via this store instead of the
-   * local filesystem.
+   * local filesystem. archiveSession and unarchiveSession reject it.
    * @alpha
    */
   sessionStore?: SessionStore;
@@ -7881,7 +7956,7 @@ export declare interface Settings {
    */
   disabledMcpjsonServers?: string[];
   /**
-   * When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected, and a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) does not connect either. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.
+   * When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected, and a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) does not connect either. Where a managed or served source sets it, the connectors that the desktop app's Code tab hands to a session do not connect either, from the app version that shows them as turned off. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.
    */
   disableClaudeAiConnectors?: boolean;
   /**
@@ -8338,7 +8413,7 @@ export declare interface Settings {
         };
   };
   /**
-   * Managed plugins (plugin\@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled cc-plugin-sec-default\@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list it where it should sit or leave it out. Name it there as sec-default\@builtin, the id every release reads, for as long as any machine in the organization may run a release from before its rename; a release that knows the new id reads either. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.
+   * Managed plugins (plugin\@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins read in place from a local folder managed settings name, and not listed here or in appendPlugins, follow the listed ones; user, project and marketplace plugins come after those, with a managed plugin from a remote marketplace that neither key lists; then appendPlugins; then the built-in plugins. The bundled cc-plugin-sec-default\@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list it where it should sit or leave it out. Name it there as sec-default\@builtin, the id every release reads, for as long as any machine in the organization may run a release from before its rename; a release that knows the new id reads either. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.
    */
   prependPlugins?: string[];
   /**
@@ -8378,7 +8453,7 @@ export declare interface Settings {
              */
             repo: string;
             /**
-             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
              */
             ref?: string;
             /**
@@ -8401,7 +8476,7 @@ export declare interface Settings {
              */
             url: string;
             /**
-             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
              */
             ref?: string;
             /**
@@ -8620,7 +8695,7 @@ export declare interface Settings {
        */
       autoUpdate?: boolean;
       /**
-       * Managed settings only: the plugins of this marketplace that an organization delivers with its own tier, by plugin name, each with the digests of its releases. A plugin also enabled and listed in prependPlugins or appendPlugins by managed settings the session vouches for loads its hooks module only from a folder that proves one of them, and is then seated in that tier; any other copy does not load. A digest is sha256- and the base64 SHA-256 of, for every regular file in the folder in UTF-16 code unit order of its path, not normalized, "f PATH" NUL BYTE-LENGTH NUL BYTES, with / in paths; .git, .in_use, .orphaned_at, .claude-plugin-link, .claude-directory-proof.json and .links_materialized at the root are left out. The plugin keeps its manifest at .claude-plugin/plugin.json and names one module in hooks/hooks.json. A string of any other form, or a list that is empty or of any other shape, matches no folder. A symbolic link, or a surface module, proves nothing. A proved plugin ships bundled with no install step: the digest covers the whole folder, node_modules included. A checkout whose line endings were converted proves nothing.
+       * Deprecated and ignored: settings that hold it still load. A plugin takes the organization tier when managed settings enable it, declare its marketplace with a remote source and list it in prependPlugins or appendPlugins.
        */
       pluginDigests?: {
         [k: string]: string[];
@@ -8660,7 +8735,7 @@ export declare interface Settings {
              */
             repo: string;
             /**
-             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
              */
             ref?: string;
             /**
@@ -8683,7 +8758,7 @@ export declare interface Settings {
              */
             url: string;
             /**
-             * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+             * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
              */
             ref?: string;
             /**
@@ -8902,7 +8977,7 @@ export declare interface Settings {
        */
       autoUpdate?: boolean;
       /**
-       * Managed settings only: the plugins of this marketplace that an organization delivers with its own tier, by plugin name, each with the digests of its releases. A plugin also enabled and listed in prependPlugins or appendPlugins by managed settings the session vouches for loads its hooks module only from a folder that proves one of them, and is then seated in that tier; any other copy does not load. A digest is sha256- and the base64 SHA-256 of, for every regular file in the folder in UTF-16 code unit order of its path, not normalized, "f PATH" NUL BYTE-LENGTH NUL BYTES, with / in paths; .git, .in_use, .orphaned_at, .claude-plugin-link, .claude-directory-proof.json and .links_materialized at the root are left out. The plugin keeps its manifest at .claude-plugin/plugin.json and names one module in hooks/hooks.json. A string of any other form, or a list that is empty or of any other shape, matches no folder. A symbolic link, or a surface module, proves nothing. A proved plugin ships bundled with no install step: the digest covers the whole folder, node_modules included. A checkout whose line endings were converted proves nothing.
+       * Deprecated and ignored: settings that hold it still load. A plugin takes the organization tier when managed settings enable it, declare its marketplace with a remote source and list it in prependPlugins or appendPlugins.
        */
       pluginDigests?: {
         [k: string]: string[];
@@ -8937,7 +9012,7 @@ export declare interface Settings {
          */
         repo: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -8960,7 +9035,7 @@ export declare interface Settings {
          */
         url: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -9199,7 +9274,7 @@ export declare interface Settings {
          */
         repo: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -9222,7 +9297,7 @@ export declare interface Settings {
          */
         url: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -9434,7 +9509,7 @@ export declare interface Settings {
       }
   )[];
   /**
-   * Enterprise blocklist of marketplace sources. When set in managed settings, these sources are blocked from being added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {"source":"github","repo":"owner/*"} to block every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem.
+   * Enterprise blocklist of marketplace sources. When set in managed settings, these sources are blocked from being added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {"source":"github","repo":"owner/*"} to block every repository under that owner, and an entry naming a branch or tag in `ref` also blocks every full commit id in that repository. The check happens BEFORE downloading, so blocked sources never touch the filesystem.
    */
   blockedMarketplaces?: (
     | {
@@ -9461,7 +9536,7 @@ export declare interface Settings {
          */
         repo: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -9484,7 +9559,7 @@ export declare interface Settings {
          */
         url: string;
         /**
-         * Git branch or tag to use (e.g., "main", "v1.0.0"). Defaults to repository default branch.
+         * Git branch, tag or full commit id to use (e.g., "main", "v1.0.0"). Defaults to repository default branch. A full commit id (40 or 64 lowercase hex digits) holds the marketplace at that commit: refreshes and auto-updates do not move it. A branch or tag of the repository must hold the commit. Plugins listed with a remote source follow that source unless they name a `sha`. Reserved Anthropic marketplace names do not accept a commit id.
          */
         ref?: string;
         /**
@@ -9774,9 +9849,12 @@ export declare interface Settings {
      */
     enabled?: boolean;
     /**
-     * Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, and managed, --settings or user settings set true, false from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (true there still applies).
+     * Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate. A Claude Code on the web, scheduled-task or Cowork cloud session (Anthropic's cloud container, which has no command sandbox) starts anyway with a warning: the container isolates it, and the sandbox.filesystem and sandbox.network rules in settings are not enforced there. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, and managed, --settings or user settings set true, false from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (true there still applies).
      */
     failIfUnavailable?: boolean;
+    /**
+     * macOS and Linux/WSL only: approve a Bash command that will run inside the sandbox without a permission prompt, unless a deny rule, a command-specific ask rule or a safety check stops it. Default: false, so sandboxed commands go through the same permission flow as any other command. Has no effect on native Windows.
+     */
     autoAllowBashIfSandboxed?: boolean;
     /**
      * Allow commands to run outside the sandbox via the dangerouslyDisableSandbox parameter. When false, the dangerouslyDisableSandbox parameter is completely ignored and all commands must run sandboxed. Default: true. A false in managed, --settings or user settings holds whatever project settings (.claude/settings.json and .claude/settings.local.json) say (false there still applies).
@@ -9853,7 +9931,7 @@ export declare interface Settings {
        */
       allowManagedReadPathsOnly?: boolean;
       /**
-       * macOS and Linux/WSL only: skip filesystem isolation entirely while keeping network and seccomp isolation. Ignored on native Windows, where the sandboxed process runs as a separate user with no inherent rights, so skipping the filesystem rules would withhold every access grant rather than loosen them — filesystem isolation stays on there. Sandboxed commands get unrestricted read/write access to the host filesystem; network egress is still confined to network.allowedDomains. Intended for deployments whose goal is egress control rather than filesystem containment. Does not change Bash prompting: sandbox.autoAllowBashIfSandboxed is independent and still defaults to true, so set it to false to keep prompting for sandboxed commands. Drops the read protection from filesystem.denyRead and credentials.files deny entries for sandboxed commands, since both are enforced by the filesystem layer this turns off; credentials.files mask entries (sentinel binds) and credentials.envVars deny/mask are unaffected. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. If managed settings configure sandbox.filesystem at all, or list any sandbox.credentials.files deny entry, only managed settings can set this: an admin who deployed filesystem restrictions must not have them switched off by a user-writable file. (sandbox.credentials.envVars and credentials.files mask entries do not pin it — env scrubbing and sentinel binds are independent of the filesystem layer and survive this setting.) When unset, filesystem isolation stays on.
+       * macOS and Linux/WSL only: skip filesystem isolation entirely while keeping network and seccomp isolation. Ignored on native Windows, where the sandboxed process runs as a separate user with no inherent rights, so skipping the filesystem rules would withhold every access grant rather than loosen them — filesystem isolation stays on there. Sandboxed commands get unrestricted read/write access to the host filesystem; network egress is still confined to network.allowedDomains. Intended for deployments whose goal is egress control rather than filesystem containment. Does not change Bash prompting: sandbox.autoAllowBashIfSandboxed is independent and still defaults to false, so sandboxed commands keep going through the permission flow unless it is set to true. Drops the read protection from filesystem.denyRead and credentials.files deny entries for sandboxed commands, since both are enforced by the filesystem layer this turns off; credentials.files mask entries (sentinel binds) and credentials.envVars deny/mask are unaffected. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. If managed settings configure sandbox.filesystem at all, or list any sandbox.credentials.files deny entry, only managed settings can set this: an admin who deployed filesystem restrictions must not have them switched off by a user-writable file. (sandbox.credentials.envVars and credentials.files mask entries do not pin it — env scrubbing and sentinel binds are independent of the filesystem layer and survive this setting.) When unset, filesystem isolation stays on.
        */
       disabled?: boolean;
     };
@@ -11084,6 +11162,21 @@ export declare interface Transport {
    */
   [Symbol.dispose]?(): void;
 }
+
+/**
+ * Unarchive a session, so that `listSessions` returns it with
+ * `archived: false`.
+ *
+ * Throws if the session is not found, or if `sessionStore` is passed (see
+ * {@link archiveSession}).
+ *
+ * @param sessionId - UUID of the session
+ * @param options - `{ dir?: string }` project path; omit to search all projects
+ */
+export declare function unarchiveSession(
+  _sessionId: string,
+  _options?: SessionMutationOptions,
+): Promise<void>;
 
 /**
  * Messages meaning "a usage limit was genuinely reached" — the error-path

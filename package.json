@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.3.323",
+  "version": "0.3.325",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -61,14 +61,14 @@
     "zod": "^4.0.0"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.323",
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.323"
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.325",
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.325"
   },
   "files": [
     "sdk.mjs",
@@ -85,19 +85,17 @@
     "extractFromBunfs.d.ts",
     "manifest.json",
     "manifest.zst.json",
-    "core-020s7rja.mjs",
-    "core-0nt0tzhe.mjs",
-    "core-1tccd4gq.mjs",
-    "core-2hdsr9k2.mjs",
-    "core-5pb9fh9v.mjs",
-    "core-72zgz5fc.mjs",
-    "core-aeryzps0.mjs",
-    "core-bkbqjz55.mjs",
-    "core-bw1q6326.mjs",
-    "core-e3m90ek3.mjs",
-    "core-m9ncxr5j.mjs",
-    "core-whmb256v.mjs",
-    "core-zs2stfwr.mjs"
+    "core-0a66n3e7.mjs",
+    "core-0bmnpbz2.mjs",
+    "core-9je8ee1j.mjs",
+    "core-ds2jqcef.mjs",
+    "core-fxa8mwbm.mjs",
+    "core-gbbw9cgm.mjs",
+    "core-msnqqcc2.mjs",
+    "core-wadgcjfh.mjs",
+    "core-x20yarwf.mjs",
+    "core-x3hc9abc.mjs",
+    "core-zg882d22.mjs"
   ],
-  "claudeCodeVersion": "2.1.323"
+  "claudeCodeVersion": "2.1.325"
 }
