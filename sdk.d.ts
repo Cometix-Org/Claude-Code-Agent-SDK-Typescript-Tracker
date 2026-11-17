@@ -272,7 +272,6 @@ export declare const BUILTIN_TOOL_NAMES: readonly [
   "PowerShell",
   "Projects",
   "propose_skills",
-  "ProposeGoal",
   "PushNotification",
   "Read",
   "ReadMcpResourceDirTool",
@@ -285,6 +284,7 @@ export declare const BUILTIN_TOOL_NAMES: readonly [
   "SendMessage",
   "SendUserFile",
   "SendUserMessage",
+  "SetGoal",
   "ShareOnboardingGuide",
   "ShowOnboardingRolePicker",
   "Skill",
@@ -1550,7 +1550,7 @@ export declare type McpSdkServerConfig = {
   timeout?: number;
 
   /**
-   * Per-tool permission policy the host declares for this server's tools (not the tool definitions passed to createSdkMcpServer). always_ask: the CLI asks the host (canUseTool or the permission prompt tool) before each call, even where an allow rule or allowedTools covers the tool, and under bypassPermissions outside a hosted remote session (CLAUDE_CODE_REMOTE); under dontAsk the call is denied; in auto mode the classifier decides, except that by default a tool annotated destructiveHint still asks. always_deny: calls are denied. always_allow and org_max_permission are ignored on sdk servers; grant allows with allowedTools or canUseTool. Read from initialize (sdkMcpServerConfigs) and from each mcp_set_servers entry that names the server. On the wire an entry without tools states no policy: on initialize the stored list and the rules stand; on mcp_set_servers the rules are replaced without them. The Agent SDK always re-sends the registered list. An entry whose policy is not one of the three asks; an entry without a string name is dropped and the rest apply; a value that is not a list reads as absent.
+   * Per-tool permission policy the host declares for this server's tools (not the tool definitions passed to createSdkMcpServer). always_ask: the CLI asks the host (canUseTool or the permission prompt tool) before each call, even where an allow rule or allowedTools covers the tool, and under bypassPermissions outside a hosted remote session (CLAUDE_CODE_REMOTE); under dontAsk the call is denied; in auto mode the classifier decides, except that by default a tool annotated destructiveHint still asks. always_deny: calls are denied, except a mod's own ($.tool.call, $.mcp.call). always_allow and org_max_permission are ignored on sdk servers; grant allows with allowedTools or canUseTool. Read from initialize (sdkMcpServerConfigs) and from each mcp_set_servers entry that names the server. On the wire an entry without tools states no policy: on initialize the stored list and the rules stand; on mcp_set_servers the rules are replaced without them. The Agent SDK always re-sends the registered list. An entry whose policy is not one of the three asks; an entry without a string name is dropped and the rest apply; a value that is not a list reads as absent.
    */
   tools?: McpServerToolPolicy[];
 };
@@ -2321,6 +2321,9 @@ export declare type Options = {
    * MCP (Model Context Protocol) server configurations.
    * Keys are server names, values are server configurations.
    *
+   * Servers that Claude Code runs or connects to (stdio, SSE, HTTP) reach it on its command
+   * line unless `mcpServersDelivery` is `'initialize'`; see that option's deprecation notice.
+   *
    * @example
    * ```typescript
    * mcpServers: {
@@ -2332,6 +2335,34 @@ export declare type Options = {
    * ```
    */
   mcpServers?: Record<string, McpServerConfig>;
+  /**
+   * How the `mcpServers` that Claude Code runs or connects to (stdio, SSE, HTTP) reach it.
+   * In-process servers (`createSdkMcpServer`) are not affected.
+   * - `'argv'` (default) - Sent in one `--mcp-config` flag: works with any Claude Code version,
+   *   but puts server `env` and `headers` on the command line, which other users of the
+   *   machine can read.
+   * - `'initialize'` - Sent over stdin in the initialize request, so `env` and `headers` stay
+   *   off the command line. The prompt waits for Claude Code's answer, and an error answer ends
+   *   the session. Requires the Claude Code bundled with this SDK or newer: an older one started
+   *   through `pathToClaudeCodeExecutable` or `spawnClaudeCodeProcess` exits at startup with an
+   *   unknown-option error (before 2.1.261), or has its session ended by this SDK with an error
+   *   naming this option. `initializationResult().mcp_servers_applied` is true when Claude Code
+   *   took the servers at launch, which does not mean each connected.
+   *
+   * A launch given `--sdk-url` (through `extraArgs` or `executableArgs`) always uses
+   * `--mcp-config`, because that session cannot read the request at launch.
+   *
+   * Deprecation notice: sending these servers on the command line is deprecated, and a future
+   * release changes the default to `'initialize'`. An app that starts its own Claude Code through
+   * `pathToClaudeCodeExecutable` or `spawnClaudeCodeProcess` should update it to at least the
+   * bundled version and set `'initialize'`, or set `'argv'` to stay on the command line; while it
+   * leaves this option unset, this SDK emits a `DeprecationWarning` once per process (code
+   * `CLAUDE_SDK_MCP_SERVERS_ARGV_DEPRECATED`). Apps that use the bundled Claude Code need not
+   * update it, get no warning, and can set `'initialize'` now.
+   *
+   * @default 'argv'
+   */
+  mcpServersDelivery?: "argv" | "initialize";
   /**
    * Claude model to use. Defaults to the CLI default model.
    * Examples: 'claude-sonnet-5', 'claude-opus-4-8', 'claude-fable-5'
@@ -3274,6 +3305,184 @@ export declare type ProvenanceEntry = {
   policyOrigin?: PolicySettingsOrigin;
 };
 
+declare const PublishedSandboxSettingsSchema: () => z.ZodObject<
+  {
+    enabled: z.ZodOptional<z.ZodBoolean>;
+    failIfUnavailable: z.ZodOptional<z.ZodBoolean>;
+    autoAllowBashIfSandboxed: z.ZodOptional<z.ZodBoolean>;
+    allowUnsandboxedCommands: z.ZodOptional<z.ZodBoolean>;
+    network: z.ZodOptional<
+      z.ZodObject<
+        {
+          allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          deniedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          strictAllowlist: z.ZodOptional<z.ZodBoolean>;
+          allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
+          allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
+          allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
+          allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          httpProxyPort: z.ZodOptional<z.ZodNumber>;
+          socksProxyPort: z.ZodOptional<z.ZodNumber>;
+          tlsTerminate: z.ZodOptional<
+            z.ZodObject<
+              {
+                caCertPath: z.ZodOptional<z.ZodString>;
+                caKeyPath: z.ZodOptional<z.ZodString>;
+              },
+              z.core.$strip
+            >
+          >;
+        },
+        z.core.$strip
+      >
+    >;
+    filesystem: z.ZodOptional<
+      z.ZodObject<
+        {
+          allowWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          denyWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          denyRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          allowRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          allowManagedReadPathsOnly: z.ZodOptional<z.ZodBoolean>;
+          disabled: z.ZodOptional<z.ZodBoolean>;
+        },
+        z.core.$strip
+      >
+    >;
+    credentials: z.ZodOptional<
+      z.ZodObject<
+        {
+          files: z.ZodOptional<
+            z.ZodArray<
+              z.ZodPreprocess<
+                z.ZodObject<
+                  {
+                    path: z.ZodString;
+                    mode: z.ZodEnum<{
+                      deny: "deny";
+                      mask: "mask";
+                    }>;
+                    extract: z.ZodOptional<z.ZodString>;
+                    onExtractNoMatch: z.ZodOptional<
+                      z.ZodEnum<{
+                        deny: "deny";
+                        error: "error";
+                        warn: "warn";
+                      }>
+                    >;
+                    decode: z.ZodOptional<
+                      z.ZodEnum<{
+                        jwt: "jwt";
+                      }>
+                    >;
+                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                    maskDuplicates: z.ZodOptional<z.ZodBoolean>;
+                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                  },
+                  z.core.$strip
+                >,
+                unknown
+              >
+            >
+          >;
+          envVars: z.ZodOptional<
+            z.ZodArray<
+              z.ZodPreprocess<
+                z.ZodObject<
+                  {
+                    name: z.ZodString;
+                    mode: z.ZodEnum<{
+                      deny: "deny";
+                      mask: "mask";
+                    }>;
+                    extract: z.ZodOptional<z.ZodString>;
+                    onExtractNoMatch: z.ZodOptional<
+                      z.ZodEnum<{
+                        deny: "deny";
+                        error: "error";
+                        warn: "warn";
+                      }>
+                    >;
+                    decode: z.ZodOptional<
+                      z.ZodEnum<{
+                        jwt: "jwt";
+                      }>
+                    >;
+                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                  },
+                  z.core.$strip
+                >,
+                unknown
+              >
+            >
+          >;
+          allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
+          awsPairs: z.ZodOptional<
+            z.ZodArray<
+              z.ZodObject<
+                {
+                  accessKeyIdVar: z.ZodString;
+                  secretAccessKeyVar: z.ZodString;
+                  sessionTokenVar: z.ZodOptional<z.ZodString>;
+                },
+                z.core.$strip
+              >
+            >
+          >;
+          sigv4: z.ZodOptional<
+            z.ZodObject<
+              {
+                streaming: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+                presigned: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+                sigv4a: z.ZodOptional<
+                  z.ZodEnum<{
+                    deny: "deny";
+                    passthrough: "passthrough";
+                  }>
+                >;
+              },
+              z.core.$strip
+            >
+          >;
+        },
+        z.core.$strip
+      >
+    >;
+    ignoreViolations: z.ZodOptional<
+      z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString>>
+    >;
+    enableWeakerNestedSandbox: z.ZodOptional<z.ZodBoolean>;
+    allowNestedUserNamespaces: z.ZodOptional<z.ZodBoolean>;
+    enableWeakerNetworkIsolation: z.ZodOptional<z.ZodBoolean>;
+    allowAppleEvents: z.ZodOptional<z.ZodBoolean>;
+    excludedCommands: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    ripgrep: z.ZodOptional<
+      z.ZodObject<
+        {
+          command: z.ZodString;
+          args: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        },
+        z.core.$strip
+      >
+    >;
+    bwrapPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString, unknown>>>;
+    socatPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString, unknown>>>;
+  },
+  z.core.$loose
+>;
+
 /**
  * Query interface with methods for controlling query execution.
  * Extends AsyncGenerator and has methods, so not serializable.
@@ -3859,7 +4068,7 @@ export declare type RewindFilesResult = {
   insertions?: number;
   deletions?: number;
   /**
-   * Count of tracked files NOT restored or deleted because a symlink, hard link, or other non-regular file was detected at the tracked path, its parent directory no longer resolves to where it pointed when the checkpoint was taken, or its backup could not be safely read. Only populated by a real (non-dryRun) rewind — on a dryRun response the field is never set and the preview counts do not reflect link-safety refusals. Absent or 0 on a real rewind means no link-safety refusals occurred; other per-file failures (for example a missing backup file) are not counted here; they are reported in telemetry, and when every differing file fails to restore the rewind itself fails (canRewind: false).
+   * Count of tracked files NOT restored or deleted because a symlink, hard link, or other non-regular file was detected at the tracked path, its parent directory no longer resolves to where it pointed when the checkpoint was taken, it is behind a link in a folder that sandboxed commands can write, or its backup could not be safely read. Only populated by a real (non-dryRun) rewind — on a dryRun response the field is never set and the preview counts do not reflect link-safety refusals. Absent or 0 on a real rewind means no link-safety refusals occurred; other per-file failures (for example a missing backup file) are not counted here; they are reported in telemetry, and when every differing file fails to restore the rewind itself fails (canRewind: false).
    */
   skippedLinks?: number;
 };
@@ -4039,188 +4248,7 @@ declare const SandboxNetworkConfigSchema: () => z.ZodOptional<
 >;
 
 export declare type SandboxSettings = z.infer<
-  ReturnType<typeof SandboxSettingsSchema>
->;
-
-/**
- * Sandbox settings schema.
- */
-declare const SandboxSettingsSchema: () => z.ZodObject<
-  {
-    enabled: z.ZodOptional<z.ZodBoolean>;
-    failIfUnavailable: z.ZodOptional<z.ZodBoolean>;
-    autoAllowBashIfSandboxed: z.ZodOptional<z.ZodBoolean>;
-    allowUnsandboxedCommands: z.ZodOptional<z.ZodBoolean>;
-    network: z.ZodOptional<
-      z.ZodObject<
-        {
-          allowedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          deniedDomains: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          strictAllowlist: z.ZodOptional<z.ZodBoolean>;
-          allowManagedDomainsOnly: z.ZodOptional<z.ZodBoolean>;
-          allowUnixSockets: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          allowAllUnixSockets: z.ZodOptional<z.ZodBoolean>;
-          allowLocalBinding: z.ZodOptional<z.ZodBoolean>;
-          allowMachLookup: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          httpProxyPort: z.ZodOptional<z.ZodNumber>;
-          socksProxyPort: z.ZodOptional<z.ZodNumber>;
-          tlsTerminate: z.ZodOptional<
-            z.ZodObject<
-              {
-                caCertPath: z.ZodOptional<z.ZodString>;
-                caKeyPath: z.ZodOptional<z.ZodString>;
-              },
-              z.core.$strip
-            >
-          >;
-        },
-        z.core.$strip
-      >
-    >;
-    filesystem: z.ZodOptional<
-      z.ZodObject<
-        {
-          allowWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          denyWrite: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          denyRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          allowRead: z.ZodOptional<z.ZodArray<z.ZodString>>;
-          allowManagedReadPathsOnly: z.ZodOptional<z.ZodBoolean>;
-          disabled: z.ZodOptional<z.ZodBoolean>;
-        },
-        z.core.$strip
-      >
-    >;
-    credentials: z.ZodOptional<
-      z.ZodObject<
-        {
-          files: z.ZodOptional<
-            z.ZodArray<
-              z.ZodPreprocess<
-                z.ZodObject<
-                  {
-                    path: z.ZodString;
-                    mode: z.ZodEnum<{
-                      deny: "deny";
-                      mask: "mask";
-                    }>;
-                    extract: z.ZodOptional<z.ZodString>;
-                    onExtractNoMatch: z.ZodOptional<
-                      z.ZodEnum<{
-                        deny: "deny";
-                        error: "error";
-                        warn: "warn";
-                      }>
-                    >;
-                    decode: z.ZodOptional<
-                      z.ZodEnum<{
-                        jwt: "jwt";
-                      }>
-                    >;
-                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
-                    maskDuplicates: z.ZodOptional<z.ZodBoolean>;
-                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
-                  },
-                  z.core.$strip
-                >,
-                unknown
-              >
-            >
-          >;
-          envVars: z.ZodOptional<
-            z.ZodArray<
-              z.ZodPreprocess<
-                z.ZodObject<
-                  {
-                    name: z.ZodString;
-                    mode: z.ZodEnum<{
-                      deny: "deny";
-                      mask: "mask";
-                    }>;
-                    extract: z.ZodOptional<z.ZodString>;
-                    onExtractNoMatch: z.ZodOptional<
-                      z.ZodEnum<{
-                        deny: "deny";
-                        error: "error";
-                        warn: "warn";
-                      }>
-                    >;
-                    decode: z.ZodOptional<
-                      z.ZodEnum<{
-                        jwt: "jwt";
-                      }>
-                    >;
-                    maskClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
-                    injectHosts: z.ZodOptional<z.ZodArray<z.ZodString>>;
-                  },
-                  z.core.$strip
-                >,
-                unknown
-              >
-            >
-          >;
-          allowPlaintextInject: z.ZodOptional<z.ZodBoolean>;
-          awsPairs: z.ZodOptional<
-            z.ZodArray<
-              z.ZodObject<
-                {
-                  accessKeyIdVar: z.ZodString;
-                  secretAccessKeyVar: z.ZodString;
-                  sessionTokenVar: z.ZodOptional<z.ZodString>;
-                },
-                z.core.$strip
-              >
-            >
-          >;
-          sigv4: z.ZodOptional<
-            z.ZodObject<
-              {
-                streaming: z.ZodOptional<
-                  z.ZodEnum<{
-                    deny: "deny";
-                    passthrough: "passthrough";
-                  }>
-                >;
-                presigned: z.ZodOptional<
-                  z.ZodEnum<{
-                    deny: "deny";
-                    passthrough: "passthrough";
-                  }>
-                >;
-                sigv4a: z.ZodOptional<
-                  z.ZodEnum<{
-                    deny: "deny";
-                    passthrough: "passthrough";
-                  }>
-                >;
-              },
-              z.core.$strip
-            >
-          >;
-        },
-        z.core.$strip
-      >
-    >;
-    ignoreViolations: z.ZodOptional<
-      z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString>>
-    >;
-    enableWeakerNestedSandbox: z.ZodOptional<z.ZodBoolean>;
-    allowNestedUserNamespaces: z.ZodOptional<z.ZodBoolean>;
-    enableWeakerNetworkIsolation: z.ZodOptional<z.ZodBoolean>;
-    allowAppleEvents: z.ZodOptional<z.ZodBoolean>;
-    excludedCommands: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    ripgrep: z.ZodOptional<
-      z.ZodObject<
-        {
-          command: z.ZodString;
-          args: z.ZodOptional<z.ZodArray<z.ZodString>>;
-        },
-        z.core.$strip
-      >
-    >;
-    bwrapPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString, unknown>>>;
-    socatPath: z.ZodCatch<z.ZodOptional<z.ZodPreprocess<z.ZodString, unknown>>>;
-  },
-  z.core.$loose
+  ReturnType<typeof PublishedSandboxSettingsSchema>
 >;
 
 /**
@@ -4886,7 +4914,7 @@ declare type SDKControlGetHooksListingResponse = {
     exitHint: string;
   };
   /**
-   * Present only under --bare / CLAUDE_CODE_SIMPLE with the hooks surface gated off: settings-file, flag, policy, and plugin hooks never fire there; session hooks still run.
+   * Present only under --bare / CLAUDE_CODE_SIMPLE with the hooks surface gated off: settings-file, flag, policy, and a person's plugin hooks never fire there; session hooks and the hooks of plugins managed settings enable still run.
    */
   bareMode?: {
     /**
@@ -5261,7 +5289,7 @@ declare type SDKControlInitializeRequest = {
   hooks?: Partial<Record<coreTypes.HookEvent, SDKHookCallbackMatcher[]>>;
   sdkMcpServers?: string[];
   /**
-   * Settings for the SDK-hosted MCP servers named in sdkMcpServers, keyed by server name. Sent as a separate field so a CLI that predates it ignores it; entries whose name is not in sdkMcpServers, and values that do not match this shape, are ignored rather than rejected. timeout, disableAutoBackground, connectorId, autoModeVerdictTools and dataFlowServer apply when the server is first registered; tools (the per-tool permission policy) adds its ask and deny rules on every initialize that names the server. An initialize never removes a rule; mcp_set_servers replaces them.
+   * Settings for the SDK-hosted MCP servers named in sdkMcpServers, keyed by server name. Sent as a separate field so a CLI that predates it ignores it; entries whose name is not in sdkMcpServers, and values that do not match this shape, are ignored rather than rejected. timeout, disableAutoBackground, connectorId, autoModeVerdictTools, dataFlowServer and onPersonsMachine apply when the server is first registered; tools (the per-tool permission policy) adds its ask and deny rules on every initialize that names the server. An initialize never removes a rule; mcp_set_servers replaces them.
    */
   sdkMcpServerConfigs?: Record<
     string,
@@ -5272,7 +5300,7 @@ declare type SDKControlInitializeRequest = {
       timeout?: number;
 
       /**
-       * Per-tool permission policy the host declares for this server's tools (not the tool definitions passed to createSdkMcpServer). always_ask: the CLI asks the host (canUseTool or the permission prompt tool) before each call, even where an allow rule or allowedTools covers the tool, and under bypassPermissions outside a hosted remote session (CLAUDE_CODE_REMOTE); under dontAsk the call is denied; in auto mode the classifier decides, except that by default a tool annotated destructiveHint still asks. always_deny: calls are denied. always_allow and org_max_permission are ignored on sdk servers; grant allows with allowedTools or canUseTool. Read from initialize (sdkMcpServerConfigs) and from each mcp_set_servers entry that names the server. On the wire an entry without tools states no policy: on initialize the stored list and the rules stand; on mcp_set_servers the rules are replaced without them. The Agent SDK always re-sends the registered list. An entry whose policy is not one of the three asks; an entry without a string name is dropped and the rest apply; a value that is not a list reads as absent.
+       * Per-tool permission policy the host declares for this server's tools (not the tool definitions passed to createSdkMcpServer). always_ask: the CLI asks the host (canUseTool or the permission prompt tool) before each call, even where an allow rule or allowedTools covers the tool, and under bypassPermissions outside a hosted remote session (CLAUDE_CODE_REMOTE); under dontAsk the call is denied; in auto mode the classifier decides, except that by default a tool annotated destructiveHint still asks. always_deny: calls are denied, except a mod's own ($.tool.call, $.mcp.call). always_allow and org_max_permission are ignored on sdk servers; grant allows with allowedTools or canUseTool. Read from initialize (sdkMcpServerConfigs) and from each mcp_set_servers entry that names the server. On the wire an entry without tools states no policy: on initialize the stored list and the rules stand; on mcp_set_servers the rules are replaced without them. The Agent SDK always re-sends the registered list. An entry whose policy is not one of the three asks; an entry without a string name is dropped and the rest apply; a value that is not a list reads as absent.
        */
       tools?: coreTypes.McpServerToolPolicy[];
     }
@@ -5345,6 +5373,10 @@ declare type SDKControlInitializeRequest = {
    * Plugins to load for the session, in the same shape as the SDK `plugins` option: the stdin form of one --plugin-dir flag per entry (--plugin-dir-no-mcp when skipMcpDiscovery is set), so the launch command line does not grow with the plugin count. Loaded only by a CLI launched with --await-initialize, which reads this request during startup before any plugin work. Without that flag, on a repeated initialize, or over a remote session transport the field loads nothing; plugins_applied in the response reports whether the listed plugins are in fact loaded.
    */
   plugins?: coreTypes.SdkPluginConfig[];
+  /**
+   * MCP servers for Claude Code to run or connect to, keyed by server name: the serializable entries of the SDK `mcpServers` option (host-resident servers go in sdkMcpServers), as the stdin form of one --mcp-config item, which keeps server credentials (stdio `env`, http and sse `headers`) off the command line. Read only at launch under --await-initialize, and then handled as --mcp-config: an invalid entry is skipped and reported in system/init, not fatal; one difference is that a Claude Code process this one starts is not handed them. Without that flag, on a repeated initialize, or over a remote session transport it loads nothing; use mcp_set_servers in a running session. mcp_servers_applied in the response says whether these are the set read at launch.
+   */
+  mcpServers?: Record<string, coreTypes.McpServerConfigForProcessTransport>;
 };
 
 /**
@@ -5376,6 +5408,11 @@ export declare type SDKControlInitializeResponse = {
    * Whether every plugin this initialize listed is loaded: true when each one is among the plugins the process loaded at launch (from `plugins` under --await-initialize, or from --plugin-dir), so a re-sent initialize naming the launch set also reads true; false otherwise. The `plugins` field never loads anything after launch. Absent when the request listed no plugins, and on CLIs that predate the field (those never read `plugins`).
    */
   plugins_applied?: boolean;
+
+  /**
+   * Whether the `mcpServers` in this initialize are the set the process read at launch under --await-initialize, so a re-sent initialize naming the same set also reads true; false otherwise. True says they were taken as an --mcp-config item, not that each one connected: a server missing from system/init mcp_servers was not loaded. The field loads nothing after launch. Absent when the request named none, and on CLIs that predate the field, which never read `mcpServers`: a host that sent servers must treat absence as not applied.
+   */
+  mcp_servers_applied?: boolean;
 
   /**
    * What became of each entry of this initialize's sdkMcpServerManifests, keyed by sdk server name, for the entries whose name is in sdkMcpServers. 'parked': kept for the connect that follows this reply, which answers the server's MCP initialize and first tools/list from it (a later failure to replay shows up as live mcp_message frames, as when no entry was sent). 'already_connected': this CLI already had a live client for the server. 'protocol_version_mismatch': initializeResult.protocolVersion is not the version this CLI's client requests. 'malformed': the entry is not of the documented shape, reported whether or not manifests were honoured (every name in sdkMcpServers gets this when the field itself is not an object); or an honoured entry is past the limits this CLI sets on a live answer. 'not_honoured': the CLI did not use the entry: manifests are switched off in this CLI, this remote session is not an interactive Cowork chat started from claude.ai, the session service has not recently told this remote-session worker that only the account owning the session can send events to it, or the request reached such a worker other than over its session stream (nothing for the host to change in any of these cases); or this CLI had read as many tool lists as it allows in a minute (send it again later); or it came over the session stream without sdkMcpServerManifestsOrigin or on a frame too old to trust (the host's to fix). Absent when the request carried no sdkMcpServerManifests or named no sdkMcpServers, and on CLIs that predate the field.
@@ -6088,6 +6125,7 @@ export declare type SDKHookProgressMessage = {
   stdout: string;
   stderr: string;
   output: string;
+
   uuid: UUID;
   session_id: string;
 };
@@ -6113,6 +6151,7 @@ export declare type SDKHookStartedMessage = {
   hook_id: string;
   hook_name: string;
   hook_event: string;
+
   uuid: UUID;
   session_id: string;
 };
@@ -6659,7 +6698,7 @@ export declare type SDKResultError = {
   num_turns: number;
   stop_reason: string | null;
   /**
-   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   * Cumulative estimated cost in USD for this query() call, covering the same calls as modelUsage (billed permission classifier calls and stopped or cut calls included, which maxBudgetUsd / --max-budget-usd therefore counts) and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
    */
   total_cost_usd: number;
   /**
@@ -6667,7 +6706,7 @@ export declare type SDKResultError = {
    */
   usage: NonNullableUsage;
   /**
-   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Auto mode's permission classifier calls are included where they are billed (not on Pro, Max or Team plans, nor on a claude.ai sign-in whose plan cannot be read), and so is a call stopped or cut mid-response, with its output tokens estimated from what had streamed (low when a long tool call was being written, since the API holds a call's input until it is whole). Other internal helper calls outside the query pipeline (e.g. token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
 
@@ -6779,7 +6818,7 @@ export declare type SDKResultSuccess = {
   result: string;
   stop_reason: string | null;
   /**
-   * Cumulative estimated cost in USD for this query() call, covering the same query-pipeline calls as modelUsage and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
+   * Cumulative estimated cost in USD for this query() call, covering the same calls as modelUsage (billed permission classifier calls and stopped or cut calls included, which maxBudgetUsd / --max-budget-usd therefore counts) and sharing its lifecycle: cumulative across turns in streaming-input sessions — each result carries the running total so far, so read the latest result rather than summing across results. Crash/startup-error results may carry zeroed values, a resumed or forked session continues from the total its transcript saved, when it has one (so the first result already carries the earlier turns; maxBudgetUsd counts only the spend since this query() call started or last /clear), and a mid-session /clear resets the running total. An estimate, not a billing statement.
    */
   total_cost_usd: number;
   /**
@@ -6787,7 +6826,7 @@ export declare type SDKResultSuccess = {
    */
   usage: NonNullableUsage;
   /**
-   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
+   * Per-model totals for every model call made through the query pipeline during this query() call — main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Auto mode's permission classifier calls are included where they are billed (not on Pro, Max or Team plans, nor on a claude.ai sign-in whose plan cannot be read), and so is a call stopped or cut mid-response, with its output tokens estimated from what had streamed (low when a long tool call was being written, since the API holds a call's input until it is whole). Other internal helper calls outside the query pipeline (e.g. token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.
    */
   modelUsage: Record<string, ModelUsage>;
 
@@ -6917,7 +6956,7 @@ export declare type SDKSettingsParseError = {
 };
 
 /**
- * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed. initialize_not_first: Claude Code was started with --await-initialize, and its first stdin line was not the initialize control request (another message, or not valid JSON). Either the host wrote something else first, or a wrapper script between the host and Claude Code read or changed that line; the fix is in the host or the wrapper script, not a retry. config_file_invalid: a configuration file read at start-up is not valid JSON; errors names the file and, for the global configuration file, how to restore or repair it, and invalid_config_file has the paths as fields. The file is left unchanged, and every start without a terminal is refused until it is repaired, so a retry alone does not help. managed_settings_not_delivered: Claude Code was started with --managed-settings-in-initialize and could not use the managed settings in the initialize control request. Stdin ended or failed first, or its first line was too long; the request has no managedSettings object, that object could not be used, or the request's plugins field is malformed; or the launch does not read that request at start-up or also passes --managed-settings. errors says which. Claude Code starts no session without them; the fix is in the host or in a wrapper script between it and Claude Code, not a retry.
+ * Why Claude Code refused to start, so a host can offer the fix instead of a retry. org_pin_api_key_conflict: managed settings pin a first-party or Cloud gateway sign-in, and an Anthropic API key or auth token is configured instead. provider_not_allowed: managed settings list the API providers this machine may use (allowedProviders), and the session is set up for one that is not listed. org_verify_failed: the sign-in's organization could not be verified against the pin (network, or a revoked token). org_pin_mismatch: the sign-in belongs to an organization the pin does not allow. managed_settings_invalid: managed policy settings could not be read, the pin names no organization, or managed model settings (deniedModels, or an availableModels list matched exactly) block the default model and leave no allowed model to use instead. remote_settings_required_unavailable: managed settings the organization requires could not be loaded. gateway_signin_required: the Cloud gateway ended this sign-in. gateway_access_denied: the Cloud gateway refused managed settings for this account. proxy_invalid: a proxy setting is not a complete URL. temp_dir_unusable: the per-user temp directory is unsafe or could not be created. cwd_unavailable: the working directory was deleted, moved or cannot be read. shell_tool_missing: Windows has no shell tool: Git Bash is missing, and PowerShell is missing or turned off by CLAUDE_CODE_USE_POWERSHELL_TOOL. session_held_by_background: the conversation to resume or continue is running as a background session. worktree_resume_refused: the resume was refused because the session's worktree failed its safety checks or the resume was launched from inside it; errors says whether a re-run continues without the worktree. worktree_unverified: the session's worktree could not be verified right now; retrying may succeed. cli_version_too_old: this Claude Code version is below the minimum Anthropic requires. bypass_root: bypass permissions mode was requested while running as root. org_config_required_unavailable: the organization requires its policy limits and managed settings before a session starts, and they could not be loaded (network, proxy, or an Anthropic error); retrying may succeed. org_config_refused: the organization requires its policy limits and managed settings, and Anthropic refused them for this sign-in (expired or revoked session, or the organization does not allow Claude Code for this account); signing in again or an admin's change is the fix, not a retry. sandbox_required_unavailable: a working sandbox is required and it cannot run in this session, for example because bubblewrap is missing or the platform is not supported; make the sandbox available or have the requirement changed. initialize_not_first: Claude Code was started with --await-initialize, and its first stdin line was not the initialize control request (another message, or not valid JSON). Either the host wrote something else first, or a wrapper script between the host and Claude Code read or changed that line; the fix is in the host or the wrapper script, not a retry. config_file_invalid: a configuration file read at start-up is not valid JSON; errors names the file and, for the global configuration file, how to restore or repair it, and invalid_config_file has the paths as fields. The file is left unchanged, and every start without a terminal is refused until it is repaired, so a retry alone does not help. managed_settings_not_delivered: Claude Code was started with --managed-settings-in-initialize and could not use the managed settings in the initialize control request. Stdin ended or failed first, or its first line was too long; the request has no managedSettings object, that object could not be used, or the request's plugins or mcpServers field is malformed; or the launch does not read that request at start-up or also passes --managed-settings. errors says which. Claude Code starts no session without them; the fix is in the host or in a wrapper script between it and Claude Code, not a retry.
  */
 export declare type SDKStartupFailureReason =
   | "org_pin_api_key_conflict"
@@ -7061,6 +7100,7 @@ export declare type SDKTaskNotificationMessage = {
   reason?: "worker_restart";
   output_file: string;
   summary: string;
+
   usage?: {
     total_tokens: number;
     tool_uses: number;
@@ -8160,7 +8200,7 @@ export declare interface Settings {
              */
             onFailure?: "continue" | "block";
             /**
-             * Additional headers to include in the request. Values may reference environment variables using $VAR_NAME or ${VAR_NAME} syntax (e.g., "Authorization": "Bearer $MY_TOKEN"). Only variables listed in allowedEnvVars will be interpolated.
+             * Additional headers to include in the request. Values may reference environment variables using $VAR_NAME or ${VAR_NAME} syntax (e.g., "Authorization": "Bearer $MY_TOKEN"). Only variables listed in allowedEnvVars will be interpolated. Content-Length and Transfer-Encoding given here are ignored: Claude Code works out the request's length from its body.
              */
             headers?: {
               [k: string]: string;
@@ -8263,11 +8303,11 @@ export declare interface Settings {
    */
   disableWorkflows?: boolean;
   /**
-   * Deprecated: use enableArtifact: false. Still honored — true disables the Artifact tool; false is ignored.
+   * Deprecated: use enableArtifact: false. Still honored — true turns Artifacts off; false is ignored.
    */
   disableArtifact?: boolean;
   /**
-   * Turn the Artifact tool on or off. Off in any of managed, --settings, or user settings wins; project and local settings can only turn it off. Unset defaults to on once the feature is available.
+   * Turn Artifacts on or off. Off in any of managed, --settings, or user settings wins; project and local settings can only turn it off. Unset defaults to on once the feature is available.
    */
   enableArtifact?: boolean;
   /**
@@ -8315,11 +8355,11 @@ export declare interface Settings {
    */
   allowManagedHooksOnly?: boolean;
   /**
-   * Allowlist of URL patterns that HTTP hooks may target. Supports * as a wildcard (e.g. "https://hooks.example.com/*"). When set, HTTP hooks with non-matching URLs are blocked. If undefined, all URLs are allowed. If empty array, no HTTP hooks are allowed. Arrays merge across settings sources (same semantics as allowedMcpServers).
+   * Allowlist of URL patterns that HTTP hooks may target. Supports * as a wildcard (e.g. "https://hooks.example.com/*"). When set, HTTP hooks with non-matching URLs are blocked. If undefined, all URLs are allowed. If empty array, no HTTP hooks are allowed. Arrays merge across settings sources (same semantics as allowedMcpServers). Where managed settings do not set this list, a list in any other settings file does not apply to hooks that managed settings define, or that come from a plugin they enable from a local folder they name.
    */
   allowedHttpHookUrls?: string[];
   /**
-   * Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers).
+   * Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers). Where managed settings do not set this list, a list in any other settings file does not apply to hooks that managed settings define, or that come from a plugin they enable from a local folder they name.
    */
   httpHookAllowedEnvVars?: string[];
   /**
@@ -8395,7 +8435,7 @@ export declare interface Settings {
       }
   )[];
   /**
-   * Deprecated: no longer has any effect. Subagent rows always use the default look.
+   * Deprecated: still works, and will stop working in a future release. Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin
    */
   subagentStatusLine?: {
     type: "command";
@@ -10045,6 +10085,7 @@ export declare interface Settings {
         sigv4a?: "deny" | "passthrough";
       };
     };
+
     /**
      * Sandbox violations to leave unreported: a map of command patterns ("*" for every command) to the filesystem paths whose violations are ignored. Merged across settings sources. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, values from project settings (.claude/settings.json and .claude/settings.local.json) are ignored.
      */

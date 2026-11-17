@@ -440,6 +440,7 @@ export type ArtifactOutput =
       faviconSent?: true;
       iconDropped?: true;
       audience?: string;
+      folder_audience?: "others" | "unknown";
       seq?: number;
       unchanged?: true;
       liveSubscription?: string;
@@ -2901,7 +2902,7 @@ export interface WorkflowInput {
    */
   scriptPath?: string;
   /**
-   * Run ID of a prior Workflow invocation to resume from. Completed agent() calls with unchanged (prompt, opts) return their cached results instantly; only edited or new calls re-run. Same-session only. Stop the prior run first (TaskStop) before resuming.
+   * Run ID of a prior Workflow invocation to resume from. The cache is positional: agent() calls replay from cache up to the first call that failed, no longer matches the earlier run (edited, added, removed or reordered) or never started in it; that call and every call after it run again, even when their own (prompt, opts) are unchanged. A call a usage limit refused, or one still running when the run stopped, usually runs again without ending reuse: finished calls after it still come from cache. Same-session only. Stop the prior run first (TaskStop) before resuming.
    */
   resumeFromRunId?: string;
 }
@@ -3331,11 +3332,11 @@ export interface ProposeSkillsInput {
 }
 export interface ProposeGoalInput {
   /**
-   * The completion condition to propose, written so a separate evaluator can verify it from the conversation (e.g. "all tests in test/auth pass (bun test exits 0)"). At most 500 characters — the user must be able to read the whole condition in the approval dialog.
+   * The completion condition to set, written so a separate evaluator can verify it from the conversation (e.g. "all tests in test/auth pass (bun test exits 0)"). At most 500 characters — the user must be able to read the whole condition in the approval dialog.
    */
   condition: string;
   /**
-   * Whether to ask the user for approval before the goal is set. Defaults to true — an approval dialog is shown. Set false ONLY when the user's own words in this conversation stated this outcome as what they want; the goal is then set directly, with a visible notice in the transcript, and the user can clear it with /goal clear.
+   * Whether to ask the user for approval before the goal is set. Defaults to true — an approval dialog is shown. Set false ONLY when the user's own words in this conversation stated this outcome as what they want; the goal is then set directly, with a visible notice in the transcript, and the user can clear it with /goal clear. While a goal is active the dialog is shown whatever this says.
    */
   ask_user?: boolean;
 }
@@ -3458,11 +3459,11 @@ export interface EnterWorktreeInput {
 }
 export interface ExitWorktreeInput {
   /**
-   * "keep" leaves the worktree and branch on disk; "remove" deletes both.
+   * "keep" leaves the worktree and branch on disk; "remove" deletes the worktree and, unless a hook made it or git refuses, its branch.
    */
   action: "keep" | "remove";
   /**
-   * Required true when action is "remove" and the worktree has uncommitted files or unmerged commits. The tool will refuse and list them otherwise.
+   * Required true when action is "remove" and the worktree has uncommitted files or unmerged commits. The tool will refuse and list them otherwise. It also removes the worktree under any task still running there, so set it only after the user has confirmed.
    */
   discard_changes?: boolean;
 }
@@ -4329,7 +4330,7 @@ export interface ProposeSkillsOutput {
 }
 export interface ProposeGoalOutput {
   /**
-   * The condition shown to the user for approval, or set directly when ask_user was false
+   * The condition shown to the user for approval, or set directly
    */
   condition: string;
   /**
