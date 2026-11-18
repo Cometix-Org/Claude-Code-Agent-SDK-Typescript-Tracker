@@ -4321,6 +4321,10 @@ export interface MonitorOutput {
    * No timeout — runs until TaskStop or session end.
    */
   persistent?: boolean;
+  /**
+   * True when the command ran in the sandbox only because its permission check relied on the sandbox; the settings would otherwise have exempted it.
+   */
+  keptInSandboxByCheck?: boolean;
 }
 export interface ProposeSkillsOutput {
   /**
