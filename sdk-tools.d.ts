@@ -1070,7 +1070,7 @@ export interface ReportFindingsInput {
      */
     line?: number;
     /**
-     * One-sentence statement of the defect
+     * Statement of the defect
      */
     summary: string;
     /**
@@ -1085,6 +1085,10 @@ export interface ReportFindingsInput {
      * Short kebab-case slug of the finding type, e.g. "correctness", "simplification", "efficiency", "test-coverage"
      */
     category?: string;
+    /**
+     * Set when the review instructions ask for it. important: a bug the change adds or makes worse; pre_existing: a bug that was there before the change; nit: a minor issue
+     */
+    severity?: "important" | "pre_existing" | "nit";
     /**
      * Set when a verify pass ran; absent on inline-only reviews
      */
@@ -3876,7 +3880,7 @@ export interface ReportFindingsOutput {
      */
     line?: number;
     /**
-     * One-sentence statement of the defect
+     * Statement of the defect
      */
     summary: string;
     /**
@@ -3891,6 +3895,10 @@ export interface ReportFindingsOutput {
      * Short kebab-case slug of the finding type, e.g. "correctness", "simplification", "efficiency", "test-coverage"
      */
     category?: string;
+    /**
+     * Set when the review instructions ask for it. important: a bug the change adds or makes worse; pre_existing: a bug that was there before the change; nit: a minor issue
+     */
+    severity?: "important" | "pre_existing" | "nit";
     /**
      * Set when a verify pass ran; absent on inline-only reviews
      */

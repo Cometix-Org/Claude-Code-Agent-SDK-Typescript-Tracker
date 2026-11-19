@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.3.327",
+  "version": "0.3.328",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -61,14 +61,14 @@
     "zod": "^4.0.0"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.327",
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.327"
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.328",
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.328"
   },
   "files": [
     "sdk.mjs",
@@ -85,21 +85,19 @@
     "extractFromBunfs.d.ts",
     "manifest.json",
     "manifest.zst.json",
-    "core-25bstexa.mjs",
-    "core-4ps8vwh1.mjs",
-    "core-9a7zb9bm.mjs",
-    "core-a8ty0dnc.mjs",
-    "core-ae73vzp2.mjs",
-    "core-dsa3p77h.mjs",
-    "core-e93r8awg.mjs",
-    "core-eqz9ara6.mjs",
-    "core-esw7xtkz.mjs",
-    "core-ey906mbk.mjs",
-    "core-k19jejpn.mjs",
-    "core-kag24kjr.mjs",
-    "core-mhczx7zp.mjs",
-    "core-nfa6p2rw.mjs",
-    "core-v6sp3qjw.mjs"
+    "core-0vfvgmex.mjs",
+    "core-3h0s3zzg.mjs",
+    "core-6w7w19rc.mjs",
+    "core-8fprsbvz.mjs",
+    "core-avz7wgsg.mjs",
+    "core-b9ebje8h.mjs",
+    "core-e1h3fbg3.mjs",
+    "core-ge6en8c9.mjs",
+    "core-htcq9qj1.mjs",
+    "core-nv0a4kre.mjs",
+    "core-y4qk5bdp.mjs",
+    "core-yrdmz7je.mjs",
+    "core-z276fcqp.mjs"
   ],
-  "claudeCodeVersion": "2.1.327"
+  "claudeCodeVersion": "2.1.328"
 }

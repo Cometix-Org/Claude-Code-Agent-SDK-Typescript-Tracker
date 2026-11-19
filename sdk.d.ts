@@ -2,11 +2,13 @@ import type { BetaMessage } from "@anthropic-ai/sdk/resources/beta/messages/mess
 import type { BetaRawMessageStreamEvent } from "@anthropic-ai/sdk/resources/beta/messages/messages.mjs";
 import type { BetaUsage } from "@anthropic-ai/sdk/resources/beta/messages/messages.mjs";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { ChildProcess } from "child_process";
 import type { ElicitResult } from "@modelcontextprotocol/sdk/types.js";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { MessageParam } from "@anthropic-ai/sdk/resources";
 import type { Readable } from "stream";
+import type { SpawnOptions as SpawnOptions_2 } from "child_process";
 import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import type { UUID } from "crypto";
 import type { Writable } from "stream";
@@ -3250,12 +3252,21 @@ export declare type PreToolUseHookSpecificOutput = {
  * `close()` the spare and prewarm again.
  *
  * Not every claim can be honoured: the process refuses a folder whose project
- * settings set `env`, `agent`, `model` (or `permissions.defaultMode` when no
- * `permissionMode` was given at prewarm), a `permissionMode` it cannot take
+ * or local settings set `env`, `agent`, `model`, `fallbackModel` (or
+ * `permissions.defaultMode` when no `permissionMode` was given at prewarm or
+ * claim), a `permissionMode` it cannot take
  * (it travels inside the claim so this fails closed), a `settings` overlay it
  * cannot apply (the prompt is held until the overlay is accepted, so this
  * fails closed too), an environment key outside the three above, a network
- * path, or a missing folder; a parked process can also die. In all of those
+ * path, or a missing folder; a parked process can also die. Without
+ * `projectConfigRoot` it also refuses every claim when the project or local
+ * settings of `options.cwd` set `env`, `model`, `fallbackModel` or (with no
+ * `permissionMode` at prewarm or claim) `permissions.defaultMode`. And it
+ * refuses every folder other than `options.cwd` when those settings or a
+ * `.claude/agents` folder (in `options.cwd`, above it up to its repository
+ * root or to the home folder outside one, or in `additionalDirectories`)
+ * supplied the main-thread agent: pass `projectConfigRoot`, or park spares
+ * where none of that applies. In all of those
  * {@link SpareProcess.claimed} rejects, the process goes away on its own
  * (`close()` only releases its in-process MCP servers and callbacks sooner),
  * and this version leaves the fallback to the host: start that session with
@@ -3974,9 +3985,11 @@ export declare type ResolvedSettings = {
      * value; under WSL also the Windows folder's managed-settings files while
      * WSL does not inherit them), `'file'` (the managed-settings file or a
      * drop-in). Call again to try again: the file is read at every call, the
-     * other two once their last read is 30 minutes old, or sooner after one
-     * that gave no answer or was set aside; once one read has answered, a later
-     * read that fails leaves this as it was. A source that the 30-minute
+     * other two once their last read is 30 minutes old (6 hours on native
+     * Windows while no registry value is held and reg.exe's last queries of HKLM
+     * and HKCU both exited with code 1), or sooner after one that gave no answer
+     * or was set aside; once one read has answered, a later read that fails
+     * leaves this as it was. A source that the 30-minute
      * read finds gone counts so once a second read agrees, which the first call
      * 30 seconds or more later makes; outside WSL, a profile, or a value that
      * reg.exe handed over, that fails to load where neither of the two, nor a
@@ -5444,7 +5457,7 @@ declare type SDKControlInterruptRequest = {
   subtype: "interrupt";
 
   /**
-   * When true, the interrupt also cancels every uuid-stamped main-thread command still in the queue or already dequeued for the imminent turn but not yet reachable by the abort (the first-command prewait window) — the same set the response would otherwise list under `still_queued`. Each is closed with a terminal 'cancelled' lifecycle and listed on the response's `cancelled` field. `still_queued` is then empty, except that a client driving a hosted session lists there what it can no longer recall (a send already in flight to that session, or the first prompt the session was created with) and, when the session's own sweep then cancels one of those or a send it had already delivered, follows up with a command_lifecycle 'cancelled' frame for it. (The isFoldInFlight guard cancel_async_message uses does not apply here: this request also aborts the running turn, so a fold-in-flight uuid is never delivered and is swept with the rest. A fold-in-flight uuid's queued_command attachment may already appear in the aborted turn's transcript if the abort landed after the fold's attachment yield — pre-existing leave-queued semantics; it never runs as its own turn.) Uuid-less commands (task notifications) still in the queue are also dequeued but cannot be listed; a uuid-less command already in the prewait window is unreachable by either cancel leg — the first-command prewait latch covers it (this request latches exactly like a plain interrupt; see still_queued): its turn starts aborted. When false or absent, queued commands survive the interrupt and are listed under `still_queued` — the interrupt_receipt_v1 contract is unchanged. A Stop-means-stop-everything client (a remote UI's Stop button) sets this true so one round-trip halts the session; a wrapper that wants per-uuid control leaves it false and follows up with cancel_async_message. Advertised by the `interrupt_cancel_queued_v1` capability on system/init; older CLIs ignore the field and behave as if false.
+   * When true, the interrupt also cancels every uuid-stamped main-thread command still in the queue or already dequeued for the imminent turn but not yet reachable by the abort (the first-command prewait window) — the same set the response would otherwise list under `still_queued`. Each is closed with a terminal 'cancelled' lifecycle and listed on the response's `cancelled` field. `still_queued` is then empty, except that a client driving a hosted session lists there what it can no longer recall (a send already in flight to that session, or the first prompt the session was created with) and, when the session's own sweep then cancels one of those or a send it had already delivered, follows up with a command_lifecycle 'cancelled' frame for it. (The isFoldInFlight guard cancel_async_message uses does not apply here: this request also aborts the running turn, so a fold-in-flight uuid is never delivered and is swept with the rest. A fold-in-flight uuid's queued_command attachment may already appear in the aborted turn's transcript if the abort landed after the fold's attachment yield — pre-existing leave-queued semantics; it never runs as its own turn.) Uuid-less commands (task notifications, other than a passive notice that a task was stopped or paused, which stays queued) still in the queue are also dequeued but cannot be listed; a uuid-less command already in the prewait window is unreachable by either cancel leg — the first-command prewait latch covers it (this request latches exactly like a plain interrupt; see still_queued): its turn starts aborted. When false or absent, queued commands survive the interrupt and are listed under `still_queued` — the interrupt_receipt_v1 contract is unchanged. A Stop-means-stop-everything client (a remote UI's Stop button) sets this true so one round-trip halts the session; a wrapper that wants per-uuid control leaves it false and follows up with cancel_async_message. Advertised by the `interrupt_cancel_queued_v1` capability on system/init; older CLIs ignore the field and behave as if false.
    */
   cancel_queued?: boolean;
 };
@@ -6684,6 +6697,7 @@ export declare type SDKRateLimitInfo = {
    * Which spend limit blocked the request when it is not the member's own cap: 'group_pool' means a pooled group budget shared by the member's team is used up (the denial otherwise looks like the member's own monthly cap). Absent on a plain member denial and from older CLIs.
    */
   limitScope?: "service" | "channel" | "group_pool";
+
   errorCode?: "credits_required";
   canUserPurchaseCredits?: boolean;
   hasChargeableSavedPaymentMethod?: boolean;
@@ -6725,6 +6739,7 @@ export declare type SDKResultError = {
    * Set on the zeroed error_during_execution result a stream-json run writes before exiting on a known startup failure; errors carries the failure message. Failures that otherwise end with stderr alone write that result only when the host sets CLAUDE_CODE_STARTUP_FAILURE_RESULTS, except org_config_required_unavailable, org_config_refused and config_file_invalid, which every stream-json run writes. Absent on every other result, on startup failures without a known cause, and from older producers.
    */
   startup_failure_reason?: SDKStartupFailureReason;
+
   /**
    * Set when startup_failure_reason is config_file_invalid: the config file that did not parse and its backup, as separate fields. Read paths from here, never from the text of errors. Each path is in the form that the machine running Claude Code uses, which can differ from the host's. Absent on every other result and from older producers.
    */
@@ -7926,7 +7941,7 @@ export declare interface Settings {
    */
   fallbackModel?: string[];
   /**
-   * Allowlist of models that users can select. Accepts family aliases ("opus" allows any opus version), version prefixes ("opus-4-5" allows that version and any model ID that extends it, so "claude-opus-5" also allows "claude-opus-5-5"), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.
+   * Allowlist of models that users can select. Accepts family aliases ("opus" allows any opus version), version prefixes ("opus-4-5" allows that version and any model ID that extends it, so "claude-opus-5" also allows "claude-opus-5-5"), and full model IDs. An entry with a path before the model ID (a gateway route such as "route/claude-opus-5") does not allow the plain ID ("claude-opus-5"): list the plain ID too if some sessions send requests directly to the Anthropic API. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.
    */
   availableModels?: string[];
   /**
@@ -8026,7 +8041,7 @@ export declare interface Settings {
     };
   };
   /**
-   * Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries with no ${VAR} in their command, args, url or header values) are allowed without being listed; a managed-mcp.json entry with ${VAR} in any of those must match this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied.
+   * Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries with no ${VAR} in their command, args, url or header values) are allowed without being listed; a managed-mcp.json entry with ${VAR} in any of those must match this list. An entry found only in a project's .claude/settings.json or .claude/settings.local.json can admit a server the organization provides (managed-mcp.json, managedMcpServers, or a plugin that managed settings list in enabledPlugins) but can't keep one out. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied.
    */
   allowedMcpServers?: {
     /**
@@ -8045,7 +8060,7 @@ export declare interface Settings {
     serverUrl?: string;
   }[];
   /**
-   * Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied.
+   * Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. An entry found only in a project's .claude/settings.json or .claude/settings.local.json does not apply to a server the organization provides (managed-mcp.json, managedMcpServers, or a plugin that managed settings list in enabledPlugins). Denylist takes precedence over allowlist - if a server is on both lists, it is denied.
    */
   deniedMcpServers?: {
     /**
@@ -8254,6 +8269,10 @@ export declare interface Settings {
              */
             timeout?: number;
             /**
+             * What happens when this hook's call fails: its MCP server is not connected or not signed in, the call times out or returns an error, or the tool answers with JSON that fails validation. 'continue' (default): the failure is reported and the action goes ahead. 'block': the action the event guards (a tool call, a permission request, a prompt) is blocked each time, for as long as the call fails. With 'block', the tool must answer with a hook's JSON output, with {} or with nothing: plain text, an image, or JSON that holds none of a hook output's fields, or only 'reason', also counts as a failure. That does not hold on PreCompact and WorktreeCreate, where plain text is the hook's answer, or on events whose block stops nothing. Any other value reads as 'block'. Ignored on Setup, SessionStart, Stop, SubagentStop, TaskCompleted and TeammateIdle.
+             */
+            onFailure?: "continue" | "block";
+            /**
              * Custom status message to display in spinner while hook runs
              */
             statusMessage?: string;
@@ -8375,7 +8394,7 @@ export declare interface Settings {
    */
   allowManagedPermissionRulesOnly?: boolean;
   /**
-   * When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves. Users can still add their own MCP servers, but only the admin-defined allowlist applies.
+   * When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves, in user settings for a server the organization provides. Users can still add their own MCP servers, but only the admin-defined allowlist applies.
    */
   allowManagedMcpServersOnly?: boolean;
   /**
@@ -10586,6 +10605,7 @@ export declare interface Settings {
    * Inbound cross-session peer messages (SendMessage from your other sessions): 'accept' delivers them, 'hold' parks them for your review without letting Claude act, 'refuse' opts this session out. An explicit value always wins. Unset (mode parity): a message auto-delivers only when the sending session's permission-mode class matches yours (bypass↔bypass or prompting↔prompting); a mismatched sender's message is held for your approval; a sender that asserts no class is held only while this session bypasses permission prompts.
    */
   crossSessionInbound?: "accept" | "hold" | "refuse";
+
   /**
    * Mirror local sessions to claude.ai as view-only (no remote control)
    */
