@@ -2920,11 +2920,11 @@ export interface CronCreateInput {
    */
   prompt: string;
   /**
-   * true (default) = fire on every cron match until deleted or auto-expired after 7 days. false = fire once at the next match, then auto-delete. Use false for "remind me at X" one-shot requests with pinned minute/hour/dom/month.
+   * true (default) = fire on every cron match until deleted or auto-expired after 30 days. false = fire once at the next match, then auto-delete. Use false for "remind me at X" one-shot requests with pinned minute/hour/dom/month.
    */
   recurring?: boolean;
   /**
-   * true = persist to .claude/scheduled_tasks.json and survive restarts. false (default) = in-memory only, dies when this Claude session ends. Use true only when the user asks the task to survive across sessions.
+   * true = persist to .claude/scheduled_tasks.json and survive restarts (the result says Session-only if the job could not be saved). false (default) = in-memory only, dies when this Claude session ends. Use true only when the user asks the task to survive across sessions.
    */
   durable?: boolean;
 }
@@ -4402,6 +4402,10 @@ export interface CronCreateOutput {
    * Epoch ms of the job's next run, the scheduler's per-job offset included
    */
   nextFireAt?: number;
+  /**
+   * Age at which a recurring job ends; 0 = never
+   */
+  maxAgeMs?: number;
   /**
    * Other session-only one-shot tasks that have yet to fire
    */
