@@ -1,6 +1,6 @@
 {
   "name": "@anthropic-ai/claude-agent-sdk",
-  "version": "0.3.328",
+  "version": "0.3.329",
   "main": "sdk.mjs",
   "types": "sdk.d.ts",
   "exports": {
@@ -61,14 +61,14 @@
     "zod": "^4.0.0"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.328",
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.328"
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.329",
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.329"
   },
   "files": [
     "sdk.mjs",
@@ -85,19 +85,19 @@
     "extractFromBunfs.d.ts",
     "manifest.json",
     "manifest.zst.json",
-    "core-0vfvgmex.mjs",
-    "core-3h0s3zzg.mjs",
-    "core-6w7w19rc.mjs",
-    "core-8fprsbvz.mjs",
-    "core-avz7wgsg.mjs",
-    "core-b9ebje8h.mjs",
-    "core-e1h3fbg3.mjs",
-    "core-ge6en8c9.mjs",
-    "core-htcq9qj1.mjs",
-    "core-nv0a4kre.mjs",
-    "core-y4qk5bdp.mjs",
-    "core-yrdmz7je.mjs",
-    "core-z276fcqp.mjs"
+    "core-06m6qmcw.mjs",
+    "core-4c8nqa7k.mjs",
+    "core-8hyx8d2d.mjs",
+    "core-93ft4jj0.mjs",
+    "core-b9etr14z.mjs",
+    "core-bmchdhmm.mjs",
+    "core-fejvg7me.mjs",
+    "core-mjt89qre.mjs",
+    "core-n7ky6bav.mjs",
+    "core-ne94137v.mjs",
+    "core-p756d6eg.mjs",
+    "core-qt3ezkpn.mjs",
+    "core-z92tpdrf.mjs"
   ],
-  "claudeCodeVersion": "2.1.328"
+  "claudeCodeVersion": "2.1.329"
 }

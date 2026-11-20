@@ -399,9 +399,9 @@ export declare type CanUseTool = (
     /**
      * Set when a user-configured ask RULE (permissions.ask) forced this
      * prompt while the ask carries the tool's own decisionReason, or when
-     * an ask rule reaches an MCP tool only under another name of its server
-     * (such as a connector's id or its claude.ai name), not the one given
-     * here. Hosts
+     * an ask rule reaches an MCP tool only under another name (such as a
+     * connector's id, its claude.ai name, or Artifact for the Artifacts
+     * server's tools), not the one given here. Hosts
      * making policy on the reason (e.g. auto-deny a safetyCheck) or
      * running host-side auto-approval should treat asks carrying this
      * field as rule-forced: the user's stated intent is a human prompt.
@@ -5686,7 +5686,7 @@ declare type SDKControlPermissionRequest = {
    */
   default_to_no?: boolean;
   /**
-   * Set when a user-configured ask RULE (permissions.ask) forced this prompt but the ask carries the tool's own decision_reason — the ask-rule substitution keeps the richer tool-minted ask, so the rule rides here instead of decision_reason_type 'rule'. May also be set, whatever the decision_reason, when an ask rule reaches an MCP tool only under another name of its server (such as a connector's id or its claude.ai name), not under the name in tool_name: a host that looks for the rule by that name does not find it. Hosts making policy on decision_reason_type (e.g. auto-deny safetyCheck) or running host-side auto-approval should treat asks carrying this field as rule-forced: the user's stated intent is a human prompt. Values are producer-authored but render-unsafe like decision_reason; sanitize before display.
+   * Set when a user-configured ask RULE (permissions.ask) forced this prompt but the ask carries the tool's own decision_reason — the ask-rule substitution keeps the richer tool-minted ask, so the rule rides here instead of decision_reason_type 'rule'. May also be set, whatever the decision_reason, when an ask rule reaches an MCP tool only under another name (such as a connector's id, its claude.ai name, or Artifact for the Artifacts server's tools), not under the name in tool_name: a host that looks for the rule by that name does not find it. Hosts making policy on decision_reason_type (e.g. auto-deny safetyCheck) or running host-side auto-approval should treat asks carrying this field as rule-forced: the user's stated intent is a human prompt. Values are producer-authored but render-unsafe like decision_reason; sanitize before display.
    */
   matched_ask_rule?: {
     source: string;
@@ -6067,6 +6067,7 @@ export declare type SDKConversationResetMessage = {
    * Only with trigger 'clear': the uuid of the user message whose /clear was executed (the client's own uuid for that message when it came from a Remote Control or stream-json client, otherwise the uuid the CLI assigned to the typed command). Lets a consumer match this frame to a /clear message it has already seen, wiping once whichever arrives first, instead of relying on arrival order. Absent for the other triggers, when that uuid is not a canonical UUID, and from older emitters.
    */
   user_message_uuid?: string;
+
   /**
    * When the reset happened, as an ISO 8601 string in UTC read from the clock of the process that performed it. Meant for display, such as the time on a "conversation cleared" row, not for ordering frames. Absent from older emitters; a consumer can fall back to the time it received the frame.
    */
@@ -7399,7 +7400,7 @@ export declare type SDKUserMessage = {
    */
   pasted_content?: MessageParam["content"][];
   /**
-   * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block. It looks for the first 100 entries that are not blank. For a paste the host took out of `message`, use `pasted_content` instead.
+   * Text the user pasted that is still in `message.content` where they put it: each entry one paste. The prompt is not changed by the host; the CLI may wrap each entry in `<pasted_content>` tags where it still stands in the last text block, or where a text block holds nothing else. It looks for the first 100 entries that are not blank. For a paste the host took out of `message`, use `pasted_content` instead.
    */
   inline_pastes?: string[];
 
@@ -7919,6 +7920,10 @@ export declare interface Settings {
      */
     workingDirectoriesAsGiven?: string[];
     /**
+     * For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths, each a folder with all below it or one file, that blockReadsOutsideWorkingDirectories, blockFileToolReadsOutsideWorkingDirectories and blockWritesOutsideWorkingDirectories count as outside every working directory that holds them. A path is refused if it, or where its links lead, lies in a listed path, in any letter case, or above one that no Read deny rule covers (a Grep or Glob rooted there would walk into it; a deny rule keeps those two out, unless a "!" rule is also in force); for a search the path judged is its root, not each file found below it. Still let through: a working directory, or for reads a path of blockReadsExemptPaths, that is the listed path or lies inside it, and the files that Claude Code keeps for the session. It allows nothing, binds what those three settings bind, and does nothing with all of them off. Each path counts as written: a link in it is not followed, so list every spelling. Once listed, a path stays listed for the life of the process. Ignored: a relative path, and one that starts with ~, has a ".." segment or has white space at either end. Does not change what sandboxed commands may read or write.
+     */
+    workingDirectoriesExclude?: string[];
+    /**
      * Disable auto mode
      */
     disableAutoMode?: "disable";
@@ -7932,6 +7937,7 @@ export declare interface Settings {
     additionalDirectories?: string[];
     [k: string]: unknown;
   };
+
   /**
    * Override the default model used by Claude Code
    */
@@ -8397,6 +8403,10 @@ export declare interface Settings {
    * When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves, in user settings for a server the organization provides. Users can still add their own MCP servers, but only the admin-defined allowlist applies.
    */
   allowManagedMcpServersOnly?: boolean;
+  /**
+   * Claude desktop app only. Where your allow list and deny list apply to MCP servers added in the Claude desktop app. "code" (default): Your allow list also governs MCP servers added in the Claude desktop app, in Code tab sessions and the Artifact pane. "all": Your allow list and your deny list also govern MCP servers added in the Claude desktop app, in every tab (including Chat and Cowork). "off": Your allow list doesn't govern MCP servers added in the Claude desktop app. Read only from managed settings. Any other value counts as `all`. Where sources are merged or mixed, `off` counts as `all`. Leave the key out, or set it only in the managed source that holds your list. `deniedMcpServers` applies in Code tab sessions and the Artifact pane with every value, and in every tab with `all`. MCP servers sent to SSH hosts are not governed by these lists in this release. The Claude Code CLI reads nothing from this key, but written alone in a higher managed source it makes that source lead, and Claude Code skips the managed sources beneath it. Write it only beside the list it scopes.
+   */
+  desktopMcpServersListScope?: string;
   /**
    * When true (and set in managed settings), claude.ai cloud MCP connectors load alongside managed-mcp.json instead of being suppressed by its exclusive-control lockdown. Default off preserves the lockdown. Read from managed settings only.
    */
@@ -10073,7 +10083,7 @@ export declare interface Settings {
          */
         maskClaims?: string[];
         /**
-         * Optional narrowing of where the proxy substitutes this credential. Only meaningful when mode is `mask`; accepted but ignored for `deny`. If unset, defaults to `network.allowedDomains` — the credential is injected at every reachable host. Each entry must be reachable via `network.allowedDomains` (sandbox-runtime validates this).
+         * Optional narrowing of where the proxy substitutes this credential. Only meaningful when mode is `mask`; accepted but ignored for `deny`. If unset, defaults to `network.allowedDomains` — the credential is injected at every reachable host. A masked AWS secret key that signs requests is the exception: with no list it is never injected. Each entry must be reachable via `network.allowedDomains` (sandbox-runtime validates this).
          */
         injectHosts?: string[];
       }[];

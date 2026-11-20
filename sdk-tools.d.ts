@@ -4402,6 +4402,14 @@ export interface CronCreateOutput {
    * Epoch ms of the job's next run, the scheduler's per-job offset included
    */
   nextFireAt?: number;
+  /**
+   * Other session-only one-shot tasks that have yet to fire
+   */
+  otherOneShots?: {
+    id: string;
+    humanSchedule: string;
+    prompt: string;
+  }[];
 }
 export interface CronDeleteOutput {
   id: string;
